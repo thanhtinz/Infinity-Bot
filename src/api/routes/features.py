@@ -27,6 +27,7 @@ FEATURE_DEFS: list[dict] = [
     {"key": "autoresponder",  "label": "Auto Responder",      "desc": "Tự động trả lời theo keyword",               "icon": "MessageCircleReply", "cogs": ["AutoResponderCog"]},
     {"key": "scheduler",       "label": "Tin nhắn hẹn giờ",   "desc": "Gửi tin nhắn theo lịch",                     "icon": "Clock",         "cogs": ["SchedulerCog"]},
     {"key": "autoresponder",   "label": "Auto Responder",     "desc": "Tự động trả lời theo keyword",                "icon": "MessageCircleReply", "cogs": ["AutoResponderCog"]},
+    {"key": "interactions",    "label": "Tương tác",          "desc": "Lệnh tương tác anime GIF (hug, kiss, slap…)",  "icon": "Heart",             "cogs": ["InteractionCog"]},
 ]
 
 

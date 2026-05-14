@@ -113,6 +113,7 @@ def create_bot():
     from src.bot.cogs.reaction_roles import ReactionRolesCog
     from src.bot.cogs.scheduler import SchedulerCog
     from src.bot.cogs.autoresponder import AutoResponderCog
+    from src.bot.cogs.interactions import InteractionCog
 
     # Tag cogs with feature keys for runtime check
     _COG_FEATURE_MAP = {
@@ -129,6 +130,7 @@ def create_bot():
         "CustomCommandsCog": "custom_commands",
         "SchedulerCog": "scheduler",
         "AutoResponderCog": "autoresponder",
+        "InteractionCog": "interactions",
     }
 
     cogs = [
@@ -142,6 +144,7 @@ def create_bot():
         AutoModCog(bot_client), CustomCommandsCog(bot_client),
         ReactionRolesCog(bot_client), SchedulerCog(bot_client),
         AutoResponderCog(bot_client),
+        InteractionCog(bot_client),
     ]
     for cog in cogs:
         cog.feature_key = _COG_FEATURE_MAP.get(type(cog).__name__)

@@ -1,26 +1,26 @@
 [
   {
-    "content": "[cleanup] Remove 18 unused embed events from EmbedsManager.tsx",
+    "content": "[interaction-1] Create interaction cog with all 68 commands using otakugifs.xyz API",
     "id": "1",
     "status": "completed"
   },
   {
-    "content": "[feature] Custom Commands: add more variables + features",
+    "content": "[interaction-2] Add interaction embed defaults to embed_utils.py DEFAULTS dict",
     "id": "2",
     "status": "completed"
   },
   {
-    "content": "[feature] Custom Commands bot cog: update VARS + support new fields",
+    "content": "[interaction-3] Register InteractionCog in manager.py",
     "id": "3",
     "status": "completed"
   },
   {
-    "content": "[ui] Scheduled Messages: redesign form UI with better layout",
+    "content": "[interaction-4] Add interaction embed events/groups/defaults/variables to EmbedsManager.tsx",
     "id": "4",
     "status": "in_progress"
   },
   {
-    "content": "[test] Verify all 3 changes work in browser",
+    "content": "[interaction-5] Add Heart icon import and verify frontend compiles",
     "id": "5",
     "status": "pending"
   }
