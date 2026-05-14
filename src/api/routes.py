@@ -3,7 +3,7 @@ from sqlalchemy import select, func, case
 import os, uuid, shutil
 from sqlalchemy.orm import joinedload
 from src.database.config import get_db
-from src.models.models import SystemConfig, Product, Order, User, Coupon
+from src.models.models import SystemConfig, Product, Order, User, Coupon, StickyMessage
 from src.schemas.schemas import SystemConfigBase, SystemConfigResponse, ProductBase, ProductResponse, OrderResponse
 from src.bot.manager import start_bot, stop_bot
 from src.api.auth import router as auth_router
@@ -1049,3 +1049,152 @@ async def delete_feedback(feedback_id: int, db = Depends(get_db)):
     db.delete(fb)
     db.commit()
     return {"ok": True}
+
+
+# ── Sticky Message Routes ─────────────────────────────────────────────────────
+
+@router.get("/sticky")
+def list_stickies(db=Depends(get_db)):
+    """Lấy tất cả sticky messages."""
+    stickies = db.execute(select(StickyMessage).order_by(StickyMessage.created_at.desc())).scalars().all()
+    out = []
+    for s in stickies:
+        out.append({
+            "id": s.id,
+            "guild_id": s.guild_id,
+            "channel_id": s.channel_id,
+            "content": s.content,
+            "embed_enabled": s.embed_enabled,
+            "embed_title": s.embed_title,
+            "embed_description": s.embed_description,
+            "embed_color": s.embed_color,
+            "embed_footer": s.embed_footer,
+            "embed_image_url": s.embed_image_url,
+            "embed_thumbnail_url": s.embed_thumbnail_url,
+            "message_count_trigger": s.message_count_trigger,
+            "interval_minutes": s.interval_minutes,
+            "is_enabled": s.is_enabled,
+            "is_pinned": s.is_pinned,
+            "resend_count": s.resend_count or 0,
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+            "last_sent": s.last_sent.isoformat() if s.last_sent else None,
+            "expires_at": s.expires_at.isoformat() if s.expires_at else None,
+        })
+    return out
+
+
+@router.post("/sticky")
+def create_sticky(body: dict, db=Depends(get_db)):
+    """Tạo hoặc cập nhật sticky cho một kênh (từ dashboard)."""
+    channel_id = str(body.get("channel_id", "")).strip()
+    if not channel_id:
+        raise HTTPException(status_code=400, detail="channel_id required")
+
+    existing = db.execute(select(StickyMessage).where(StickyMessage.channel_id == channel_id)).scalars().first()
+
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    guild_id = config.guild_id if config else ""
+
+    if existing:
+        # Update existing
+        for field in ["content", "embed_enabled", "embed_title", "embed_description",
+                      "embed_color", "embed_footer", "embed_image_url", "embed_thumbnail_url",
+                      "message_count_trigger", "interval_minutes", "is_enabled", "is_pinned"]:
+            if field in body:
+                setattr(existing, field, body[field])
+        db.commit()
+        return {"ok": True, "id": existing.id}
+    else:
+        sticky = StickyMessage(
+            guild_id=guild_id,
+            channel_id=channel_id,
+            content=body.get("content"),
+            embed_enabled=body.get("embed_enabled", False),
+            embed_title=body.get("embed_title"),
+            embed_description=body.get("embed_description"),
+            embed_color=body.get("embed_color", "#5865F2"),
+            embed_footer=body.get("embed_footer"),
+            embed_image_url=body.get("embed_image_url"),
+            embed_thumbnail_url=body.get("embed_thumbnail_url"),
+            message_count_trigger=body.get("message_count_trigger", 1),
+            interval_minutes=body.get("interval_minutes", 0),
+            is_enabled=body.get("is_enabled", True),
+            is_pinned=body.get("is_pinned", False),
+        )
+        db.add(sticky)
+        db.commit()
+        db.refresh(sticky)
+        return {"ok": True, "id": sticky.id}
+
+
+@router.put("/sticky/{sticky_id}")
+def update_sticky(sticky_id: int, body: dict, db=Depends(get_db)):
+    sticky = db.get(StickyMessage, sticky_id)
+    if not sticky:
+        raise HTTPException(status_code=404, detail="Sticky not found")
+    for field in ["content", "embed_enabled", "embed_title", "embed_description",
+                  "embed_color", "embed_footer", "embed_image_url", "embed_thumbnail_url",
+                  "message_count_trigger", "interval_minutes", "is_enabled", "is_pinned"]:
+        if field in body:
+            setattr(sticky, field, body[field])
+    db.commit()
+    return {"ok": True}
+
+
+@router.delete("/sticky/{sticky_id}")
+def delete_sticky(sticky_id: int, db=Depends(get_db)):
+    sticky = db.get(StickyMessage, sticky_id)
+    if not sticky:
+        raise HTTPException(status_code=404, detail="Sticky not found")
+    # Try delete from Discord via bot
+    try:
+        from src.bot.manager import bot as _bot
+        import asyncio as _asyncio
+        if _bot and sticky.last_message_id:
+            async def _del():
+                try:
+                    ch = await _bot.fetch_channel(int(sticky.channel_id))
+                    msg = await ch.fetch_message(int(sticky.last_message_id))
+                    await msg.delete()
+                except Exception:
+                    pass
+            if _bot.loop:
+                _asyncio.run_coroutine_threadsafe(_del(), _bot.loop)
+    except Exception:
+        pass
+    db.delete(sticky)
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/sticky/{sticky_id}/resend")
+def resend_sticky(sticky_id: int, db=Depends(get_db)):
+    """Force resend sticky từ dashboard."""
+    sticky = db.get(StickyMessage, sticky_id)
+    if not sticky:
+        raise HTTPException(status_code=404, detail="Sticky not found")
+    try:
+        from src.bot.manager import bot as _bot
+        from src.bot.cogs.sticky import _do_resend
+        import asyncio as _asyncio
+        if _bot and _bot.loop:
+            future = _asyncio.run_coroutine_threadsafe(_do_resend(_bot, sticky, db), _bot.loop)
+            future.result(timeout=5)
+            return {"ok": True}
+        return {"ok": False, "detail": "Bot không online"}
+    except Exception as e:
+        logger.error(f"resend_sticky error: {e}")
+        return {"ok": False, "detail": str(e)}
+
+
+@router.get("/sticky/stats")
+def sticky_stats(db=Depends(get_db)):
+    from sqlalchemy import func as _func
+    stickies = db.execute(select(StickyMessage)).scalars().all()
+    return {
+        "total": len(stickies),
+        "active": sum(1 for s in stickies if s.is_enabled),
+        "total_resends": sum(s.resend_count or 0 for s in stickies),
+        "embed_count": sum(1 for s in stickies if s.embed_enabled),
+        "pinned_count": sum(1 for s in stickies if s.is_pinned),
+    }

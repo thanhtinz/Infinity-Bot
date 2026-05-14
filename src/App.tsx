@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert } from "lucide-react";
+import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin } from "lucide-react";
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -16,6 +16,7 @@ import { GiveawaysManager } from "./pages/GiveawaysManager";
 import { InviteTracking } from "./pages/InviteTracking";
 import { Leaderboard } from "./pages/Leaderboard";
 import { WarningsManager } from "./pages/WarningsManager";
+import { StickyManager } from "./pages/StickyManager";
 import { Login } from "./pages/Login";
 import { InitialSetup } from "./pages/InitialSetup";
 import { cn } from "./lib/utils";
@@ -46,6 +47,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     { to: "/users", icon: Users, label: "Người dùng" },
     { to: "/leaderboard", icon: Trophy, label: "Bảng xếp hạng" },
     { to: "/warnings", icon: ShieldAlert, label: "Cảnh cáo" },
+    { to: "/sticky", icon: Pin, label: "Sticky" },
     { to: "/giveaways", icon: Gift, label: "Giveaway" },
     { to: "/invites", icon: Link2, label: "Invite" },
     { to: "/embeds", icon: Palette, label: "Embeds" },
@@ -201,6 +203,7 @@ function ProtectedAppRoutes() {
         <Route path="/users" element={<UsersManager />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/warnings" element={<WarningsManager />} />
+        <Route path="/sticky" element={<StickyManager />} />
         <Route path="/giveaways" element={<GiveawaysManager />} />
         <Route path="/invites" element={<InviteTracking />} />
         <Route path="/embeds" element={<EmbedsManager />} />

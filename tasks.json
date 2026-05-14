@@ -1,42 +1,27 @@
 [
   {
-    "content": "[1-A] DB migrate: feedback, warnings, giveaways, temp_voice + models.py",
-    "id": "1a",
+    "content": "Add StickyMessage model to models.py + run DB migration",
+    "id": "S1",
     "status": "completed"
   },
   {
-    "content": "[1-B] Bot commands: /help, /orders, /orders [id], /support, /feedback (Modal), /bxh",
-    "id": "1b",
+    "content": "Create src/bot/cogs/sticky.py — full slash command cog + on_message listener + interval task",
+    "id": "S2",
+    "status": "completed"
+  },
+  {
+    "content": "Add sticky API routes to routes.py (CRUD + stats)",
+    "id": "S3",
+    "status": "completed"
+  },
+  {
+    "content": "Create src/pages/StickyManager.tsx — dashboard page",
+    "id": "S4",
     "status": "in_progress"
   },
   {
-    "content": "[1-C] Bot /tao_don nâng cấp: coupon button+Modal, timeout 15phút, update embed realtime",
-    "id": "1c",
-    "status": "pending"
-  },
-  {
-    "content": "[1-D] Dashboard Orders: thêm status mới, nút Giao hàng + Dialog DM, API deliver",
-    "id": "1d",
-    "status": "pending"
-  },
-  {
-    "content": "[2-A] DB + Bot: Giveaway system (create, join button, auto-end, reroll, ban)",
-    "id": "2a",
-    "status": "pending"
-  },
-  {
-    "content": "[2-B] Bot: Moderation commands (/ban /unban /kick /warn /unwarn /warnings)",
-    "id": "2b",
-    "status": "pending"
-  },
-  {
-    "content": "[3-A] DB + Bot: Temp Voice (on_voice_state, /room commands)",
-    "id": "3a",
-    "status": "pending"
-  },
-  {
-    "content": "[3-B] Dashboard: Temp Voice setup tab",
-    "id": "3b",
+    "content": "Update App.tsx nav + manager.py load StickyManagerCog",
+    "id": "S5",
     "status": "pending"
   }
 ]

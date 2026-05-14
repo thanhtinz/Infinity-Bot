@@ -170,3 +170,34 @@ class BannedShopUser(Base):
     reason = Column(Text, nullable=True)
     banned_by = Column(String, nullable=True)
     banned_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+# ── Sticky Message System ────────────────────────────────────────────────────
+
+class StickyMessage(Base):
+    __tablename__ = "sticky_messages"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    channel_id = Column(String, nullable=False, unique=True)  # one sticky per channel
+    # Content (plain or embed)
+    content = Column(Text, nullable=True)           # plain text content
+    embed_enabled = Column(Boolean, default=False)
+    embed_title = Column(String, nullable=True)
+    embed_description = Column(Text, nullable=True)
+    embed_color = Column(String, default="#5865F2")
+    embed_footer = Column(String, nullable=True)
+    embed_image_url = Column(String, nullable=True)
+    embed_thumbnail_url = Column(String, nullable=True)
+    # Trigger settings
+    message_count_trigger = Column(Integer, default=1)  # resend after N new messages
+    current_count = Column(Integer, default=0)          # counter since last resend
+    interval_minutes = Column(Integer, default=0)       # 0 = off; resend every N minutes
+    last_sent = Column(DateTime, nullable=True)
+    # Discord tracking
+    last_message_id = Column(String, nullable=True)     # Discord msg ID of current sticky
+    is_enabled = Column(Boolean, default=True)
+    is_pinned = Column(Boolean, default=False)
+    created_by = Column(String, nullable=True)          # discord user ID
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    expires_at = Column(DateTime, nullable=True)        # auto-disable after this time
+    resend_count = Column(Integer, default=0)           # total times resent (analytics)

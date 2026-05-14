@@ -98,6 +98,7 @@ def create_bot():
     from src.bot.cogs.moderation import ModerationCog
     from src.bot.cogs.temp_voice import TempVoiceCog
     from src.bot.cogs.invite_tracking import InviteTrackingCog
+    from src.bot.cogs.sticky import StickyCog
 
     bot_client.add_cog(ShopCog(bot_client))
     bot_client.add_cog(AdminShopCog(bot_client))
@@ -105,6 +106,7 @@ def create_bot():
     bot_client.add_cog(ModerationCog(bot_client))
     bot_client.add_cog(TempVoiceCog(bot_client))
     bot_client.add_cog(InviteTrackingCog(bot_client))
+    bot_client.add_cog(StickyCog(bot_client))
 
     # ── Legacy commands (status, san_pham, account) ──────────
     @bot_client.slash_command(name="status", description="Xem trạng thái bot hiện tại")
