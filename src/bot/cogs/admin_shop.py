@@ -247,7 +247,7 @@ class AdminShopCog(discord.Cog):
         product_id: discord.Option(int, "ID sản phẩm (xem /san_pham)"),
         package_name: discord.Option(str, "Tên gói (để trống = gói đầu tiên)", required=False, default=""),
         quantity: discord.Option(int, "Số lượng", required=False, default=1, min_value=1, max_value=99),
-        channel: discord.Option(discord.TextChannel, "Kênh gửi QR (để trống = dùng kênh cấu hình)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Kênh gửi QR (để trống = gửi tại kênh hiện tại)", required=False, default=None),
     ):
         await ctx.defer()
         session = get_session()
@@ -358,14 +358,8 @@ class AdminShopCog(discord.Cog):
                 admin_id=ctx.author.id,
             )
 
-            # Gửi vào don_hang_channel nếu có
-            target_channel = ctx.channel
-            if channel:
-                target_channel = channel
-            elif config.don_hang_channel_id:
-                ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
-                if ch:
-                    target_channel = ch
+            # Gửi QR: chỉ định kênh > kênh hiện tại
+            target_channel = channel or ctx.channel
 
             msg = await target_channel.send(
                 content=f"{user.mention} Bạn có đơn hàng mới!",
@@ -400,7 +394,7 @@ class AdminShopCog(discord.Cog):
         gia: discord.Option(int, "Giá tiền (VNĐ)", min_value=1000),
         ghi_chu: discord.Option(str, "Ghi chú / mô tả thêm (tuỳ chọn)", required=False, default=""),
         so_luong: discord.Option(int, "Số lượng", required=False, default=1, min_value=1, max_value=99),
-        channel: discord.Option(discord.TextChannel, "Kênh gửi QR (để trống = dùng kênh cấu hình)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Kênh gửi QR (để trống = gửi tại kênh hiện tại)", required=False, default=None),
     ):
         await ctx.defer()
         session = get_session()
@@ -483,14 +477,8 @@ class AdminShopCog(discord.Cog):
                 admin_id=ctx.author.id,
             )
 
-            # Chọn kênh gửi: option channel > don_hang_channel > ctx.channel
-            target_channel = ctx.channel
-            if channel:
-                target_channel = channel
-            elif config.don_hang_channel_id:
-                ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
-                if ch:
-                    target_channel = ch
+            # Gửi QR: chỉ định kênh > kênh hiện tại
+            target_channel = channel or ctx.channel
 
             msg = await target_channel.send(
                 content=f"{user.mention} Bạn có đơn hàng mới!",
