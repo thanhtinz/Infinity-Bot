@@ -21,6 +21,8 @@ class SystemConfig(Base):
     bang_gia_channel_id = Column(String, nullable=True)
     welcome_channel_id = Column(String, nullable=True)
     bot_status = Column(String, default="offline") # offline, running
+    command_prefix = Column(String, default="!")
+    command_prefix = Column(String, default="!") # prefix cho text commands
 
 class User(Base):
     __tablename__ = "users"
@@ -139,16 +141,6 @@ class TempVoiceConfig(Base):
     allow_hide = Column(Boolean, default=True)
     # Interface channel for control panel buttons
     interface_channel_id = Column(String, nullable=True)
-    # New fields
-    default_user_limit = Column(Integer, default=0)          # 0 = unlimited
-    default_bitrate = Column(Integer, default=64000)         # in bps
-    naming_format = Column(String, default="{user}'s Channel")
-    auto_delete_seconds = Column(Integer, default=0)         # 0 = delete when empty
-    allow_rename = Column(Boolean, default=True)
-    allow_limit = Column(Boolean, default=True)
-    allow_lock = Column(Boolean, default=True)
-    allow_hide = Column(Boolean, default=True)
-    interface_channel_id = Column(String, nullable=True)     # control panel channel
 
 class TempVoiceRoom(Base):
     __tablename__ = "temp_voice_rooms"

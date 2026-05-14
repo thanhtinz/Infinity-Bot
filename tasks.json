@@ -1,6 +1,6 @@
 [
   {
-    "content": "[interaction-1] Create interaction cog with all 68 commands using otakugifs.xyz API",
+    "content": "[interaction-1] Create interaction cog with all 69 commands using otakugifs.xyz API",
     "id": "1",
     "status": "completed"
   },
@@ -10,18 +10,18 @@
     "status": "completed"
   },
   {
-    "content": "[interaction-3] Register InteractionCog in manager.py",
+    "content": "[interaction-3] Register InteractionCog in manager.py + features API",
     "id": "3",
     "status": "completed"
   },
   {
     "content": "[interaction-4] Add interaction embed events/groups/defaults/variables to EmbedsManager.tsx",
     "id": "4",
-    "status": "in_progress"
+    "status": "completed"
   },
   {
-    "content": "[interaction-5] Add Heart icon import and verify frontend compiles",
+    "content": "[interaction-5] Verify all imports and compilation",
     "id": "5",
-    "status": "pending"
+    "status": "completed"
   }
 ]

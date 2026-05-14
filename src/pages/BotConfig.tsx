@@ -31,6 +31,7 @@ const serverSchema = z.object({
   coupon_channel_id: z.string().optional(),
   bang_gia_channel_id: z.string().optional(),
   welcome_channel_id: z.string().optional(),
+  command_prefix: z.string().max(5).optional(),
 });
 
 type DiscordValues = z.infer<typeof discordSchema>;
@@ -132,9 +133,9 @@ export function BotConfig() {
   // ── Form: Server & Channels ── (must be before queries that watch it)
   const serverForm = useForm<ServerValues>({
     resolver: zodResolver(serverSchema),
-    defaultValues: { guild_id: "", admin_role_id: "", don_hang_channel_id: "", feedback_channel_id: "", coupon_channel_id: "", bang_gia_channel_id: "", welcome_channel_id: "" },
+    defaultValues: { guild_id: "", admin_role_id: "", don_hang_channel_id: "", feedback_channel_id: "", coupon_channel_id: "", bang_gia_channel_id: "", welcome_channel_id: "", command_prefix: "!" },
   });
-  useEffect(() => { if (config) serverForm.reset({ guild_id: config.guild_id || "", admin_role_id: config.admin_role_id || "", don_hang_channel_id: config.don_hang_channel_id || "", feedback_channel_id: config.feedback_channel_id || "", coupon_channel_id: config.coupon_channel_id || "", bang_gia_channel_id: config.bang_gia_channel_id || "", welcome_channel_id: config.welcome_channel_id || "" }); }, [config]);
+  useEffect(() => { if (config) serverForm.reset({ guild_id: config.guild_id || "", admin_role_id: config.admin_role_id || "", don_hang_channel_id: config.don_hang_channel_id || "", feedback_channel_id: config.feedback_channel_id || "", coupon_channel_id: config.coupon_channel_id || "", bang_gia_channel_id: config.bang_gia_channel_id || "", welcome_channel_id: config.welcome_channel_id || "", command_prefix: config.command_prefix || "!" }); }, [config]);
 
   const { data: guilds = [] } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["discord_guilds"],
@@ -221,6 +222,16 @@ export function BotConfig() {
         body: JSON.stringify({ enabled: tvEnabled, join_channel_id: tvJoinChannel, category_id: tvCategory }),
       }).then((r) => { if (!r.ok) throw new Error("Lưu thất bại"); return r.json(); }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tempvoice_config"] }); toast({ title: "Đã lưu", description: "Cấu hình Temp Voice đã được lưu." }); },
+    onError: () => { toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }); },
+  });
+
+  // ── Command Prefix ──
+  const [cmdPrefix, setCmdPrefix] = useState("!");
+  useEffect(() => { if (config?.command_prefix) setCmdPrefix(config.command_prefix); }, [config]);
+
+  const prefixMutation = useMutation({
+    mutationFn: () => savePartial({ command_prefix: cmdPrefix }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["config"] }); toast({ title: "Đã lưu", description: `Prefix đã đổi thành "${cmdPrefix}"` }); },
     onError: () => { toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }); },
   });
 
@@ -389,6 +400,33 @@ export function BotConfig() {
           </Card>
         </form>
       </Form>
+
+      {/* ── Card: Command Prefix ── */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Command Prefix</CardTitle>
+          <CardDescription>Prefix cho các lệnh tương tác qua tin nhắn (vd: !hug @user, .kiss @user)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-end gap-3">
+            <div className="space-y-2 flex-1 max-w-[200px]">
+              <label className="text-sm font-medium">Prefix</label>
+              <Input
+                value={cmdPrefix}
+                onChange={(e) => setCmdPrefix(e.target.value.slice(0, 5))}
+                placeholder="!"
+                className="font-mono text-lg"
+              />
+            </div>
+            <Button onClick={() => prefixMutation.mutate()} disabled={prefixMutation.isPending} size="sm">
+              {prefixMutation.isPending ? "Đang lưu..." : "Lưu Prefix"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Ví dụ: với prefix <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}</code>, user gõ <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}hug @user</code> để ôm. Ngoài ra có thể dùng slash command /hug.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* ── Card: Temp Voice ── */}
       <Card>
