@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from src.database.config import SessionLocal
 from src.models.models import Giveaway, GiveawayEntry, GiveawayBanned
+from src.bot.embed_utils import build_embed
 
 logger = logging.getLogger(__name__)
 
@@ -139,15 +140,14 @@ async def end_giveaway(bot: discord.Bot, giveaway_id: int, reroll: bool = False)
         if channel and giveaway.message_id:
             try:
                 msg = await channel.fetch_message(int(giveaway.message_id))
-                embed = discord.Embed(
-                    title=f"🎉 {giveaway.title} — KẾT THÚC",
-                    description=giveaway.description or "",
-                    color=discord.Color.green(),
-                )
-                embed.add_field(name="🎁 Phần thưởng", value=giveaway.prize, inline=True)
-                embed.add_field(name="👑 Người thắng", value=winners_text, inline=False)
-                embed.set_footer(text=f"Kết thúc lúc {datetime.datetime.utcnow().strftime('%d/%m/%Y %H:%M')} UTC")
-                await msg.edit(embed=embed, view=None)
+                # Sử dụng ket_qua_giveaway embed template
+                result_embed = build_embed("ket_qua_giveaway", session, vars={
+                    "prize": giveaway.prize,
+                    "winners": winners_text,
+                    "host": f"<@{giveaway.creator_id}>" if giveaway.creator_id else "Admin",
+                    "winners_count": str(giveaway.winners_count),
+                })
+                await msg.edit(embed=result_embed, view=None)
                 if winner_mentions:
                     await channel.send(
                         f"🎊 Chúc mừng {winner_mentions}! Bạn đã thắng **{giveaway.prize}**!"

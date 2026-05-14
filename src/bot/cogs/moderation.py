@@ -5,6 +5,7 @@ import logging
 from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import Warning
+from src.bot.embed_utils import build_embed
 
 logger = logging.getLogger(__name__)
 
@@ -96,6 +97,7 @@ class ModerationCog(discord.Cog):
                 )
             ).scalars().all())
 
+            # Channel embed
             embed = discord.Embed(title="⚠️ Cảnh cáo", color=discord.Color.yellow())
             embed.add_field(name="Thành viên", value=user.mention, inline=True)
             embed.add_field(name="Lý do", value=reason, inline=False)
@@ -103,13 +105,16 @@ class ModerationCog(discord.Cog):
             embed.add_field(name="Mod", value=ctx.author.mention, inline=True)
             await ctx.respond(embed=embed)
 
-            # DM user
+            # DM user sử dụng embed template từ DB
             try:
-                dm_embed = discord.Embed(
-                    title=f"⚠️ Bạn nhận được cảnh cáo tại **{ctx.guild.name}**",
-                    description=f"**Lý do:** {reason}\n**Tổng cảnh cáo:** {count}",
-                    color=discord.Color.yellow(),
-                )
+                dm_embed = build_embed("canh_bao", session, vars={
+                    "user": str(user),
+                    "user.mention": user.mention,
+                    "user.id": str(user.id),
+                    "reason": reason,
+                    "warn_count": str(count),
+                    "server": ctx.guild.name,
+                })
                 await user.send(embed=dm_embed)
             except Exception:
                 pass

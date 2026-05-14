@@ -73,6 +73,34 @@ DEFAULTS: dict[str, dict] = {
             {"name": "Thành viên thứ", "value": "{member_count}", "inline": True},
         ],
     },
+    "don_hang_het_han": {
+        "title": "⏰ Đơn hàng đã hết hạn",
+        "description": "Đơn hàng #{order.id} của bạn đã hết hạn do chưa thanh toán sau 15 phút.",
+        "color": "#ED4245",
+        "footer": "Tạo đơn mới để tiếp tục mua hàng.",
+        "fields": [
+            {"name": "📦 Sản phẩm", "value": "{product.name}", "inline": True},
+        ],
+    },
+    "ket_qua_giveaway": {
+        "title": "🏆 Kết quả Giveaway",
+        "description": "Giveaway đã kết thúc!\nPhần thưởng: **{prize}**",
+        "color": "#EB459E",
+        "footer": "Chúc mừng người chiến thắng!",
+        "fields": [
+            {"name": "🎉 Người thắng", "value": "{winners}", "inline": False},
+        ],
+    },
+    "canh_bao": {
+        "title": "⚠️ Cảnh báo",
+        "description": "{user.mention} đã nhận cảnh báo từ ban quản trị.",
+        "color": "#FEE75C",
+        "footer": "Hãy tuân thủ nội quy server",
+        "fields": [
+            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "🔢 Tổng cảnh báo", "value": "{warn_count}", "inline": True},
+        ],
+    },
 }
 
 

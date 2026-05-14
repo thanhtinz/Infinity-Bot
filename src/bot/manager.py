@@ -30,6 +30,60 @@ def update_bot_status(status: str):
         logger.error(f"Failed to update bot_status: {e}")
 
 
+async def _check_expired_orders(bot_client: discord.Bot):
+    """Background task: mỗi 2 phút check đơn PENDING > 15 phút, mark EXPIRED và DM user."""
+    import datetime as _dt
+    from src.bot.embed_utils import build_embed
+    await asyncio.sleep(60)  # delay 60s sau khi bot ready
+    while True:
+        try:
+            session = get_session()
+            try:
+                cutoff = _dt.datetime.utcnow() - _dt.timedelta(minutes=15)
+                expired = session.execute(
+                    select(Order).where(
+                        Order.status == "PENDING",
+                        Order.created_at <= cutoff,
+                    )
+                ).scalars().all()
+                for order in expired:
+                    order.status = "EXPIRED"
+                    # DM user
+                    try:
+                        user_obj = session.execute(
+                            select(User).where(User.id == order.user_id)
+                        ).scalars().first()
+                        product_name = "Sản phẩm"
+                        if order.product_id:
+                            prod = session.execute(
+                                select(Product).where(Product.id == order.product_id)
+                            ).scalars().first()
+                            if prod:
+                                product_name = prod.name
+                        elif order.package_name:
+                            product_name = order.package_name
+                        if user_obj and user_obj.discord_id:
+                            discord_user = await bot_client.fetch_user(int(user_obj.discord_id))
+                            dm_embed = build_embed("don_hang_het_han", session, vars={
+                                "user": str(discord_user),
+                                "user.mention": discord_user.mention,
+                                "user.id": str(discord_user.id),
+                                "order.id": str(order.id),
+                                "product.name": product_name,
+                            })
+                            await discord_user.send(embed=dm_embed)
+                    except Exception as dm_err:
+                        logger.debug(f"expire DM failed order#{order.id}: {dm_err}")
+                if expired:
+                    session.commit()
+                    logger.info(f"Expired {len(expired)} orders")
+            finally:
+                session.close()
+        except Exception as e:
+            logger.error(f"_check_expired_orders error: {e}")
+        await asyncio.sleep(120)  # check mỗi 2 phút
+
+
 def create_bot():
     intents = discord.Intents.default()
     intents.message_content = True
@@ -51,7 +105,6 @@ def create_bot():
     bot_client.add_cog(ModerationCog(bot_client))
     bot_client.add_cog(TempVoiceCog(bot_client))
     bot_client.add_cog(InviteTrackingCog(bot_client))
-    bot_client.add_cog(TempVoiceCog(bot_client))
 
     # ── Legacy commands (status, san_pham, account) ──────────
     @bot_client.slash_command(name="status", description="Xem trạng thái bot hiện tại")
@@ -168,6 +221,7 @@ def create_bot():
     async def on_ready():
         logger.info(f"Bot on_ready: Logged in as {bot_client.user} (ID: {bot_client.user.id})")
         await asyncio.to_thread(update_bot_status, "running")
+        bot_client.loop.create_task(_check_expired_orders(bot_client))
 
     @bot_client.event
     async def on_disconnect():
