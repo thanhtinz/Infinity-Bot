@@ -1184,8 +1184,9 @@ export function EmbedsManager() {
                 {/* Title */}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Tiêu đề</Label>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
+                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       placeholder="Nhập tiêu đề embed..."
                       value={form.title}
                       onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
@@ -1199,13 +1200,13 @@ export function EmbedsManager() {
                     <Label className="text-xs text-muted-foreground">Mô tả</Label>
                     <span className="text-[11px] text-muted-foreground">{form.description.length}/4096</span>
                   </div>
-                  <div className="flex items-start gap-1">
+                  <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Textarea
                       placeholder="Nhập mô tả embed..."
                       value={form.description}
                       onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                       rows={5}
-                      className="resize-y flex-1"
+                      className="resize-y flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                     <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, description: f.description + em }))} />
                   </div>
@@ -1234,8 +1235,9 @@ export function EmbedsManager() {
                     <Label className="text-xs text-muted-foreground">Chân trang</Label>
                     <span className="text-[11px] text-muted-foreground">{form.footer.length}/2048</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
+                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       placeholder="Nội dung chân trang"
                       value={form.footer}
                       onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
@@ -1263,8 +1265,9 @@ export function EmbedsManager() {
               <div className="px-4 pb-4 space-y-3">
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Tên tác giả</Label>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
+                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
                       value={form.author}
                       onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
@@ -1346,21 +1349,21 @@ export function EmbedsManager() {
                       </Button>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                         <Input
                           placeholder="Tên field"
                           value={field.name}
                           onChange={(e) => updateField(i, "name", e.target.value)}
-                          className="text-sm"
+                          className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                         />
                         <EmojiPicker onSelect={(em) => updateField(i, "name", field.name + em)} />
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                         <Input
                           placeholder="Giá trị"
                           value={field.value}
                           onChange={(e) => updateField(i, "value", e.target.value)}
-                          className="text-sm"
+                          className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                         />
                         <EmojiPicker onSelect={(em) => updateField(i, "value", field.value + em)} />
                       </div>

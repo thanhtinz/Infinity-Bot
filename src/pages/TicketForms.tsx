@@ -368,11 +368,12 @@ export function TicketForms() {
                       </Button>
                     </div>
                     <div className="space-y-2">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                         <Input
                           placeholder="Nhãn câu hỏi"
                           value={q.label}
                           onChange={(e) => updateQuestion(idx, "label", e.target.value)}
+                          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                         />
                         <EmojiPicker onSelect={(em) => updateQuestion(idx, "label", q.label + em)} />
                       </div>

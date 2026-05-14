@@ -228,8 +228,8 @@ export function ProductsManager() {
               <FormField control={form.control} name="name" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tên sản phẩm</FormLabel>
-                  <div className="flex items-center gap-1">
-                    <FormControl><Input {...field} placeholder="VD: VIP Discord" /></FormControl>
+                  <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                    <FormControl><Input {...field} placeholder="VD: VIP Discord" className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0" /></FormControl>
                     <EmojiPicker onSelect={(em) => field.onChange(field.value + em)} />
                   </div>
                   <FormMessage />
@@ -240,8 +240,8 @@ export function ProductsManager() {
               <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Mô tả</FormLabel>
-                  <div className="flex items-start gap-1">
-                    <FormControl><Textarea {...field} rows={2} placeholder="Mô tả ngắn..." className="flex-1" /></FormControl>
+                  <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                    <FormControl><Textarea {...field} rows={2} placeholder="Mô tả ngắn..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
                     <EmojiPicker onSelect={(em) => field.onChange((field.value || "") + em)} />
                   </div>
                   <FormMessage />

@@ -72,8 +72,8 @@ export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
           <button
             type="button"
             className={cn(
-              "inline-flex items-center justify-center rounded-md border border-input bg-background",
-              "h-9 w-9 text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+              "inline-flex items-center justify-center shrink-0",
+              "h-8 w-8 rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent/50",
               "transition-colors"
             )}
           >

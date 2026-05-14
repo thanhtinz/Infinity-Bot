@@ -778,7 +778,7 @@ export function StickyManager() {
             {!form.embed_enabled && (
               <div className="space-y-2">
                 <Label>Nội dung</Label>
-                <div className="flex items-start gap-1">
+                <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                   <Textarea
                     value={form.content}
                     onChange={(e) =>
@@ -786,7 +786,7 @@ export function StickyManager() {
                     }
                     placeholder="Nội dung tin nhắn sticky..."
                     rows={4}
-                    className="flex-1"
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
                   />
                   <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, content: f.content + em }))} />
                 </div>
@@ -798,13 +798,14 @@ export function StickyManager() {
               <div className="space-y-3">
                 <div className="space-y-2">
                   <Label>Tiêu đề</Label>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
                       value={form.embed_title}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, embed_title: e.target.value }))
                       }
                       placeholder="Tiêu đề embed"
+                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                     <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, embed_title: f.embed_title + em }))} />
                   </div>
@@ -812,7 +813,7 @@ export function StickyManager() {
 
                 <div className="space-y-2">
                   <Label>Mô tả</Label>
-                  <div className="flex items-start gap-1">
+                  <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Textarea
                       value={form.embed_description}
                       onChange={(e) =>
@@ -823,7 +824,7 @@ export function StickyManager() {
                       }
                       placeholder="Mô tả embed..."
                       rows={4}
-                      className="flex-1"
+                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
                     />
                     <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, embed_description: f.embed_description + em }))} />
                   </div>
@@ -862,13 +863,14 @@ export function StickyManager() {
 
                 <div className="space-y-2">
                   <Label>Footer</Label>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
                       value={form.embed_footer}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, embed_footer: e.target.value }))
                       }
                       placeholder="Chân trang embed"
+                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                     <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, embed_footer: f.embed_footer + em }))} />
                   </div>

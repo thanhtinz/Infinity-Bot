@@ -271,8 +271,9 @@ function EmbedEditor({
       {/* Title */}
       <div className="space-y-2">
         <Label>Tiêu đề</Label>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
           <Input
+            className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             value={form.title}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange((prev) => ({ ...prev, title: e.target.value }))
@@ -286,7 +287,7 @@ function EmbedEditor({
       {/* Description */}
       <div className="space-y-2">
         <Label>Mô tả</Label>
-        <div className="flex items-start gap-1">
+        <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
           <Textarea
             value={form.description}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
@@ -294,7 +295,7 @@ function EmbedEditor({
             }
             placeholder="Nội dung embed..."
             rows={3}
-            className="flex-1"
+            className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           <EmojiPicker onSelect={(em) => onChange((prev) => ({ ...prev, description: prev.description + em }))} />
         </div>
@@ -306,8 +307,9 @@ function EmbedEditor({
       {/* Footer */}
       <div className="space-y-2">
         <Label>Footer</Label>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
           <Input
+            className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             value={form.footer}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange((prev) => ({ ...prev, footer: e.target.value }))
@@ -355,18 +357,18 @@ function EmbedEditor({
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                 <Input
                   value={field.name}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     updateField(idx, "name", e.target.value)
                   }
                   placeholder="Tên field"
-                  className="text-sm"
+                  className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <EmojiPicker onSelect={(em) => updateField(idx, "name", field.name + em)} />
               </div>
-              <div className="flex items-start gap-1">
+              <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                 <Textarea
                   value={field.value}
                   onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
@@ -374,7 +376,7 @@ function EmbedEditor({
                   }
                   placeholder="Giá trị field"
                   rows={2}
-                  className="text-sm flex-1"
+                  className="text-sm flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <EmojiPicker onSelect={(em) => updateField(idx, "value", field.value + em)} />
               </div>
