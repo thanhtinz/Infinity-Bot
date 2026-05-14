@@ -31,6 +31,7 @@ import {
   LogIn, Hash, ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmojiPicker } from "@/components/EmojiPicker";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1183,11 +1184,14 @@ export function EmbedsManager() {
                 {/* Title */}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Tiêu đề</Label>
-                  <Input
-                    placeholder="Nhập tiêu đề embed..."
-                    value={form.title}
-                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      placeholder="Nhập tiêu đề embed..."
+                      value={form.title}
+                      onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                    />
+                    <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, title: f.title + em }))} />
+                  </div>
                 </div>
                 {/* Description with char count */}
                 <div className="space-y-1">
@@ -1195,13 +1199,16 @@ export function EmbedsManager() {
                     <Label className="text-xs text-muted-foreground">Mô tả</Label>
                     <span className="text-[11px] text-muted-foreground">{form.description.length}/4096</span>
                   </div>
-                  <Textarea
-                    placeholder="Nhập mô tả embed..."
-                    value={form.description}
-                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                    rows={5}
-                    className="resize-y"
-                  />
+                  <div className="flex items-start gap-1">
+                    <Textarea
+                      placeholder="Nhập mô tả embed..."
+                      value={form.description}
+                      onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                      rows={5}
+                      className="resize-y flex-1"
+                    />
+                    <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, description: f.description + em }))} />
+                  </div>
                 </div>
                 {/* Color */}
                 <div className="space-y-1">
@@ -1227,11 +1234,14 @@ export function EmbedsManager() {
                     <Label className="text-xs text-muted-foreground">Chân trang</Label>
                     <span className="text-[11px] text-muted-foreground">{form.footer.length}/2048</span>
                   </div>
-                  <Input
-                    placeholder="Nội dung chân trang"
-                    value={form.footer}
-                    onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
-                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      placeholder="Nội dung chân trang"
+                      value={form.footer}
+                      onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
+                    />
+                    <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, footer: f.footer + em }))} />
+                  </div>
                 </div>
               </div>
             )}
@@ -1333,18 +1343,24 @@ export function EmbedsManager() {
                       </Button>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        placeholder="Tên field"
-                        value={field.name}
-                        onChange={(e) => updateField(i, "name", e.target.value)}
-                        className="text-sm"
-                      />
-                      <Input
-                        placeholder="Giá trị"
-                        value={field.value}
-                        onChange={(e) => updateField(i, "value", e.target.value)}
-                        className="text-sm"
-                      />
+                      <div className="flex items-center gap-1">
+                        <Input
+                          placeholder="Tên field"
+                          value={field.name}
+                          onChange={(e) => updateField(i, "name", e.target.value)}
+                          className="text-sm"
+                        />
+                        <EmojiPicker onSelect={(em) => updateField(i, "name", field.name + em)} />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          placeholder="Giá trị"
+                          value={field.value}
+                          onChange={(e) => updateField(i, "value", e.target.value)}
+                          className="text-sm"
+                        />
+                        <EmojiPicker onSelect={(em) => updateField(i, "value", field.value + em)} />
+                      </div>
                     </div>
                     <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
                       <input

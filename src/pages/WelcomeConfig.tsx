@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
+import { EmojiPicker } from "@/components/EmojiPicker";
 import { HandMetal, LogOut, MessageSquare, UserCog, Plus, Trash2 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -270,26 +271,33 @@ function EmbedEditor({
       {/* Title */}
       <div className="space-y-2">
         <Label>Tiêu đề</Label>
-        <Input
-          value={form.title}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            onChange((prev) => ({ ...prev, title: e.target.value }))
-          }
-          placeholder="Tiêu đề embed"
-        />
+        <div className="flex items-center gap-1">
+          <Input
+            value={form.title}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              onChange((prev) => ({ ...prev, title: e.target.value }))
+            }
+            placeholder="Tiêu đề embed"
+          />
+          <EmojiPicker onSelect={(em) => onChange((prev) => ({ ...prev, title: prev.title + em }))} />
+        </div>
       </div>
 
       {/* Description */}
       <div className="space-y-2">
         <Label>Mô tả</Label>
-        <Textarea
-          value={form.description}
-          onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-            onChange((prev) => ({ ...prev, description: e.target.value }))
-          }
-          placeholder="Nội dung embed..."
-          rows={3}
-        />
+        <div className="flex items-start gap-1">
+          <Textarea
+            value={form.description}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+              onChange((prev) => ({ ...prev, description: e.target.value }))
+            }
+            placeholder="Nội dung embed..."
+            rows={3}
+            className="flex-1"
+          />
+          <EmojiPicker onSelect={(em) => onChange((prev) => ({ ...prev, description: prev.description + em }))} />
+        </div>
         <p className="text-xs text-muted-foreground">
           Biến: {"{user.mention}"}, {"{user}"}, {"{server}"}, {"{member_count}"}, {"{user.id}"}
         </p>
@@ -298,13 +306,16 @@ function EmbedEditor({
       {/* Footer */}
       <div className="space-y-2">
         <Label>Footer</Label>
-        <Input
-          value={form.footer}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            onChange((prev) => ({ ...prev, footer: e.target.value }))
-          }
-          placeholder="Chữ footer..."
-        />
+        <div className="flex items-center gap-1">
+          <Input
+            value={form.footer}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              onChange((prev) => ({ ...prev, footer: e.target.value }))
+            }
+            placeholder="Chữ footer..."
+          />
+          <EmojiPicker onSelect={(em) => onChange((prev) => ({ ...prev, footer: prev.footer + em }))} />
+        </div>
       </div>
 
       {/* Fields */}
@@ -344,23 +355,29 @@ function EmbedEditor({
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
               </div>
-              <Input
-                value={field.name}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  updateField(idx, "name", e.target.value)
-                }
-                placeholder="Tên field"
-                className="text-sm"
-              />
-              <Textarea
-                value={field.value}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                  updateField(idx, "value", e.target.value)
-                }
-                placeholder="Giá trị field"
-                rows={2}
-                className="text-sm"
-              />
+              <div className="flex items-center gap-1">
+                <Input
+                  value={field.name}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    updateField(idx, "name", e.target.value)
+                  }
+                  placeholder="Tên field"
+                  className="text-sm"
+                />
+                <EmojiPicker onSelect={(em) => updateField(idx, "name", field.name + em)} />
+              </div>
+              <div className="flex items-start gap-1">
+                <Textarea
+                  value={field.value}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                    updateField(idx, "value", e.target.value)
+                  }
+                  placeholder="Giá trị field"
+                  rows={2}
+                  className="text-sm flex-1"
+                />
+                <EmojiPicker onSelect={(em) => updateField(idx, "value", field.value + em)} />
+              </div>
               <div className="flex items-center gap-2">
                 <Switch
                   checked={field.inline}
