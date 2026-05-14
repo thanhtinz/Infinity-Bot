@@ -29,6 +29,7 @@ import {
   ShieldOff, LayoutGrid, ShieldAlert,
   LogOut, Pencil, Volume2, VolumeX, ArrowRightLeft,
   LogIn, Hash, Shield, Moon, Zap, AlertTriangle,
+  Type, Layout,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmojiPicker } from "@/components/EmojiPicker";
@@ -55,6 +56,8 @@ interface EmbedTemplate {
   image_url: string;
   fields: EmbedField[];
   enabled: boolean;
+  response_mode: "embed" | "text";
+  text_template: string;
 }
 
 type FormState = Omit<EmbedTemplate, "id"> & { existingId?: number };
@@ -672,6 +675,8 @@ function defaultForm(eventKey: string): FormState {
     image_url: d.image_url,
     fields: d.fields.map((f) => ({ ...f })),
     enabled: d.enabled,
+    response_mode: "embed",
+    text_template: "",
     existingId: undefined,
   };
 }
@@ -875,6 +880,8 @@ export function EmbedsManager() {
         image_url: payload.image_url,
         fields: payload.fields,
         enabled: payload.enabled,
+        response_mode: payload.response_mode,
+        text_template: payload.text_template,
       };
       if (payload.existingId) {
         const res = await fetch(`/api/embeds/${payload.existingId}`, {
@@ -924,6 +931,8 @@ export function EmbedsManager() {
         image_url: saved.image_url,
         fields: saved.fields.map((f) => ({ ...f })),
         enabled: saved.enabled,
+        response_mode: saved.response_mode || "embed",
+        text_template: saved.text_template || "",
         existingId: saved.id,
       });
     } else {
@@ -1031,7 +1040,86 @@ export function EmbedsManager() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto p-4 space-y-3">
 
+          {/* ── Response Mode Toggle ── */}
+          <div className="flex items-center gap-2 rounded-lg border bg-muted/20 p-2">
+            <button
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, response_mode: "embed" }))}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all",
+                form.response_mode === "embed"
+                  ? "bg-background shadow-sm border"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Layout className="h-4 w-4" />
+              Embed
+            </button>
+            <button
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, response_mode: "text" }))}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all",
+                form.response_mode === "text"
+                  ? "bg-background shadow-sm border"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Type className="h-4 w-4" />
+              Text
+            </button>
+          </div>
+
+          {/* ── Text Mode Editor ── */}
+          {form.response_mode === "text" && (
+            <div className="rounded-lg border overflow-hidden" style={{ borderLeftWidth: 4, borderLeftColor: form.color || "#5865F2" }}>
+              <div className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">Nội dung Text</span>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="text-enabled" className="text-xs text-muted-foreground cursor-pointer">
+                      {form.enabled ? "Bật" : "Tắt"}
+                    </Label>
+                    <Switch
+                      id="text-enabled"
+                      checked={form.enabled}
+                      onCheckedChange={(v) => setForm((f) => ({ ...f, enabled: v }))}
+                    />
+                  </div>
+                </div>
+                <Textarea
+                  value={form.text_template}
+                  onChange={(e) => setForm((f) => ({ ...f, text_template: e.target.value }))}
+                  placeholder="Nội dung tin nhắn text với {biến}...&#10;&#10;VD: **Đơn hàng #{order.id}** của {user.mention} đã được tạo!"
+                  rows={8}
+                  className="font-mono text-sm"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Hỗ trợ Markdown Discord: **bold**, *italic*, __underline__, ~~strikethrough~~, `code`, ```code block```
+                </p>
+                {/* Text Preview */}
+                <div className="rounded-lg bg-[#313338] p-4 font-sans text-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0 text-lg bg-[#5865F2]">
+                      🤖
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-[#F2F3F5] text-sm">Dashboard Bot</span>
+                        <span className="bg-[#5865F2] text-white text-[10px] font-medium px-1 py-0.5 rounded leading-none">BOT</span>
+                      </div>
+                      <p className="text-[#DBDEE1] mt-1 whitespace-pre-wrap text-sm">
+                        {form.text_template || "Nhập nội dung..."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ── Embed Section — collapsible card with colored left border ── */}
+          {form.response_mode === "embed" && (
           <div className="rounded-lg border overflow-hidden" style={{ borderLeftWidth: 4, borderLeftColor: form.color || "#5865F2" }}>
             <div
               role="button"
@@ -1272,6 +1360,7 @@ export function EmbedsManager() {
               </div>
             )}
           </div>
+          )}
 
           {/* ── Variables — collapsible ── */}
           <div className="rounded-lg border">
@@ -1302,7 +1391,8 @@ export function EmbedsManager() {
             )}
           </div>
 
-          {/* ── Discord Preview — collapsible, always last ── */}
+          {/* ── Discord Preview — collapsible, always last (embed mode only) ── */}
+          {form.response_mode === "embed" && (
           <div className="rounded-lg border">
             <button
               type="button"
@@ -1321,6 +1411,7 @@ export function EmbedsManager() {
               </div>
             )}
           </div>
+          )}
 
         </div>
       </div>
