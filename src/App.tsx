@@ -265,7 +265,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                   "flex items-center justify-between w-full px-3 py-2 text-sm font-medium cursor-pointer rounded-md transition-colors",
                   isActive
                     ? "bg-accent/60 text-foreground"
-                    : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+                    : "text-foreground/80 hover:bg-accent/40 hover:text-foreground"
                 )}
               >
                 <span className="flex items-center gap-2.5">
