@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { RefreshCw, Plus, ShoppingCart, User2, Truck } from "lucide-react";
@@ -37,6 +38,9 @@ export function OrdersManager() {
   const [orderStatus, setOrderStatus] = useState("PENDING");
   const [deliverTarget, setDeliverTarget] = useState<Order | null>(null);
   const [dmContent, setDmContent] = useState("");
+  const [isCustom, setIsCustom] = useState(false);
+  const [customProductName, setCustomProductName] = useState("");
+  const [sendQrChannelId, setSendQrChannelId] = useState("");
 
   const { data: orders = [], isLoading, refetch } = useQuery<Order[]>({
     queryKey: ["orders"],
@@ -48,6 +52,12 @@ export function OrdersManager() {
     queryKey: ["products"],
     queryFn: () => fetch("/api/products", { credentials: "include" }).then((r) => r.json()),
   });
+
+  const { data: channels = [] } = useQuery<{id: string; name: string; type: number}[]>({
+    queryKey: ["discord-channels"],
+    queryFn: () => fetch("/api/discord/channels/all", { credentials: "include" }).then(r => r.json()).catch(() => []),
+  });
+  const textChannels = channels.filter(c => c.type === 0);
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) =>
@@ -100,6 +110,7 @@ export function OrdersManager() {
 
   const resetCreateForm = () => {
     setDiscordUid(""); setSelectedProductId(""); setSelectedPackage(""); setSelectedPrice(0); setOrderStatus("PENDING");
+    setIsCustom(false); setCustomProductName(""); setSendQrChannelId("");
   };
 
   // Khi chọn sản phẩm → reset gói
@@ -267,19 +278,39 @@ export function OrdersManager() {
                 onChange={(e) => setDiscordUid(e.target.value)}
               />
             </div>
-            {/* Sản phẩm */}
+            {/* Sản phẩm + Toggle Custom */}
             <div className="space-y-1.5">
-              <Label>Sản phẩm <span className="text-destructive">*</span></Label>
-              <Select value={selectedProductId} onValueChange={handleSelectProduct}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn sản phẩm" />
-                </SelectTrigger>
-                <SelectContent>
-                  {products.filter((p) => p.active).map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center justify-between">
+                <Label>Sản phẩm <span className="text-destructive">*</span></Label>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Custom</span>
+                  <Switch checked={isCustom} onCheckedChange={(v) => {
+                    setIsCustom(v);
+                    setSelectedProductId("");
+                    setSelectedPackage("");
+                    setCustomProductName("");
+                    setSelectedPrice(0);
+                  }} />
+                </div>
+              </div>
+              {isCustom ? (
+                <Input
+                  placeholder="Tên sản phẩm tự nhập..."
+                  value={customProductName}
+                  onChange={(e) => setCustomProductName(e.target.value)}
+                />
+              ) : (
+                <Select value={selectedProductId} onValueChange={handleSelectProduct}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn sản phẩm" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {products.filter((p) => p.active).map((p) => (
+                      <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             {/* Gói */}
             {activePackages.length > 0 && (
@@ -326,18 +357,44 @@ export function OrdersManager() {
                 </SelectContent>
               </Select>
             </div>
+            {/* Kênh gửi QR PayOS */}
+            <div className="space-y-1.5">
+              <Label>Kênh gửi QR thanh toán</Label>
+              {textChannels.length > 0 ? (
+                <Select value={sendQrChannelId} onValueChange={setSendQrChannelId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Không gửi Discord" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Không gửi Discord</SelectItem>
+                    {textChannels.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>#{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  placeholder="Channel ID (để trống = không gửi)"
+                  value={sendQrChannelId}
+                  onChange={(e) => setSendQrChannelId(e.target.value)}
+                />
+              )}
+              <p className="text-xs text-muted-foreground">Bot sẽ gửi QR PayOS vào kênh này và chờ thanh toán (15 phút)</p>
+            </div>
             <Separator />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setCreateOpen(false); resetCreateForm(); }}>Hủy</Button>
             <Button
-              disabled={!discordUid.trim() || !selectedProductId || createMutation.isPending}
+              disabled={!discordUid.trim() || (isCustom ? !customProductName.trim() : !selectedProductId) || createMutation.isPending}
               onClick={() => createMutation.mutate({
                 discord_uid: discordUid,
-                product_id: parseInt(selectedProductId),
-                package_name: selectedPackage || null,
+                product_id: isCustom ? null : (selectedProductId ? parseInt(selectedProductId) : null),
+                package_name: isCustom ? null : (selectedPackage || null),
+                custom_product_name: isCustom ? customProductName : undefined,
                 total_price: selectedPrice,
                 status: orderStatus,
+                send_qr_channel_id: sendQrChannelId || "",
               })}
             >
               {createMutation.isPending ? "Đang tạo..." : "Tạo đơn"}

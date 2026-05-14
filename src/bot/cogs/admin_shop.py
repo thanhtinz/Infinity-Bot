@@ -235,6 +235,7 @@ class AdminShopCog(discord.Cog):
         product_id: discord.Option(int, "ID sản phẩm (xem /san_pham)"),
         package_name: discord.Option(str, "Tên gói (để trống = gói đầu tiên)", required=False, default=""),
         quantity: discord.Option(int, "Số lượng", required=False, default=1, min_value=1, max_value=99),
+        channel: discord.Option(discord.TextChannel, "Kênh gửi QR (để trống = dùng kênh cấu hình)", required=False, default=None),
     ):
         await ctx.defer()
         session = get_session()
@@ -347,7 +348,9 @@ class AdminShopCog(discord.Cog):
 
             # Gửi vào don_hang_channel nếu có
             target_channel = ctx.channel
-            if config.don_hang_channel_id:
+            if channel:
+                target_channel = channel
+            elif config.don_hang_channel_id:
                 ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
                 if ch:
                     target_channel = ch
@@ -371,6 +374,129 @@ class AdminShopCog(discord.Cog):
 
         except Exception as e:
             logger.error(f"tao_don_cmd error: {e}")
+            await ctx.respond("❌ Lỗi hệ thống khi tạo đơn.", ephemeral=True)
+        finally:
+            session.close()
+
+    @discord.slash_command(name="tao_don_custom", description="[Admin] Tạo đơn custom (tên SP tự nhập, không cần SP trong hệ thống)")
+    @discord.default_permissions(administrator=True)
+    async def tao_don_custom_cmd(
+        self,
+        ctx: discord.ApplicationContext,
+        user: discord.Option(discord.Member, "Chọn thành viên"),
+        san_pham: discord.Option(str, "Tên sản phẩm tự nhập"),
+        gia: discord.Option(int, "Giá tiền (VNĐ)", min_value=1000),
+        ghi_chu: discord.Option(str, "Ghi chú / mô tả thêm (tuỳ chọn)", required=False, default=""),
+        so_luong: discord.Option(int, "Số lượng", required=False, default=1, min_value=1, max_value=99),
+        channel: discord.Option(discord.TextChannel, "Kênh gửi QR (để trống = dùng kênh cấu hình)", required=False, default=None),
+    ):
+        await ctx.defer()
+        session = get_session()
+        try:
+            config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+            if not config or not all([config.payos_client_id, config.payos_api_key, config.payos_checksum_key]):
+                await ctx.respond("⚠️ Chưa cấu hình PayOS trên Dashboard!", ephemeral=True)
+                return
+
+            total = float(gia) * so_luong
+
+            # Tìm/tạo user DB
+            db_user = session.execute(
+                select(User).where(User.discord_id == str(user.id))
+            ).scalars().first()
+            if not db_user:
+                db_user = User(discord_id=str(user.id), username=str(user.display_name))
+                session.add(db_user)
+                session.flush()
+
+            order = Order(
+                user_id=db_user.id,
+                product_id=None,            # Không gắn với product hệ thống
+                quantity=so_luong,
+                total_price=total,
+                package_name=san_pham,       # Dùng package_name để lưu tên SP custom
+                status="PENDING",
+            )
+            session.add(order)
+            session.commit()
+
+            # Tạo PayOS link
+            domain = config.public_app_url or "http://localhost:3034"
+            if not domain.startswith("http"):
+                domain = f"https://{domain}"
+
+            payos = PayOS(
+                client_id=config.payos_client_id,
+                api_key=config.payos_api_key,
+                checksum_key=config.payos_checksum_key,
+            )
+            product_display = san_pham[:40]
+            if so_luong > 1:
+                product_display += f" x{so_luong}"
+
+            item = ItemData(name=product_display, quantity=1, price=int(total))
+            payment_data = PaymentData(
+                orderCode=order.id,
+                amount=int(total),
+                description=f"Don #{order.id}",
+                items=[item],
+                cancelUrl=f"{domain}/cancel",
+                returnUrl=f"{domain}/success",
+            )
+            payos_res = await asyncio.to_thread(payos.createPaymentLink, payment_data)
+            checkout_url = payos_res.checkoutUrl
+            order.payos_order_code = str(order.id)
+            session.commit()
+
+            # Build embed
+            embed = discord.Embed(title="🛒 Đơn hàng Custom", color=discord.Color.gold())
+            embed.description = (
+                f"Vui lòng thanh toán để hoàn tất đơn hàng.\n"
+                f"⏰ Hết hạn sau **15 phút**."
+            )
+            embed.add_field(name="🔢 ID Đơn", value=f"#{order.id}", inline=True)
+            embed.add_field(name="👤 Khách hàng", value=user.mention, inline=True)
+            embed.add_field(name="📦 Sản phẩm", value=product_display, inline=False)
+            if ghi_chu:
+                embed.add_field(name="📝 Ghi chú", value=ghi_chu, inline=False)
+            embed.add_field(name="💰 Số tiền", value=f"{total:,.0f} VNĐ", inline=True)
+            embed.set_footer(text="⏳ Đang chờ thanh toán...")
+            embed.timestamp = datetime.datetime.utcnow()
+
+            view = OrderPayView(
+                order_id=order.id,
+                price=total,
+                checkout_url=checkout_url,
+                admin_id=ctx.author.id,
+            )
+
+            # Chọn kênh gửi: option channel > don_hang_channel > ctx.channel
+            target_channel = ctx.channel
+            if channel:
+                target_channel = channel
+            elif config.don_hang_channel_id:
+                ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
+                if ch:
+                    target_channel = ch
+
+            msg = await target_channel.send(
+                content=f"{user.mention} Bạn có đơn hàng mới!",
+                embed=embed,
+                view=view,
+            )
+            view.message = msg
+
+            order.discord_message_id = str(msg.id)
+            order.discord_channel_id = str(msg.channel.id)
+            session.commit()
+
+            info = f"✅ Đã tạo đơn custom #{order.id}"
+            if target_channel != ctx.channel:
+                info += f" và gửi tới {target_channel.mention}"
+            await ctx.respond(info + ".", ephemeral=True)
+
+        except Exception as e:
+            logger.error(f"tao_don_custom error: {e}")
             await ctx.respond("❌ Lỗi hệ thống khi tạo đơn.", ephemeral=True)
         finally:
             session.close()

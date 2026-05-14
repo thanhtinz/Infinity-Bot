@@ -27,6 +27,6 @@
   {
     "content": "[4-F] Bot: Invite tracking cog (on_member_join/remove, /invites, /inviteinfo)",
     "id": "4-F",
-    "status": "in_progress"
+    "status": "completed"
   }
 ]

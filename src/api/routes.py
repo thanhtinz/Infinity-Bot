@@ -244,16 +244,18 @@ def get_orders(db = Depends(get_db)):
 
 @router.post("/orders")
 def create_order(body: dict, db = Depends(get_db)):
-    """Tạo đơn hàng thủ công từ Discord UID."""
+    """Tạo đơn hàng thủ công từ Discord UID. Hỗ trợ custom product (không cần product_id)."""
     discord_uid = str(body.get("discord_uid", "")).strip()
     product_id = body.get("product_id")
     package_name = body.get("package_name")
     total_price = body.get("total_price", 0)
+    custom_product_name = str(body.get("custom_product_name", "")).strip()  # tên SP custom
+    send_qr_channel_id = str(body.get("send_qr_channel_id", "")).strip()    # kênh Discord gửi QR
 
     if not discord_uid:
         raise HTTPException(status_code=400, detail="Discord UID không được để trống")
-    if not product_id:
-        raise HTTPException(status_code=400, detail="Chọn sản phẩm")
+    if not product_id and not custom_product_name:
+        raise HTTPException(status_code=400, detail="Chọn sản phẩm hoặc nhập tên sản phẩm custom")
 
     # Tìm hoặc tạo user
     user = db.execute(select(User).where(User.discord_id == discord_uid)).scalars().first()
@@ -262,10 +264,15 @@ def create_order(body: dict, db = Depends(get_db)):
         db.add(user)
         db.flush()
 
+    # Nếu custom: package_name lưu tên SP custom, product_id = None
+    if custom_product_name and not product_id:
+        package_name = custom_product_name
+        product_id = None
+
     order = Order(
         user_id=user.id,
         product_id=product_id,
-        quantity=1,
+        quantity=body.get("quantity", 1),
         total_price=float(total_price),
         package_name=package_name,
         status=body.get("status", "PENDING"),
@@ -273,7 +280,101 @@ def create_order(body: dict, db = Depends(get_db)):
     db.add(order)
     db.commit()
     db.refresh(order)
-    return {"ok": True, "order_id": order.id}
+
+    # Nếu có channel_id và PayOS được cấu hình → tạo QR và gửi vào kênh
+    qr_sent = False
+    if send_qr_channel_id and float(total_price) > 0:
+        import asyncio as _asyncio
+        config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+        if config and all([config.payos_client_id, config.payos_api_key, config.payos_checksum_key]):
+            from payos import PayOS as _PayOS
+            from payos.type import ItemData as _ItemData, PaymentData as _PaymentData
+            from src.bot.manager import bot as _bot
+            import discord as _discord
+
+            domain = config.public_app_url or "http://localhost:3034"
+            if not domain.startswith("http"):
+                domain = f"https://{domain}"
+
+            try:
+                payos = _PayOS(
+                    client_id=config.payos_client_id,
+                    api_key=config.payos_api_key,
+                    checksum_key=config.payos_checksum_key,
+                )
+                product_display = custom_product_name or (package_name or f"Đơn #{order.id}")
+                item = _ItemData(name=product_display[:40], quantity=1, price=int(float(total_price)))
+                payment_data = _PaymentData(
+                    orderCode=order.id,
+                    amount=int(float(total_price)),
+                    description=f"Don #{order.id}",
+                    items=[item],
+                    cancelUrl=f"{domain}/cancel",
+                    returnUrl=f"{domain}/success",
+                )
+                payos_res = payos.createPaymentLink(payment_data)
+                checkout_url = payos_res.checkoutUrl
+                order.payos_order_code = str(order.id)
+                db.commit()
+
+                # Gửi vào Discord channel qua bot
+                async def _send_qr():
+                    if not _bot:
+                        return
+                    try:
+                        ch = _bot.get_channel(int(send_qr_channel_id))
+                        if not ch:
+                            ch = await _bot.fetch_channel(int(send_qr_channel_id))
+                        if not ch:
+                            return
+                        embed = _discord.Embed(
+                            title="🛒 Đơn hàng mới",
+                            description=f"Vui lòng thanh toán để hoàn tất đơn hàng.\n⏰ Hết hạn sau **15 phút**.",
+                            color=_discord.Color.gold(),
+                        )
+                        embed.add_field(name="🔢 ID Đơn", value=f"#{order.id}", inline=True)
+                        embed.add_field(name="👤 Discord", value=f"<@{discord_uid}>", inline=True)
+                        embed.add_field(name="📦 Sản phẩm", value=product_display, inline=False)
+                        embed.add_field(name="💰 Số tiền", value=f"{float(total_price):,.0f} VNĐ", inline=True)
+                        embed.set_footer(text="⏳ Đang chờ thanh toán...")
+                        import datetime as _dt
+                        embed.timestamp = _dt.datetime.utcnow()
+
+                        from src.bot.cogs.admin_shop import OrderPayView
+                        view = OrderPayView(
+                            order_id=order.id,
+                            price=float(total_price),
+                            checkout_url=checkout_url,
+                            admin_id=None,
+                        )
+                        msg = await ch.send(
+                            content=f"<@{discord_uid}> Bạn có đơn hàng mới!",
+                            embed=embed,
+                            view=view,
+                        )
+                        view.message = msg
+                        # Cập nhật message_id (cần session mới)
+                        from src.database.config import SessionLocal as _SL
+                        _db2 = _SL()
+                        try:
+                            _o = _db2.get(Order, order.id)
+                            if _o:
+                                _o.discord_message_id = str(msg.id)
+                                _o.discord_channel_id = str(ch.id)
+                                _db2.commit()
+                        finally:
+                            _db2.close()
+                    except Exception as _e:
+                        logger.error(f"send_qr_to_channel error: {_e}")
+
+                # Schedule coroutine vào event loop của bot
+                if _bot and _bot.loop:
+                    _asyncio.run_coroutine_threadsafe(_send_qr(), _bot.loop)
+                    qr_sent = True
+            except Exception as e:
+                logger.error(f"create_order QR error: {e}")
+
+    return {"ok": True, "order_id": order.id, "qr_sent": qr_sent}
 
 @router.put("/orders/{order_id}/status")
 def update_order_status(order_id: int, body: dict, db = Depends(get_db)):
