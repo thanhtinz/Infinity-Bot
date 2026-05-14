@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +24,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { RoleSelect } from "@/components/RoleSelect";
+import { EmbedBuilder, EMBED_DEFAULTS } from "@/components/EmbedBuilder";
+import type { EmbedFormData, EmbedField } from "@/components/EmbedBuilder";
 import {
   MousePointerClick,
   Plus,
@@ -57,6 +58,10 @@ interface ButtonRolePanel {
   embed_title: string;
   embed_description: string;
   embed_color: string;
+  embed_footer: string;
+  embed_image_url: string;
+  embed_thumbnail_url: string;
+  embed_fields: EmbedField[];
   created_at: string;
 }
 
@@ -65,6 +70,10 @@ interface PanelForm {
   embed_title: string;
   embed_description: string;
   embed_color: string;
+  embed_footer: string;
+  embed_image_url: string;
+  embed_thumbnail_url: string;
+  embed_fields: EmbedField[];
   buttons: ButtonRoleItem[];
 }
 
@@ -99,22 +108,15 @@ const STYLE_CHECK: Record<string, string> = {
   danger: "text-[#ed4245]",
 };
 
-const PRESET_COLORS = [
-  "#5865F2",
-  "#57f287",
-  "#fee75c",
-  "#ed4245",
-  "#eb459e",
-  "#2b2d31",
-];
-
-const DEFAULT_COLOR = "#5865F2";
-
 const emptyPanelForm = (): PanelForm => ({
   name: "",
   embed_title: "",
   embed_description: "",
-  embed_color: DEFAULT_COLOR,
+  embed_color: EMBED_DEFAULTS.color,
+  embed_footer: "",
+  embed_image_url: "",
+  embed_thumbnail_url: "",
+  embed_fields: [],
   buttons: [],
 });
 
@@ -234,7 +236,7 @@ function PanelCard({
           <div className="flex">
             <div
               className="w-1 shrink-0"
-              style={{ backgroundColor: panel.embed_color || DEFAULT_COLOR }}
+              style={{ backgroundColor: panel.embed_color || EMBED_DEFAULTS.color }}
             />
             <div className="p-2.5 flex-1 min-w-0 bg-muted/30">
               <p className="font-semibold text-xs leading-tight">
@@ -431,7 +433,11 @@ export function ButtonRoles() {
       name: panel.name,
       embed_title: panel.embed_title ?? "",
       embed_description: panel.embed_description ?? "",
-      embed_color: panel.embed_color ?? DEFAULT_COLOR,
+      embed_color: panel.embed_color ?? EMBED_DEFAULTS.color,
+      embed_footer: panel.embed_footer ?? "",
+      embed_image_url: panel.embed_image_url ?? "",
+      embed_thumbnail_url: panel.embed_thumbnail_url ?? "",
+      embed_fields: panel.embed_fields ?? [],
       buttons: panel.buttons?.map((b) => ({ ...b })) ?? [],
     });
     setDialogOpen(true);
@@ -443,6 +449,10 @@ export function ButtonRoles() {
       embed_title: form.embed_title,
       embed_description: form.embed_description,
       embed_color: form.embed_color,
+      embed_footer: form.embed_footer,
+      embed_image_url: form.embed_image_url,
+      embed_thumbnail_url: form.embed_thumbnail_url,
+      embed_fields: form.embed_fields,
       buttons: form.buttons,
     };
     if (editingPanel) {
@@ -568,67 +578,30 @@ export function ButtonRoles() {
             {/* Embed settings */}
             <div className="space-y-4">
               <p className="text-sm font-medium">Cài đặt Embed</p>
-
-              <div className="space-y-2">
-                <Label>Tiêu đề embed</Label>
-                <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                  <Input
-                    value={form.embed_title}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, embed_title: e.target.value }))
-                    }
-                    placeholder="VD: Chọn role bạn muốn"
-                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                  />
-                  <EmojiPicker onSelect={(em) => setForm((p) => ({ ...p, embed_title: p.embed_title + em }))} />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Mô tả embed</Label>
-                <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                  <Textarea
-                    value={form.embed_description}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, embed_description: e.target.value }))
-                    }
-                    placeholder="Nhấn nút bên dưới để nhận hoặc bỏ role."
-                    rows={3}
-                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
-                  />
-                  <EmojiPicker onSelect={(em) => setForm((p) => ({ ...p, embed_description: p.embed_description + em }))} />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Màu embed</Label>
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1.5">
-                    {PRESET_COLORS.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setForm((p) => ({ ...p, embed_color: c }))}
-                        className={cn(
-                          "h-7 w-7 rounded-full border-2 transition-all",
-                          form.embed_color === c
-                            ? "border-foreground scale-110"
-                            : "border-transparent hover:scale-105"
-                        )}
-                        style={{ backgroundColor: c }}
-                      />
-                    ))}
-                  </div>
-                  <Input
-                    type="color"
-                    value={form.embed_color}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, embed_color: e.target.value }))
-                    }
-                    className="h-7 w-10 p-0 border-0 cursor-pointer"
-                  />
-                </div>
-              </div>
+              <EmbedBuilder
+                data={{
+                  title: form.embed_title,
+                  description: form.embed_description,
+                  color: form.embed_color,
+                  footer: form.embed_footer,
+                  image_url: form.embed_image_url,
+                  thumbnail_url: form.embed_thumbnail_url,
+                  fields: form.embed_fields,
+                }}
+                onChange={(ed: EmbedFormData) => {
+                  setForm((p) => ({
+                    ...p,
+                    embed_title: ed.title,
+                    embed_description: ed.description,
+                    embed_color: ed.color,
+                    embed_footer: ed.footer,
+                    embed_image_url: ed.image_url,
+                    embed_thumbnail_url: ed.thumbnail_url,
+                    embed_fields: ed.fields,
+                  }));
+                }}
+                compact
+              />
             </div>
 
             <Separator />

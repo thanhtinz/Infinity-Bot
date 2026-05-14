@@ -10,6 +10,22 @@ from src.models.models import ButtonRole, SelectMenuRole
 logger = logging.getLogger(__name__)
 
 
+def _apply_embed_extras(embed: discord.Embed, panel) -> None:
+    """Apply footer, image, thumbnail, and fields from a panel to an embed."""
+    if getattr(panel, "embed_footer", None):
+        embed.set_footer(text=panel.embed_footer)
+    if getattr(panel, "embed_image_url", None):
+        embed.set_image(url=panel.embed_image_url)
+    if getattr(panel, "embed_thumbnail_url", None):
+        embed.set_thumbnail(url=panel.embed_thumbnail_url)
+    for f in (getattr(panel, "embed_fields", None) or []):
+        embed.add_field(
+            name=f.get("name", ""),
+            value=f.get("value", ""),
+            inline=f.get("inline", False),
+        )
+
+
 # ── Persistent Views ──────────────────────────────────────────────────────────
 
 class ButtonRoleView(discord.ui.View):
@@ -167,6 +183,7 @@ class RolesCog(discord.Cog):
                 description=panel.embed_description or "Nhấn nút bên dưới để nhận/gỡ role.",
                 color=int(panel.embed_color.lstrip("#"), 16) if panel.embed_color else 0x5865F2,
             )
+            _apply_embed_extras(embed, panel)
             view = ButtonRoleView(panel)
             msg = await target_ch.send(embed=embed, view=view)
             panel.channel_id = str(target_ch.id)
@@ -197,6 +214,7 @@ class RolesCog(discord.Cog):
                 description=panel.embed_description or "Chọn role từ menu bên dưới.",
                 color=int(panel.embed_color.lstrip("#"), 16) if panel.embed_color else 0x5865F2,
             )
+            _apply_embed_extras(embed, panel)
             view = SelectMenuRoleView(panel)
             msg = await target_ch.send(embed=embed, view=view)
             panel.channel_id = str(target_ch.id)

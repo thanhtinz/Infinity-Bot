@@ -34,6 +34,10 @@ def list_reaction_roles(db=Depends(get_db)):
             "embed_title": p.embed_title,
             "embed_description": p.embed_description,
             "embed_color": p.embed_color,
+            "embed_footer": p.embed_footer,
+            "embed_image_url": p.embed_image_url,
+            "embed_thumbnail_url": p.embed_thumbnail_url,
+            "embed_fields": p.embed_fields or [],
             "mappings": p.mappings or [],
             "created_at": p.created_at.isoformat() if p.created_at else None,
         }
@@ -50,6 +54,10 @@ def create_reaction_role(body: dict, db=Depends(get_db)):
         embed_title=body.get("embed_title"),
         embed_description=body.get("embed_description"),
         embed_color=body.get("embed_color", "#5865F2"),
+        embed_footer=body.get("embed_footer"),
+        embed_image_url=body.get("embed_image_url"),
+        embed_thumbnail_url=body.get("embed_thumbnail_url"),
+        embed_fields=body.get("embed_fields", []),
         mappings=body.get("mappings", []),
     )
     db.add(panel)
@@ -64,7 +72,8 @@ def update_reaction_role(panel_id: int, body: dict, db=Depends(get_db)):
     if not panel:
         raise HTTPException(status_code=404, detail="Panel not found")
 
-    for field in ["name", "embed_title", "embed_description", "embed_color", "mappings"]:
+    for field in ["name", "embed_title", "embed_description", "embed_color",
+                  "embed_footer", "embed_image_url", "embed_thumbnail_url", "embed_fields", "mappings"]:
         if field in body:
             setattr(panel, field, body[field])
     db.commit()
@@ -129,6 +138,20 @@ def send_reaction_role_panel(panel_id: int, body: dict, db=Depends(get_db)):
                 lines.append(f"{m.get('emoji', '❓')} → <@&{m['role_id']}>")
             if lines:
                 embed.description = (embed.description + "\n\n" if embed.description else "") + "\n".join(lines)
+
+            # Footer, image, thumbnail
+            if panel.embed_footer:
+                embed.set_footer(text=panel.embed_footer)
+            if panel.embed_image_url:
+                embed.set_image(url=panel.embed_image_url)
+            if panel.embed_thumbnail_url:
+                embed.set_thumbnail(url=panel.embed_thumbnail_url)
+            for f in (panel.embed_fields or []):
+                embed.add_field(
+                    name=f.get("name", ""),
+                    value=f.get("value", ""),
+                    inline=f.get("inline", False),
+                )
 
             msg = await ch.send(embed=embed)
 

@@ -444,6 +444,10 @@ class ButtonRole(Base):
     embed_title = Column(String, nullable=True)
     embed_description = Column(Text, nullable=True)
     embed_color = Column(String, default="#5865F2")
+    embed_footer = Column(String, nullable=True)
+    embed_image_url = Column(String, nullable=True)
+    embed_thumbnail_url = Column(String, nullable=True)
+    embed_fields = Column(JSON, default=list)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class SelectMenuRole(Base):
@@ -460,6 +464,10 @@ class SelectMenuRole(Base):
     embed_title = Column(String, nullable=True)
     embed_description = Column(Text, nullable=True)
     embed_color = Column(String, default="#5865F2")
+    embed_footer = Column(String, nullable=True)
+    embed_image_url = Column(String, nullable=True)
+    embed_thumbnail_url = Column(String, nullable=True)
+    embed_fields = Column(JSON, default=list)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 # ── Phase 4: Logging System ───────────────────────────────────────────────────
@@ -539,6 +547,10 @@ class ReactionRole(Base):
     embed_title = Column(String, nullable=True)
     embed_description = Column(Text, nullable=True)
     embed_color = Column(String, default="#5865F2")
+    embed_footer = Column(String, nullable=True)
+    embed_image_url = Column(String, nullable=True)
+    embed_thumbnail_url = Column(String, nullable=True)
+    embed_fields = Column(JSON, default=list)
     mappings = Column(JSON, default=list)  # [{emoji, role_id, label}, ...]
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 

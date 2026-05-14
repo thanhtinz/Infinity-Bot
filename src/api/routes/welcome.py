@@ -35,6 +35,10 @@ class ButtonRoleCreate(BaseModel):
     embed_title: Optional[str] = None
     embed_description: Optional[str] = None
     embed_color: str = "#5865F2"
+    embed_footer: Optional[str] = None
+    embed_image_url: Optional[str] = None
+    embed_thumbnail_url: Optional[str] = None
+    embed_fields: list[dict] = []
 
 class SelectMenuRoleCreate(BaseModel):
     name: str = "Select Role Panel"
@@ -45,6 +49,10 @@ class SelectMenuRoleCreate(BaseModel):
     embed_title: Optional[str] = None
     embed_description: Optional[str] = None
     embed_color: str = "#5865F2"
+    embed_footer: Optional[str] = None
+    embed_image_url: Optional[str] = None
+    embed_thumbnail_url: Optional[str] = None
+    embed_fields: list[dict] = []
 
 
 # ── Welcome Config ────────────────────────────────────────────────────────────
@@ -127,7 +135,10 @@ def list_button_roles(db=Depends(get_db)):
             "id": p.id, "name": p.name, "buttons": p.buttons or [],
             "channel_id": p.channel_id, "message_id": p.message_id,
             "embed_title": p.embed_title, "embed_description": p.embed_description,
-            "embed_color": p.embed_color, "created_at": p.created_at.isoformat() if p.created_at else None,
+            "embed_color": p.embed_color, "embed_footer": p.embed_footer,
+            "embed_image_url": p.embed_image_url, "embed_thumbnail_url": p.embed_thumbnail_url,
+            "embed_fields": p.embed_fields or [],
+            "created_at": p.created_at.isoformat() if p.created_at else None,
         }
         for p in panels
     ]
@@ -173,7 +184,10 @@ def list_select_roles(db=Depends(get_db)):
             "options": p.options or [], "min_values": p.min_values, "max_values": p.max_values,
             "channel_id": p.channel_id, "message_id": p.message_id,
             "embed_title": p.embed_title, "embed_description": p.embed_description,
-            "embed_color": p.embed_color, "created_at": p.created_at.isoformat() if p.created_at else None,
+            "embed_color": p.embed_color, "embed_footer": p.embed_footer,
+            "embed_image_url": p.embed_image_url, "embed_thumbnail_url": p.embed_thumbnail_url,
+            "embed_fields": p.embed_fields or [],
+            "created_at": p.created_at.isoformat() if p.created_at else None,
         }
         for p in panels
     ]
