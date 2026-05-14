@@ -1,0 +1,17 @@
+[
+  {
+    "content": "Create dedicated first-run setup form for Discord OAuth credentials",
+    "id": "[impl-5]",
+    "status": "completed"
+  },
+  {
+    "content": "Wire setup form to save only OAuth bootstrap fields and route into app after completion",
+    "id": "[impl-6]",
+    "status": "completed"
+  },
+  {
+    "content": "Verify dedicated setup form flow with build/tests",
+    "id": "[impl-7]",
+    "status": "completed"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "content": "[4-A] DB: tạo bảng embed_templates, invite_tracking, banned_shop_users",
+    "id": "4-A",
+    "status": "completed"
+  },
+  {
+    "content": "[4-B] Backend: CRUD /embeds, /users, /invites routes + models",
+    "id": "4-B",
+    "status": "completed"
+  },
+  {
+    "content": "[4-C] Dashboard: Embed Customizer UI + EmbedPreview component",
+    "id": "4-C",
+    "status": "completed"
+  },
+  {
+    "content": "[4-D] Dashboard: Users Manager page (list, ban/unban, order history)",
+    "id": "4-D",
+    "status": "completed"
+  },
+  {
+    "content": "[4-E] Dashboard: Invite Tracking page + Giveaway Management page",
+    "id": "4-E",
+    "status": "completed"
+  },
+  {
+    "content": "[4-F] Bot: Invite tracking cog (on_member_join/remove, /invites, /inviteinfo)",
+    "id": "4-F",
+    "status": "in_progress"
+  }
+]
