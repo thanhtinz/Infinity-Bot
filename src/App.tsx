@@ -109,7 +109,6 @@ const navGroups: NavGroup[] = [
       { to: "/invites", icon: Link2, label: "Invite", feature: "invite_tracking" },
       { to: "/warnings", icon: ShieldAlert, label: "Cảnh cáo", feature: "moderation" },
       { to: "/starboard", icon: Star, label: "Starboard", feature: "starboard" },
-      { to: "/reaction-roles", icon: Smile, label: "Reaction Roles", feature: "welcome" },
     ],
   },
   {
@@ -122,6 +121,7 @@ const navGroups: NavGroup[] = [
       { to: "/autorole", icon: UserPlus, label: "Auto Role" },
       { to: "/button-roles", icon: ToggleLeft, label: "Button Roles" },
       { to: "/select-roles", icon: ListChecks, label: "Select Menu Roles" },
+      { to: "/reaction-roles", icon: Smile, label: "Reaction Roles" },
     ],
   },
   {
