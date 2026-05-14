@@ -602,6 +602,7 @@ export function EmbedsManager() {
   const [fieldsOpen, setFieldsOpen] = useState(true);
   const [authorOpen, setAuthorOpen] = useState(false);
   const [varsOpen, setVarsOpen] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Reset dialog
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
@@ -722,8 +723,8 @@ export function EmbedsManager() {
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       {/* ── Top Bar: Event selector + controls ── */}
-      <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-2.5 border-b bg-card">
-        <div className="w-64 shrink-0">
+      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 px-4 py-2.5 border-b bg-card">
+        <div className="w-full sm:w-64 shrink-0">
           <Select value={selectedKey} onValueChange={(v) => selectEvent(v)}>
             <SelectTrigger className="h-9">
               <SelectValue placeholder="Chọn event...">
@@ -785,15 +786,15 @@ export function EmbedsManager() {
             onClick={() => setResetDialogOpen(true)}
             className="text-muted-foreground"
           >
-            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-            Reset
+            <RotateCcw className="h-3.5 w-3.5 sm:mr-1.5" />
+            <span className="hidden sm:inline">Reset</span>
           </Button>
           <Button
             size="sm"
             onClick={() => saveMutation.mutate(form)}
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
+            {saveMutation.isPending ? "..." : "Lưu"}
           </Button>
         </div>
       </div>
@@ -1037,14 +1038,23 @@ export function EmbedsManager() {
           </div>
         </div>
 
-        {/* Right: Discord Preview (sticky on desktop, stacked on mobile) */}
+        {/* Right: Discord Preview (sticky on desktop, collapsible on mobile) */}
         <div className="overflow-y-auto border-t lg:border-t-0 bg-card">
           <div className="p-4 lg:p-5 lg:sticky lg:top-0">
-            <h3 className="text-sm font-semibold mb-3">Xem trước Discord</h3>
-            <DiscordPreview form={form} />
-            <p className="text-[11px] text-muted-foreground italic mt-3">
-              * Preview sử dụng dữ liệu giả để minh họa
-            </p>
+            <button
+              type="button"
+              onClick={() => setShowPreview((v) => !v)}
+              className="flex items-center gap-2 text-sm font-semibold mb-3 lg:cursor-default w-full text-left"
+            >
+              Xem trước Discord
+              <ChevronDown className={cn("h-4 w-4 lg:hidden transition-transform", showPreview && "rotate-180")} />
+            </button>
+            <div className={cn("lg:block", showPreview ? "block" : "hidden")}>
+              <DiscordPreview form={form} />
+              <p className="text-[11px] text-muted-foreground italic mt-3">
+                * Preview sử dụng dữ liệu giả để minh họa
+              </p>
+            </div>
           </div>
         </div>
       </div>
