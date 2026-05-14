@@ -1,32 +1,27 @@
 [
   {
-    "content": "EmbedsManager.tsx - Add emoji to 'Tên tác giả' input",
+    "content": "[cleanup] Remove 18 unused embed events from EmbedsManager.tsx",
     "id": "1",
     "status": "completed"
   },
   {
-    "content": "StickyManager.tsx - Add emoji to content, embed_title, embed_description, embed_footer",
+    "content": "[feature] Custom Commands: add more variables + features",
     "id": "2",
     "status": "completed"
   },
   {
-    "content": "TicketPanels.tsx - Add emoji to title, description, label, naming_format, and all message fields",
+    "content": "[feature] Custom Commands bot cog: update VARS + support new fields",
     "id": "3",
     "status": "completed"
   },
   {
-    "content": "ButtonRoles.tsx - Add emoji to embed_title, embed_description",
+    "content": "[ui] Scheduled Messages: redesign form UI with better layout",
     "id": "4",
-    "status": "completed"
+    "status": "in_progress"
   },
   {
-    "content": "SelectMenuRoles.tsx - Add emoji to embed_title, embed_description",
+    "content": "[test] Verify all 3 changes work in browser",
     "id": "5",
-    "status": "completed"
-  },
-  {
-    "content": "ProductsManager.tsx + TicketForms.tsx - Add emoji to content fields",
-    "id": "6",
-    "status": "completed"
+    "status": "pending"
   }
 ]

@@ -1,0 +1,27 @@
+[
+  {
+    "content": "[backend] Model + Migration + API routes for AutoResponder",
+    "id": "1",
+    "status": "completed"
+  },
+  {
+    "content": "[backend] Bot cog autoresponder.py + register in manager.py + feature toggle",
+    "id": "2",
+    "status": "completed"
+  },
+  {
+    "content": "[frontend] AutoResponder.tsx dashboard page",
+    "id": "3",
+    "status": "completed"
+  },
+  {
+    "content": "[frontend] App.tsx routing + sidebar",
+    "id": "4",
+    "status": "completed"
+  },
+  {
+    "content": "[test] Verify API + UI renders correctly",
+    "id": "5",
+    "status": "completed"
+  }
+]
