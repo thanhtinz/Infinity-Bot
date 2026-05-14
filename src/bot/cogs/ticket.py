@@ -403,7 +403,10 @@ class TicketCog(discord.Cog):
 
     # ── /ticket group ──────────────────────────────────────────────────────────
 
-    ticket = discord.SlashCommandGroup("ticket", "Hệ thống ticket hỗ trợ")
+    ticket = discord.SlashCommandGroup(
+        "ticket", "Hệ thống ticket hỗ trợ",
+        default_member_permissions=discord.Permissions(manage_guild=True),
+    )
 
     @ticket.command(name="create", description="Tạo ticket hỗ trợ mới")
     async def ticket_create(

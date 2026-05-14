@@ -176,8 +176,8 @@ class TempVoiceCog(discord.Cog):
             await user.move_to(None)
         await ctx.respond(f"🚫 Đã chặn {user.mention}.", ephemeral=True)
 
-    @room.command(name="kick", description="Kick user ra khỏi phòng")
-    async def kick_voice(self, ctx, user: discord.Option(discord.Member, "User")):
+    @room.command(name="boot", description="Đuổi user ra khỏi phòng")
+    async def boot_voice(self, ctx, user: discord.Option(discord.Member, "User")):
         ch, _ = await self._get_user_room(ctx)
         if not ch: return
         if user in ch.members:

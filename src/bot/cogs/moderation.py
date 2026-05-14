@@ -162,17 +162,14 @@ class ModerationCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="warnings", description="Xem lịch sử cảnh cáo")
+    @discord.slash_command(name="warnings", description="[Admin] Xem lịch sử cảnh cáo")
+    @discord.default_permissions(manage_messages=True)
     async def warnings_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "Thành viên (để trống = bản thân)", required=False, default=None),
+        user: discord.Option(discord.Member, "Thành viên", required=False, default=None),
     ):
         target = user or ctx.author
-        if user and user.id != ctx.author.id:
-            if not ctx.author.guild_permissions.manage_messages:
-                await ctx.respond("❌ Bạn không có quyền xem cảnh cáo của người khác.", ephemeral=True)
-                return
 
         session = get_session()
         try:
