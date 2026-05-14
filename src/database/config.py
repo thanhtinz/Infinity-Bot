@@ -75,3 +75,22 @@ async def init_db():
                 with engine.begin() as connection:
                     for stmt in alter_stmts:
                         connection.execute(text(stmt))
+
+        # Add new columns to custom_commands if missing
+        if inspector.has_table("custom_commands"):
+            cc_cols = {c["name"] for c in inspector.get_columns("custom_commands")}
+            cc_stmts = []
+            if "aliases" not in cc_cols:
+                cc_stmts.append("ALTER TABLE custom_commands ADD COLUMN aliases JSON DEFAULT '[]'")
+            if "cooldown" not in cc_cols:
+                cc_stmts.append("ALTER TABLE custom_commands ADD COLUMN cooldown INTEGER DEFAULT 0")
+            if "allowed_channels" not in cc_cols:
+                cc_stmts.append("ALTER TABLE custom_commands ADD COLUMN allowed_channels JSON DEFAULT '[]'")
+            if "delete_trigger" not in cc_cols:
+                cc_stmts.append("ALTER TABLE custom_commands ADD COLUMN delete_trigger BOOLEAN DEFAULT FALSE")
+            if "auto_react" not in cc_cols:
+                cc_stmts.append("ALTER TABLE custom_commands ADD COLUMN auto_react VARCHAR")
+            if cc_stmts:
+                with engine.begin() as connection:
+                    for stmt in cc_stmts:
+                        connection.execute(text(stmt))

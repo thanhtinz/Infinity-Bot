@@ -611,3 +611,9 @@ class CustomCommand(Base):
     required_roles = Column(JSON, default=list)
     enabled = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    # Phase 2 fields
+    aliases = Column(JSON, default=list)           # alternative trigger names
+    cooldown = Column(Integer, default=0)          # seconds between uses per user
+    allowed_channels = Column(JSON, default=list)  # restrict to specific channels (empty = all)
+    delete_trigger = Column(Boolean, default=False)  # delete the user's !command message
+    auto_react = Column(String, nullable=True)     # emoji to react to the response

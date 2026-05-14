@@ -32,6 +32,11 @@ def list_custom_commands(db=Depends(get_db)):
             "required_roles": c.required_roles or [],
             "enabled": c.enabled,
             "created_at": c.created_at.isoformat() if c.created_at else None,
+            "aliases": c.aliases or [],
+            "cooldown": c.cooldown or 0,
+            "allowed_channels": c.allowed_channels or [],
+            "delete_trigger": c.delete_trigger or False,
+            "auto_react": c.auto_react,
         }
         for c in cmds
     ]
@@ -60,6 +65,11 @@ def create_custom_command(body: dict, db=Depends(get_db)):
         ephemeral=body.get("ephemeral", False),
         required_roles=body.get("required_roles", []),
         enabled=body.get("enabled", True),
+        aliases=body.get("aliases", []),
+        cooldown=body.get("cooldown", 0),
+        allowed_channels=body.get("allowed_channels", []),
+        delete_trigger=body.get("delete_trigger", False),
+        auto_react=body.get("auto_react"),
     )
     db.add(cmd)
     db.commit()
@@ -74,7 +84,8 @@ def update_custom_command(cmd_id: int, body: dict, db=Depends(get_db)):
         raise HTTPException(status_code=404, detail="Command not found")
 
     for field in ["name", "description", "response_type", "response_text",
-                  "response_embed", "ephemeral", "required_roles", "enabled"]:
+                  "response_embed", "ephemeral", "required_roles", "enabled",
+                  "aliases", "cooldown", "allowed_channels", "delete_trigger", "auto_react"]:
         if field in body:
             val = body[field]
             if field == "name":
