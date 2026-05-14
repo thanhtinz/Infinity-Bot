@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
+import { EmojiPicker } from "@/components/EmojiPicker";
 import {
   Pin,
   CheckCircle,
@@ -777,14 +778,18 @@ export function StickyManager() {
             {!form.embed_enabled && (
               <div className="space-y-2">
                 <Label>Nội dung</Label>
-                <Textarea
-                  value={form.content}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, content: e.target.value }))
-                  }
-                  placeholder="Nội dung tin nhắn sticky..."
-                  rows={4}
-                />
+                <div className="flex items-start gap-1">
+                  <Textarea
+                    value={form.content}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, content: e.target.value }))
+                    }
+                    placeholder="Nội dung tin nhắn sticky..."
+                    rows={4}
+                    className="flex-1"
+                  />
+                  <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, content: f.content + em }))} />
+                </div>
               </div>
             )}
 
@@ -793,28 +798,35 @@ export function StickyManager() {
               <div className="space-y-3">
                 <div className="space-y-2">
                   <Label>Tiêu đề</Label>
-                  <Input
-                    value={form.embed_title}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, embed_title: e.target.value }))
-                    }
-                    placeholder="Tiêu đề embed"
-                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      value={form.embed_title}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, embed_title: e.target.value }))
+                      }
+                      placeholder="Tiêu đề embed"
+                    />
+                    <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, embed_title: f.embed_title + em }))} />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Mô tả</Label>
-                  <Textarea
-                    value={form.embed_description}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        embed_description: e.target.value,
-                      }))
-                    }
-                    placeholder="Mô tả embed..."
-                    rows={4}
-                  />
+                  <div className="flex items-start gap-1">
+                    <Textarea
+                      value={form.embed_description}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          embed_description: e.target.value,
+                        }))
+                      }
+                      placeholder="Mô tả embed..."
+                      rows={4}
+                      className="flex-1"
+                    />
+                    <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, embed_description: f.embed_description + em }))} />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -850,13 +862,16 @@ export function StickyManager() {
 
                 <div className="space-y-2">
                   <Label>Footer</Label>
-                  <Input
-                    value={form.embed_footer}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, embed_footer: e.target.value }))
-                    }
-                    placeholder="Chân trang embed"
-                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      value={form.embed_footer}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, embed_footer: e.target.value }))
+                      }
+                      placeholder="Chân trang embed"
+                    />
+                    <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, embed_footer: f.embed_footer + em }))} />
+                  </div>
                 </div>
 
                 <div className="space-y-2">

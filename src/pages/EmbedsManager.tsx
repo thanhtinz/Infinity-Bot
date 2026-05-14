@@ -1263,11 +1263,14 @@ export function EmbedsManager() {
               <div className="px-4 pb-4 space-y-3">
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Tên tác giả</Label>
-                  <Input
-                    placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
-                    value={form.author}
-                    onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
-                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
+                      value={form.author}
+                      onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
+                    />
+                    <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, author: f.author + em }))} />
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Icon URL</Label>

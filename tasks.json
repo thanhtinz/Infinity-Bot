@@ -1,27 +1,32 @@
 [
   {
-    "content": "BotStatus: xóa EmojiBotSection + cố định layout không drag",
-    "id": "T1",
+    "content": "EmbedsManager.tsx - Add emoji to 'Tên tác giả' input",
+    "id": "1",
     "status": "completed"
   },
   {
-    "content": "Nav: cải thiện visual hierarchy dropdown rõ hơn",
-    "id": "T2",
+    "content": "StickyManager.tsx - Add emoji to content, embed_title, embed_description, embed_footer",
+    "id": "2",
     "status": "completed"
   },
   {
-    "content": "Ticket: thêm 4 trang mới (Forms, Claiming, Teams, Transcripts+Feedback)",
-    "id": "T3",
+    "content": "TicketPanels.tsx - Add emoji to title, description, label, naming_format, and all message fields",
+    "id": "3",
     "status": "completed"
   },
   {
-    "content": "Backend: thêm API endpoints cho ticket forms, claims, teams",
-    "id": "T4",
+    "content": "ButtonRoles.tsx - Add emoji to embed_title, embed_description",
+    "id": "4",
     "status": "completed"
   },
   {
-    "content": "Build & verify",
-    "id": "T5",
+    "content": "SelectMenuRoles.tsx - Add emoji to embed_title, embed_description",
+    "id": "5",
+    "status": "completed"
+  },
+  {
+    "content": "ProductsManager.tsx + TicketForms.tsx - Add emoji to content fields",
+    "id": "6",
     "status": "completed"
   }
 ]

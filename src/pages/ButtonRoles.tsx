@@ -571,25 +571,32 @@ export function ButtonRoles() {
 
               <div className="space-y-2">
                 <Label>Tiêu đề embed</Label>
-                <Input
-                  value={form.embed_title}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, embed_title: e.target.value }))
-                  }
-                  placeholder="VD: Chọn role bạn muốn"
-                />
+                <div className="flex items-center gap-1">
+                  <Input
+                    value={form.embed_title}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, embed_title: e.target.value }))
+                    }
+                    placeholder="VD: Chọn role bạn muốn"
+                  />
+                  <EmojiPicker onSelect={(em) => setForm((p) => ({ ...p, embed_title: p.embed_title + em }))} />
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label>Mô tả embed</Label>
-                <Textarea
-                  value={form.embed_description}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, embed_description: e.target.value }))
-                  }
-                  placeholder="Nhấn nút bên dưới để nhận hoặc bỏ role."
-                  rows={3}
-                />
+                <div className="flex items-start gap-1">
+                  <Textarea
+                    value={form.embed_description}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, embed_description: e.target.value }))
+                    }
+                    placeholder="Nhấn nút bên dưới để nhận hoặc bỏ role."
+                    rows={3}
+                    className="flex-1"
+                  />
+                  <EmojiPicker onSelect={(em) => setForm((p) => ({ ...p, embed_description: p.embed_description + em }))} />
+                </div>
               </div>
 
               <div className="space-y-2">

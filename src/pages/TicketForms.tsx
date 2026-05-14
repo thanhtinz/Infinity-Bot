@@ -26,6 +26,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { FileQuestion, Plus, Pencil, Trash2, GripVertical, X } from "lucide-react";
+import { EmojiPicker } from "@/components/EmojiPicker";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -367,11 +368,14 @@ export function TicketForms() {
                       </Button>
                     </div>
                     <div className="space-y-2">
-                      <Input
-                        placeholder="Nhãn câu hỏi"
-                        value={q.label}
-                        onChange={(e) => updateQuestion(idx, "label", e.target.value)}
-                      />
+                      <div className="flex items-center gap-1">
+                        <Input
+                          placeholder="Nhãn câu hỏi"
+                          value={q.label}
+                          onChange={(e) => updateQuestion(idx, "label", e.target.value)}
+                        />
+                        <EmojiPicker onSelect={(em) => updateQuestion(idx, "label", q.label + em)} />
+                      </div>
                       <Input
                         placeholder="Placeholder"
                         value={q.placeholder}

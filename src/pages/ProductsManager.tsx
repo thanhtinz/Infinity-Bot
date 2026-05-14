@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Plus, Pencil, Trash2, ImageIcon, PackagePlus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { EmojiPicker } from "@/components/EmojiPicker";
 import type { Product, ProductPackage } from "../types";
 
 const productSchema = z.object({
@@ -227,7 +228,10 @@ export function ProductsManager() {
               <FormField control={form.control} name="name" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tên sản phẩm</FormLabel>
-                  <FormControl><Input {...field} placeholder="VD: VIP Discord" /></FormControl>
+                  <div className="flex items-center gap-1">
+                    <FormControl><Input {...field} placeholder="VD: VIP Discord" /></FormControl>
+                    <EmojiPicker onSelect={(em) => field.onChange(field.value + em)} />
+                  </div>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -236,7 +240,10 @@ export function ProductsManager() {
               <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Mô tả</FormLabel>
-                  <FormControl><Textarea {...field} rows={2} placeholder="Mô tả ngắn..." /></FormControl>
+                  <div className="flex items-start gap-1">
+                    <FormControl><Textarea {...field} rows={2} placeholder="Mô tả ngắn..." className="flex-1" /></FormControl>
+                    <EmojiPicker onSelect={(em) => field.onChange((field.value || "") + em)} />
+                  </div>
                   <FormMessage />
                 </FormItem>
               )} />

@@ -1120,21 +1120,28 @@ export function TicketPanels() {
               <TabsContent value="embed" className="space-y-4 pt-2">
                 <div className="space-y-1.5">
                   <Label>Tiêu đề</Label>
-                  <Input
-                    placeholder="Ví dụ: Tạo Ticket"
-                    value={form.title}
-                    onChange={(e) => setField("title", e.target.value)}
-                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      placeholder="Ví dụ: Tạo Ticket"
+                      value={form.title}
+                      onChange={(e) => setField("title", e.target.value)}
+                    />
+                    <EmojiPicker onSelect={(em) => setField("title", form.title + em)} />
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label>Mô tả</Label>
-                  <Textarea
-                    placeholder="Mô tả hiển thị trong embed..."
-                    value={form.description}
-                    onChange={(e) => setField("description", e.target.value)}
-                    rows={3}
-                  />
+                  <div className="flex items-start gap-1">
+                    <Textarea
+                      placeholder="Mô tả hiển thị trong embed..."
+                      value={form.description}
+                      onChange={(e) => setField("description", e.target.value)}
+                      rows={3}
+                      className="flex-1"
+                    />
+                    <EmojiPicker onSelect={(em) => setField("description", form.description + em)} />
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
@@ -1292,11 +1299,14 @@ export function TicketPanels() {
 
                     <div className="space-y-1.5">
                       <Label>Nhãn</Label>
-                      <Input
-                        placeholder="Ví dụ: Hỗ trợ chung"
-                        value={btnForm.label}
-                        onChange={(e) => setBtnField("label", e.target.value)}
-                      />
+                      <div className="flex items-center gap-1">
+                        <Input
+                          placeholder="Ví dụ: Hỗ trợ chung"
+                          value={btnForm.label}
+                          onChange={(e) => setBtnField("label", e.target.value)}
+                        />
+                        <EmojiPicker onSelect={(em) => setBtnField("label", btnForm.label + em)} />
+                      </div>
                     </div>
 
                     <div className="space-y-1.5">
@@ -1413,11 +1423,14 @@ export function TicketPanels() {
                 {/* Naming format */}
                 <div className="space-y-1.5">
                   <Label>Định dạng tên ticket</Label>
-                  <Input
-                    placeholder="ticket-{number}"
-                    value={form.naming_format}
-                    onChange={(e) => setField("naming_format", e.target.value)}
-                  />
+                  <div className="flex items-center gap-1">
+                    <Input
+                      placeholder="ticket-{number}"
+                      value={form.naming_format}
+                      onChange={(e) => setField("naming_format", e.target.value)}
+                    />
+                    <EmojiPicker onSelect={(em) => setField("naming_format", form.naming_format + em)} />
+                  </div>
                   <p className="text-[11px] text-muted-foreground">
                     Để trống = dùng cấu hình chung. Biến: {"{number}"}, {"{username}"}, {"{displayname}"}
                   </p>
@@ -1433,20 +1446,27 @@ export function TicketPanels() {
                   <div className="space-y-3">
                     <div className="space-y-1.5">
                       <Label>Tiêu đề</Label>
-                      <Input
-                        placeholder="Mặc định từ cài đặt chung"
-                        value={form.open_message_title}
-                        onChange={(e) => setField("open_message_title", e.target.value)}
-                      />
+                      <div className="flex items-center gap-1">
+                        <Input
+                          placeholder="Mặc định từ cài đặt chung"
+                          value={form.open_message_title}
+                          onChange={(e) => setField("open_message_title", e.target.value)}
+                        />
+                        <EmojiPicker onSelect={(em) => setField("open_message_title", form.open_message_title + em)} />
+                      </div>
                     </div>
                     <div className="space-y-1.5">
                       <Label>Nội dung</Label>
-                      <Textarea
-                        placeholder="Mặc định từ cài đặt chung"
-                        value={form.open_message_body}
-                        onChange={(e) => setField("open_message_body", e.target.value)}
-                        rows={3}
-                      />
+                      <div className="flex items-start gap-1">
+                        <Textarea
+                          placeholder="Mặc định từ cài đặt chung"
+                          value={form.open_message_body}
+                          onChange={(e) => setField("open_message_body", e.target.value)}
+                          rows={3}
+                          className="flex-1"
+                        />
+                        <EmojiPicker onSelect={(em) => setField("open_message_body", form.open_message_body + em)} />
+                      </div>
                     </div>
                   </div>
                 </CollapsibleSection>
@@ -1459,20 +1479,27 @@ export function TicketPanels() {
                   <div className="space-y-3">
                     <div className="space-y-1.5">
                       <Label>Tiêu đề</Label>
-                      <Input
-                        placeholder="Mặc định từ cài đặt chung"
-                        value={form.close_message_title}
-                        onChange={(e) => setField("close_message_title", e.target.value)}
-                      />
+                      <div className="flex items-center gap-1">
+                        <Input
+                          placeholder="Mặc định từ cài đặt chung"
+                          value={form.close_message_title}
+                          onChange={(e) => setField("close_message_title", e.target.value)}
+                        />
+                        <EmojiPicker onSelect={(em) => setField("close_message_title", form.close_message_title + em)} />
+                      </div>
                     </div>
                     <div className="space-y-1.5">
                       <Label>Nội dung</Label>
-                      <Textarea
-                        placeholder="Mặc định từ cài đặt chung"
-                        value={form.close_message_body}
-                        onChange={(e) => setField("close_message_body", e.target.value)}
-                        rows={3}
-                      />
+                      <div className="flex items-start gap-1">
+                        <Textarea
+                          placeholder="Mặc định từ cài đặt chung"
+                          value={form.close_message_body}
+                          onChange={(e) => setField("close_message_body", e.target.value)}
+                          rows={3}
+                          className="flex-1"
+                        />
+                        <EmojiPicker onSelect={(em) => setField("close_message_body", form.close_message_body + em)} />
+                      </div>
                     </div>
                   </div>
                 </CollapsibleSection>
@@ -1485,20 +1512,27 @@ export function TicketPanels() {
                   <div className="space-y-3">
                     <div className="space-y-1.5">
                       <Label>Tiêu đề</Label>
-                      <Input
-                        placeholder="Mặc định từ cài đặt chung"
-                        value={form.claim_message_title}
-                        onChange={(e) => setField("claim_message_title", e.target.value)}
-                      />
+                      <div className="flex items-center gap-1">
+                        <Input
+                          placeholder="Mặc định từ cài đặt chung"
+                          value={form.claim_message_title}
+                          onChange={(e) => setField("claim_message_title", e.target.value)}
+                        />
+                        <EmojiPicker onSelect={(em) => setField("claim_message_title", form.claim_message_title + em)} />
+                      </div>
                     </div>
                     <div className="space-y-1.5">
                       <Label>Nội dung</Label>
-                      <Textarea
-                        placeholder="Mặc định từ cài đặt chung"
-                        value={form.claim_message_body}
-                        onChange={(e) => setField("claim_message_body", e.target.value)}
-                        rows={3}
-                      />
+                      <div className="flex items-start gap-1">
+                        <Textarea
+                          placeholder="Mặc định từ cài đặt chung"
+                          value={form.claim_message_body}
+                          onChange={(e) => setField("claim_message_body", e.target.value)}
+                          rows={3}
+                          className="flex-1"
+                        />
+                        <EmojiPicker onSelect={(em) => setField("claim_message_body", form.claim_message_body + em)} />
+                      </div>
                     </div>
                   </div>
                 </CollapsibleSection>
