@@ -82,8 +82,7 @@ const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "giveaway",          label: "Giveaway bắt đầu",       icon: Gift,         desc: "Khi tạo /giveaway" },
   { key: "ket_qua_giveaway",  label: "Kết quả Giveaway",       icon: Trophy,       desc: "Khi giveaway kết thúc, công bố winner" },
   { key: "giveaway_banned",   label: "Cấm Giveaway",           icon: UserRoundX,   desc: "Khi user bị cấm tham gia giveaway" },
-  { key: "welcome",           label: "Chào mừng thành viên",   icon: UserPlus,     desc: "Khi member join server" },
-  { key: "goodbye",           label: "Tạm biệt thành viên",   icon: LogOut,       desc: "Khi member rời server" },
+
   { key: "canh_bao",          label: "Cảnh báo thành viên",    icon: ShieldAlert,  desc: "Khi admin dùng /warn" },
   { key: "ticket_mo",         label: "Mở Ticket",              icon: Ticket,       desc: "Khi user tạo ticket mới" },
   { key: "ticket_dong",       label: "Đóng Ticket",            icon: TicketX,      desc: "Khi ticket bị đóng" },
@@ -121,7 +120,7 @@ const EMBED_EVENTS: EmbedEventDef[] = [
 
 const EVENT_GROUPS: { label: string; keys: string[] }[] = [
   { label: "Đơn hàng",    keys: ["don_hang_moi", "qr_thanh_toan", "thanh_toan", "giao_hang", "don_hang_het_han", "don_hang_chi_tiet", "san_pham", "coupon", "ban_shop", "unban_shop"] },
-  { label: "Cộng đồng",   keys: ["giveaway", "ket_qua_giveaway", "giveaway_banned", "welcome", "goodbye", "feedback", "dm_welcome"] },
+  { label: "Cộng đồng",   keys: ["giveaway", "ket_qua_giveaway", "giveaway_banned", "feedback", "dm_welcome"] },
   { label: "Ticket",      keys: ["ticket_mo", "ticket_dong", "ticket_nhan", "ticket_unclaim", "ticket_transcript", "ticket_panel", "ticket_feedback"] },
   { label: "Kiểm duyệt", keys: ["canh_bao", "kick", "ban", "unban", "timeout", "invite_join", "invite_leaderboard"] },
   { label: "Tiện ích",    keys: ["sticky_message", "tempvoice_create"] },
@@ -233,18 +232,6 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     fields: [
       { name: "Người thắng", value: "{winners}", inline: false },
     ],
-    enabled: true,
-  },
-  welcome: {
-    title: "Chào mừng đến với {server}!",
-    description: "Xin chào {user.mention}, chúc bạn có thời gian vui vẻ tại đây!",
-    color: "#57F287",
-    author: "",
-    author_icon_url: "",
-    footer: "Thành viên thứ {member_count}",
-    thumbnail_url: "",
-    image_url: "",
-    fields: [],
     enabled: true,
   },
   canh_bao: {
@@ -463,18 +450,6 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     fields: [
       { name: "Người thực hiện", value: "{moderator}", inline: true },
     ],
-    enabled: true,
-  },
-  goodbye: {
-    title: "👋 Tạm biệt",
-    description: "**{user}** đã rời khỏi server.",
-    color: "#95A5A6",
-    author: "",
-    author_icon_url: "",
-    footer: "Còn lại {member_count} thành viên",
-    thumbnail_url: "",
-    image_url: "",
-    fields: [],
     enabled: true,
   },
   giveaway_banned: {
