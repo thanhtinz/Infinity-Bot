@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -22,11 +22,9 @@ import {
   Settings2,
   Sliders,
   Clock,
-  Hash,
   Save,
   FolderOpen,
   AlertTriangle,
-  MessageSquare,
 } from "lucide-react";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect } from "@/components/RoleSelect";
@@ -41,13 +39,6 @@ interface TicketConfigData {
   ticket_limit?: number;
   cooldown_minutes?: number;
   auto_close_hours?: number;
-  naming_format?: string;
-  open_message_title?: string;
-  open_message_body?: string;
-  close_message_title?: string;
-  close_message_body?: string;
-  claim_message_title?: string;
-  claim_message_body?: string;
 }
 
 interface ConfigForm {
@@ -58,13 +49,6 @@ interface ConfigForm {
   cooldown_minutes: number;
   auto_close_hours: number;
   auto_close_enabled: boolean;
-  naming_format: string;
-  open_message_title: string;
-  open_message_body: string;
-  close_message_title: string;
-  close_message_body: string;
-  claim_message_title: string;
-  claim_message_body: string;
 }
 
 // ─── Defaults ────────────────────────────────────────────────────────────────
@@ -77,13 +61,6 @@ const DEFAULTS: ConfigForm = {
   cooldown_minutes: 0,
   auto_close_hours: 0,
   auto_close_enabled: false,
-  naming_format: "ticket-{number}",
-  open_message_title: "",
-  open_message_body: "",
-  close_message_title: "",
-  close_message_body: "",
-  claim_message_title: "",
-  claim_message_body: "",
 };
 
 function configToForm(cfg: TicketConfigData | null): ConfigForm {
@@ -96,13 +73,6 @@ function configToForm(cfg: TicketConfigData | null): ConfigForm {
     cooldown_minutes: cfg.cooldown_minutes ?? 0,
     auto_close_hours: cfg.auto_close_hours ?? 0,
     auto_close_enabled: (cfg.auto_close_hours ?? 0) > 0,
-    naming_format: cfg.naming_format || "ticket-{number}",
-    open_message_title: cfg.open_message_title ?? "",
-    open_message_body: cfg.open_message_body ?? "",
-    close_message_title: cfg.close_message_title ?? "",
-    close_message_body: cfg.close_message_body ?? "",
-    claim_message_title: cfg.claim_message_title ?? "",
-    claim_message_body: cfg.claim_message_body ?? "",
   };
 }
 
@@ -117,27 +87,10 @@ function formToPayload(form: ConfigForm): TicketConfigData {
     ticket_limit: form.ticket_limit,
     cooldown_minutes: form.cooldown_minutes,
     auto_close_hours: form.auto_close_enabled ? form.auto_close_hours : 0,
-    naming_format: form.naming_format,
-    open_message_title: form.open_message_title || undefined,
-    open_message_body: form.open_message_body || undefined,
-    close_message_title: form.close_message_title || undefined,
-    close_message_body: form.close_message_body || undefined,
-    claim_message_title: form.claim_message_title || undefined,
-    claim_message_body: form.claim_message_body || undefined,
   };
 }
 
-function previewName(format: string): string {
-  return format
-    .replace(/\{number\}/g, "0042")
-    .replace(/\{username\}/g, "john")
-    .replace(/\{date\}/g, new Date().toLocaleDateString("vi-VN"));
-}
 
-// ─── Discord Message Preview ─────────────────────────────────────────────────
-
-function MessagePreview({ title, body, color }: { title: string; body: string; color: string }) {
-  if (!title && !body) return null;
   return (
     <div className="rounded-md overflow-hidden text-sm mt-2" style={{ backgroundColor: "#2b2d31" }}>
       <div className="px-3 py-2">
@@ -293,14 +246,7 @@ export function TicketConfig() {
       form.ticket_limit !== loadedForm.ticket_limit ||
       form.cooldown_minutes !== loadedForm.cooldown_minutes ||
       form.auto_close_enabled !== loadedForm.auto_close_enabled ||
-      form.auto_close_hours !== loadedForm.auto_close_hours ||
-      form.naming_format !== loadedForm.naming_format ||
-      form.open_message_title !== loadedForm.open_message_title ||
-      form.open_message_body !== loadedForm.open_message_body ||
-      form.close_message_title !== loadedForm.close_message_title ||
-      form.close_message_body !== loadedForm.close_message_body ||
-      form.claim_message_title !== loadedForm.claim_message_title ||
-      form.claim_message_body !== loadedForm.claim_message_body
+      form.auto_close_hours !== loadedForm.auto_close_hours
     );
   }, [form, loadedForm]);
 
@@ -526,140 +472,7 @@ export function TicketConfig() {
         )}
       </SectionCard>
 
-      {/* ── Section 4: Định dạng tên ── */}
-      <SectionCard
-        icon={Hash}
-        title="Định dạng tên"
-        description="Tùy chỉnh cách đặt tên channel ticket"
-      >
-        <div className="space-y-2">
-          <Label htmlFor="naming-format">Naming format</Label>
-          <Input
-            id="naming-format"
-            placeholder="ticket-{number}"
-            value={form.naming_format}
-            onChange={(e) => set("naming_format", e.target.value)}
-          />
-          <p className="text-xs text-muted-foreground">
-            Biến hỗ trợ:{" "}
-            <code className="bg-muted px-1 py-0.5 rounded text-xs">
-              {`{number}`}
-            </code>{" "}
-            — số thứ tự,{" "}
-            <code className="bg-muted px-1 py-0.5 rounded text-xs">
-              {`{username}`}
-            </code>{" "}
-            — tên user,{" "}
-            <code className="bg-muted px-1 py-0.5 rounded text-xs">
-              {`{date}`}
-            </code>{" "}
-            — ngày tạo
-          </p>
-        </div>
 
-        <div className="rounded-lg border bg-muted/50 p-3">
-          <p className="text-xs text-muted-foreground mb-1">Xem trước</p>
-          <p className="text-sm font-mono font-medium tracking-tight">
-            {previewName(form.naming_format || "ticket-{number}")}
-          </p>
-        </div>
-      </SectionCard>
-
-      {/* ── Section 5: Tin nhắn tự động ── */}
-      <SectionCard
-        icon={MessageSquare}
-        title="Tin nhắn tự động"
-        description="Cấu hình nội dung embed gửi khi ticket được mở, đóng, claim"
-      >
-        {/* Khi mở ticket */}
-        <div className="space-y-3 rounded-lg border p-4">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-green-500" />
-            <p className="text-sm font-medium">Khi mở ticket</p>
-          </div>
-          <div className="space-y-2">
-            <Label>Tiêu đề</Label>
-            <Input
-              placeholder="Ví dụ: Ticket đã được tạo"
-              value={form.open_message_title}
-              onChange={(e) => set("open_message_title", e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Nội dung</Label>
-            <Textarea
-              placeholder="Xin chào {user}, ticket #{ticket_id} đã được tạo..."
-              value={form.open_message_body}
-              onChange={(e) => set("open_message_body", e.target.value)}
-              rows={3}
-            />
-          </div>
-          <MessagePreview title={form.open_message_title} body={form.open_message_body} color="#57f287" />
-        </div>
-
-        {/* Khi đóng ticket */}
-        <div className="space-y-3 rounded-lg border p-4">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-destructive" />
-            <p className="text-sm font-medium">Khi đóng ticket</p>
-          </div>
-          <div className="space-y-2">
-            <Label>Tiêu đề</Label>
-            <Input
-              placeholder="Ví dụ: Ticket đã đóng"
-              value={form.close_message_title}
-              onChange={(e) => set("close_message_title", e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Nội dung</Label>
-            <Textarea
-              placeholder="Ticket #{ticket_id} đã được đóng bởi {staff}..."
-              value={form.close_message_body}
-              onChange={(e) => set("close_message_body", e.target.value)}
-              rows={3}
-            />
-          </div>
-          <MessagePreview title={form.close_message_title} body={form.close_message_body} color="#ed4245" />
-        </div>
-
-        {/* Khi claim ticket */}
-        <div className="space-y-3 rounded-lg border p-4">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-primary" />
-            <p className="text-sm font-medium">Khi claim ticket</p>
-          </div>
-          <div className="space-y-2">
-            <Label>Tiêu đề</Label>
-            <Input
-              placeholder="Ví dụ: Ticket đã được nhận"
-              value={form.claim_message_title}
-              onChange={(e) => set("claim_message_title", e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Nội dung</Label>
-            <Textarea
-              placeholder="{staff} đã nhận hỗ trợ ticket #{ticket_id}..."
-              value={form.claim_message_body}
-              onChange={(e) => set("claim_message_body", e.target.value)}
-              rows={3}
-            />
-          </div>
-          <MessagePreview title={form.claim_message_title} body={form.claim_message_body} color="#5865F2" />
-        </div>
-
-        {/* Variables hint */}
-        <div className="rounded-lg bg-muted/50 p-3">
-          <p className="text-xs text-muted-foreground">
-            Biến hỗ trợ:{" "}
-            <code className="bg-muted px-1 py-0.5 rounded text-xs">{"{user}"}</code> — người tạo,{" "}
-            <code className="bg-muted px-1 py-0.5 rounded text-xs">{"{staff}"}</code> — nhân viên,{" "}
-            <code className="bg-muted px-1 py-0.5 rounded text-xs">{"{ticket_id}"}</code> — mã ticket,{" "}
-            <code className="bg-muted px-1 py-0.5 rounded text-xs">{"{channel}"}</code> — kênh
-          </p>
-        </div>
-      </SectionCard>
     </div>
   );
 }

@@ -687,12 +687,12 @@ export function TicketPanels() {
       qc.invalidateQueries({ queryKey: ["ticket-panel-groups"] });
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setGroupSheetOpen(false);
-      toast({ title: "Đã tạo group thành công" });
+      toast({ title: "Đã tạo nhóm panel" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi tạo group",
+        title: "Lỗi tạo nhóm",
         description: e.message,
       }),
   } satisfies UseMutationOptions);
@@ -713,12 +713,12 @@ export function TicketPanels() {
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setGroupSheetOpen(false);
       setEditingGroup(null);
-      toast({ title: "Đã cập nhật group" });
+      toast({ title: "Đã cập nhật nhóm" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi cập nhật group",
+        title: "Lỗi cập nhật nhóm",
         description: e.message,
       }),
   } satisfies UseMutationOptions);
@@ -735,12 +735,12 @@ export function TicketPanels() {
       qc.invalidateQueries({ queryKey: ["ticket-panel-groups"] });
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setDeleteGroupTarget(null);
-      toast({ title: "Đã xóa group" });
+      toast({ title: "Đã xóa nhóm" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi xóa group",
+        title: "Lỗi xóa nhóm",
         description: e.message,
       }),
   } satisfies UseMutationOptions);
@@ -997,30 +997,30 @@ export function TicketPanels() {
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={openCreateGroup}>
-            <Plus className="h-4 w-4 mr-1.5" />
-            Tạo Group
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Tạo Nhóm
           </Button>
         </div>
 
         {groups.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="py-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                Chưa có group nào. Tạo group để gộp nhiều panel buttons vào 1 message.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="rounded-lg border border-dashed p-6 text-center">
+            <LayoutGrid className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">
+              Chưa có nhóm nào. Tạo nhóm để gộp nhiều panel buttons vào 1 message.
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {groups.map(g => {
               const memberPanels = panels.filter(p => g.panel_ids.includes(p.id));
               return (
-                <Card key={g.id}>
-                  <CardContent className="p-4 space-y-3">
+                <Card key={g.id} className="overflow-hidden">
+                  <div className="h-1" style={{ backgroundColor: g.color }} />
+                  <CardContent className="pt-4 space-y-3">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: g.color }} />
-                        <span className="font-medium">{g.name}</span>
+                      <div>
+                        <p className="font-medium">{g.name}</p>
+                        <p className="text-xs text-muted-foreground">{g.title}</p>
                       </div>
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditGroup(g)}>
@@ -1031,19 +1031,19 @@ export function TicketPanels() {
                         </Button>
                       </div>
                     </div>
-                    {g.title && <p className="text-sm text-muted-foreground">{g.title}</p>}
                     <div className="flex flex-wrap gap-1.5">
                       {memberPanels.length > 0 ? memberPanels.map(p => (
                         <Badge key={p.id} variant="secondary" className="text-xs">{p.name}</Badge>
                       )) : (
-                        <span className="text-xs text-muted-foreground">Chưa có panel nào</span>
+                        <span className="text-xs text-muted-foreground italic">Chưa có panel nào trong nhóm</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      {g.is_sent ? (
-                        <><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> Đã gửi</>
-                      ) : (
-                        <><Hash className="h-3.5 w-3.5" /> Chưa gửi</>
+                      <Badge variant={g.is_sent ? "default" : "outline"} className="text-[10px]">
+                        {g.is_sent ? "Đã gửi" : "Chưa gửi"}
+                      </Badge>
+                      {g.channel_id && (
+                        <span className="flex items-center gap-1"><Hash className="h-3 w-3" />{g.channel_id}</span>
                       )}
                     </div>
                   </CardContent>
@@ -1571,12 +1571,12 @@ export function TicketPanels() {
       <Sheet open={groupSheetOpen} onOpenChange={open => { if (!open) { setGroupSheetOpen(false); setEditingGroup(null); } }}>
         <SheetContent className="sm:max-w-md overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>{editingGroup ? "Chỉnh sửa Group" : "Tạo Group"}</SheetTitle>
+            <SheetTitle>{editingGroup ? "Chỉnh sửa Nhóm" : "Tạo Nhóm"}</SheetTitle>
             <SheetDescription>Gộp nhiều panel vào 1 embed message</SheetDescription>
           </SheetHeader>
           <div className="mt-6 space-y-4">
             <div className="space-y-1.5">
-              <Label>Tên Group <span className="text-destructive">*</span></Label>
+              <Label>Tên nhóm <span className="text-destructive">*</span></Label>
               <Input value={groupForm.name} onChange={e => setGroupForm(f => ({...f, name: e.target.value}))} placeholder="Ví dụ: Hỗ trợ chung" />
             </div>
             <div className="space-y-1.5">
@@ -1587,12 +1587,12 @@ export function TicketPanels() {
             <Separator />
 
             <div className="space-y-1.5">
-              <Label>Tiêu đề Embed</Label>
+              <Label>Tiêu đề embed</Label>
               <Input value={groupForm.title} onChange={e => setGroupForm(f => ({...f, title: e.target.value}))} placeholder="Hỗ trợ" />
             </div>
             <div className="space-y-1.5">
               <Label>Mô tả</Label>
-              <Textarea value={groupForm.description} onChange={e => setGroupForm(f => ({...f, description: e.target.value}))} placeholder="Chọn loại hỗ trợ bên dưới..." rows={3} />
+              <Textarea value={groupForm.description} onChange={e => setGroupForm(f => ({...f, description: e.target.value}))} placeholder="Mô tả embed..." rows={3} />
             </div>
             <div className="space-y-1.5">
               <Label>Màu</Label>
@@ -1605,37 +1605,37 @@ export function TicketPanels() {
             <Separator />
 
             <div className="space-y-2">
-              <Label>Panels trong group</Label>
-              <p className="text-xs text-muted-foreground">Chọn panels để gộp vào group này</p>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+              <Label>Chọn panels trong nhóm</Label>
+              <p className="text-xs text-muted-foreground">Các panel được chọn sẽ gộp buttons vào 1 message</p>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
                 {panels.map(p => {
                   const isInGroup = groupForm.panel_ids.includes(p.id);
                   const isInOtherGroup = !isInGroup && groups.some(g => g.id !== editingGroup?.id && g.panel_ids.includes(p.id));
                   return (
-                    <button
+                    <label
                       key={p.id}
-                      type="button"
-                      disabled={isInOtherGroup}
-                      onClick={() => {
-                        setGroupForm(f => ({
-                          ...f,
-                          panel_ids: isInGroup
-                            ? f.panel_ids.filter(id => id !== p.id)
-                            : [...f.panel_ids, p.id]
-                        }));
-                      }}
                       className={cn(
-                        "w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors",
-                        isInGroup ? "bg-primary/10 border border-primary/30" : "border hover:bg-muted/50",
+                        "flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
+                        isInGroup ? "border-primary bg-primary/5" : "hover:bg-muted/50",
                         isInOtherGroup && "opacity-40 cursor-not-allowed"
                       )}
                     >
-                      <div className={cn("w-4 h-4 rounded border-2 flex items-center justify-center shrink-0", isInGroup ? "bg-primary border-primary" : "border-muted-foreground/30")}>
-                        {isInGroup && <CheckCircle2 className="h-3 w-3 text-primary-foreground" />}
+                      <input
+                        type="checkbox"
+                        checked={isInGroup}
+                        disabled={isInOtherGroup}
+                        onChange={() => togglePanelInGroup(p.id)}
+                        className="rounded"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{p.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{p.title}</p>
                       </div>
-                      <span>{p.name}</span>
-                      {isInOtherGroup && <span className="text-xs text-muted-foreground ml-auto">Đã trong group khác</span>}
-                    </button>
+                      {p.buttons.length > 0 && (
+                        <Badge variant="secondary" className="text-[10px] shrink-0">{p.buttons.length} btn</Badge>
+                      )}
+                      {isInOtherGroup && <span className="text-xs text-muted-foreground shrink-0">Đã trong nhóm khác</span>}
+                    </label>
                   );
                 })}
               </div>
@@ -1655,15 +1655,16 @@ export function TicketPanels() {
       <Dialog open={!!deleteGroupTarget} onOpenChange={open => !open && setDeleteGroupTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Xóa group?</DialogTitle>
+            <DialogTitle>Xóa nhóm panel?</DialogTitle>
             <DialogDescription>
-              Group <strong className="text-foreground">{deleteGroupTarget?.name}</strong> sẽ bị xóa. Các panel bên trong sẽ trở thành standalone.
+              Nhóm <strong className="text-foreground">{deleteGroupTarget?.name}</strong> sẽ bị xóa. Các panel bên trong sẽ trở thành panel độc lập.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteGroupTarget(null)}>Hủy</Button>
             <Button variant="destructive" disabled={deleteGroupMutation.isPending} onClick={() => deleteGroupTarget && deleteGroupMutation.mutate(deleteGroupTarget.id)}>
               {deleteGroupMutation.isPending ? "Đang xóa..." : "Xóa"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
