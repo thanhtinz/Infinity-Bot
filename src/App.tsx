@@ -1,43 +1,44 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ScrollText } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2 } from "lucide-react";
+import { useState, useMemo, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 
-import { DashboardHome } from "./pages/DashboardHome";
-import { BotConfig } from "./pages/BotConfig";
-import { ConfigDiscord } from "./pages/ConfigDiscord";
-import { ConfigPayOS } from "./pages/ConfigPayOS";
-import { ConfigChannels } from "./pages/ConfigChannels";
-import { ConfigVoice } from "./pages/ConfigVoice";
-import { ProductsManager } from "./pages/ProductsManager";
-import { OrdersManager } from "./pages/OrdersManager";
-import { CouponsManager } from "./pages/CouponsManager";
-import { EmbedsManager } from "./pages/EmbedsManager";
-import { EmojiManager } from "./pages/EmojiManager";
-import { FeedbackManager } from "./pages/FeedbackManager";
-import { UsersManager } from "./pages/UsersManager";
-import { GiveawaysManager } from "./pages/GiveawaysManager";
-import { InviteTracking } from "./pages/InviteTracking";
-import { Leaderboard } from "./pages/Leaderboard";
-import { WarningsManager } from "./pages/WarningsManager";
-import { StickyManager } from "./pages/StickyManager";
-import { TicketsPage } from "./pages/TicketsPage";
-import { TicketPanels } from "./pages/TicketPanels";
-import { TicketConfig } from "./pages/TicketConfig";
-import { TicketForms } from "./pages/TicketForms";
-import { TicketTeams } from "./pages/TicketTeams";
-import { TicketFeedback } from "./pages/TicketFeedback";
-import { TicketTranscripts } from "./pages/TicketTranscripts";
-import { TicketClaiming } from "./pages/TicketClaiming";
-import { WelcomeConfig } from "./pages/WelcomeConfig";
-import { AutoRoleConfig } from "./pages/AutoRoleConfig";
-import { ButtonRoles } from "./pages/ButtonRoles";
-import { SelectMenuRoles } from "./pages/SelectMenuRoles";
-import { LoggingConfig } from "./pages/LoggingConfig";
-import { Login } from "./pages/Login";
-import { InitialSetup } from "./pages/InitialSetup";
-import { BotStatus } from "./pages/BotStatus";
+// ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
+const DashboardHome = lazy(() => import("./pages/DashboardHome").then(m => ({ default: m.DashboardHome })));
+const BotConfig = lazy(() => import("./pages/BotConfig").then(m => ({ default: m.BotConfig })));
+const ConfigDiscord = lazy(() => import("./pages/ConfigDiscord").then(m => ({ default: m.ConfigDiscord })));
+const ConfigPayOS = lazy(() => import("./pages/ConfigPayOS").then(m => ({ default: m.ConfigPayOS })));
+const ConfigChannels = lazy(() => import("./pages/ConfigChannels").then(m => ({ default: m.ConfigChannels })));
+const ConfigVoice = lazy(() => import("./pages/ConfigVoice").then(m => ({ default: m.ConfigVoice })));
+const ProductsManager = lazy(() => import("./pages/ProductsManager").then(m => ({ default: m.ProductsManager })));
+const OrdersManager = lazy(() => import("./pages/OrdersManager").then(m => ({ default: m.OrdersManager })));
+const CouponsManager = lazy(() => import("./pages/CouponsManager").then(m => ({ default: m.CouponsManager })));
+const EmbedsManager = lazy(() => import("./pages/EmbedsManager").then(m => ({ default: m.EmbedsManager })));
+const EmojiManager = lazy(() => import("./pages/EmojiManager").then(m => ({ default: m.EmojiManager })));
+const FeedbackManager = lazy(() => import("./pages/FeedbackManager").then(m => ({ default: m.FeedbackManager })));
+const UsersManager = lazy(() => import("./pages/UsersManager").then(m => ({ default: m.UsersManager })));
+const GiveawaysManager = lazy(() => import("./pages/GiveawaysManager").then(m => ({ default: m.GiveawaysManager })));
+const InviteTracking = lazy(() => import("./pages/InviteTracking").then(m => ({ default: m.InviteTracking })));
+const Leaderboard = lazy(() => import("./pages/Leaderboard").then(m => ({ default: m.Leaderboard })));
+const WarningsManager = lazy(() => import("./pages/WarningsManager").then(m => ({ default: m.WarningsManager })));
+const StickyManager = lazy(() => import("./pages/StickyManager").then(m => ({ default: m.StickyManager })));
+const TicketsPage = lazy(() => import("./pages/TicketsPage").then(m => ({ default: m.TicketsPage })));
+const TicketPanels = lazy(() => import("./pages/TicketPanels").then(m => ({ default: m.TicketPanels })));
+const TicketConfig = lazy(() => import("./pages/TicketConfig").then(m => ({ default: m.TicketConfig })));
+const TicketForms = lazy(() => import("./pages/TicketForms").then(m => ({ default: m.TicketForms })));
+const TicketTeams = lazy(() => import("./pages/TicketTeams").then(m => ({ default: m.TicketTeams })));
+const TicketFeedback = lazy(() => import("./pages/TicketFeedback").then(m => ({ default: m.TicketFeedback })));
+const TicketTranscripts = lazy(() => import("./pages/TicketTranscripts").then(m => ({ default: m.TicketTranscripts })));
+const TicketClaiming = lazy(() => import("./pages/TicketClaiming").then(m => ({ default: m.TicketClaiming })));
+const WelcomeConfig = lazy(() => import("./pages/WelcomeConfig").then(m => ({ default: m.WelcomeConfig })));
+const AutoRoleConfig = lazy(() => import("./pages/AutoRoleConfig").then(m => ({ default: m.AutoRoleConfig })));
+const ButtonRoles = lazy(() => import("./pages/ButtonRoles").then(m => ({ default: m.ButtonRoles })));
+const SelectMenuRoles = lazy(() => import("./pages/SelectMenuRoles").then(m => ({ default: m.SelectMenuRoles })));
+const LoggingConfig = lazy(() => import("./pages/LoggingConfig").then(m => ({ default: m.LoggingConfig })));
+const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
+const InitialSetup = lazy(() => import("./pages/InitialSetup").then(m => ({ default: m.InitialSetup })));
+const BotStatus = lazy(() => import("./pages/BotStatus").then(m => ({ default: m.BotStatus })));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -378,25 +379,44 @@ function SetupGate() {
   }
 
   if (isError) {
-    return <InitialSetup />;
+    return <Suspense fallback={<PageLoader />}><InitialSetup /></Suspense>;
   }
 
   if (!data.oauth_configured) {
-    return <InitialSetup />;
+    return <Suspense fallback={<PageLoader />}><InitialSetup /></Suspense>;
   }
 
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/*" element={<ProtectedAppRoutes />} />
-    </Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/*" element={<ProtectedAppRoutes />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+function PageLoader() {
+  return (
+    <div className="h-screen flex items-center justify-center">
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  );
+}
+
+function RouteLoader() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+    </div>
   );
 }
 
 function ProtectedAppRoutes() {
   return (
     <ProtectedRoute>
-      <Routes>
+      <Suspense fallback={<RouteLoader />}>
+        <Routes>
         <Route path="/" element={<DashboardHome />} />
         <Route path="/bot-status" element={<BotStatus />} />
         <Route path="/config" element={<BotConfig />} />
@@ -430,6 +450,7 @@ function ProtectedAppRoutes() {
         <Route path="/select-roles" element={<SelectMenuRoles />} />
         <Route path="/logging" element={<LoggingConfig />} />
       </Routes>
+      </Suspense>
     </ProtectedRoute>
   );
 }
