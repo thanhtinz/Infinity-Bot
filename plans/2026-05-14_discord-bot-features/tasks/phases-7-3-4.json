@@ -12,21 +12,21 @@
   {
     "content": "[P3] Models + DB migration — WelcomeConfig, AutoRoleConfig, ButtonRole, SelectMenuRole",
     "id": "p3-1",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "[P3] API routes + Bot cogs — welcome.py, roles.py",
     "id": "p3-2",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "[P3] Dashboard pages — WelcomeConfig, AutoRoleConfig, ButtonRoles, SelectMenuRoles + sidebar + embeds",
     "id": "p3-3",
-    "status": "pending"
+    "status": "completed"
   },
   {
     "content": "[P4] Models + API + Bot cog + Dashboard — LoggingConfig full stack",
     "id": "p4-1",
-    "status": "pending"
+    "status": "completed"
   }
 ]

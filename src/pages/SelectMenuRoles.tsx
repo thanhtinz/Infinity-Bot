@@ -29,6 +29,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmojiPicker } from "@/components/EmojiPicker";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -647,14 +648,17 @@ export function SelectMenuRoles() {
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">Emoji</Label>
-                        <Input
-                          value={opt.emoji}
-                          onChange={(e) =>
-                            updateOption(idx, { emoji: e.target.value })
-                          }
-                          placeholder="🔴"
-                          className="h-8 text-sm"
-                        />
+                        <div className="flex items-center gap-1">
+                          <Input
+                            value={opt.emoji}
+                            onChange={(e) =>
+                              updateOption(idx, { emoji: e.target.value })
+                            }
+                            placeholder="🔴"
+                            className="h-8 text-sm"
+                          />
+                          <EmojiPicker onSelect={(emoji) => updateOption(idx, { emoji })} />
+                        </div>
                       </div>
                     </div>
 

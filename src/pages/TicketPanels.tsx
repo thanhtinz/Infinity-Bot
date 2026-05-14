@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChannelSelect } from "@/components/ChannelSelect";
+import { EmojiPicker } from "@/components/EmojiPicker";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1300,13 +1301,16 @@ export function TicketPanels() {
 
                     <div className="space-y-1.5">
                       <Label>Emoji</Label>
-                      <Input
-                        placeholder="Nhập emoji..."
-                        value={btnForm.emoji}
-                        onChange={(e) => setBtnField("emoji", e.target.value)}
-                        className="w-24"
-                        maxLength={4}
-                      />
+                      <div className="flex items-center gap-1">
+                        <Input
+                          placeholder="Nhập emoji..."
+                          value={btnForm.emoji}
+                          onChange={(e) => setBtnField("emoji", e.target.value)}
+                          className="w-24"
+                          maxLength={4}
+                        />
+                        <EmojiPicker onSelect={(emoji) => setBtnField("emoji", emoji)} />
+                      </div>
                     </div>
 
                     <div className="space-y-1.5">
