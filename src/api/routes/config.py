@@ -7,7 +7,7 @@ import discord
 import logging
 
 from src.database.config import get_db
-from src.models.models import SystemConfig
+from src.models.models import SystemConfig, ManagedEmoji
 from src.schemas.schemas import SystemConfigBase, SystemConfigResponse
 from src.bot.manager import start_bot, stop_bot
 
@@ -224,12 +224,19 @@ async def upload_discord_emoji(body: dict, db=Depends(get_db)):
             detail = res.json().get("message", "Lỗi upload emoji")
             raise HTTPException(status_code=400, detail=detail)
         e = res.json()
+        animated = e.get("animated", False)
+        url = f"https://cdn.discordapp.com/emojis/{e['id']}.{'gif' if animated else 'png'}"
+        # Save to managed emojis DB
+        existing = db.execute(select(ManagedEmoji).where(ManagedEmoji.discord_id == str(e["id"]))).scalars().first()
+        if not existing:
+            db.add(ManagedEmoji(discord_id=str(e["id"]), name=e["name"], animated=animated, url=url))
+            db.commit()
         return {
             "id": e["id"],
             "name": e["name"],
-            "animated": e.get("animated", False),
-            "url": f"https://cdn.discordapp.com/emojis/{e['id']}.{'gif' if e.get('animated') else 'png'}",
-            "usage": f"<{'a' if e.get('animated') else ''}:{e['name']}:{e['id']}>",
+            "animated": animated,
+            "url": url,
+            "usage": f"<{'a' if animated else ''}:{e['name']}:{e['id']}>",
         }
 
 
@@ -246,6 +253,177 @@ async def delete_discord_emoji(emoji_id: str, db=Depends(get_db)):
         )
         if res.status_code not in (200, 204):
             raise HTTPException(status_code=400, detail="Xóa emoji thất bại")
+    # Also remove from managed emojis DB
+    managed = db.execute(select(ManagedEmoji).where(ManagedEmoji.discord_id == str(emoji_id))).scalars().first()
+    if managed:
+        db.delete(managed)
+        db.commit()
+    return {"ok": True}
+
+
+# ── Managed Emojis (for EmojiPicker) ──────────────────────────────────────────
+
+@router.get("/managed-emojis")
+def get_managed_emojis(db=Depends(get_db)):
+    """Return only emojis tracked in the managed_emojis table."""
+    rows = db.execute(select(ManagedEmoji).order_by(ManagedEmoji.created_at.desc())).scalars().all()
+    return [
+        {
+            "id": r.discord_id,
+            "name": r.name,
+            "animated": r.animated,
+            "url": r.url,
+            "usage": f"<{'a' if r.animated else ''}:{r.name}:{r.discord_id}>",
+        }
+        for r in rows
+    ]
+
+
+@router.post("/managed-emojis/sync")
+async def sync_managed_emojis(db=Depends(get_db)):
+    """Import all current server emojis into managed_emojis table."""
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token or not config.guild_id:
+        raise HTTPException(status_code=400, detail="Bot chưa cấu hình")
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
+            f"https://discord.com/api/guilds/{config.guild_id}/emojis",
+            headers={"Authorization": f"Bot {config.discord_token}"}
+        )
+        if res.status_code != 200:
+            raise HTTPException(status_code=400, detail="Không thể lấy emoji từ server")
+        server_emojis = res.json()
+
+    added = 0
+    for e in server_emojis:
+        eid = str(e["id"])
+        exists = db.execute(select(ManagedEmoji).where(ManagedEmoji.discord_id == eid)).scalars().first()
+        if not exists:
+            animated = e.get("animated", False)
+            db.add(ManagedEmoji(
+                discord_id=eid,
+                name=e["name"],
+                animated=animated,
+                url=f"https://cdn.discordapp.com/emojis/{eid}.{'gif' if animated else 'png'}",
+            ))
+            added += 1
+    if added:
+        db.commit()
+    return {"ok": True, "added": added, "total": len(server_emojis)}
+
+
+@router.delete("/managed-emojis/{emoji_id}")
+def remove_managed_emoji(emoji_id: str, db=Depends(get_db)):
+    """Remove an emoji from managed list (doesn't delete from server)."""
+    managed = db.execute(select(ManagedEmoji).where(ManagedEmoji.discord_id == emoji_id)).scalars().first()
+    if not managed:
+        raise HTTPException(status_code=404, detail="Emoji không có trong danh sách quản lý")
+    db.delete(managed)
+    db.commit()
+    return {"ok": True}
+
+
+# ── Stickers CRUD ─────────────────────────────────────────────────────────────
+
+FORMAT_EXT = {1: "png", 2: "png", 3: "gif", 4: "json"}  # APNG uses .png extension
+
+def _sticker_url(sticker_id: str, format_type: int) -> str:
+    ext = FORMAT_EXT.get(format_type, "png")
+    return f"https://media.discordapp.net/stickers/{sticker_id}.{ext}?size=320"
+
+
+@router.get("/discord/stickers")
+async def get_discord_stickers(db=Depends(get_db)):
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token or not config.guild_id:
+        return []
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
+            f"https://discord.com/api/guilds/{config.guild_id}/stickers",
+            headers={"Authorization": f"Bot {config.discord_token}"},
+        )
+        if res.status_code != 200:
+            return []
+        stickers = res.json()
+        return [
+            {
+                "id": s["id"],
+                "name": s["name"],
+                "description": s.get("description", ""),
+                "tags": s.get("tags", ""),
+                "format_type": s.get("format_type", 1),
+                "url": _sticker_url(s["id"], s.get("format_type", 1)),
+            }
+            for s in stickers
+        ]
+
+
+@router.post("/discord/stickers")
+async def upload_discord_sticker(request: Request, db=Depends(get_db)):
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token or not config.guild_id:
+        raise HTTPException(status_code=400, detail="Bot chưa cấu hình")
+    body = await request.json()
+    name = body.get("name", "").strip()
+    description = body.get("description", "").strip() or "\u200b"
+    tags = body.get("tags", "").strip() or name
+    file_b64 = body.get("file_base64", "")  # data:image/png;base64,...
+    if not name or not file_b64:
+        raise HTTPException(status_code=400, detail="Thiếu name hoặc file")
+
+    # Parse data URI → bytes
+    import base64 as b64mod
+    if "," in file_b64:
+        header, data = file_b64.split(",", 1)
+    else:
+        data = file_b64
+        header = ""
+    file_bytes = b64mod.b64decode(data)
+
+    # Determine content type
+    if "gif" in header:
+        content_type = "image/gif"
+        filename = f"{name}.gif"
+    elif "apng" in header or "png" in header:
+        content_type = "image/png"
+        filename = f"{name}.png"
+    else:
+        content_type = "image/png"
+        filename = f"{name}.png"
+
+    async with httpx.AsyncClient() as client:
+        res = await client.post(
+            f"https://discord.com/api/guilds/{config.guild_id}/stickers",
+            headers={"Authorization": f"Bot {config.discord_token}"},
+            data={"name": name, "description": description, "tags": tags},
+            files={"file": (filename, file_bytes, content_type)},
+        )
+        if res.status_code not in (200, 201):
+            detail = res.json().get("message", "Lỗi upload sticker")
+            raise HTTPException(status_code=400, detail=detail)
+        s = res.json()
+        return {
+            "id": s["id"],
+            "name": s["name"],
+            "description": s.get("description", ""),
+            "tags": s.get("tags", ""),
+            "format_type": s.get("format_type", 1),
+            "url": _sticker_url(s["id"], s.get("format_type", 1)),
+        }
+
+
+@router.delete("/discord/stickers/{sticker_id}")
+async def delete_discord_sticker(sticker_id: str, db=Depends(get_db)):
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token or not config.guild_id:
+        raise HTTPException(status_code=400, detail="Bot chưa cấu hình")
+    async with httpx.AsyncClient() as client:
+        res = await client.delete(
+            f"https://discord.com/api/guilds/{config.guild_id}/stickers/{sticker_id}",
+            headers={"Authorization": f"Bot {config.discord_token}"},
+        )
+        if res.status_code not in (200, 204):
+            raise HTTPException(status_code=400, detail="Xóa sticker thất bại")
     return {"ok": True}
 
 

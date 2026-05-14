@@ -420,6 +420,62 @@ DEFAULTS: dict[str, dict] = {
         "color": "#ED4245",
         "fields": [],
     },
+
+    # ── Auto Mod ──────────────────────────────────────────────────────────
+    "automod_warn": {
+        "title": "⚠️ AutoMod — Cảnh báo",
+        "description": "{user.mention} đã bị cảnh báo bởi AutoMod.\n**Lý do:** {reason}",
+        "color": "#FEE75C",
+        "fields": [{"name": "Kênh", "value": "{channel}", "inline": True}],
+    },
+    "automod_mute": {
+        "title": "🔇 AutoMod — Mute",
+        "description": "{user.mention} đã bị mute bởi AutoMod.\n**Lý do:** {reason}",
+        "color": "#E67E22",
+        "fields": [{"name": "Thời gian", "value": "{duration}", "inline": True}],
+    },
+    "automod_kick": {
+        "title": "👢 AutoMod — Kick",
+        "description": "{user.mention} đã bị kick bởi AutoMod.\n**Lý do:** {reason}",
+        "color": "#ED4245",
+        "fields": [],
+    },
+    "automod_delete": {
+        "title": "🗑️ AutoMod — Xóa tin nhắn",
+        "description": "Tin nhắn của {user.mention} đã bị xóa bởi AutoMod.\n**Lý do:** {reason}",
+        "color": "#95A5A6",
+        "fields": [{"name": "Nội dung", "value": "{content}", "inline": False}],
+    },
+
+    # ── Reaction Roles ────────────────────────────────────────────────────
+    "reaction_role_panel": {
+        "title": "🎭 Chọn Role",
+        "description": "React emoji tương ứng để nhận role!",
+        "color": "#5865F2",
+        "fields": [],
+    },
+
+    # ── Starboard ─────────────────────────────────────────────────────────
+    "starboard_post": {
+        "title": "",
+        "description": "{content}",
+        "color": "#F1C40F",
+        "fields": [{"name": "Nguồn", "value": "[Nhảy tới tin nhắn]({message.url})", "inline": True}],
+    },
+
+    # ── AFK ────────────────────────────────────────────────────────────────
+    "afk_set": {
+        "title": "💤 AFK",
+        "description": "{user.mention} đã đặt AFK: **{reason}**",
+        "color": "#95A5A6",
+        "fields": [],
+    },
+    "afk_return": {
+        "title": "👋 Đã trở lại",
+        "description": "{user.mention} đã trở lại! (AFK {duration})",
+        "color": "#57F287",
+        "fields": [],
+    },
 }
 
 

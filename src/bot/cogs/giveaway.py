@@ -1,4 +1,5 @@
 # src/bot/cogs/giveaway.py
+"""Giveaway system — reaction-based (🎉) giveaways."""
 import discord
 import asyncio
 import datetime
@@ -11,6 +12,7 @@ from src.models.models import Giveaway, GiveawayEntry, GiveawayBanned
 from src.bot.embed_utils import build_embed
 
 logger = logging.getLogger(__name__)
+GIVEAWAY_EMOJI = "🎉"
 
 
 def get_session():
@@ -27,73 +29,9 @@ def parse_duration(s: str) -> int:
         except ValueError:
             pass
     try:
-        return int(s) * 60  # default minutes
+        return int(s) * 60
     except ValueError:
-        return 300  # fallback 5 phút
-
-
-class GiveawayJoinView(discord.ui.View):
-    def __init__(self, giveaway_id: int):
-        super().__init__(timeout=None)
-        self.giveaway_id = giveaway_id
-
-    @discord.ui.button(label="🎉 Tham gia (0)", style=discord.ButtonStyle.primary, custom_id="giveaway_join")
-    async def join_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
-        session = get_session()
-        try:
-            giveaway = session.execute(
-                select(Giveaway).where(Giveaway.id == self.giveaway_id)
-            ).scalars().first()
-
-            if not giveaway or giveaway.ended:
-                await interaction.response.send_message("❌ Giveaway đã kết thúc.", ephemeral=True)
-                return
-
-            if datetime.datetime.utcnow() > giveaway.ends_at:
-                await interaction.response.send_message("❌ Giveaway đã hết thời gian.", ephemeral=True)
-                return
-
-            # Check banned
-            banned = session.execute(
-                select(GiveawayBanned).where(
-                    GiveawayBanned.giveaway_id == self.giveaway_id,
-                    GiveawayBanned.discord_id == str(interaction.user.id),
-                )
-            ).scalars().first()
-            if banned:
-                await interaction.response.send_message("❌ Bạn bị cấm tham gia giveaway này.", ephemeral=True)
-                return
-
-            # Check already joined
-            existing = session.execute(
-                select(GiveawayEntry).where(
-                    GiveawayEntry.giveaway_id == self.giveaway_id,
-                    GiveawayEntry.discord_id == str(interaction.user.id),
-                )
-            ).scalars().first()
-
-            if existing:
-                # Rút tham gia
-                session.delete(existing)
-                session.commit()
-                count = session.execute(
-                    select(GiveawayEntry).where(GiveawayEntry.giveaway_id == self.giveaway_id)
-                ).scalars().all()
-                button.label = f"🎉 Tham gia ({len(count)})"
-                await interaction.response.edit_message(view=self)
-                await interaction.followup.send("✅ Đã rút khỏi giveaway.", ephemeral=True)
-            else:
-                entry = GiveawayEntry(giveaway_id=self.giveaway_id, discord_id=str(interaction.user.id))
-                session.add(entry)
-                session.commit()
-                count = session.execute(
-                    select(GiveawayEntry).where(GiveawayEntry.giveaway_id == self.giveaway_id)
-                ).scalars().all()
-                button.label = f"🎉 Tham gia ({len(count)})"
-                await interaction.response.edit_message(view=self)
-                await interaction.followup.send("✅ Đã tham gia giveaway!", ephemeral=True)
-        finally:
-            session.close()
+        return 300
 
 
 async def end_giveaway(bot: discord.Bot, giveaway_id: int, reroll: bool = False):
@@ -135,19 +73,18 @@ async def end_giveaway(bot: discord.Bot, giveaway_id: int, reroll: bool = False)
             giveaway.ended = True
             session.commit()
 
-        # Edit embed
+        # Edit original message
         channel = bot.get_channel(int(giveaway.channel_id))
         if channel and giveaway.message_id:
             try:
                 msg = await channel.fetch_message(int(giveaway.message_id))
-                # Sử dụng ket_qua_giveaway embed template
                 result_embed = build_embed("ket_qua_giveaway", session, vars={
                     "prize": giveaway.prize,
                     "winners": winners_text,
-                    "host": f"<@{giveaway.creator_id}>" if giveaway.creator_id else "Admin",
+                    "host": f"<@{giveaway.host_id}>" if giveaway.host_id else "Admin",
                     "winners_count": str(giveaway.winners_count),
                 })
-                await msg.edit(embed=result_embed, view=None)
+                await msg.edit(embed=result_embed)
                 if winner_mentions:
                     await channel.send(
                         f"🎊 Chúc mừng {winner_mentions}! Bạn đã thắng **{giveaway.prize}**!"
@@ -188,6 +125,87 @@ class GiveawayCog(discord.Cog):
         finally:
             session.close()
 
+    # ── Reaction listeners ────────────────────────────────────────────────
+
+    @discord.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        if str(payload.emoji) != GIVEAWAY_EMOJI or payload.member.bot:
+            return
+        session = get_session()
+        try:
+            giveaway = session.execute(
+                select(Giveaway).where(
+                    Giveaway.message_id == str(payload.message_id),
+                    Giveaway.ended == False,
+                )
+            ).scalars().first()
+            if not giveaway:
+                return
+            if datetime.datetime.utcnow() > giveaway.ends_at:
+                return
+
+            # Check banned
+            banned = session.execute(
+                select(GiveawayBanned).where(
+                    GiveawayBanned.giveaway_id == giveaway.id,
+                    GiveawayBanned.discord_id == str(payload.user_id),
+                )
+            ).scalars().first()
+            if banned:
+                # Remove their reaction
+                try:
+                    channel = self.bot.get_channel(payload.channel_id)
+                    msg = await channel.fetch_message(payload.message_id)
+                    await msg.remove_reaction(GIVEAWAY_EMOJI, payload.member)
+                except Exception:
+                    pass
+                return
+
+            # Check already entered
+            existing = session.execute(
+                select(GiveawayEntry).where(
+                    GiveawayEntry.giveaway_id == giveaway.id,
+                    GiveawayEntry.discord_id == str(payload.user_id),
+                )
+            ).scalars().first()
+            if not existing:
+                session.add(GiveawayEntry(
+                    giveaway_id=giveaway.id,
+                    discord_id=str(payload.user_id),
+                ))
+                session.commit()
+        finally:
+            session.close()
+
+    @discord.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        if str(payload.emoji) != GIVEAWAY_EMOJI:
+            return
+        session = get_session()
+        try:
+            giveaway = session.execute(
+                select(Giveaway).where(
+                    Giveaway.message_id == str(payload.message_id),
+                    Giveaway.ended == False,
+                )
+            ).scalars().first()
+            if not giveaway:
+                return
+
+            entry = session.execute(
+                select(GiveawayEntry).where(
+                    GiveawayEntry.giveaway_id == giveaway.id,
+                    GiveawayEntry.discord_id == str(payload.user_id),
+                )
+            ).scalars().first()
+            if entry:
+                session.delete(entry)
+                session.commit()
+        finally:
+            session.close()
+
+    # ── Slash commands ────────────────────────────────────────────────────
+
     @discord.slash_command(name="giveaway", description="[Admin] Tạo giveaway")
     @discord.default_permissions(administrator=True)
     async def giveaway_cmd(
@@ -217,7 +235,6 @@ class GiveawayCog(discord.Cog):
             session.add(giveaway)
             session.commit()
 
-            from src.bot.embed_utils import build_embed
             embed = build_embed("giveaway", session, vars={
                 "prize": prize,
                 "ends_at": f"<t:{int(ends_at.timestamp())}:R>",
@@ -230,9 +247,11 @@ class GiveawayCog(discord.Cog):
             if description and not embed.description:
                 embed.description = description
 
-            view = GiveawayJoinView(giveaway_id=giveaway.id)
-            msg = await ctx.respond(embed=embed, view=view)
+            # Send embed and add reaction
+            msg = await ctx.respond(embed=embed)
             real_msg = await msg.original_response()
+            await real_msg.add_reaction(GIVEAWAY_EMOJI)
+
             giveaway.message_id = str(real_msg.id)
             session.commit()
 
@@ -263,11 +282,15 @@ class GiveawayCog(discord.Cog):
             if not actives:
                 await ctx.respond("Không có giveaway nào đang chạy.", ephemeral=True)
                 return
-            embed = discord.Embed(title="🎉 Giveaway đang chạy", color=discord.Color.blurple())
-            for g in actives:
+
+            embed = discord.Embed(title="🎉 Giveaway đang chạy", color=0xF0B232)
+            for g in actives[:10]:
+                entry_count = len(session.execute(
+                    select(GiveawayEntry).where(GiveawayEntry.giveaway_id == g.id)
+                ).scalars().all())
                 embed.add_field(
-                    name=f"#{g.id} — {g.title}",
-                    value=f"🎁 {g.prize} • Kết thúc <t:{int(g.ends_at.timestamp())}:R>",
+                    name=f"#{g.id} — {g.title or g.prize}",
+                    value=f"🎁 {g.prize}\n👥 {entry_count} người tham gia\n⏰ Kết thúc <t:{int(g.ends_at.timestamp())}:R>",
                     inline=False,
                 )
             await ctx.respond(embed=embed, ephemeral=True)

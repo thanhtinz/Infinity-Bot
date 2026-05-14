@@ -1,0 +1,32 @@
+[
+  {
+    "content": "[Phase1] Giveaway refactor: button → reaction (🎉)",
+    "id": "p1-giveaway",
+    "status": "completed"
+  },
+  {
+    "content": "[Phase2] AFK System: model + cog + embed events",
+    "id": "p2-afk",
+    "status": "completed"
+  },
+  {
+    "content": "[Phase3-6] Register cogs in manager + create ALL API routes (starboard, automod, reaction-roles, custom-commands, scheduler, backup)",
+    "id": "p3-backend",
+    "status": "completed"
+  },
+  {
+    "content": "[Phase3-6] Create dashboard pages: StarboardConfig, AutoModConfig, ReactionRoles, CustomCommands, ScheduledMessages, BackupRestore",
+    "id": "p3-pages",
+    "status": "in_progress"
+  },
+  {
+    "content": "[Phase7] Scheduled Messages cog (tasks.loop)",
+    "id": "p7-scheduler",
+    "status": "completed"
+  },
+  {
+    "content": "[Phase8] Update App.tsx (lazy imports, sidebar, routes) + test",
+    "id": "p8-finalize",
+    "status": "pending"
+  }
+]

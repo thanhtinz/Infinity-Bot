@@ -28,7 +28,7 @@ import {
   Clock, UserPlus2, Users, QrCode, Eye, Tag, UserX,
   ShieldOff, Pin, Mic, Medal, LayoutGrid, MessageSquare,
   UserRoundX, LogOut, Pencil, Volume2, VolumeX, ArrowRightLeft,
-  LogIn, Hash, ScrollText,
+  LogIn, Hash, ScrollText, Shield, Moon, Smile, Zap, AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmojiPicker } from "@/components/EmojiPicker";
@@ -115,16 +115,25 @@ const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "log_role_update",        label: "Log: Thay đổi role",       icon: ShieldAlert,     desc: "Khi role của member thay đổi" },
   { key: "log_channel_create",     label: "Log: Tạo kênh",            icon: Hash,            desc: "Khi kênh mới được tạo" },
   { key: "log_channel_delete",     label: "Log: Xóa kênh",            icon: Hash,            desc: "Khi kênh bị xóa" },
+  // Phase 5 — New Features
+  { key: "automod_warn",       label: "AutoMod: Cảnh báo",        icon: AlertTriangle,   desc: "Khi AutoMod cảnh báo user" },
+  { key: "automod_mute",       label: "AutoMod: Mute",            icon: Shield,          desc: "Khi AutoMod mute user" },
+  { key: "automod_kick",       label: "AutoMod: Kick",            icon: UserMinus,       desc: "Khi AutoMod kick user" },
+  { key: "automod_delete",     label: "AutoMod: Xóa tin nhắn",   icon: Trash2,          desc: "Khi AutoMod xóa tin nhắn vi phạm" },
+  { key: "reaction_role_panel",label: "Panel Reaction Role",      icon: Smile,           desc: "Embed panel reaction roles" },
+  { key: "starboard_post",     label: "Starboard",                icon: Star,            desc: "Embed tin nhắn được ghim vào starboard" },
+  { key: "afk_set",            label: "Đặt AFK",                  icon: Moon,            desc: "Khi user đặt trạng thái AFK" },
+  { key: "afk_return",         label: "Trở lại từ AFK",           icon: Zap,             desc: "Khi user AFK quay lại" },
 ];
 
 // ─── Event groups ────────────────────────────────────────────────────────────
 
 const EVENT_GROUPS: { label: string; keys: string[] }[] = [
   { label: "Đơn hàng",    keys: ["don_hang_moi", "qr_thanh_toan", "thanh_toan", "giao_hang", "don_hang_het_han", "don_hang_chi_tiet", "san_pham", "coupon", "ban_shop", "unban_shop"] },
-  { label: "Cộng đồng",   keys: ["giveaway", "ket_qua_giveaway", "giveaway_banned", "feedback", "dm_welcome"] },
+  { label: "Cộng đồng",   keys: ["giveaway", "ket_qua_giveaway", "giveaway_banned", "feedback", "dm_welcome", "reaction_role_panel", "starboard_post"] },
   { label: "Ticket",      keys: ["ticket_mo", "ticket_dong", "ticket_nhan", "ticket_unclaim", "ticket_transcript", "ticket_panel", "ticket_feedback"] },
-  { label: "Kiểm duyệt", keys: ["canh_bao", "kick", "ban", "unban", "timeout", "invite_join", "invite_leaderboard"] },
-  { label: "Tiện ích",    keys: ["sticky_message", "tempvoice_create"] },
+  { label: "Kiểm duyệt", keys: ["canh_bao", "kick", "ban", "unban", "timeout", "invite_join", "invite_leaderboard", "automod_warn", "automod_mute", "automod_kick", "automod_delete"] },
+  { label: "Tiện ích",    keys: ["sticky_message", "tempvoice_create", "afk_set", "afk_return"] },
   { label: "Logging",     keys: ["log_message_delete", "log_message_edit", "log_message_bulk_delete", "log_voice_join", "log_voice_leave", "log_voice_move", "log_member_join", "log_member_leave", "log_nickname_change", "log_role_update", "log_channel_create", "log_channel_delete"] },
 ];
 
@@ -671,6 +680,74 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     fields: [],
     enabled: true,
   },
+  // ── AutoMod ──
+  automod_warn: {
+    title: "⚠️ AutoMod — Cảnh báo",
+    description: "{user.mention} đã bị cảnh báo bởi AutoMod.\n**Lý do:** {reason}",
+    color: "#FEE75C",
+    author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+    fields: [{ name: "Kênh", value: "{channel}", inline: true }],
+    enabled: true,
+  },
+  automod_mute: {
+    title: "🔇 AutoMod — Mute",
+    description: "{user.mention} đã bị mute bởi AutoMod.\n**Lý do:** {reason}",
+    color: "#E67E22",
+    author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+    fields: [{ name: "Thời gian", value: "{duration}", inline: true }],
+    enabled: true,
+  },
+  automod_kick: {
+    title: "👢 AutoMod — Kick",
+    description: "{user.mention} đã bị kick bởi AutoMod.\n**Lý do:** {reason}",
+    color: "#ED4245",
+    author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  automod_delete: {
+    title: "🗑️ AutoMod — Xóa tin nhắn",
+    description: "Tin nhắn của {user.mention} đã bị xóa bởi AutoMod.\n**Lý do:** {reason}",
+    color: "#95A5A6",
+    author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+    fields: [{ name: "Nội dung", value: "{content}", inline: false }],
+    enabled: true,
+  },
+  // ── Reaction Roles ──
+  reaction_role_panel: {
+    title: "🎭 Chọn Role",
+    description: "React emoji tương ứng để nhận role!",
+    color: "#5865F2",
+    author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  // ── Starboard ──
+  starboard_post: {
+    title: "",
+    description: "{content}",
+    color: "#F1C40F",
+    author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+    fields: [{ name: "Nguồn", value: "[Nhảy tới tin nhắn]({message.url})", inline: true }],
+    enabled: true,
+  },
+  // ── AFK ──
+  afk_set: {
+    title: "💤 AFK",
+    description: "{user.mention} đã đặt AFK: **{reason}**",
+    color: "#95A5A6",
+    author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  afk_return: {
+    title: "👋 Đã trở lại",
+    description: "{user.mention} đã trở lại! (AFK {duration})",
+    color: "#57F287",
+    author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+    fields: [],
+    enabled: true,
+  },
 };
 
 // ─── Variables reference ─────────────────────────────────────────────────────
@@ -731,6 +808,9 @@ const VARIABLES: { token: string; desc: string }[] = [
   { token: "{roles}",             desc: "Danh sách role" },
   { token: "{changes}",           desc: "Thay đổi role" },
   { token: "{type}",              desc: "Loại kênh" },
+  { token: "{reason}",            desc: "Lý do (automod, afk)" },
+  { token: "{duration}",          desc: "Thời gian (mute, AFK)" },
+  { token: "{message.url}",       desc: "Link tới tin nhắn gốc" },
 ];
 
 // ─── Dummy data for preview ─────────────────────────────────────────────────

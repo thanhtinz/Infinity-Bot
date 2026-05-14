@@ -1,11 +1,11 @@
 """Logging System routes."""
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select, func, desc
 from pydantic import BaseModel
 from typing import Optional
 
 from src.database.config import get_db
-from src.models.models import LoggingConfig, SystemConfig
+from src.models.models import LoggingConfig, LogEntry, SystemConfig
 
 router = APIRouter()
 
@@ -59,3 +59,76 @@ def update_logging_config(data: LoggingConfigUpdate, db=Depends(get_db)):
         setattr(cfg, k, v)
     db.commit()
     return {"ok": True}
+
+
+# ── Log Entries (viewer) ──────────────────────────────────────────────────────
+
+@router.get("/logging/entries")
+def get_log_entries(
+    category: Optional[str] = Query(None),
+    event_type: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=200),
+    db=Depends(get_db),
+):
+    gid = _get_guild_id(db)
+    q = select(LogEntry).where(LogEntry.guild_id == gid)
+
+    if category:
+        q = q.where(LogEntry.category == category)
+    if event_type:
+        q = q.where(LogEntry.event_type == event_type)
+    if search:
+        q = q.where(
+            LogEntry.description.ilike(f"%{search}%")
+            | LogEntry.actor_name.ilike(f"%{search}%")
+            | LogEntry.target_name.ilike(f"%{search}%")
+        )
+
+    # Count
+    count_q = select(func.count()).select_from(q.subquery())
+    total = db.execute(count_q).scalar() or 0
+
+    # Fetch
+    rows = db.execute(
+        q.order_by(desc(LogEntry.created_at))
+        .offset((page - 1) * limit)
+        .limit(limit)
+    ).scalars().all()
+
+    return {
+        "entries": [
+            {
+                "id": r.id,
+                "event_type": r.event_type,
+                "category": r.category,
+                "actor_id": r.actor_id,
+                "actor_name": r.actor_name,
+                "actor_avatar": r.actor_avatar,
+                "target_id": r.target_id,
+                "target_name": r.target_name,
+                "description": r.description,
+                "details": r.details,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+            }
+            for r in rows
+        ],
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": max(1, (total + limit - 1) // limit),
+    }
+
+
+@router.get("/logging/stats")
+def get_log_stats(db=Depends(get_db)):
+    gid = _get_guild_id(db)
+    rows = db.execute(
+        select(LogEntry.category, func.count())
+        .where(LogEntry.guild_id == gid)
+        .group_by(LogEntry.category)
+    ).all()
+    stats = {r[0]: r[1] for r in rows}
+    total = sum(stats.values())
+    return {"total": total, "by_category": stats}

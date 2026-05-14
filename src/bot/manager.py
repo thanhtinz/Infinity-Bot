@@ -106,6 +106,12 @@ def create_bot():
     from src.bot.cogs.welcome import WelcomeCog
     from src.bot.cogs.roles import RolesCog
     from src.bot.cogs.logging_cog import LoggingCog
+    from src.bot.cogs.afk import AFKCog
+    from src.bot.cogs.starboard import StarboardCog
+    from src.bot.cogs.automod import AutoModCog
+    from src.bot.cogs.custom_commands import CustomCommandsCog
+    from src.bot.cogs.reaction_roles import ReactionRolesCog
+    from src.bot.cogs.scheduler import SchedulerCog
 
     bot_client.add_cog(ShopCog(bot_client))
     bot_client.add_cog(AdminShopCog(bot_client))
@@ -119,6 +125,12 @@ def create_bot():
     bot_client.add_cog(WelcomeCog(bot_client))
     bot_client.add_cog(RolesCog(bot_client))
     bot_client.add_cog(LoggingCog(bot_client))
+    bot_client.add_cog(AFKCog(bot_client))
+    bot_client.add_cog(StarboardCog(bot_client))
+    bot_client.add_cog(AutoModCog(bot_client))
+    bot_client.add_cog(CustomCommandsCog(bot_client))
+    bot_client.add_cog(ReactionRolesCog(bot_client))
+    bot_client.add_cog(SchedulerCog(bot_client))
 
     # ── Legacy commands (status, san_pham, account) ──────────
     @bot_client.slash_command(name="status", description="Xem trạng thái bot hiện tại")

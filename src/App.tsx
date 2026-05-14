@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2 } from "lucide-react";
+import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database } from "lucide-react";
 import { useState, useMemo, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -36,6 +36,13 @@ const AutoRoleConfig = lazy(() => import("./pages/AutoRoleConfig").then(m => ({ 
 const ButtonRoles = lazy(() => import("./pages/ButtonRoles").then(m => ({ default: m.ButtonRoles })));
 const SelectMenuRoles = lazy(() => import("./pages/SelectMenuRoles").then(m => ({ default: m.SelectMenuRoles })));
 const LoggingConfig = lazy(() => import("./pages/LoggingConfig").then(m => ({ default: m.LoggingConfig })));
+const LogViewer = lazy(() => import("./pages/LogViewer").then(m => ({ default: m.LogViewer })));
+const StarboardConfig = lazy(() => import("./pages/StarboardConfig").then(m => ({ default: m.StarboardConfig })));
+const AutoModConfig = lazy(() => import("./pages/AutoModConfig").then(m => ({ default: m.AutoModConfig })));
+const ReactionRoles = lazy(() => import("./pages/ReactionRoles").then(m => ({ default: m.ReactionRoles })));
+const CustomCommands = lazy(() => import("./pages/CustomCommands").then(m => ({ default: m.CustomCommands })));
+const ScheduledMessages = lazy(() => import("./pages/ScheduledMessages").then(m => ({ default: m.ScheduledMessages })));
+const BackupRestore = lazy(() => import("./pages/BackupRestore").then(m => ({ default: m.BackupRestore })));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const InitialSetup = lazy(() => import("./pages/InitialSetup").then(m => ({ default: m.InitialSetup })));
 const BotStatus = lazy(() => import("./pages/BotStatus").then(m => ({ default: m.BotStatus })));
@@ -96,6 +103,8 @@ const navGroups: NavGroup[] = [
       { to: "/giveaways", icon: Gift, label: "Giveaway" },
       { to: "/invites", icon: Link2, label: "Invite" },
       { to: "/warnings", icon: ShieldAlert, label: "Cảnh cáo" },
+      { to: "/starboard", icon: Star, label: "Starboard" },
+      { to: "/reaction-roles", icon: Smile, label: "Reaction Roles" },
     ],
   },
   {
@@ -110,11 +119,13 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    key: "logging",
-    icon: ScrollText,
-    label: "Logging",
+    key: "moderation",
+    icon: Shield,
+    label: "Kiểm duyệt",
     items: [
+      { to: "/automod", icon: Shield, label: "Auto Mod" },
       { to: "/logging", icon: ScrollText, label: "Cấu hình Log" },
+      { to: "/logs", icon: Activity, label: "Nhật ký" },
     ],
   },
   {
@@ -123,8 +134,10 @@ const navGroups: NavGroup[] = [
     label: "Tiện ích",
     items: [
       { to: "/sticky", icon: Pin, label: "Sticky" },
+      { to: "/custom-commands", icon: Terminal, label: "Custom Commands" },
+      { to: "/scheduled-messages", icon: Clock, label: "Tin nhắn hẹn giờ" },
       { to: "/embeds", icon: Palette, label: "Embeds" },
-      { to: "/emojis", icon: Smile, label: "Emoji" },
+      { to: "/emojis", icon: Smile, label: "Emoji & Sticker" },
     ],
   },
   {
@@ -136,6 +149,7 @@ const navGroups: NavGroup[] = [
       { to: "/config/payos", icon: CreditCard, label: "PayOS" },
       { to: "/config/channels", icon: Hash, label: "Kênh & Quyền" },
       { to: "/config/voice", icon: Mic, label: "Temp Voice" },
+      { to: "/backup", icon: Database, label: "Sao lưu & Khôi phục" },
     ],
   },
 ];
@@ -461,6 +475,13 @@ function ProtectedAppRoutes() {
         <Route path="/button-roles" element={<ButtonRoles />} />
         <Route path="/select-roles" element={<SelectMenuRoles />} />
         <Route path="/logging" element={<LoggingConfig />} />
+        <Route path="/logs" element={<LogViewer />} />
+        <Route path="/starboard" element={<StarboardConfig />} />
+        <Route path="/automod" element={<AutoModConfig />} />
+        <Route path="/reaction-roles" element={<ReactionRoles />} />
+        <Route path="/custom-commands" element={<CustomCommands />} />
+        <Route path="/scheduled-messages" element={<ScheduledMessages />} />
+        <Route path="/backup" element={<BackupRestore />} />
       </Routes>
       </Suspense>
     </ProtectedRoute>

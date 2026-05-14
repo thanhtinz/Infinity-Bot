@@ -417,6 +417,15 @@ class WelcomeConfig(Base):
     # Extras
     auto_nickname_template = Column(String, nullable=True)
 
+class ManagedEmoji(Base):
+    __tablename__ = "managed_emojis"
+    id = Column(Integer, primary_key=True, index=True)
+    discord_id = Column(String, unique=True, nullable=False)  # Discord emoji snowflake
+    name = Column(String, nullable=False)
+    animated = Column(Boolean, default=False)
+    url = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 class AutoRoleConfig(Base):
     __tablename__ = "auto_role_configs"
     id = Column(Integer, primary_key=True, index=True)
@@ -466,3 +475,119 @@ class LoggingConfig(Base):
     server_log_channel_id = Column(String, nullable=True)
     ignored_channels = Column(JSON, default=list)
     ignored_roles = Column(JSON, default=list)
+
+class LogEntry(Base):
+    __tablename__ = "log_entries"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, index=True)
+    event_type = Column(String, nullable=False, index=True)  # log_message_delete, log_voice_join, etc.
+    category = Column(String, nullable=False, index=True)    # message, voice, mod, member, server
+    actor_id = Column(String, nullable=True)       # Discord user ID who triggered
+    actor_name = Column(String, nullable=True)
+    actor_avatar = Column(String, nullable=True)
+    target_id = Column(String, nullable=True)       # Target channel/user/role ID
+    target_name = Column(String, nullable=True)
+    description = Column(Text, nullable=True)       # Human-readable summary
+    details = Column(JSON, nullable=True)           # Extra structured data
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+
+# ── Phase 5: New Features ─────────────────────────────────────────────────────
+
+class AFKStatus(Base):
+    __tablename__ = "afk_statuses"
+    guild_id = Column(String, primary_key=True)
+    user_id = Column(String, primary_key=True)
+    reason = Column(String, default="AFK")
+    set_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class AutoModConfig(Base):
+    __tablename__ = "automod_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, unique=True)
+    enabled = Column(Boolean, default=False)
+    # Anti-spam
+    anti_spam_enabled = Column(Boolean, default=False)
+    anti_spam_max_messages = Column(Integer, default=5)
+    anti_spam_interval = Column(Integer, default=5)  # seconds
+    anti_spam_action = Column(String, default="warn")  # warn/mute/kick
+    # Anti-link
+    anti_link_enabled = Column(Boolean, default=False)
+    anti_link_whitelist = Column(JSON, default=list)  # allowed domains
+    # Bad words
+    bad_words_enabled = Column(Boolean, default=False)
+    bad_words_list = Column(JSON, default=list)
+    # Caps lock
+    caps_lock_enabled = Column(Boolean, default=False)
+    caps_lock_min_length = Column(Integer, default=10)
+    caps_lock_percentage = Column(Integer, default=70)
+    # Mention spam
+    mention_spam_enabled = Column(Boolean, default=False)
+    mention_spam_max = Column(Integer, default=5)
+    mention_spam_action = Column(String, default="warn")
+    # Filters
+    ignored_channels = Column(JSON, default=list)
+    ignored_roles = Column(JSON, default=list)
+    log_channel_id = Column(String, nullable=True)
+
+class ReactionRole(Base):
+    __tablename__ = "reaction_roles"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    channel_id = Column(String, nullable=True)
+    message_id = Column(String, nullable=True)
+    name = Column(String, nullable=False, default="Reaction Role Panel")
+    embed_title = Column(String, nullable=True)
+    embed_description = Column(Text, nullable=True)
+    embed_color = Column(String, default="#5865F2")
+    mappings = Column(JSON, default=list)  # [{emoji, role_id, label}, ...]
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class StarboardConfig(Base):
+    __tablename__ = "starboard_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, unique=True)
+    channel_id = Column(String, nullable=True)
+    emoji = Column(String, default="⭐")
+    threshold = Column(Integer, default=3)
+    self_star = Column(Boolean, default=False)
+    ignored_channels = Column(JSON, default=list)
+    enabled = Column(Boolean, default=True)
+
+class StarboardEntry(Base):
+    __tablename__ = "starboard_entries"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    source_message_id = Column(String, nullable=False, unique=True)
+    source_channel_id = Column(String, nullable=False)
+    starboard_message_id = Column(String, nullable=True)
+    star_count = Column(Integer, default=0)
+    author_id = Column(String, nullable=True)
+
+class ScheduledMessage(Base):
+    __tablename__ = "scheduled_messages"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    channel_id = Column(String, nullable=False)
+    content = Column(Text, nullable=True)
+    embed_data = Column(JSON, nullable=True)
+    send_at = Column(DateTime, nullable=False)
+    repeat_type = Column(String, default="none")  # none/hourly/daily/weekly/monthly
+    sent = Column(Boolean, default=False)
+    last_sent_at = Column(DateTime, nullable=True)
+    enabled = Column(Boolean, default=True)
+    created_by = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class CustomCommand(Base):
+    __tablename__ = "custom_commands"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    name = Column(String, nullable=False)  # command trigger (e.g. "rules")
+    description = Column(String, nullable=True)
+    response_type = Column(String, default="text")  # text/embed
+    response_text = Column(Text, nullable=True)
+    response_embed = Column(JSON, nullable=True)
+    ephemeral = Column(Boolean, default=False)
+    required_roles = Column(JSON, default=list)
+    enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)

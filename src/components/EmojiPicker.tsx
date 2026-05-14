@@ -144,9 +144,9 @@ export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
   const [tab, setTab] = useState<"custom" | "unicode">("custom");
 
   const { data: emojis = [] } = useQuery<DiscordEmoji[]>({
-    queryKey: ["discord-emojis"],
+    queryKey: ["managed-emojis"],
     queryFn: () =>
-      fetch("/api/discord/emojis", { credentials: "include" }).then((r) => {
+      fetch("/api/managed-emojis", { credentials: "include" }).then((r) => {
         if (!r.ok) throw new Error("Failed to load emojis");
         return r.json();
       }),
@@ -226,7 +226,7 @@ export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
             )}
             onClick={() => setTab("custom")}
           >
-            Server
+            Custom
           </button>
           <button
             type="button"

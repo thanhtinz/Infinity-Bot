@@ -1,0 +1,32 @@
+[
+  {
+    "content": "[Phase1] Giveaway refactor: button → reaction (🎉)",
+    "id": "p1-giveaway",
+    "status": "completed"
+  },
+  {
+    "content": "[Phase2] AFK System: model + cog + embed events",
+    "id": "p2-afk",
+    "status": "in_progress"
+  },
+  {
+    "content": "[Phase3] Starboard: model + cog + config page + embed events",
+    "id": "p3-starboard",
+    "status": "pending"
+  },
+  {
+    "content": "[Phase4] Auto Mod: model + cog + routes + config page + embed events",
+    "id": "p4-automod",
+    "status": "pending"
+  },
+  {
+    "content": "[Phase5] Reaction Roles: model + cog + routes + page + embed events",
+    "id": "p5-reaction-roles",
+    "status": "pending"
+  },
+  {
+    "content": "[Phase6] Custom Commands: model + cog + routes + page",
+    "id": "p6-custom-commands",
+    "status": "pending"
+  }
+]
