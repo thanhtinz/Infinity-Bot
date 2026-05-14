@@ -720,13 +720,12 @@ export function EmbedsManager() {
   const currentEvent = EMBED_EVENTS.find((e) => e.key === selectedKey);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-0 h-[calc(100vh-8rem)]">
-      {/* ── Left Panel: Event List ── */}
-      <div className="lg:w-[280px] shrink-0 border-b lg:border-b-0 lg:border-r bg-card">
-        {/* Mobile: dropdown selector */}
-        <div className="lg:hidden p-3">
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
+      {/* ── Top Bar: Event selector + controls ── */}
+      <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-2.5 border-b bg-card">
+        <div className="w-64 shrink-0">
           <Select value={selectedKey} onValueChange={(v) => selectEvent(v)}>
-            <SelectTrigger>
+            <SelectTrigger className="h-9">
               <SelectValue placeholder="Chọn event...">
                 {currentEvent && (() => {
                   const Icon = currentEvent.icon;
@@ -734,6 +733,11 @@ export function EmbedsManager() {
                     <span className="flex items-center gap-2">
                       <Icon className="h-4 w-4 text-primary" />
                       {currentEvent.label}
+                      {savedMap.has(selectedKey) && (
+                        <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0 text-[10px] px-1.5 py-0 h-4">
+                          Tùy chỉnh
+                        </Badge>
+                      )}
                     </span>
                   );
                 })()}
@@ -764,372 +768,281 @@ export function EmbedsManager() {
           </Select>
         </div>
 
-        {/* Desktop: vertical list grouped by category */}
-        <div className="hidden lg:flex flex-col p-3 gap-1 overflow-y-auto h-full">
-          <div className="px-2 pb-2">
-            <h2 className="text-sm font-semibold text-foreground">Embed Events</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Chọn event để tùy chỉnh</p>
-          </div>
-          {isLoading
-            ? Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="p-3 space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-3 w-36" />
-                </div>
-              ))
-            : EVENT_GROUPS.map((group) => (
-                <div key={group.label}>
-                  <div className="px-2 pt-2 pb-1">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                      {group.label}
-                    </span>
-                  </div>
-                  {group.keys.map((key) => {
-                    const ev = EMBED_EVENTS.find((e) => e.key === key);
-                    if (!ev) return null;
-                    const Icon = ev.icon;
-                    const active = selectedKey === ev.key;
-                    const saved = savedMap.has(ev.key);
-                    return (
-                      <button
-                        key={ev.key}
-                        onClick={() => selectEvent(ev.key)}
-                        className={cn(
-                          "flex items-start gap-3 rounded-lg border px-3 py-2.5 text-left transition-all w-full",
-                          active
-                            ? "border-primary/50 bg-primary/5 shadow-sm"
-                            : "border-transparent hover:bg-muted/80"
-                        )}
-                      >
-                        <div className={cn(
-                          "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
-                          active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                        )}>
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className={cn("text-sm font-medium truncate", active ? "text-foreground" : "text-muted-foreground")}>
-                              {ev.label}
-                            </span>
-                            {saved ? (
-                              <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0 text-[10px] px-1.5 py-0 h-4 shrink-0">
-                                Đã tùy chỉnh
-                              </Badge>
-                            ) : (
-                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
-                                Mặc định
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">{ev.desc}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-        </div>
-      </div>
-
-      {/* ── Middle Panel: Editor ── */}
-      <div className="flex-1 min-w-0 overflow-y-auto">
-        <div className="max-w-2xl mx-auto p-4 lg:p-6 space-y-5">
-          {/* Section header */}
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              {currentEvent && (() => {
-                const Icon = currentEvent.icon;
-                return <Icon className="h-5 w-5 text-primary" />;
-              })()}
-              <h2 className="text-lg font-semibold">{currentEvent?.label}</h2>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setResetDialogOpen(true)}
-                className="text-muted-foreground"
-              >
-                <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-                Reset về mặc định
-              </Button>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="embed-enabled" className="text-sm text-muted-foreground cursor-pointer">
-                  {form.enabled ? "Bật" : "Tắt"}
-                </Label>
-                <Switch
-                  id="embed-enabled"
-                  checked={form.enabled}
-                  onCheckedChange={(v) => setForm((f) => ({ ...f, enabled: v }))}
-                />
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Title */}
-          <div className="space-y-1.5">
-            <Label htmlFor="embed-title">Tiêu đề</Label>
-            <Input
-              id="embed-title"
-              placeholder="Nhập tiêu đề embed..."
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+        <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="embed-enabled" className="text-sm text-muted-foreground cursor-pointer">
+              {form.enabled ? "Bật" : "Tắt"}
+            </Label>
+            <Switch
+              id="embed-enabled"
+              checked={form.enabled}
+              onCheckedChange={(v) => setForm((f) => ({ ...f, enabled: v }))}
             />
           </div>
-
-          {/* Description */}
-          <div className="space-y-1.5">
-            <Label htmlFor="embed-desc">Mô tả</Label>
-            <Textarea
-              id="embed-desc"
-              placeholder="Nhập mô tả embed..."
-              value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              rows={4}
-              className="resize-y"
-            />
-          </div>
-
-          {/* Color */}
-          <div className="space-y-1.5">
-            <Label>Màu sắc</Label>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={form.color}
-                onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-                className="h-8 w-8 rounded cursor-pointer border-0 p-0"
-              />
-              <Input
-                value={form.color}
-                onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-                className="w-28 font-mono text-sm"
-                maxLength={7}
-              />
-              <div
-                className="h-8 w-8 rounded-md border"
-                style={{ backgroundColor: form.color }}
-              />
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="space-y-1.5">
-            <Label htmlFor="embed-footer">Chân trang</Label>
-            <Input
-              id="embed-footer"
-              placeholder="Nội dung chân trang"
-              value={form.footer}
-              onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
-            />
-          </div>
-
-          <Separator />
-
-          {/* ── Collapsible: Author ── */}
-          <div className="rounded-lg border">
-            <button
-              className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
-              onClick={() => setAuthorOpen(!authorOpen)}
-            >
-              <span className="flex items-center gap-2">
-                <UserPlus className="h-4 w-4 text-muted-foreground" />
-                Tác giả
-              </span>
-              {authorOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </button>
-            {authorOpen && (
-              <div className="px-3 pb-3 space-y-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Tên tác giả</Label>
-                  <Input
-                    placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
-                    value={form.author}
-                    onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Icon URL</Label>
-                  <Input
-                    placeholder="https://example.com/icon.png"
-                    value={form.author_icon_url}
-                    onChange={(e) => setForm((f) => ({ ...f, author_icon_url: e.target.value }))}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ── Collapsible: Images ── */}
-          <div className="rounded-lg border">
-            <button
-              className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
-              onClick={() => setImagesOpen(!imagesOpen)}
-            >
-              <span className="flex items-center gap-2">
-                <Image className="h-4 w-4 text-muted-foreground" />
-                Hình ảnh
-              </span>
-              {imagesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </button>
-            {imagesOpen && (
-              <div className="px-3 pb-3 space-y-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Thumbnail URL</Label>
-                  <Input
-                    placeholder="https://example.com/thumb.png"
-                    value={form.thumbnail_url}
-                    onChange={(e) => setForm((f) => ({ ...f, thumbnail_url: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Image URL</Label>
-                  <Input
-                    placeholder="https://example.com/image.png"
-                    value={form.image_url}
-                    onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ── Collapsible: Fields ── */}
-          <div className="rounded-lg border">
-            <button
-              className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
-              onClick={() => setFieldsOpen(!fieldsOpen)}
-            >
-              <span className="flex items-center gap-2">
-                <span className="flex h-4 w-4 items-center justify-center rounded bg-muted text-[10px] font-bold text-muted-foreground">
-                  {form.fields.length}
-                </span>
-                Fields
-              </span>
-              {fieldsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </button>
-            {fieldsOpen && (
-              <div className="px-3 pb-3 space-y-3">
-                {form.fields.map((field, i) => (
-                  <div key={i} className="rounded-md border bg-muted/30 p-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">Field {i + 1}</span>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-6 w-6 text-destructive hover:text-destructive"
-                        onClick={() => removeField(i)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input
-                        placeholder="Tên field"
-                        value={field.name}
-                        onChange={(e) => updateField(i, "name", e.target.value)}
-                        className="text-sm"
-                      />
-                      <Input
-                        placeholder="Giá trị"
-                        value={field.value}
-                        onChange={(e) => updateField(i, "value", e.target.value)}
-                        className="text-sm"
-                      />
-                    </div>
-                    <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={field.inline}
-                        onChange={(e) => updateField(i, "inline", e.target.checked)}
-                        className="rounded border-input"
-                      />
-                      Inline (hiển thị cùng dòng)
-                    </label>
-                  </div>
-                ))}
-                {form.fields.length < 10 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={addField}
-                    className="w-full border-dashed"
-                  >
-                    <Plus className="h-3.5 w-3.5 mr-1.5" />
-                    Thêm field
-                  </Button>
-                )}
-                {form.fields.length >= 10 && (
-                  <p className="text-xs text-muted-foreground text-center">Đã đạt giới hạn 10 fields</p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* ── Variables Reference ── */}
-          <div className="rounded-lg border bg-muted/20">
-            <button
-              className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
-              onClick={() => setVarsOpen(!varsOpen)}
-            >
-              <span className="flex items-center gap-2">
-                <Variable className="h-4 w-4 text-muted-foreground" />
-                Variables
-                <span className="text-xs text-muted-foreground font-normal">({VARIABLES.length} biến)</span>
-              </span>
-              {varsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </button>
-            {varsOpen && (
-              <div className="px-3 pb-3">
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                  {VARIABLES.map((v) => (
-                    <div key={v.token} className="flex items-baseline gap-2 text-xs py-0.5">
-                      <code className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-primary">
-                        {v.token}
-                      </code>
-                      <span className="text-muted-foreground truncate">{v.desc}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          {/* ── Save Button ── */}
           <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setResetDialogOpen(true)}
+            className="text-muted-foreground"
+          >
+            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+            Reset
+          </Button>
+          <Button
+            size="sm"
             onClick={() => saveMutation.mutate(form)}
             disabled={saveMutation.isPending}
-            className="w-full"
-            size="lg"
           >
             {saveMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
           </Button>
         </div>
       </div>
 
-      {/* ── Right Panel: Discord Preview ── */}
-      {/* Mobile preview */}
-      <div className="lg:hidden p-4 border-t">
-        <h3 className="text-sm font-semibold mb-2">Xem trước Discord</h3>
-        <DiscordPreview form={form} />
-        <p className="text-[11px] text-muted-foreground italic mt-2">
-          * Preview sử dụng dữ liệu giả để minh họa
-        </p>
-      </div>
-      {/* Desktop preview */}
-      <div className="hidden lg:flex lg:w-[400px] shrink-0 flex-col border-l bg-card">
-        <div className="p-4 flex-1 overflow-y-auto">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Xem trước Discord</h3>
+      {/* ── 2-Column: Editor | Preview ── */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-0">
+        {/* Left: Editor (scrollable) */}
+        <div className="overflow-y-auto">
+          <div className="max-w-2xl p-4 lg:p-6 space-y-5">
+
+            {/* Title */}
+            <div className="space-y-1.5">
+              <Label htmlFor="embed-title">Tiêu đề</Label>
+              <Input
+                id="embed-title"
+                placeholder="Nhập tiêu đề embed..."
+                value={form.title}
+                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              />
             </div>
+
+            {/* Description */}
+            <div className="space-y-1.5">
+              <Label htmlFor="embed-desc">Mô tả</Label>
+              <Textarea
+                id="embed-desc"
+                placeholder="Nhập mô tả embed..."
+                value={form.description}
+                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                rows={4}
+                className="resize-y"
+              />
+            </div>
+
+            {/* Color */}
+            <div className="space-y-1.5">
+              <Label>Màu sắc</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={form.color}
+                  onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                  className="h-8 w-8 rounded cursor-pointer border-0 p-0"
+                />
+                <Input
+                  value={form.color}
+                  onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                  className="w-28 font-mono text-sm"
+                  maxLength={7}
+                />
+                <div
+                  className="h-8 w-8 rounded-md border"
+                  style={{ backgroundColor: form.color }}
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="space-y-1.5">
+              <Label htmlFor="embed-footer">Chân trang</Label>
+              <Input
+                id="embed-footer"
+                placeholder="Nội dung chân trang"
+                value={form.footer}
+                onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
+              />
+            </div>
+
+            <Separator />
+
+            {/* ── Collapsible: Author ── */}
+            <div className="rounded-lg border">
+              <button
+                className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
+                onClick={() => setAuthorOpen(!authorOpen)}
+              >
+                <span className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4 text-muted-foreground" />
+                  Tác giả
+                </span>
+                {authorOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+              {authorOpen && (
+                <div className="px-3 pb-3 space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Tên tác giả</Label>
+                    <Input
+                      placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
+                      value={form.author}
+                      onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Icon URL</Label>
+                    <Input
+                      placeholder="https://example.com/icon.png"
+                      value={form.author_icon_url}
+                      onChange={(e) => setForm((f) => ({ ...f, author_icon_url: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── Collapsible: Images ── */}
+            <div className="rounded-lg border">
+              <button
+                className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
+                onClick={() => setImagesOpen(!imagesOpen)}
+              >
+                <span className="flex items-center gap-2">
+                  <Image className="h-4 w-4 text-muted-foreground" />
+                  Hình ảnh
+                </span>
+                {imagesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+              {imagesOpen && (
+                <div className="px-3 pb-3 space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Thumbnail URL</Label>
+                    <Input
+                      placeholder="https://example.com/thumb.png"
+                      value={form.thumbnail_url}
+                      onChange={(e) => setForm((f) => ({ ...f, thumbnail_url: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Image URL</Label>
+                    <Input
+                      placeholder="https://example.com/image.png"
+                      value={form.image_url}
+                      onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── Collapsible: Fields ── */}
+            <div className="rounded-lg border">
+              <button
+                className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
+                onClick={() => setFieldsOpen(!fieldsOpen)}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="flex h-4 w-4 items-center justify-center rounded bg-muted text-[10px] font-bold text-muted-foreground">
+                    {form.fields.length}
+                  </span>
+                  Fields
+                </span>
+                {fieldsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+              {fieldsOpen && (
+                <div className="px-3 pb-3 space-y-3">
+                  {form.fields.map((field, i) => (
+                    <div key={i} className="rounded-md border bg-muted/30 p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Field {i + 1}</span>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 text-destructive hover:text-destructive"
+                          onClick={() => removeField(i)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          placeholder="Tên field"
+                          value={field.name}
+                          onChange={(e) => updateField(i, "name", e.target.value)}
+                          className="text-sm"
+                        />
+                        <Input
+                          placeholder="Giá trị"
+                          value={field.value}
+                          onChange={(e) => updateField(i, "value", e.target.value)}
+                          className="text-sm"
+                        />
+                      </div>
+                      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={field.inline}
+                          onChange={(e) => updateField(i, "inline", e.target.checked)}
+                          className="rounded border-input"
+                        />
+                        Inline (hiển thị cùng dòng)
+                      </label>
+                    </div>
+                  ))}
+                  {form.fields.length < 10 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={addField}
+                      className="w-full border-dashed"
+                    >
+                      <Plus className="h-3.5 w-3.5 mr-1.5" />
+                      Thêm field
+                    </Button>
+                  )}
+                  {form.fields.length >= 10 && (
+                    <p className="text-xs text-muted-foreground text-center">Đã đạt giới hạn 10 fields</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* ── Variables Reference ── */}
+            <div className="rounded-lg border bg-muted/20">
+              <button
+                className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
+                onClick={() => setVarsOpen(!varsOpen)}
+              >
+                <span className="flex items-center gap-2">
+                  <Variable className="h-4 w-4 text-muted-foreground" />
+                  Variables
+                  <span className="text-xs text-muted-foreground font-normal">({VARIABLES.length} biến)</span>
+                </span>
+                {varsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+              {varsOpen && (
+                <div className="px-3 pb-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+                    {VARIABLES.map((v) => (
+                      <div key={v.token} className="flex items-baseline gap-2 text-xs py-0.5">
+                        <code className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-primary">
+                          {v.token}
+                        </code>
+                        <span className="text-muted-foreground truncate">{v.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Discord Preview (sticky on desktop, stacked on mobile) */}
+        <div className="overflow-y-auto border-t lg:border-t-0 bg-card">
+          <div className="p-4 lg:p-5 lg:sticky lg:top-0">
+            <h3 className="text-sm font-semibold mb-3">Xem trước Discord</h3>
             <DiscordPreview form={form} />
-            <p className="text-[11px] text-muted-foreground italic">
+            <p className="text-[11px] text-muted-foreground italic mt-3">
               * Preview sử dụng dữ liệu giả để minh họa
             </p>
           </div>

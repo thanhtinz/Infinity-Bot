@@ -390,7 +390,7 @@ export function BotStatus() {
               <Timer className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">⏱️ Uptime</p>
+              <p className="text-xs text-muted-foreground">Uptime</p>
               {infoLoading ? (
                 <Skeleton className="h-6 w-28 mt-1" />
               ) : (

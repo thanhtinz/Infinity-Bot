@@ -248,6 +248,20 @@ class TicketConfig(Base):
     claim_message_body = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
+class TicketPanelGroup(Base):
+    __tablename__ = "ticket_panel_groups"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    name = Column(String, default="Multi Panel")
+    channel_id = Column(String, nullable=True)
+    message_id = Column(String, nullable=True)
+    title = Column(String, default="Hỗ trợ")
+    description = Column(Text, nullable=True)
+    color = Column(String, default="#5865F2")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    panels = relationship("TicketPanel", back_populates="group")
+
+
 class TicketPanel(Base):
     __tablename__ = "ticket_panels"
     id = Column(Integer, primary_key=True, index=True)
@@ -255,6 +269,8 @@ class TicketPanel(Base):
     name = Column(String, nullable=False)
     channel_id = Column(String, nullable=True)           # channel panel được gửi vào
     message_id = Column(String, nullable=True)           # Discord message ID
+    group_id = Column(Integer, ForeignKey("ticket_panel_groups.id", ondelete="SET NULL"), nullable=True)
+    group = relationship("TicketPanelGroup", back_populates="panels")
     title = Column(String, default="Hỗ trợ")
     description = Column(Text, default="Nhấn nút bên dưới để tạo ticket hỗ trợ.")
     color = Column(String, default="#5865F2")
@@ -262,6 +278,14 @@ class TicketPanel(Base):
     button_emoji = Column(String, default="🎫")           # legacy single-button
     button_style = Column(String, default="primary")      # legacy single-button
     category_id = Column(String, nullable=True)
+    # ── Per-panel overrides (null = dùng global TicketConfig) ──
+    naming_format = Column(String, nullable=True)
+    open_message_title = Column(String, nullable=True)
+    open_message_body = Column(Text, nullable=True)
+    close_message_title = Column(String, nullable=True)
+    close_message_body = Column(Text, nullable=True)
+    claim_message_title = Column(String, nullable=True)
+    claim_message_body = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     buttons = relationship("PanelButton", back_populates="panel", cascade="all, delete-orphan", order_by="PanelButton.sort_order")
 

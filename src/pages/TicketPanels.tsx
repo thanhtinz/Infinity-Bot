@@ -25,6 +25,12 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import {
   LayoutGrid,
@@ -38,6 +44,10 @@ import {
   X,
   MessageSquare,
   MousePointerClick,
+  ChevronDown,
+  ChevronUp,
+  Settings,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChannelSelect } from "@/components/ChannelSelect";
@@ -64,6 +74,14 @@ interface TicketPanel {
   color?: string;
   created_at?: string;
   buttons: TicketButton[];
+  naming_format?: string | null;
+  open_message_title?: string | null;
+  open_message_body?: string | null;
+  close_message_title?: string | null;
+  close_message_body?: string | null;
+  claim_message_title?: string | null;
+  claim_message_body?: string | null;
+  group_id?: number | null;
 }
 
 interface PanelForm {
@@ -73,6 +91,13 @@ interface PanelForm {
   color: string;
   channel_id: string;
   buttons: TicketButton[];
+  naming_format: string;
+  open_message_title: string;
+  open_message_body: string;
+  close_message_title: string;
+  close_message_body: string;
+  claim_message_title: string;
+  claim_message_body: string;
 }
 
 interface ButtonForm {
@@ -81,6 +106,29 @@ interface ButtonForm {
   style: string;
   category_id: string;
   form_id: string;
+}
+
+interface TicketPanelGroup {
+  id: number;
+  guild_id?: string;
+  name: string;
+  channel_id?: string;
+  message_id?: string;
+  title: string;
+  description?: string;
+  color: string;
+  created_at?: string;
+  is_sent: boolean;
+  panel_ids: number[];
+}
+
+interface PanelGroupForm {
+  name: string;
+  title: string;
+  description: string;
+  color: string;
+  channel_id: string;
+  panel_ids: number[];
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -130,6 +178,13 @@ const emptyPanelForm = (): PanelForm => ({
   color: DEFAULT_COLOR,
   channel_id: "",
   buttons: [],
+  naming_format: "",
+  open_message_title: "",
+  open_message_body: "",
+  close_message_title: "",
+  close_message_body: "",
+  claim_message_title: "",
+  claim_message_body: "",
 });
 
 const emptyButtonForm = (): ButtonForm => ({
@@ -138,6 +193,15 @@ const emptyButtonForm = (): ButtonForm => ({
   style: "primary",
   category_id: "",
   form_id: "",
+});
+
+const emptyPanelGroupForm = (): PanelGroupForm => ({
+  name: "",
+  title: "",
+  description: "",
+  color: DEFAULT_COLOR,
+  channel_id: "",
+  panel_ids: [],
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -307,10 +371,14 @@ function ButtonStylePicker({
 
 function PanelCard({
   panel,
+  groupName,
+  groupColor,
   onEdit,
   onDelete,
 }: {
   panel: TicketPanel;
+  groupName?: string;
+  groupColor?: string;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -330,6 +398,19 @@ function PanelCard({
             >
               #{panel.id}
             </Badge>
+            {groupName && (
+              <Badge
+                className="text-[10px] px-1.5 shrink-0"
+                style={{
+                  backgroundColor: (groupColor || DEFAULT_COLOR) + "20",
+                  color: groupColor || DEFAULT_COLOR,
+                  borderColor: (groupColor || DEFAULT_COLOR) + "40",
+                }}
+              >
+                <Users className="h-3 w-3 mr-0.5" />
+                {groupName}
+              </Badge>
+            )}
           </div>
           {isSent ? (
             <Badge className="bg-green-500/15 text-green-600 border border-green-500/30 shrink-0 text-[10px] px-1.5">
@@ -439,6 +520,42 @@ function PanelCard({
   );
 }
 
+// ─── Collapsible Section ─────────────────────────────────────────────────────
+
+function CollapsibleSection({
+  title,
+  hasContent,
+  children,
+}: {
+  title: string;
+  hasContent: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(hasContent);
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger className="flex items-center justify-between w-full rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">{title}</span>
+          {hasContent && (
+            <Badge variant="secondary" className="text-[10px] px-1.5">
+              Tùy chỉnh
+            </Badge>
+          )}
+        </div>
+        {open ? (
+          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        )}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-3 space-y-0">
+        {children}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export function TicketPanels() {
@@ -456,12 +573,27 @@ export function TicketPanels() {
   const [editingBtnIdx, setEditingBtnIdx] = useState<number | null>(null);
   const [btnForm, setBtnForm] = useState<ButtonForm>(emptyButtonForm());
 
+  // ── Group state ──
+  const [groupSheetOpen, setGroupSheetOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<TicketPanelGroup | null>(null);
+  const [deleteGroupTarget, setDeleteGroupTarget] = useState<TicketPanelGroup | null>(null);
+  const [groupForm, setGroupForm] = useState<PanelGroupForm>(emptyPanelGroupForm());
+
   // ── Queries ──────────────────────────────────────────────────────────────
 
   const { data: panels = [], isLoading } = useQuery<TicketPanel[]>({
     queryKey: ["ticket-panels"],
     queryFn: () =>
       fetch("/api/ticket-panels", { credentials: "include" }).then((r) =>
+        r.json()
+      ),
+    staleTime: 60_000,
+  });
+
+  const { data: groups = [], isLoading: isLoadingGroups } = useQuery<TicketPanelGroup[]>({
+    queryKey: ["ticket-panel-groups"],
+    queryFn: () =>
+      fetch("/api/ticket-panel-groups", { credentials: "include" }).then((r) =>
         r.json()
       ),
     staleTime: 60_000,
@@ -539,6 +671,81 @@ export function TicketPanels() {
       }),
   } satisfies UseMutationOptions);
 
+  // ── Group Mutations ──────────────────────────────────────────────────────
+
+  const createGroupMutation = useMutation({
+    mutationFn: (body: Record<string, unknown>) =>
+      fetch("/api/ticket-panel-groups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      }).then(async (r) => {
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ticket-panel-groups"] });
+      qc.invalidateQueries({ queryKey: ["ticket-panels"] });
+      setGroupSheetOpen(false);
+      toast({ title: "Đã tạo group thành công" });
+    },
+    onError: (e: Error) =>
+      toast({
+        variant: "destructive",
+        title: "Lỗi tạo group",
+        description: e.message,
+      }),
+  } satisfies UseMutationOptions);
+
+  const updateGroupMutation = useMutation({
+    mutationFn: ({ id, ...body }: { id: number } & Record<string, unknown>) =>
+      fetch(`/api/ticket-panel-groups/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      }).then(async (r) => {
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ticket-panel-groups"] });
+      qc.invalidateQueries({ queryKey: ["ticket-panels"] });
+      setGroupSheetOpen(false);
+      setEditingGroup(null);
+      toast({ title: "Đã cập nhật group" });
+    },
+    onError: (e: Error) =>
+      toast({
+        variant: "destructive",
+        title: "Lỗi cập nhật group",
+        description: e.message,
+      }),
+  } satisfies UseMutationOptions);
+
+  const deleteGroupMutation = useMutation({
+    mutationFn: (id: number) =>
+      fetch(`/api/ticket-panel-groups/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      }).then(async (r) => {
+        if (!r.ok) throw new Error(await r.text());
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ticket-panel-groups"] });
+      qc.invalidateQueries({ queryKey: ["ticket-panels"] });
+      setDeleteGroupTarget(null);
+      toast({ title: "Đã xóa group" });
+    },
+    onError: (e: Error) =>
+      toast({
+        variant: "destructive",
+        title: "Lỗi xóa group",
+        description: e.message,
+      }),
+  } satisfies UseMutationOptions);
+
   // ── Panel Handlers ───────────────────────────────────────────────────────
 
   const openCreate = () => {
@@ -559,6 +766,13 @@ export function TicketPanels() {
       color: p.color ?? DEFAULT_COLOR,
       channel_id: p.channel_id ?? "",
       buttons: (p.buttons ?? []).map((b) => ({ ...b })),
+      naming_format: p.naming_format ?? "",
+      open_message_title: p.open_message_title ?? "",
+      open_message_body: p.open_message_body ?? "",
+      close_message_title: p.close_message_title ?? "",
+      close_message_body: p.close_message_body ?? "",
+      claim_message_title: p.claim_message_title ?? "",
+      claim_message_body: p.claim_message_body ?? "",
     });
     setActiveTab("embed");
     setEditingBtnIdx(null);
@@ -580,6 +794,13 @@ export function TicketPanels() {
         category_id,
         ...(form_id ? { form_id } : {}),
       })),
+      naming_format: form.naming_format.trim() || null,
+      open_message_title: form.open_message_title.trim() || null,
+      open_message_body: form.open_message_body.trim() || null,
+      close_message_title: form.close_message_title.trim() || null,
+      close_message_body: form.close_message_body.trim() || null,
+      claim_message_title: form.claim_message_title.trim() || null,
+      claim_message_body: form.claim_message_body.trim() || null,
     };
     if (editingPanel) {
       updateMutation.mutate({ id: editingPanel.id, ...payload });
@@ -654,6 +875,67 @@ export function TicketPanels() {
     value: ButtonForm[K]
   ) => setBtnForm((prev) => ({ ...prev, [field]: value }));
 
+  // ── Group Handlers ───────────────────────────────────────────────────────
+
+  const openCreateGroup = () => {
+    setEditingGroup(null);
+    setGroupForm(emptyPanelGroupForm());
+    setGroupSheetOpen(true);
+  };
+
+  const openEditGroup = (g: TicketPanelGroup) => {
+    setEditingGroup(g);
+    setGroupForm({
+      name: g.name,
+      title: g.title ?? "",
+      description: g.description ?? "",
+      color: g.color ?? DEFAULT_COLOR,
+      channel_id: g.channel_id ?? "",
+      panel_ids: [...(g.panel_ids ?? [])],
+    });
+    setGroupSheetOpen(true);
+  };
+
+  const handleSaveGroup = () => {
+    const payload: Record<string, unknown> = {
+      name: groupForm.name,
+      title: groupForm.title,
+      description: groupForm.description,
+      color: groupForm.color,
+      channel_id: groupForm.channel_id,
+      panel_ids: groupForm.panel_ids,
+    };
+    if (editingGroup) {
+      updateGroupMutation.mutate({ id: editingGroup.id, ...payload });
+    } else {
+      createGroupMutation.mutate(payload);
+    }
+  };
+
+  const setGroupField = <K extends keyof PanelGroupForm>(
+    field: K,
+    value: PanelGroupForm[K]
+  ) => setGroupForm((prev) => ({ ...prev, [field]: value }));
+
+  const togglePanelInGroup = (panelId: number) => {
+    setGroupForm((prev) => ({
+      ...prev,
+      panel_ids: prev.panel_ids.includes(panelId)
+        ? prev.panel_ids.filter((id) => id !== panelId)
+        : [...prev.panel_ids, panelId],
+    }));
+  };
+
+  const isSavingGroup = createGroupMutation.isPending || updateGroupMutation.isPending;
+
+  // Build a map of panel -> group for badge display
+  const panelGroupMap = new Map<number, TicketPanelGroup>();
+  for (const g of groups) {
+    for (const pid of g.panel_ids) {
+      panelGroupMap.set(pid, g);
+    }
+  }
+
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
@@ -702,16 +984,90 @@ export function TicketPanels() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {panels.map((p) => (
-            <PanelCard
-              key={p.id}
-              panel={p}
-              onEdit={() => openEdit(p)}
-              onDelete={() => setDeleteTarget(p)}
-            />
-          ))}
+          {panels.map((p) => {
+            const grp = panelGroupMap.get(p.id);
+            return (
+              <PanelCard
+                key={p.id}
+                panel={p}
+                groupName={grp?.name}
+                groupColor={grp?.color}
+                onEdit={() => openEdit(p)}
+                onDelete={() => setDeleteTarget(p)}
+              />
+            );
+          })}
         </div>
       )}
+
+      {/* ── Panel Groups Section ── */}
+      <Separator />
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold tracking-tight">Multi-Panel Groups</h2>
+            <p className="text-sm text-muted-foreground">
+              Gộp nhiều panel vào 1 embed message trên Discord
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={openCreateGroup}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            Tạo Group
+          </Button>
+        </div>
+
+        {groups.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="py-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                Chưa có group nào. Tạo group để gộp nhiều panel buttons vào 1 message.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {groups.map(g => {
+              const memberPanels = panels.filter(p => g.panel_ids.includes(p.id));
+              return (
+                <Card key={g.id}>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: g.color }} />
+                        <span className="font-medium">{g.name}</span>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditGroup(g)}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteGroupTarget(g)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                    {g.title && <p className="text-sm text-muted-foreground">{g.title}</p>}
+                    <div className="flex flex-wrap gap-1.5">
+                      {memberPanels.length > 0 ? memberPanels.map(p => (
+                        <Badge key={p.id} variant="secondary" className="text-xs">{p.name}</Badge>
+                      )) : (
+                        <span className="text-xs text-muted-foreground">Chưa có panel nào</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      {g.is_sent ? (
+                        <><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> Đã gửi</>
+                      ) : (
+                        <><Hash className="h-3.5 w-3.5" /> Chưa gửi</>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* ── Create / Edit Panel Sheet ── */}
       <Sheet
@@ -773,7 +1129,11 @@ export function TicketPanels() {
                 </TabsTrigger>
                 <TabsTrigger value="buttons" className="flex-1 gap-1.5">
                   <MousePointerClick className="h-3.5 w-3.5" />
-                  Buttons
+                  Nút bấm
+                </TabsTrigger>
+                <TabsTrigger value="config" className="flex-1 gap-1.5">
+                  <Settings className="h-3.5 w-3.5" />
+                  Cấu hình
                 </TabsTrigger>
               </TabsList>
 
@@ -1058,6 +1418,109 @@ export function TicketPanels() {
                   <DiscordPreview form={form} buttons={form.buttons} />
                 </div>
               </TabsContent>
+
+              {/* ── Config Tab ── */}
+              <TabsContent value="config" className="space-y-4 pt-2">
+                <div className="rounded-lg border bg-muted/40 p-3 flex gap-2.5">
+                  <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Để trống các trường = sử dụng cấu hình chung từ Ticket Config
+                  </p>
+                </div>
+
+                {/* Naming format */}
+                <div className="space-y-1.5">
+                  <Label>Định dạng tên ticket</Label>
+                  <Input
+                    placeholder="ticket-{number}"
+                    value={form.naming_format}
+                    onChange={(e) => setField("naming_format", e.target.value)}
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    Để trống = dùng cấu hình chung. Biến: {"{number}"}, {"{username}"}, {"{displayname}"}
+                  </p>
+                </div>
+
+                <Separator />
+
+                {/* Open message - Collapsible */}
+                <CollapsibleSection
+                  title="Tin nhắn mở ticket"
+                  hasContent={!!(form.open_message_title || form.open_message_body)}
+                >
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label>Tiêu đề</Label>
+                      <Input
+                        placeholder="Mặc định từ cài đặt chung"
+                        value={form.open_message_title}
+                        onChange={(e) => setField("open_message_title", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Nội dung</Label>
+                      <Textarea
+                        placeholder="Mặc định từ cài đặt chung"
+                        value={form.open_message_body}
+                        onChange={(e) => setField("open_message_body", e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                </CollapsibleSection>
+
+                {/* Close message - Collapsible */}
+                <CollapsibleSection
+                  title="Tin nhắn đóng ticket"
+                  hasContent={!!(form.close_message_title || form.close_message_body)}
+                >
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label>Tiêu đề</Label>
+                      <Input
+                        placeholder="Mặc định từ cài đặt chung"
+                        value={form.close_message_title}
+                        onChange={(e) => setField("close_message_title", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Nội dung</Label>
+                      <Textarea
+                        placeholder="Mặc định từ cài đặt chung"
+                        value={form.close_message_body}
+                        onChange={(e) => setField("close_message_body", e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                </CollapsibleSection>
+
+                {/* Claim message - Collapsible */}
+                <CollapsibleSection
+                  title="Tin nhắn claim ticket"
+                  hasContent={!!(form.claim_message_title || form.claim_message_body)}
+                >
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label>Tiêu đề</Label>
+                      <Input
+                        placeholder="Mặc định từ cài đặt chung"
+                        value={form.claim_message_title}
+                        onChange={(e) => setField("claim_message_title", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Nội dung</Label>
+                      <Textarea
+                        placeholder="Mặc định từ cài đặt chung"
+                        value={form.claim_message_body}
+                        onChange={(e) => setField("claim_message_body", e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                </CollapsibleSection>
+              </TabsContent>
             </Tabs>
 
             {/* ── Save / Cancel ── */}
@@ -1114,6 +1577,207 @@ export function TicketPanels() {
               }
             >
               {deleteMutation.isPending ? "Đang xóa..." : "Xóa"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Create / Edit Group Sheet ── */}
+      <Sheet
+        open={groupSheetOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setGroupSheetOpen(false);
+            setEditingGroup(null);
+          }
+        }}
+      >
+        <SheetContent className="sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>
+              {editingGroup ? "Chỉnh sửa Nhóm Panel" : "Tạo Nhóm Panel"}
+            </SheetTitle>
+            <SheetDescription>
+              {editingGroup
+                ? "Cập nhật cấu hình nhóm panel"
+                : "Gộp nhiều panel vào một nhóm để gửi cùng lúc"}
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="mt-6 space-y-4">
+            <div className="space-y-1.5">
+              <Label>
+                Tên nhóm <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                placeholder="Ví dụ: Hỗ trợ chung"
+                value={groupForm.name}
+                onChange={(e) => setGroupField("name", e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Tiêu đề</Label>
+              <Input
+                placeholder="Tiêu đề embed hiển thị..."
+                value={groupForm.title}
+                onChange={(e) => setGroupField("title", e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Mô tả</Label>
+              <Textarea
+                placeholder="Mô tả nhóm panel..."
+                value={groupForm.description}
+                onChange={(e) => setGroupField("description", e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Màu</Label>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="color"
+                  value={groupForm.color}
+                  onChange={(e) => setGroupField("color", e.target.value)}
+                  className="h-9 w-12 rounded border cursor-pointer shrink-0"
+                />
+                <Input
+                  value={groupForm.color}
+                  onChange={(e) => setGroupField("color", e.target.value)}
+                  className="w-28 font-mono"
+                  placeholder="#5865F2"
+                />
+              </div>
+              <div className="flex gap-2 mt-2">
+                {PRESET_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setGroupField("color", c)}
+                    className={cn(
+                      "h-7 w-7 rounded-full border-2 transition-all",
+                      groupForm.color === c
+                        ? "border-foreground scale-110"
+                        : "border-transparent hover:scale-105"
+                    )}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Kênh Discord</Label>
+              <ChannelSelect
+                filter="text"
+                value={groupForm.channel_id}
+                onChange={(v) => setGroupField("channel_id", v === "__clear__" ? "" : v)}
+                placeholder="Chọn kênh..."
+              />
+            </div>
+
+            <Separator />
+
+            <div className="space-y-3">
+              <Label>Panel trong nhóm</Label>
+              {panels.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Chưa có panel nào. Tạo panel trước khi thêm vào nhóm.
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {panels.map((p) => (
+                    <label
+                      key={p.id}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg border p-2.5 cursor-pointer transition-colors",
+                        groupForm.panel_ids.includes(p.id)
+                          ? "bg-primary/5 border-primary/30"
+                          : "hover:bg-muted/50"
+                      )}
+                    >
+                      <Checkbox
+                        checked={groupForm.panel_ids.includes(p.id)}
+                        onCheckedChange={() => togglePanelInGroup(p.id)}
+                      />
+                      <span
+                        className="h-2.5 w-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: p.color || DEFAULT_COLOR }}
+                      />
+                      <span className="text-sm truncate">{p.name}</span>
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] font-mono ml-auto shrink-0 px-1.5"
+                      >
+                        #{p.id}
+                      </Badge>
+                    </label>
+                  ))}
+                </div>
+              )}
+              {groupForm.panel_ids.length > 0 && (
+                <p className="text-[11px] text-muted-foreground">
+                  Đã chọn {groupForm.panel_ids.length} panel
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setGroupSheetOpen(false);
+                  setEditingGroup(null);
+                }}
+              >
+                Hủy
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={!groupForm.name.trim() || isSavingGroup}
+                onClick={handleSaveGroup}
+              >
+                {isSavingGroup
+                  ? "Đang lưu..."
+                  : editingGroup
+                    ? "Cập nhật"
+                    : "Tạo"}
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* ── Delete Group Confirmation Dialog ── */}
+      <Dialog
+        open={!!deleteGroupTarget}
+        onOpenChange={(open) => !open && setDeleteGroupTarget(null)}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Xóa nhóm panel?</DialogTitle>
+            <DialogDescription>
+              Nhóm{" "}
+              <strong className="text-foreground">{deleteGroupTarget?.name}</strong>{" "}
+              sẽ bị xóa. Các panel trong nhóm sẽ được gỡ ra nhưng không bị xóa.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteGroupTarget(null)}>
+              Hủy
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteGroupMutation.isPending}
+              onClick={() =>
+                deleteGroupTarget && deleteGroupMutation.mutate(deleteGroupTarget.id)
+              }
+            >
+              {deleteGroupMutation.isPending ? "Đang xóa..." : "Xóa"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,0 +1,27 @@
+[
+  {
+    "content": "[P1] EmbedsManager redesign — Discohook-style 2-column layout",
+    "id": "p1",
+    "status": "completed"
+  },
+  {
+    "content": "[P2] Ticket per-panel: model + backend (naming, messages per panel)",
+    "id": "p2-1",
+    "status": "completed"
+  },
+  {
+    "content": "[P2] Ticket per-panel: frontend — add config tab to panel edit sheet",
+    "id": "p2-2",
+    "status": "completed"
+  },
+  {
+    "content": "[P3] Multi-panel grouping: model + backend (TicketPanelGroup)",
+    "id": "p3-1",
+    "status": "completed"
+  },
+  {
+    "content": "[P3] Multi-panel grouping: frontend — group UI in TicketPanels page",
+    "id": "p3-2",
+    "status": "completed"
+  }
+]

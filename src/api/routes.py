@@ -6,7 +6,7 @@ from src.database.config import get_db
 from src.models.models import SystemConfig, Product, Order, User, Coupon, StickyMessage, \
     Ticket, TicketPanel, TicketConfig, TicketBlacklist, TicketNote, \
     TicketForm, TicketTeam, TicketFeedback, TicketTranscript, \
-    TicketFeedbackConfig, TicketClaimConfig, PanelButton
+    TicketFeedbackConfig, TicketClaimConfig, PanelButton, TicketPanelGroup
 from src.schemas.schemas import SystemConfigBase, SystemConfigResponse, ProductBase, ProductResponse, OrderResponse
 from src.bot.manager import start_bot, stop_bot
 from src.api.auth import router as auth_router
@@ -1611,7 +1611,16 @@ def list_ticket_panels(db=Depends(get_db)):
         result.append({
             "id": p.id, "guild_id": p.guild_id, "name": p.name,
             "channel_id": p.channel_id, "message_id": p.message_id,
+            "group_id": p.group_id,
             "title": p.title, "description": p.description, "color": p.color,
+            # Per-panel overrides (null = dùng global)
+            "naming_format": p.naming_format,
+            "open_message_title": p.open_message_title,
+            "open_message_body": p.open_message_body,
+            "close_message_title": p.close_message_title,
+            "close_message_body": p.close_message_body,
+            "claim_message_title": p.claim_message_title,
+            "claim_message_body": p.claim_message_body,
             "created_at": p.created_at.isoformat() if p.created_at else None,
             "is_sent": bool(p.message_id),
             "buttons": btns_data,
@@ -1629,6 +1638,14 @@ def create_ticket_panel(body: dict, db=Depends(get_db)):
         title=body.get("title", "Hỗ trợ"),
         description=body.get("description", "Nhấn nút bên dưới để tạo ticket hỗ trợ."),
         color=body.get("color", "#5865F2"),
+        group_id=body.get("group_id"),
+        naming_format=body.get("naming_format"),
+        open_message_title=body.get("open_message_title"),
+        open_message_body=body.get("open_message_body"),
+        close_message_title=body.get("close_message_title"),
+        close_message_body=body.get("close_message_body"),
+        claim_message_title=body.get("claim_message_title"),
+        claim_message_body=body.get("claim_message_body"),
     )
     db.add(panel)
     db.flush()  # get panel.id
@@ -1654,7 +1671,10 @@ def update_ticket_panel(panel_id: int, body: dict, db=Depends(get_db)):
     panel = db.get(TicketPanel, panel_id)
     if not panel:
         raise HTTPException(status_code=404, detail="Panel not found")
-    for field in ["name", "title", "description", "color", "channel_id"]:
+    for field in ["name", "title", "description", "color", "channel_id", "group_id",
+                   "naming_format", "open_message_title", "open_message_body",
+                   "close_message_title", "close_message_body",
+                   "claim_message_title", "claim_message_body"]:
         if field in body:
             setattr(panel, field, body[field])
     # Replace buttons
@@ -1703,6 +1723,125 @@ def delete_ticket_panel(panel_id: int, db=Depends(get_db)):
     db.delete(panel)
     db.commit()
     return {"ok": True}
+
+
+# ── Ticket Panel Groups ──────────────────────────────────────────────────────
+
+@router.get("/ticket-panel-groups")
+def list_ticket_panel_groups(db=Depends(get_db)):
+    groups = db.execute(
+        select(TicketPanelGroup)
+        .options(joinedload(TicketPanelGroup.panels).joinedload(TicketPanel.buttons))
+        .order_by(TicketPanelGroup.created_at.desc())
+    ).unique().scalars().all()
+    result = []
+    for g in groups:
+        panel_ids = [p.id for p in g.panels] if g.panels else []
+        result.append({
+            "id": g.id, "guild_id": g.guild_id, "name": g.name,
+            "channel_id": g.channel_id, "message_id": g.message_id,
+            "title": g.title, "description": g.description, "color": g.color,
+            "created_at": g.created_at.isoformat() if g.created_at else None,
+            "is_sent": bool(g.message_id),
+            "panel_ids": panel_ids,
+        })
+    return result
+
+
+@router.post("/ticket-panel-groups")
+def create_ticket_panel_group(body: dict, db=Depends(get_db)):
+    sc = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    guild_id = sc.guild_id if sc else ""
+    group = TicketPanelGroup(
+        guild_id=guild_id,
+        name=body.get("name", "Multi Panel"),
+        title=body.get("title", "Hỗ trợ"),
+        description=body.get("description", ""),
+        color=body.get("color", "#5865F2"),
+        channel_id=body.get("channel_id"),
+    )
+    db.add(group)
+    db.flush()
+    # Assign panels if provided
+    for pid in body.get("panel_ids", []):
+        panel = db.get(TicketPanel, pid)
+        if panel:
+            panel.group_id = group.id
+    db.commit()
+    db.refresh(group)
+    return {"ok": True, "id": group.id}
+
+
+@router.put("/ticket-panel-groups/{group_id}")
+def update_ticket_panel_group(group_id: int, body: dict, db=Depends(get_db)):
+    group = db.get(TicketPanelGroup, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    for field in ["name", "title", "description", "color", "channel_id"]:
+        if field in body:
+            setattr(group, field, body[field])
+    # Reassign panels
+    if "panel_ids" in body:
+        # Unassign old panels
+        old_panels = db.execute(
+            select(TicketPanel).where(TicketPanel.group_id == group_id)
+        ).scalars().all()
+        for p in old_panels:
+            p.group_id = None
+        # Assign new panels
+        for pid in body["panel_ids"]:
+            panel = db.get(TicketPanel, pid)
+            if panel:
+                panel.group_id = group_id
+    db.commit()
+    return {"ok": True}
+
+
+@router.delete("/ticket-panel-groups/{group_id}")
+def delete_ticket_panel_group(group_id: int, db=Depends(get_db)):
+    group = db.get(TicketPanelGroup, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    # Unassign panels (don't delete them)
+    panels = db.execute(
+        select(TicketPanel).where(TicketPanel.group_id == group_id)
+    ).scalars().all()
+    for p in panels:
+        p.group_id = None
+    db.delete(group)
+    db.commit()
+    return {"ok": True}
+
+
+# ── Ticket Panel Resolved Config ──────────────────────────────────────────────
+
+@router.get("/ticket-panels/{panel_id}/resolved-config")
+def get_panel_resolved_config(panel_id: int, db=Depends(get_db)):
+    """Return merged config: panel overrides + global TicketConfig fallback."""
+    panel = db.get(TicketPanel, panel_id)
+    if not panel:
+        raise HTTPException(status_code=404, detail="Panel not found")
+    cfg = db.execute(select(TicketConfig).limit(1)).scalars().first()
+    def resolve(panel_val, global_val, default=""):
+        return panel_val if panel_val is not None else (global_val if global_val is not None else default)
+    return {
+        "naming_format": resolve(panel.naming_format, cfg.naming_format if cfg else None, "ticket-{number}"),
+        "open_message_title": resolve(panel.open_message_title, cfg.open_message_title if cfg else None),
+        "open_message_body": resolve(panel.open_message_body, cfg.open_message_body if cfg else None),
+        "close_message_title": resolve(panel.close_message_title, cfg.close_message_title if cfg else None),
+        "close_message_body": resolve(panel.close_message_body, cfg.close_message_body if cfg else None),
+        "claim_message_title": resolve(panel.claim_message_title, cfg.claim_message_title if cfg else None),
+        "claim_message_body": resolve(panel.claim_message_body, cfg.claim_message_body if cfg else None),
+        "source": {
+            "naming_format": "panel" if panel.naming_format is not None else "global",
+            "open_message_title": "panel" if panel.open_message_title is not None else "global",
+            "open_message_body": "panel" if panel.open_message_body is not None else "global",
+            "close_message_title": "panel" if panel.close_message_title is not None else "global",
+            "close_message_body": "panel" if panel.close_message_body is not None else "global",
+            "claim_message_title": "panel" if panel.claim_message_title is not None else "global",
+            "claim_message_body": "panel" if panel.claim_message_body is not None else "global",
+        }
+    }
 
 
 # ── Tickets ───────────────────────────────────────────────────────────────────
