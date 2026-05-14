@@ -126,6 +126,29 @@ class TempVoiceConfig(Base):
     join_channel_id = Column(String, nullable=True)
     category_id = Column(String, nullable=True)
     enabled = Column(Boolean, default=True)
+    # Defaults for new voice rooms
+    default_user_limit = Column(Integer, default=0)         # 0 = unlimited
+    default_bitrate = Column(Integer, default=64000)         # in bps
+    naming_format = Column(String, default="{user}'s Channel")
+    # Behavior
+    auto_delete_seconds = Column(Integer, default=0)         # 0 = when empty
+    # Permission toggles
+    allow_rename = Column(Boolean, default=True)
+    allow_limit = Column(Boolean, default=True)
+    allow_lock = Column(Boolean, default=True)
+    allow_hide = Column(Boolean, default=True)
+    # Interface channel for control panel buttons
+    interface_channel_id = Column(String, nullable=True)
+    # New fields
+    default_user_limit = Column(Integer, default=0)          # 0 = unlimited
+    default_bitrate = Column(Integer, default=64000)         # in bps
+    naming_format = Column(String, default="{user}'s Channel")
+    auto_delete_seconds = Column(Integer, default=0)         # 0 = delete when empty
+    allow_rename = Column(Boolean, default=True)
+    allow_limit = Column(Boolean, default=True)
+    allow_lock = Column(Boolean, default=True)
+    allow_hide = Column(Boolean, default=True)
+    interface_channel_id = Column(String, nullable=True)     # control panel channel
 
 class TempVoiceRoom(Base):
     __tablename__ = "temp_voice_rooms"
@@ -216,6 +239,13 @@ class TicketConfig(Base):
     cooldown_minutes = Column(Integer, default=0)
     auto_close_hours = Column(Integer, default=0)        # 0 = tắt
     naming_format = Column(String, default="ticket-{number}")  # hoặc ticket-{username}
+    # ── Tin nhắn tự động ──
+    open_message_title = Column(String, nullable=True)
+    open_message_body = Column(Text, nullable=True)
+    close_message_title = Column(String, nullable=True)
+    close_message_body = Column(Text, nullable=True)
+    claim_message_title = Column(String, nullable=True)
+    claim_message_body = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class TicketPanel(Base):
@@ -228,11 +258,25 @@ class TicketPanel(Base):
     title = Column(String, default="Hỗ trợ")
     description = Column(Text, default="Nhấn nút bên dưới để tạo ticket hỗ trợ.")
     color = Column(String, default="#5865F2")
-    button_label = Column(String, default="Tạo Ticket")
-    button_emoji = Column(String, default="🎫")
-    button_style = Column(String, default="primary")     # primary | secondary | success | danger
-    category_id = Column(String, nullable=True)          # override category riêng cho panel
+    button_label = Column(String, default="Tạo Ticket")  # legacy single-button
+    button_emoji = Column(String, default="🎫")           # legacy single-button
+    button_style = Column(String, default="primary")      # legacy single-button
+    category_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    buttons = relationship("PanelButton", back_populates="panel", cascade="all, delete-orphan", order_by="PanelButton.sort_order")
+
+
+class PanelButton(Base):
+    __tablename__ = "panel_buttons"
+    id = Column(Integer, primary_key=True, index=True)
+    panel_id = Column(Integer, ForeignKey("ticket_panels.id", ondelete="CASCADE"), nullable=False)
+    label = Column(String, nullable=False, default="Tạo Ticket")
+    emoji = Column(String, nullable=True)
+    style = Column(String, default="primary")             # primary | secondary | success | danger
+    category_id = Column(String, nullable=True)           # override category cho button này
+    form_id = Column(String, nullable=True)               # liên kết với ticket form
+    sort_order = Column(Integer, default=0)
+    panel = relationship("TicketPanel", back_populates="buttons")
 
 class Ticket(Base):
     __tablename__ = "tickets"
@@ -267,3 +311,60 @@ class TicketNote(Base):
     author_id = Column(String, nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class TicketForm(Base):
+    __tablename__ = "ticket_forms"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    panel_id = Column(Integer, ForeignKey("ticket_panels.id"), nullable=True)
+    name = Column(String, nullable=False, default="Form mặc định")
+    questions = Column(JSON, default=list)  # [{label, placeholder, required, style: short|paragraph}]
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class TicketTeam(Base):
+    __tablename__ = "ticket_teams"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    role_ids = Column(JSON, default=list)   # Discord role IDs
+    panel_ids = Column(JSON, default=list)  # TicketPanel IDs assigned to this team
+    color = Column(String, default="#5865F2")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class TicketFeedback(Base):
+    __tablename__ = "ticket_feedback"
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(Integer, ForeignKey("tickets.id"), nullable=False)
+    guild_id = Column(String, nullable=False)
+    user_id = Column(String, nullable=False)
+    rating = Column(Integer, nullable=False)  # 1-5
+    comment = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class TicketTranscript(Base):
+    __tablename__ = "ticket_transcripts"
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(Integer, ForeignKey("tickets.id"), nullable=False, unique=True)
+    guild_id = Column(String, nullable=False)
+    channel_name = Column(String, nullable=True)
+    message_count = Column(Integer, default=0)
+    participants = Column(JSON, default=list)  # list Discord user IDs
+    content_html = Column(Text, nullable=True)  # stored transcript HTML
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class TicketFeedbackConfig(Base):
+    __tablename__ = "ticket_feedback_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, unique=True)
+    enabled = Column(Boolean, default=False)
+    channel_id = Column(String, nullable=True)
+
+class TicketClaimConfig(Base):
+    __tablename__ = "ticket_claim_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, unique=True)
+    enabled = Column(Boolean, default=True)
+    exclusive = Column(Boolean, default=False)
+    notify = Column(Boolean, default=True)
+    notify_channel_id = Column(String, nullable=True)

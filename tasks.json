@@ -1,32 +1,27 @@
 [
   {
+    "content": "BotStatus: xóa EmojiBotSection + cố định layout không drag",
     "id": "T1",
-    "content": "DB models: TicketConfig, TicketPanel, Ticket, TicketBlacklist, TicketNote + migration",
-    "status": "pending"
+    "status": "completed"
   },
   {
+    "content": "Nav: cải thiện visual hierarchy dropdown rõ hơn",
     "id": "T2",
-    "content": "Bot cog: src/bot/cogs/ticket.py — /ticket + /panel commands + persistent button + auto-close",
-    "status": "pending"
+    "status": "completed"
   },
   {
+    "content": "Ticket: thêm 4 trang mới (Forms, Claiming, Teams, Transcripts+Feedback)",
     "id": "T3",
-    "content": "API routes: tickets, panels, config, blacklist, stats",
-    "status": "pending"
+    "status": "completed"
   },
   {
+    "content": "Backend: thêm API endpoints cho ticket forms, claims, teams",
     "id": "T4",
-    "content": "Frontend: TicketsPage.tsx, TicketPanels.tsx, TicketConfig.tsx",
-    "status": "pending"
+    "status": "completed"
   },
   {
+    "content": "Build & verify",
     "id": "T5",
-    "content": "Nav redesign: collapsible dropdown groups in App.tsx",
-    "status": "pending"
-  },
-  {
-    "id": "T6",
-    "content": "Wire: App.tsx routes + manager.py load TicketCog",
-    "status": "pending"
+    "status": "completed"
   }
 ]

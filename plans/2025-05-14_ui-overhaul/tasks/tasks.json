@@ -1,0 +1,32 @@
+[
+  {
+    "content": "[P1] Create shared ChannelSelect + RoleSelect + useDiscordData hook",
+    "id": "p1-1",
+    "status": "completed"
+  },
+  {
+    "content": "[P1] Replace text inputs with dropdowns across 6+ pages",
+    "id": "p1-2",
+    "status": "completed"
+  },
+  {
+    "content": "[P2] EmbedsManager redesign — Discohook-style vertical sidebar layout",
+    "id": "p2-1",
+    "status": "completed"
+  },
+  {
+    "content": "[P3] TempVoice model expansion + backend routes",
+    "id": "p3-1",
+    "status": "completed"
+  },
+  {
+    "content": "[P3] TempVoice frontend expansion with all new settings",
+    "id": "p3-2",
+    "status": "completed"
+  },
+  {
+    "content": "[P4] Ticket multi-panel end-to-end verification",
+    "id": "p4-1",
+    "status": "completed"
+  }
+]

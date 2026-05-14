@@ -1,13 +1,15 @@
 import { useState, useMemo } from "react";
+import type { ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +25,8 @@ import {
   ShoppingCart, CheckCircle, Package, Timer, Star, Gift,
   Trophy, UserPlus, ShieldAlert, RotateCcw, Plus, Trash2,
   ChevronDown, ChevronUp, Image, Variable,
+  Ticket, TicketX, UserCheck, FileText, UserMinus, Ban,
+  Clock, UserPlus2, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +46,7 @@ interface EmbedTemplate {
   description: string;
   color: string;
   author: string;
+  author_icon_url: string;
   footer: string;
   thumbnail_url: string;
   image_url: string;
@@ -53,7 +58,14 @@ type FormState = Omit<EmbedTemplate, "id"> & { existingId?: number };
 
 // ─── Event definitions ───────────────────────────────────────────────────────
 
-const EMBED_EVENTS = [
+interface EmbedEventDef {
+  key: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  desc: string;
+}
+
+const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "don_hang_moi",      label: "Đơn hàng mới",           icon: ShoppingCart, desc: "Khi admin tạo đơn /tao_don" },
   { key: "thanh_toan",        label: "Thanh toán thành công",  icon: CheckCircle,  desc: "Khi PayOS webhook PAID" },
   { key: "giao_hang",         label: "Giao hàng",              icon: Package,      desc: "Khi admin giao hàng" },
@@ -63,7 +75,24 @@ const EMBED_EVENTS = [
   { key: "ket_qua_giveaway",  label: "Kết quả Giveaway",       icon: Trophy,       desc: "Khi giveaway kết thúc, công bố winner" },
   { key: "welcome",           label: "Chào mừng thành viên",   icon: UserPlus,     desc: "Khi member join server" },
   { key: "canh_bao",          label: "Cảnh báo thành viên",    icon: ShieldAlert,  desc: "Khi admin dùng /warn" },
-] as const;
+  { key: "ticket_mo",         label: "Mở Ticket",              icon: Ticket,       desc: "Khi user tạo ticket mới" },
+  { key: "ticket_dong",       label: "Đóng Ticket",            icon: TicketX,      desc: "Khi ticket bị đóng" },
+  { key: "ticket_nhan",       label: "Nhận Ticket",            icon: UserCheck,    desc: "Khi staff nhận ticket (claim)" },
+  { key: "ticket_transcript", label: "Transcript",             icon: FileText,     desc: "Khi xuất transcript ticket" },
+  { key: "kick",              label: "Kick thành viên",        icon: UserMinus,    desc: "Khi bot kick user" },
+  { key: "ban",               label: "Ban thành viên",         icon: Ban,          desc: "Khi bot ban user" },
+  { key: "timeout",           label: "Timeout thành viên",     icon: Clock,        desc: "Khi bot timeout user" },
+  { key: "invite_join",       label: "Tham gia qua Invite",    icon: UserPlus2,    desc: "Khi user join qua link invite" },
+];
+
+// ─── Event groups ────────────────────────────────────────────────────────────
+
+const EVENT_GROUPS: { label: string; keys: string[] }[] = [
+  { label: "Đơn hàng",    keys: ["don_hang_moi", "thanh_toan", "giao_hang", "don_hang_het_han"] },
+  { label: "Cộng đồng",   keys: ["giveaway", "ket_qua_giveaway", "welcome", "feedback"] },
+  { label: "Ticket",      keys: ["ticket_mo", "ticket_dong", "ticket_nhan", "ticket_transcript"] },
+  { label: "Kiểm duyệt", keys: ["canh_bao", "kick", "ban", "timeout", "invite_join"] },
+];
 
 // ─── Hardcoded defaults ─────────────────────────────────────────────────────
 
@@ -73,6 +102,7 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     description: "Vui lòng thanh toán để hoàn tất đơn hàng.\nHết hạn sau 15 phút.",
     color: "#F0B232",
     author: "",
+    author_icon_url: "",
     footer: "Đang chờ thanh toán...",
     thumbnail_url: "",
     image_url: "",
@@ -89,6 +119,7 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     description: "Cảm ơn {user.mention}! Đơn hàng #{order.id} đã được thanh toán.",
     color: "#57F287",
     author: "",
+    author_icon_url: "",
     footer: "Cảm ơn bạn đã mua hàng!",
     thumbnail_url: "",
     image_url: "",
@@ -103,6 +134,7 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     description: "Đơn hàng #{order.id} của bạn đã được giao thành công!",
     color: "#5865F2",
     author: "",
+    author_icon_url: "",
     footer: "Cảm ơn bạn đã mua hàng!",
     thumbnail_url: "",
     image_url: "",
@@ -117,6 +149,7 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     description: "Đơn hàng #{order.id} của bạn đã hết hạn do chưa thanh toán sau 15 phút.",
     color: "#ED4245",
     author: "",
+    author_icon_url: "",
     footer: "Tạo đơn mới để tiếp tục mua hàng.",
     thumbnail_url: "",
     image_url: "",
@@ -130,6 +163,7 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     description: "{user} đã gửi đánh giá cho {product.name}",
     color: "#FEE75C",
     author: "",
+    author_icon_url: "",
     footer: "Feedback system",
     thumbnail_url: "",
     image_url: "",
@@ -144,6 +178,7 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     description: "{prize}\n\nNhấn nút bên dưới để tham gia!\nKết thúc: {ends_at}",
     color: "#FF73FA",
     author: "Tổ chức bởi {host}",
+    author_icon_url: "",
     footer: "Kết thúc lúc {ends_at}",
     thumbnail_url: "",
     image_url: "",
@@ -157,6 +192,7 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     description: "Giveaway đã kết thúc!\nPhần thưởng: {prize}",
     color: "#FF73FA",
     author: "",
+    author_icon_url: "",
     footer: "Chúc mừng người chiến thắng!",
     thumbnail_url: "",
     image_url: "",
@@ -170,6 +206,7 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     description: "Xin chào {user.mention}, chúc bạn có thời gian vui vẻ tại đây!",
     color: "#57F287",
     author: "",
+    author_icon_url: "",
     footer: "Thành viên thứ {member_count}",
     thumbnail_url: "",
     image_url: "",
@@ -181,12 +218,124 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     description: "{user.mention} đã nhận cảnh báo.",
     color: "#FEE75C",
     author: "",
+    author_icon_url: "",
     footer: "Hãy tuân thủ nội quy server",
     thumbnail_url: "",
     image_url: "",
     fields: [
       { name: "Lý do", value: "{reason}", inline: false },
       { name: "Tổng cảnh báo", value: "{warn_count}", inline: true },
+    ],
+    enabled: true,
+  },
+  ticket_mo: {
+    title: "🎫 Ticket #{ticket_id} đã được tạo",
+    description: "Xin chào {user.mention}!\nTicket của bạn đã được tạo.\nVui lòng mô tả vấn đề để được hỗ trợ.",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "Hỗ trợ sẽ đến sớm!",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Ticket ID", value: "#{ticket_id}", inline: true },
+    ],
+    enabled: true,
+  },
+  ticket_dong: {
+    title: "🔒 Ticket đã đóng",
+    description: "Ticket #{ticket_id} của {user.mention} đã được đóng.",
+    color: "#ED4245",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Lý do", value: "{close_reason}", inline: false },
+    ],
+    enabled: true,
+  },
+  ticket_nhan: {
+    title: "✋ Ticket đã được nhận",
+    description: "{staff.mention} đã nhận ticket #{ticket_id}.",
+    color: "#57F287",
+    author: "",
+    author_icon_url: "",
+    footer: "Chúng tôi sẽ hỗ trợ bạn sớm nhất!",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  ticket_transcript: {
+    title: "📄 Transcript Ticket #{ticket_id}",
+    description: "Transcript của ticket {user.mention} đã được lưu.",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  kick: {
+    title: "👢 Đã kick khỏi server",
+    description: "{user.mention} đã bị kick khỏi server.",
+    color: "#ED4245",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Lý do", value: "{reason}", inline: false },
+      { name: "Mod", value: "{mod}", inline: true },
+    ],
+    enabled: true,
+  },
+  ban: {
+    title: "🔨 Đã bị cấm vĩnh viễn",
+    description: "{user.mention} đã bị ban khỏi server.",
+    color: "#ED4245",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Lý do", value: "{reason}", inline: false },
+      { name: "Mod", value: "{mod}", inline: true },
+    ],
+    enabled: true,
+  },
+  timeout: {
+    title: "⏰ Đã bị timeout",
+    description: "{user.mention} đã bị timeout.",
+    color: "#FEE75C",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Thời gian", value: "{duration}", inline: true },
+      { name: "Lý do", value: "{reason}", inline: false },
+    ],
+    enabled: true,
+  },
+  invite_join: {
+    title: "👋 Thành viên mới tham gia",
+    description: "{user.mention} đã tham gia server qua lời mời của {inviter}.",
+    color: "#57F287",
+    author: "",
+    author_icon_url: "",
+    footer: "Thành viên thứ {member_count}",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Invite code", value: "{invite_code}", inline: true },
     ],
     enabled: true,
   },
@@ -214,6 +363,13 @@ const VARIABLES: { token: string; desc: string }[] = [
   { token: "{warn_count}",     desc: "Tổng số cảnh báo (canh_bao)" },
   { token: "{stars}",          desc: "Số sao (feedback)" },
   { token: "{content}",        desc: "Nội dung feedback" },
+  { token: "{ticket_id}",      desc: "ID ticket" },
+  { token: "{close_reason}",   desc: "Lý do đóng ticket" },
+  { token: "{staff.mention}",  desc: "Staff nhận ticket" },
+  { token: "{duration}",       desc: "Thời gian timeout" },
+  { token: "{mod}",            desc: "Tên mod thực hiện" },
+  { token: "{invite_code}",    desc: "Mã invite" },
+  { token: "{inviter}",        desc: "Người mời" },
 ];
 
 // ─── Dummy data for preview ─────────────────────────────────────────────────
@@ -234,17 +390,24 @@ const DUMMY: Record<string, string> = {
   "{host}": "@Admin",
   "{winners_count}": "2",
   "{winners}": "@User1, @User2",
-  "{reason}": "Spam tin nhắn",
+  "{reason}": "Vi phạm nội quy",
   "{warn_count}": "3",
   "{stars}": "⭐⭐⭐⭐⭐",
   "{content}": "Sản phẩm rất tốt, giao hàng nhanh!",
+  "{ticket_id}": "42",
+  "{close_reason}": "Đã giải quyết",
+  "{staff.mention}": "@ModTran",
+  "{duration}": "10 phút",
+  "{mod}": "Mod Trần",
+  "{invite_code}": "abc123",
+  "{inviter}": "@Admin",
 };
 
 function replaceVars(text: string): string {
   return text.replace(/\{[\w.]+\}/g, (m) => DUMMY[m] ?? m);
 }
 
-function parseBold(text: string): React.ReactNode[] {
+function parseBold(text: string): ReactNode[] {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
@@ -266,6 +429,7 @@ function defaultForm(eventKey: string): FormState {
     description: d.description,
     color: d.color,
     author: d.author,
+    author_icon_url: d.author_icon_url,
     footer: d.footer,
     thumbnail_url: d.thumbnail_url,
     image_url: d.image_url,
@@ -280,11 +444,34 @@ function defaultForm(eventKey: string): FormState {
 function DiscordPreview({ form }: { form: FormState }) {
   const inlineFields = form.fields.filter((f) => f.inline);
   const blockFields = form.fields.filter((f) => !f.inline);
+  const now = new Date();
+  const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
   return (
     <div className="rounded-lg bg-[#313338] p-4 font-sans text-sm">
-      <div className="flex gap-3">
-        {/* Embed card */}
+      {/* Bot message header */}
+      <div className="flex items-start gap-3 mb-3">
+        <div
+          className="h-10 w-10 rounded-full flex items-center justify-center shrink-0 text-lg"
+          style={{ backgroundColor: form.color || "#5865F2" }}
+        >
+          🤖
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-[#F2F3F5] text-sm">Dashboard Bot</span>
+            <span className="bg-[#5865F2] text-white text-[10px] font-medium px-1 py-0.5 rounded leading-none">
+              BOT
+            </span>
+            <span className="text-xs text-[#949BA4] ml-1">
+              Hôm nay lúc {timeStr}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Embed card */}
+      <div className="flex gap-3 pl-[52px]">
         <div
           className="relative max-w-[520px] min-w-[200px] rounded bg-[#2B2D31] overflow-hidden"
           style={{ borderLeft: `4px solid ${form.color || "#5865F2"}` }}
@@ -294,15 +481,27 @@ function DiscordPreview({ form }: { form: FormState }) {
             {/* Content side */}
             <div className="flex-1 p-4 space-y-2 min-w-0">
               {/* Author */}
-              {form.author && (
-                <div className="text-xs font-medium text-[#B5BAC1]">
-                  {replaceVars(form.author)}
+              {(form.author || form.author_icon_url) && (
+                <div className="flex items-center gap-2">
+                  {form.author_icon_url && (
+                    <img
+                      src={form.author_icon_url}
+                      alt=""
+                      className="h-6 w-6 rounded-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                  )}
+                  {form.author && (
+                    <span className="text-xs font-medium text-[#B5BAC1]">
+                      {replaceVars(form.author)}
+                    </span>
+                  )}
                 </div>
               )}
 
               {/* Title */}
               {form.title && (
-                <div className="font-semibold text-[#F2F3F5] leading-snug">
+                <div className="font-semibold text-[#0A66C2] leading-snug">
                   {parseBold(replaceVars(form.title))}
                 </div>
               )}
@@ -332,7 +531,7 @@ function DiscordPreview({ form }: { form: FormState }) {
 
               {/* Inline fields grid */}
               {inlineFields.length > 0 && (
-                <div className="grid grid-cols-3 gap-x-4 pt-1">
+                <div className="grid grid-cols-2 gap-x-4 pt-1">
                   {inlineFields.map((f, i) => (
                     <div key={`i${i}`} className="min-w-0">
                       <div className="font-semibold text-[#F2F3F5] text-sm truncate">
@@ -359,11 +558,11 @@ function DiscordPreview({ form }: { form: FormState }) {
               )}
 
               {/* Footer + timestamp */}
-              {(form.footer) && (
+              {form.footer && (
                 <div className="flex items-center gap-2 pt-1 text-xs text-[#B5BAC1]">
-                  {form.footer && <span>{replaceVars(form.footer)}</span>}
+                  <span>{replaceVars(form.footer)}</span>
                   <span>•</span>
-                  <span>Hôm nay lúc 15:30</span>
+                  <span>Hôm nay lúc {timeStr}</span>
                 </div>
               )}
             </div>
@@ -401,6 +600,7 @@ export function EmbedsManager() {
   // Collapsible sections
   const [imagesOpen, setImagesOpen] = useState(false);
   const [fieldsOpen, setFieldsOpen] = useState(true);
+  const [authorOpen, setAuthorOpen] = useState(false);
   const [varsOpen, setVarsOpen] = useState(false);
 
   // Reset dialog
@@ -430,6 +630,7 @@ export function EmbedsManager() {
         description: payload.description,
         color: payload.color,
         author: payload.author,
+        author_icon_url: payload.author_icon_url,
         footer: payload.footer,
         thumbnail_url: payload.thumbnail_url,
         image_url: payload.image_url,
@@ -459,7 +660,6 @@ export function EmbedsManager() {
     onSuccess: (data) => {
       toast({ title: "Đã lưu", description: "Embed đã được lưu thành công." });
       queryClient.invalidateQueries({ queryKey: ["embeds"] });
-      // Update existingId so next save is PUT
       setForm((f) => ({ ...f, existingId: data.id ?? f.existingId }));
     },
     onError: () => {
@@ -479,6 +679,7 @@ export function EmbedsManager() {
         description: saved.description,
         color: saved.color,
         author: saved.author,
+        author_icon_url: saved.author_icon_url ?? "",
         footer: saved.footer,
         thumbnail_url: saved.thumbnail_url,
         image_url: saved.image_url,
@@ -491,6 +692,7 @@ export function EmbedsManager() {
     }
     setImagesOpen(false);
     setFieldsOpen(true);
+    setAuthorOpen(false);
     setVarsOpen(false);
   };
 
@@ -521,41 +723,49 @@ export function EmbedsManager() {
     <div className="flex flex-col lg:flex-row gap-0 h-[calc(100vh-8rem)]">
       {/* ── Left Panel: Event List ── */}
       <div className="lg:w-[280px] shrink-0 border-b lg:border-b-0 lg:border-r bg-card">
-        {/* Mobile: horizontal scroll */}
-        <div className="lg:hidden flex overflow-x-auto gap-2 p-3 scrollbar-none">
-          {isLoading
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-36 shrink-0 rounded-lg" />
-              ))
-            : EMBED_EVENTS.map((ev) => {
-                const Icon = ev.icon;
-                const active = selectedKey === ev.key;
-                const saved = savedMap.has(ev.key);
-                return (
-                  <button
-                    key={ev.key}
-                    onClick={() => selectEvent(ev.key)}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg border shrink-0 transition-all text-left",
-                      active
-                        ? "border-primary bg-primary/5 shadow-sm"
-                        : "border-transparent bg-muted/50 hover:bg-muted"
-                    )}
-                  >
-                    <Icon className={cn("h-4 w-4 shrink-0", active ? "text-primary" : "text-muted-foreground")} />
-                    <span className={cn("text-sm font-medium whitespace-nowrap", active ? "text-foreground" : "text-muted-foreground")}>
-                      {ev.label}
+        {/* Mobile: dropdown selector */}
+        <div className="lg:hidden p-3">
+          <Select value={selectedKey} onValueChange={(v) => selectEvent(v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Chọn event...">
+                {currentEvent && (() => {
+                  const Icon = currentEvent.icon;
+                  return (
+                    <span className="flex items-center gap-2">
+                      <Icon className="h-4 w-4 text-primary" />
+                      {currentEvent.label}
                     </span>
-                    {saved && (
-                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
-                    )}
-                  </button>
-                );
-              })}
+                  );
+                })()}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {EVENT_GROUPS.map((group) => (
+                <SelectGroup key={group.label}>
+                  <SelectLabel className="text-xs uppercase tracking-wide">{group.label}</SelectLabel>
+                  {group.keys.map((key) => {
+                    const ev = EMBED_EVENTS.find((e) => e.key === key);
+                    if (!ev) return null;
+                    const Icon = ev.icon;
+                    const saved = savedMap.has(ev.key);
+                    return (
+                      <SelectItem key={ev.key} value={ev.key}>
+                        <span className="flex items-center gap-2">
+                          <Icon className="h-3.5 w-3.5" />
+                          {ev.label}
+                          {saved && <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectGroup>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Desktop: vertical list */}
-        <div className="hidden lg:flex flex-col p-3 gap-1.5 overflow-y-auto h-full">
+        {/* Desktop: vertical list grouped by category */}
+        <div className="hidden lg:flex flex-col p-3 gap-1 overflow-y-auto h-full">
           <div className="px-2 pb-2">
             <h2 className="text-sm font-semibold text-foreground">Embed Events</h2>
             <p className="text-xs text-muted-foreground mt-0.5">Chọn event để tùy chỉnh</p>
@@ -567,47 +777,58 @@ export function EmbedsManager() {
                   <Skeleton className="h-3 w-36" />
                 </div>
               ))
-            : EMBED_EVENTS.map((ev) => {
-                const Icon = ev.icon;
-                const active = selectedKey === ev.key;
-                const saved = savedMap.has(ev.key);
-                return (
-                  <button
-                    key={ev.key}
-                    onClick={() => selectEvent(ev.key)}
-                    className={cn(
-                      "flex items-start gap-3 rounded-lg border px-3 py-2.5 text-left transition-all",
-                      active
-                        ? "border-primary/50 bg-primary/5 shadow-sm"
-                        : "border-transparent hover:bg-muted/80"
-                    )}
-                  >
-                    <div className={cn(
-                      "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
-                      active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                    )}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className={cn("text-sm font-medium truncate", active ? "text-foreground" : "text-muted-foreground")}>
-                          {ev.label}
-                        </span>
-                        {saved ? (
-                          <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0 text-[10px] px-1.5 py-0 h-4 shrink-0">
-                            Đã tùy chỉnh
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
-                            Mặc định
-                          </Badge>
+            : EVENT_GROUPS.map((group) => (
+                <div key={group.label}>
+                  <div className="px-2 pt-2 pb-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      {group.label}
+                    </span>
+                  </div>
+                  {group.keys.map((key) => {
+                    const ev = EMBED_EVENTS.find((e) => e.key === key);
+                    if (!ev) return null;
+                    const Icon = ev.icon;
+                    const active = selectedKey === ev.key;
+                    const saved = savedMap.has(ev.key);
+                    return (
+                      <button
+                        key={ev.key}
+                        onClick={() => selectEvent(ev.key)}
+                        className={cn(
+                          "flex items-start gap-3 rounded-lg border px-3 py-2.5 text-left transition-all w-full",
+                          active
+                            ? "border-primary/50 bg-primary/5 shadow-sm"
+                            : "border-transparent hover:bg-muted/80"
                         )}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{ev.desc}</p>
-                    </div>
-                  </button>
-                );
-              })}
+                      >
+                        <div className={cn(
+                          "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
+                          active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                        )}>
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className={cn("text-sm font-medium truncate", active ? "text-foreground" : "text-muted-foreground")}>
+                              {ev.label}
+                            </span>
+                            {saved ? (
+                              <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0 text-[10px] px-1.5 py-0 h-4 shrink-0">
+                                Đã tùy chỉnh
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
+                                Mặc định
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5 truncate">{ev.desc}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
         </div>
       </div>
 
@@ -695,17 +916,6 @@ export function EmbedsManager() {
             </div>
           </div>
 
-          {/* Author */}
-          <div className="space-y-1.5">
-            <Label htmlFor="embed-author">Tác giả</Label>
-            <Input
-              id="embed-author"
-              placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
-              value={form.author}
-              onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
-            />
-          </div>
-
           {/* Footer */}
           <div className="space-y-1.5">
             <Label htmlFor="embed-footer">Chân trang</Label>
@@ -718,6 +928,40 @@ export function EmbedsManager() {
           </div>
 
           <Separator />
+
+          {/* ── Collapsible: Author ── */}
+          <div className="rounded-lg border">
+            <button
+              className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
+              onClick={() => setAuthorOpen(!authorOpen)}
+            >
+              <span className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4 text-muted-foreground" />
+                Tác giả
+              </span>
+              {authorOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+            {authorOpen && (
+              <div className="px-3 pb-3 space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Tên tác giả</Label>
+                  <Input
+                    placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
+                    value={form.author}
+                    onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Icon URL</Label>
+                  <Input
+                    placeholder="https://example.com/icon.png"
+                    value={form.author_icon_url}
+                    onChange={(e) => setForm((f) => ({ ...f, author_icon_url: e.target.value }))}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* ── Collapsible: Images ── */}
           <div className="rounded-lg border">
@@ -869,7 +1113,16 @@ export function EmbedsManager() {
       </div>
 
       {/* ── Right Panel: Discord Preview ── */}
-      <div className="hidden lg:flex lg:w-[380px] shrink-0 flex-col border-l bg-card">
+      {/* Mobile preview */}
+      <div className="lg:hidden p-4 border-t">
+        <h3 className="text-sm font-semibold mb-2">Xem trước Discord</h3>
+        <DiscordPreview form={form} />
+        <p className="text-[11px] text-muted-foreground italic mt-2">
+          * Preview sử dụng dữ liệu giả để minh họa
+        </p>
+      </div>
+      {/* Desktop preview */}
+      <div className="hidden lg:flex lg:w-[400px] shrink-0 flex-col border-l bg-card">
         <div className="p-4 flex-1 overflow-y-auto">
           <div className="space-y-2">
             <div className="flex items-center justify-between">

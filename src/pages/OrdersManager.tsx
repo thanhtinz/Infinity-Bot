@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { ChannelSelect } from "@/components/ChannelSelect";
 import { RefreshCw, Plus, ShoppingCart, User2, Truck, ExternalLink, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Order, Product } from "../types";
@@ -52,13 +53,6 @@ export function OrdersManager() {
     queryKey: ["products"],
     queryFn: () => fetch("/api/products", { credentials: "include" }).then((r) => r.json()),
   });
-
-  const { data: channels = [] } = useQuery<{id: string; name: string; type: number}[]>({
-    queryKey: ["discord-channels"],
-    queryFn: () => fetch("/api/discord/channels/all", { credentials: "include" }).then(r => r.json()).catch(() => []),
-    staleTime: 120_000,
-  });
-  const textChannels = channels.filter(c => c.type === 0);
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) =>
@@ -387,25 +381,12 @@ export function OrdersManager() {
             {/* Kênh gửi QR PayOS */}
             <div className="space-y-1.5">
               <Label>Kênh gửi QR thanh toán</Label>
-              {textChannels.length > 0 ? (
-                <Select value={sendQrChannelId} onValueChange={setSendQrChannelId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Không gửi Discord" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Không gửi Discord</SelectItem>
-                    {textChannels.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>#{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input
-                  placeholder="Channel ID (để trống = không gửi)"
-                  value={sendQrChannelId}
-                  onChange={(e) => setSendQrChannelId(e.target.value)}
-                />
-              )}
+              <ChannelSelect
+                filter="text"
+                value={sendQrChannelId}
+                onChange={(v) => setSendQrChannelId(v === "__clear__" ? "" : v)}
+                placeholder="Không gửi Discord"
+              />
               <p className="text-xs text-muted-foreground">Bot sẽ gửi QR PayOS vào kênh này và chờ thanh toán (15 phút)</p>
             </div>
             <Separator />

@@ -16,14 +16,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { ChannelSelect } from "@/components/ChannelSelect";
 import {
   Pin,
   CheckCircle,
@@ -37,6 +31,10 @@ import {
   Hash,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const PRESET_COLORS = ["#5865F2", "#57f287", "#fee75c", "#ed4245", "#eb459e", "#2b2d31"];
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -122,6 +120,130 @@ function formatTime(s?: string) {
 function truncate(s?: string, len = 80) {
   if (!s) return "";
   return s.length > len ? s.slice(0, len) + "…" : s;
+}
+
+// ─── DiscordPreview ──────────────────────────────────────────────────────────
+
+function DiscordPreview({ form }: { form: FormState }) {
+  const DISCORD_BG = "#2b2d31";
+  const DISCORD_TEXT = "#dbdee1";
+  const DISCORD_MUTED = "#949ba4";
+
+  return (
+    <div
+      className="rounded-md overflow-hidden text-sm"
+      style={{ backgroundColor: DISCORD_BG }}
+    >
+      {/* Channel header mock */}
+      <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1">
+        <Hash className="h-3.5 w-3.5" style={{ color: DISCORD_MUTED }} />
+        <span
+          className="text-xs font-semibold"
+          style={{ color: DISCORD_TEXT }}
+        >
+          sticky-channel
+        </span>
+      </div>
+
+      {/* Message */}
+      <div className="px-3 pb-3 pt-1">
+        <div className="flex items-start gap-2.5">
+          {/* Bot avatar */}
+          <div
+            className="h-8 w-8 rounded-full shrink-0 flex items-center justify-center text-xs font-bold"
+            style={{ backgroundColor: "#5865F2", color: "#fff" }}
+          >
+            B
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-1.5">
+              <span
+                className="font-semibold text-xs"
+                style={{ color: "#5865F2" }}
+              >
+                Bot
+              </span>
+              <span className="text-[10px]" style={{ color: DISCORD_MUTED }}>
+                Hôm nay lúc 12:00
+              </span>
+            </div>
+
+            {/* Plain text content */}
+            {form.content && (
+              <p className="text-xs mt-1" style={{ color: DISCORD_TEXT }}>
+                {form.content}
+              </p>
+            )}
+
+            {/* Embed */}
+            {form.embed_enabled &&
+              (form.embed_title || form.embed_description) && (
+                <div
+                  className="mt-1.5 rounded overflow-hidden max-w-[360px]"
+                  style={{ backgroundColor: DISCORD_BG }}
+                >
+                  <div className="flex">
+                    <div
+                      className="w-1 shrink-0 rounded-l"
+                      style={{
+                        backgroundColor: form.embed_color || "#5865F2",
+                      }}
+                    />
+                    <div className="p-2.5 flex-1 min-w-0">
+                      <div className="flex gap-2">
+                        <div className="flex-1 min-w-0">
+                          {form.embed_title && (
+                            <p
+                              className="font-semibold text-[13px] leading-tight"
+                              style={{ color: DISCORD_TEXT }}
+                            >
+                              {form.embed_title}
+                            </p>
+                          )}
+                          {form.embed_description && (
+                            <p
+                              className="text-xs mt-1 whitespace-pre-wrap leading-relaxed"
+                              style={{ color: DISCORD_MUTED }}
+                            >
+                              {form.embed_description}
+                            </p>
+                          )}
+                        </div>
+                        {/* Thumbnail */}
+                        {form.embed_thumbnail_url && (
+                          <img
+                            src={form.embed_thumbnail_url}
+                            className="h-14 w-14 rounded object-cover shrink-0"
+                            alt=""
+                          />
+                        )}
+                      </div>
+                      {/* Image */}
+                      {form.embed_image_url && (
+                        <img
+                          src={form.embed_image_url}
+                          className="mt-2 rounded max-h-40 w-full object-cover"
+                          alt=""
+                        />
+                      )}
+                      {/* Footer */}
+                      {form.embed_footer && (
+                        <p
+                          className="text-[10px] mt-2 opacity-70"
+                          style={{ color: DISCORD_MUTED }}
+                        >
+                          {form.embed_footer}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -625,24 +747,18 @@ export function StickyManager() {
             {/* Channel select */}
             <div className="space-y-2">
               <Label>Channel</Label>
-              <Select
+              <ChannelSelect
+                filter="text"
                 value={form.channel_id}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, channel_id: v }))
+                onChange={(v) =>
+                  setForm((f) => ({ ...f, channel_id: v === "__clear__" ? "" : v }))
                 }
+                placeholder="Chọn channel..."
                 disabled={!!editing}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn channel..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {textChannels.map((ch) => (
-                    <SelectItem key={ch.id} value={ch.id}>
-                      # {ch.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
+              <p className="text-xs text-muted-foreground">
+                Channel Discord để đăng sticky message
+              </p>
             </div>
 
             {/* Embed toggle */}
@@ -702,23 +818,32 @@ export function StickyManager() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Màu</Label>
+                  <Label>Màu embed</Label>
                   <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={form.embed_color}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, embed_color: e.target.value }))
-                      }
-                      className="h-9 w-12 cursor-pointer rounded border border-input"
-                    />
+                    {PRESET_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() =>
+                          setForm((f) => ({ ...f, embed_color: c }))
+                        }
+                        className={cn(
+                          "h-6 w-6 rounded-full border-2 transition-all",
+                          form.embed_color?.toLowerCase() === c.toLowerCase()
+                            ? "ring-2 ring-offset-2 ring-offset-background ring-primary scale-110"
+                            : "border-transparent hover:scale-105"
+                        )}
+                        style={{ backgroundColor: c }}
+                        aria-label={`Chọn màu ${c}`}
+                      />
+                    ))}
                     <Input
+                      className="w-24 h-8 text-xs font-mono"
                       value={form.embed_color}
                       onChange={(e) =>
                         setForm((f) => ({ ...f, embed_color: e.target.value }))
                       }
-                      className="w-28 font-mono"
-                      maxLength={7}
+                      placeholder="#5865F2"
                     />
                   </div>
                 </div>
@@ -760,6 +885,12 @@ export function StickyManager() {
                     }
                     placeholder="https://example.com/thumb.png"
                   />
+                </div>
+
+                {/* Live Discord embed preview */}
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs">Xem trước trên Discord</Label>
+                  <DiscordPreview form={form} />
                 </div>
               </div>
             )}

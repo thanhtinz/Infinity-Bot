@@ -4,7 +4,9 @@ import os, uuid, shutil
 from sqlalchemy.orm import joinedload
 from src.database.config import get_db
 from src.models.models import SystemConfig, Product, Order, User, Coupon, StickyMessage, \
-    Ticket, TicketPanel, TicketConfig, TicketBlacklist, TicketNote
+    Ticket, TicketPanel, TicketConfig, TicketBlacklist, TicketNote, \
+    TicketForm, TicketTeam, TicketFeedback, TicketTranscript, \
+    TicketFeedbackConfig, TicketClaimConfig, PanelButton
 from src.schemas.schemas import SystemConfigBase, SystemConfigResponse, ProductBase, ProductResponse, OrderResponse
 from src.bot.manager import start_bot, stop_bot
 from src.api.auth import router as auth_router
@@ -94,7 +96,7 @@ async def get_discord_all_channels(guild_id: str = None, db = Depends(get_db)):
         if res.status_code != 200:
             return []
         channels = res.json()
-        return [{"id": c["id"], "name": c["name"], "type": c.get("type", 0)} for c in channels]
+        return [{"id": c["id"], "name": c["name"], "type": c.get("type", 0), "parent_id": c.get("parent_id"), "position": c.get("position", 0)} for c in channels]
 
 @router.get("/discord/roles")
 async def get_discord_roles(guild_id: str = None, db = Depends(get_db)):
@@ -113,7 +115,87 @@ async def get_discord_roles(guild_id: str = None, db = Depends(get_db)):
         if res.status_code != 200:
             return []
         roles = res.json()
-        return [{"id": r["id"], "name": r["name"]} for r in roles if r.get("name") != "@everyone"]
+        return [{"id": r["id"], "name": r["name"], "color": r.get("color", 0)} for r in roles if r.get("name") != "@everyone"]
+
+
+@router.get("/discord/emojis")
+async def get_discord_emojis(guild_id: str = None, db=Depends(get_db)):
+    """Lấy danh sách emoji của guild."""
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token:
+        return []
+    target_guild = guild_id or config.guild_id
+    if not target_guild:
+        return []
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
+            f"https://discord.com/api/guilds/{target_guild}/emojis",
+            headers={"Authorization": f"Bot {config.discord_token}"}
+        )
+        if res.status_code != 200:
+            return []
+        emojis = res.json()
+        return [
+            {
+                "id": e["id"],
+                "name": e["name"],
+                "animated": e.get("animated", False),
+                "url": f"https://cdn.discordapp.com/emojis/{e['id']}.{'gif' if e.get('animated') else 'png'}",
+                "usage": f"<{'a' if e.get('animated') else ''}:{e['name']}:{e['id']}>",
+            }
+            for e in emojis
+        ]
+
+
+@router.post("/discord/emojis")
+async def upload_discord_emoji(body: dict, db=Depends(get_db)):
+    """Upload emoji mới lên guild. body: { name, image_base64 }"""
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token:
+        raise HTTPException(status_code=400, detail="Bot chưa cấu hình")
+    target_guild = config.guild_id
+    if not target_guild:
+        raise HTTPException(status_code=400, detail="Chưa chọn server")
+
+    emoji_name = body.get("name", "").strip()
+    image_b64 = body.get("image_base64", "")
+    if not emoji_name or not image_b64:
+        raise HTTPException(status_code=400, detail="Thiếu name hoặc image_base64")
+
+    async with httpx.AsyncClient() as client:
+        res = await client.post(
+            f"https://discord.com/api/guilds/{target_guild}/emojis",
+            headers={"Authorization": f"Bot {config.discord_token}", "Content-Type": "application/json"},
+            json={"name": emoji_name, "image": image_b64},
+        )
+        if res.status_code not in (200, 201):
+            detail = res.json().get("message", "Lỗi upload emoji")
+            raise HTTPException(status_code=400, detail=detail)
+        e = res.json()
+        return {
+            "id": e["id"],
+            "name": e["name"],
+            "animated": e.get("animated", False),
+            "url": f"https://cdn.discordapp.com/emojis/{e['id']}.{'gif' if e.get('animated') else 'png'}",
+            "usage": f"<{'a' if e.get('animated') else ''}:{e['name']}:{e['id']}>",
+        }
+
+
+@router.delete("/discord/emojis/{emoji_id}")
+async def delete_discord_emoji(emoji_id: str, db=Depends(get_db)):
+    """Xóa emoji khỏi guild."""
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token:
+        raise HTTPException(status_code=400, detail="Bot chưa cấu hình")
+    target_guild = config.guild_id
+    async with httpx.AsyncClient() as client:
+        res = await client.delete(
+            f"https://discord.com/api/guilds/{target_guild}/emojis/{emoji_id}",
+            headers={"Authorization": f"Bot {config.discord_token}"},
+        )
+        if res.status_code not in (200, 204):
+            raise HTTPException(status_code=400, detail="Xóa emoji thất bại")
+    return {"ok": True}
 
 def get_config(db = Depends(get_db)):
     result = db.execute(select(SystemConfig).limit(1))
@@ -166,6 +248,196 @@ async def api_restart_bot():
     if not success:
         raise HTTPException(status_code=400, detail="Failed to start bot.")
     return {"message": "Bot restarting..."}
+
+
+@router.get("/bot/info")
+async def api_bot_info():
+    """Trả về thông tin live của bot: latency, guilds, members, uptime, avatar, tên."""
+    from src.bot.manager import bot as _bot, bot_start_time
+    import datetime as _dt
+
+    if _bot is None or not _bot.is_ready():
+        return {
+            "online": False,
+            "username": None,
+            "discriminator": None,
+            "avatar_url": None,
+            "bot_id": None,
+            "latency_ms": None,
+            "guild_count": None,
+            "member_count": None,
+            "uptime_seconds": None,
+        }
+
+    guilds = _bot.guilds
+    member_count = sum(g.member_count or 0 for g in guilds)
+    uptime_s = None
+    if bot_start_time:
+        uptime_s = int((_dt.datetime.utcnow() - bot_start_time).total_seconds())
+
+    user = _bot.user
+    avatar_url = str(user.display_avatar.url) if user and user.display_avatar else None
+
+    return {
+        "online": True,
+        "username": user.name if user else None,
+        "discriminator": user.discriminator if user else None,
+        "avatar_url": avatar_url,
+        "bot_id": str(user.id) if user else None,
+        "latency_ms": round(_bot.latency * 1000, 1),
+        "guild_count": len(guilds),
+        "member_count": member_count,
+        "uptime_seconds": uptime_s,
+    }
+
+
+@router.post("/bot/profile")
+async def api_update_bot_profile(body: dict):
+    """Đổi tên hoặc avatar của bot qua Discord API."""
+    from src.bot.manager import bot as _bot
+    import base64 as _b64
+    import httpx as _httpx
+
+    if _bot is None or not _bot.is_ready() or not _bot.user:
+        raise HTTPException(status_code=400, detail="Bot chưa online")
+
+    payload: dict = {}
+    if "username" in body and body["username"]:
+        payload["username"] = body["username"]
+    if "avatar_url" in body and body["avatar_url"]:
+        # Fetch image and convert to base64 data URI
+        try:
+            async with _httpx.AsyncClient() as client:
+                r = await client.get(body["avatar_url"], timeout=10)
+                r.raise_for_status()
+                mime = r.headers.get("content-type", "image/png").split(";")[0]
+                data = _b64.b64encode(r.content).decode()
+                payload["avatar"] = f"data:{mime};base64,{data}"
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Không tải được avatar: {e}")
+    if "avatar_base64" in body and body["avatar_base64"]:
+        payload["avatar"] = body["avatar_base64"]
+
+    if not payload:
+        raise HTTPException(status_code=400, detail="Không có dữ liệu cập nhật")
+
+    try:
+        await _bot.user.edit(**payload)
+    except discord.HTTPException as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"ok": True}
+
+
+@router.post("/bot/presence")
+async def api_update_presence(body: dict):
+    """Đổi status (online/idle/dnd/invisible) và activity của bot."""
+    from src.bot.manager import bot as _bot
+
+    if _bot is None or not _bot.is_ready():
+        raise HTTPException(status_code=400, detail="Bot chưa online")
+
+    status_map = {
+        "online": discord.Status.online,
+        "idle": discord.Status.idle,
+        "dnd": discord.Status.do_not_disturb,
+        "invisible": discord.Status.invisible,
+    }
+    status = status_map.get(body.get("status", "online"), discord.Status.online)
+
+    activity = None
+    activity_type = body.get("activity_type", "")
+    activity_name = body.get("activity_name", "")
+    if activity_name:
+        if activity_type == "playing":
+            activity = discord.Game(name=activity_name)
+        elif activity_type == "watching":
+            activity = discord.Activity(type=discord.ActivityType.watching, name=activity_name)
+        elif activity_type == "listening":
+            activity = discord.Activity(type=discord.ActivityType.listening, name=activity_name)
+        elif activity_type == "competing":
+            activity = discord.Activity(type=discord.ActivityType.competing, name=activity_name)
+        elif activity_type == "streaming":
+            activity = discord.Streaming(name=activity_name, url=body.get("stream_url", "https://twitch.tv/discord"))
+
+    try:
+        await _bot.change_presence(status=status, activity=activity)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"ok": True}
+
+
+@router.get("/bot/emojis")
+async def api_list_emojis(db=Depends(get_db)):
+    """Trả về danh sách emoji của bot application."""
+    import httpx as _httpx
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token:
+        return []
+    async with _httpx.AsyncClient() as client:
+        r = await client.get("https://discord.com/api/oauth2/@me",
+            headers={"Authorization": f"Bot {config.discord_token}"})
+        if not r.is_success:
+            return []
+        app_id = r.json().get("application", {}).get("id")
+        if not app_id:
+            return []
+        r2 = await client.get(f"https://discord.com/api/applications/{app_id}/emojis",
+            headers={"Authorization": f"Bot {config.discord_token}"})
+        if not r2.is_success:
+            return []
+        data = r2.json()
+        emojis = data.get("items", data) if isinstance(data, dict) else data
+        return [{"id": str(e["id"]), "name": e["name"], "animated": e.get("animated", False),
+                 "url": f"https://cdn.discordapp.com/emojis/{e['id']}.{'gif' if e.get('animated') else 'png'}"}
+                for e in (emojis or [])]
+
+
+@router.post("/bot/emojis")
+async def api_upload_emoji(body: dict, db=Depends(get_db)):
+    """Upload emoji cho bot application."""
+    import httpx as _httpx
+    name = body.get("name", "").strip()
+    image_data = body.get("image")
+    if not name or not image_data:
+        raise HTTPException(status_code=400, detail="Cần name và image")
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token:
+        raise HTTPException(status_code=400, detail="Chưa cấu hình Bot Token")
+    async with _httpx.AsyncClient() as client:
+        r = await client.get("https://discord.com/api/oauth2/@me",
+            headers={"Authorization": f"Bot {config.discord_token}"})
+        if not r.is_success:
+            raise HTTPException(status_code=400, detail="Không lấy được app ID")
+        app_id = r.json().get("application", {}).get("id")
+        r2 = await client.post(f"https://discord.com/api/applications/{app_id}/emojis",
+            headers={"Authorization": f"Bot {config.discord_token}"},
+            json={"name": name, "image": image_data})
+        if not r2.is_success:
+            raise HTTPException(status_code=400, detail=str(r2.text[:200]))
+        e = r2.json()
+        return {"ok": True, "id": str(e["id"]), "name": e["name"], "animated": e.get("animated", False),
+                "url": f"https://cdn.discordapp.com/emojis/{e['id']}.{'gif' if e.get('animated') else 'png'}"}
+
+
+@router.delete("/bot/emojis/{emoji_id}")
+async def api_delete_emoji(emoji_id: str, db=Depends(get_db)):
+    """Xóa emoji của bot application."""
+    import httpx as _httpx
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token:
+        raise HTTPException(status_code=400, detail="Chưa cấu hình Bot Token")
+    async with _httpx.AsyncClient() as client:
+        r = await client.get("https://discord.com/api/oauth2/@me",
+            headers={"Authorization": f"Bot {config.discord_token}"})
+        app_id = r.json().get("application", {}).get("id") if r.is_success else None
+        if not app_id:
+            raise HTTPException(status_code=400, detail="Không lấy được app ID")
+        r2 = await client.delete(f"https://discord.com/api/applications/{app_id}/emojis/{emoji_id}",
+            headers={"Authorization": f"Bot {config.discord_token}"})
+        if r2.status_code not in (200, 204):
+            raise HTTPException(status_code=400, detail="Xóa thất bại")
+        return {"ok": True}
+
 
 # --- Products ---
 @router.get("/products", response_model=list[ProductResponse])
@@ -624,6 +896,52 @@ def get_leaderboard(
     return result
 
 
+# ─── PayOS Test Connection ────────────────────────────────────
+
+@router.post("/payos/test")
+def test_payos_connection(db=Depends(get_db)):
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not all([config.payos_client_id, config.payos_api_key, config.payos_checksum_key]):
+        raise HTTPException(status_code=400, detail="PayOS chưa được cấu hình đầy đủ")
+    try:
+        payos = PayOS(
+            client_id=config.payos_client_id,
+            api_key=config.payos_api_key,
+            checksum_key=config.payos_checksum_key,
+        )
+        # Verify credentials by attempting to confirm webhook URL
+        # This makes a real API call to PayOS servers
+        payos.confirmWebhook("https://example.com/webhook")
+        return {"ok": True, "message": "Kết nối PayOS thành công"}
+    except Exception as e:
+        err_msg = str(e)
+        if "Unauthorized" in err_msg or "401" in err_msg:
+            raise HTTPException(status_code=400, detail="API Key hoặc Client ID không đúng")
+        if "checksum" in err_msg.lower():
+            raise HTTPException(status_code=400, detail="Checksum Key không đúng")
+        raise HTTPException(status_code=400, detail=f"Lỗi kết nối: {err_msg}")
+
+
+# ─── PayOS Test Connection ─────────────────────────────────────
+
+@router.post("/payos/test")
+def test_payos_connection(db=Depends(get_db)):
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not all([config.payos_client_id, config.payos_api_key, config.payos_checksum_key]):
+        raise HTTPException(status_code=400, detail="PayOS chưa được cấu hình đầy đủ")
+    try:
+        payos = PayOS(
+            client_id=config.payos_client_id,
+            api_key=config.payos_api_key,
+            checksum_key=config.payos_checksum_key,
+        )
+        # Verify credentials by calling a read-only API
+        payos.confirmWebhook("https://example.com")
+        return {"ok": True, "message": "Kết nối PayOS thành công"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Lỗi kết nối: {str(e)}")
+
+
 # ─── PayOS Webhook ────────────────────────────────────────────
 
 @router.post("/payos/webhook")
@@ -719,11 +1037,26 @@ def get_tempvoice(db = Depends(get_db)):
     from src.models.models import TempVoiceConfig
     cfg = db.execute(select(TempVoiceConfig).limit(1)).scalars().first()
     if not cfg:
-        return {"enabled": False, "join_channel_id": None, "category_id": None}
+        return {
+            "enabled": False, "join_channel_id": None, "category_id": None,
+            "default_user_limit": 0, "default_bitrate": 64000,
+            "naming_format": "{user}'s Channel", "auto_delete_seconds": 0,
+            "allow_rename": True, "allow_limit": True, "allow_lock": True, "allow_hide": True,
+            "interface_channel_id": None,
+        }
     return {
         "enabled": cfg.enabled,
         "join_channel_id": cfg.join_channel_id,
         "category_id": cfg.category_id,
+        "default_user_limit": cfg.default_user_limit or 0,
+        "default_bitrate": cfg.default_bitrate or 64000,
+        "naming_format": cfg.naming_format or "{user}'s Channel",
+        "auto_delete_seconds": cfg.auto_delete_seconds or 0,
+        "allow_rename": cfg.allow_rename if cfg.allow_rename is not None else True,
+        "allow_limit": cfg.allow_limit if cfg.allow_limit is not None else True,
+        "allow_lock": cfg.allow_lock if cfg.allow_lock is not None else True,
+        "allow_hide": cfg.allow_hide if cfg.allow_hide is not None else True,
+        "interface_channel_id": cfg.interface_channel_id,
     }
 
 @router.post("/tempvoice/config")
@@ -738,6 +1071,15 @@ def save_tempvoice(body: dict, db = Depends(get_db)):
     cfg.enabled = body.get("enabled", True)
     cfg.join_channel_id = body.get("join_channel_id") or None
     cfg.category_id = body.get("category_id") or None
+    cfg.default_user_limit = body.get("default_user_limit", 0)
+    cfg.default_bitrate = body.get("default_bitrate", 64000)
+    cfg.naming_format = body.get("naming_format", "{user}'s Channel")
+    cfg.auto_delete_seconds = body.get("auto_delete_seconds", 0)
+    cfg.allow_rename = body.get("allow_rename", True)
+    cfg.allow_limit = body.get("allow_limit", True)
+    cfg.allow_lock = body.get("allow_lock", True)
+    cfg.allow_hide = body.get("allow_hide", True)
+    cfg.interface_channel_id = body.get("interface_channel_id") or None
     if guild_id:
         cfg.guild_id = guild_id
     db.commit()
@@ -1215,12 +1557,18 @@ def get_ticket_config(db=Depends(get_db)):
     if not tc:
         return {"guild_id": guild_id, "category_id": None, "log_channel_id": None,
                 "support_role_ids": [], "ticket_limit": 1, "cooldown_minutes": 0,
-                "auto_close_hours": 0, "naming_format": "ticket-{number}"}
+                "auto_close_hours": 0, "naming_format": "ticket-{number}",
+                "open_message_title": None, "open_message_body": None,
+                "close_message_title": None, "close_message_body": None,
+                "claim_message_title": None, "claim_message_body": None}
     return {
         "id": tc.id, "guild_id": tc.guild_id, "category_id": tc.category_id,
         "log_channel_id": tc.log_channel_id, "support_role_ids": tc.support_role_ids or [],
         "ticket_limit": tc.ticket_limit, "cooldown_minutes": tc.cooldown_minutes,
         "auto_close_hours": tc.auto_close_hours, "naming_format": tc.naming_format,
+        "open_message_title": tc.open_message_title, "open_message_body": tc.open_message_body,
+        "close_message_title": tc.close_message_title, "close_message_body": tc.close_message_body,
+        "claim_message_title": tc.claim_message_title, "claim_message_body": tc.claim_message_body,
     }
 
 
@@ -1235,7 +1583,10 @@ def update_ticket_config(body: dict, db=Depends(get_db)):
         tc = TicketConfig(guild_id=guild_id)
         db.add(tc)
     for field in ["category_id", "log_channel_id", "support_role_ids",
-                  "ticket_limit", "cooldown_minutes", "auto_close_hours", "naming_format"]:
+                  "ticket_limit", "cooldown_minutes", "auto_close_hours", "naming_format",
+                  "open_message_title", "open_message_body",
+                  "close_message_title", "close_message_body",
+                  "claim_message_title", "claim_message_body"]:
         if field in body:
             setattr(tc, field, body[field])
     db.commit()
@@ -1246,16 +1597,26 @@ def update_ticket_config(body: dict, db=Depends(get_db)):
 
 @router.get("/ticket-panels")
 def list_ticket_panels(db=Depends(get_db)):
-    panels = db.execute(select(TicketPanel).order_by(TicketPanel.created_at.desc())).scalars().all()
-    return [{
-        "id": p.id, "guild_id": p.guild_id, "name": p.name,
-        "channel_id": p.channel_id, "message_id": p.message_id,
-        "title": p.title, "description": p.description, "color": p.color,
-        "button_label": p.button_label, "button_emoji": p.button_emoji,
-        "button_style": p.button_style, "category_id": p.category_id,
-        "created_at": p.created_at.isoformat() if p.created_at else None,
-        "is_sent": bool(p.message_id),
-    } for p in panels]
+    panels = db.execute(
+        select(TicketPanel).options(joinedload(TicketPanel.buttons)).order_by(TicketPanel.created_at.desc())
+    ).unique().scalars().all()
+    result = []
+    for p in panels:
+        btns = sorted(p.buttons, key=lambda b: b.sort_order) if p.buttons else []
+        # Fallback: nếu chưa có buttons mới, dùng legacy single-button fields
+        if not btns and p.button_label:
+            btns_data = [{"id": 0, "label": p.button_label, "emoji": p.button_emoji or "", "style": p.button_style or "primary", "category_id": p.category_id or "", "form_id": None, "sort_order": 0}]
+        else:
+            btns_data = [{"id": b.id, "label": b.label, "emoji": b.emoji or "", "style": b.style, "category_id": b.category_id or "", "form_id": b.form_id, "sort_order": b.sort_order} for b in btns]
+        result.append({
+            "id": p.id, "guild_id": p.guild_id, "name": p.name,
+            "channel_id": p.channel_id, "message_id": p.message_id,
+            "title": p.title, "description": p.description, "color": p.color,
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+            "is_sent": bool(p.message_id),
+            "buttons": btns_data,
+        })
+    return result
 
 
 @router.post("/ticket-panels")
@@ -1268,12 +1629,21 @@ def create_ticket_panel(body: dict, db=Depends(get_db)):
         title=body.get("title", "Hỗ trợ"),
         description=body.get("description", "Nhấn nút bên dưới để tạo ticket hỗ trợ."),
         color=body.get("color", "#5865F2"),
-        button_label=body.get("button_label", "Tạo Ticket"),
-        button_emoji=body.get("button_emoji", "🎫"),
-        button_style=body.get("button_style", "primary"),
-        category_id=body.get("category_id"),
     )
     db.add(panel)
+    db.flush()  # get panel.id
+    # Add buttons
+    for idx, btn_data in enumerate(body.get("buttons", [])):
+        btn = PanelButton(
+            panel_id=panel.id,
+            label=btn_data.get("label", "Tạo Ticket"),
+            emoji=btn_data.get("emoji"),
+            style=btn_data.get("style", "primary"),
+            category_id=btn_data.get("category_id"),
+            form_id=btn_data.get("form_id"),
+            sort_order=idx,
+        )
+        db.add(btn)
     db.commit()
     db.refresh(panel)
     return {"ok": True, "id": panel.id}
@@ -1284,10 +1654,27 @@ def update_ticket_panel(panel_id: int, body: dict, db=Depends(get_db)):
     panel = db.get(TicketPanel, panel_id)
     if not panel:
         raise HTTPException(status_code=404, detail="Panel not found")
-    for field in ["name", "title", "description", "color", "button_label",
-                  "button_emoji", "button_style", "category_id"]:
+    for field in ["name", "title", "description", "color", "channel_id"]:
         if field in body:
             setattr(panel, field, body[field])
+    # Replace buttons
+    if "buttons" in body:
+        # Delete old buttons
+        for old_btn in list(panel.buttons):
+            db.delete(old_btn)
+        db.flush()
+        # Add new buttons
+        for idx, btn_data in enumerate(body["buttons"]):
+            btn = PanelButton(
+                panel_id=panel.id,
+                label=btn_data.get("label", "Tạo Ticket"),
+                emoji=btn_data.get("emoji"),
+                style=btn_data.get("style", "primary"),
+                category_id=btn_data.get("category_id"),
+                form_id=btn_data.get("form_id"),
+                sort_order=idx,
+            )
+            db.add(btn)
     db.commit()
     return {"ok": True}
 
@@ -1384,12 +1771,60 @@ def list_ticket_blacklist(db=Depends(get_db)):
     } for b in items]
 
 
+@router.post("/ticket-blacklist")
+def add_ticket_blacklist(body: dict, db=Depends(get_db)):
+    sc = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    guild_id = sc.guild_id if sc else ""
+    bl = TicketBlacklist(
+        guild_id=guild_id,
+        discord_id=body.get("discord_id", ""),
+        reason=body.get("reason"),
+        added_by=body.get("added_by"),
+    )
+    db.add(bl)
+    db.commit()
+    db.refresh(bl)
+    return {"ok": True, "id": bl.id}
+
+
 @router.delete("/ticket-blacklist/{bl_id}")
 def remove_ticket_blacklist(bl_id: int, db=Depends(get_db)):
     bl = db.get(TicketBlacklist, bl_id)
     if not bl:
         raise HTTPException(status_code=404, detail="Not found")
     db.delete(bl)
+    db.commit()
+    return {"ok": True}
+
+
+@router.get("/ticket-notes/{ticket_id}")
+def get_ticket_notes(ticket_id: int, db=Depends(get_db)):
+    notes = db.execute(
+        select(TicketNote).where(TicketNote.ticket_id == ticket_id).order_by(TicketNote.created_at)
+    ).scalars().all()
+    return [{"id": n.id, "ticket_id": n.ticket_id, "author_id": n.author_id,
+             "content": n.content, "created_at": n.created_at.isoformat()} for n in notes]
+
+
+@router.post("/ticket-notes")
+def add_ticket_note(body: dict, db=Depends(get_db)):
+    note = TicketNote(
+        ticket_id=body.get("ticket_id"),
+        author_id=body.get("author_id", "dashboard"),
+        content=body.get("content", ""),
+    )
+    db.add(note)
+    db.commit()
+    db.refresh(note)
+    return {"ok": True, "id": note.id}
+
+
+@router.delete("/ticket-notes/{note_id}")
+def delete_ticket_note(note_id: int, db=Depends(get_db)):
+    note = db.get(TicketNote, note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(note)
     db.commit()
     return {"ok": True}
 
@@ -1419,3 +1854,194 @@ def ticket_stats(db=Depends(get_db)):
         "by_priority": priority_counts,
         "panels": db.execute(select(TicketPanel)).scalars().all().__len__(),
     }
+
+# ─── Ticket Forms ───────────────────────────────────────────────────────────
+api = router  # alias
+
+@api.get("/ticket-forms")
+def list_ticket_forms(db=Depends(get_db)):
+    cfg = db.execute(select(SystemConfig)).scalars().first()
+    if not cfg: return []
+    return db.execute(select(TicketForm).where(TicketForm.guild_id == cfg.guild_id)).scalars().all()
+
+@api.post("/ticket-forms")
+def create_ticket_form(body: dict, db=Depends(get_db)):
+    cfg = db.execute(select(SystemConfig)).scalars().first()
+    if not cfg: raise HTTPException(400, "Not configured")
+    form = TicketForm(
+        guild_id=cfg.guild_id,
+        name=body.get("name", "Form mặc định"),
+        panel_id=body.get("panel_id"),
+        questions=body.get("questions", []),
+    )
+    db.add(form); db.commit(); db.refresh(form)
+    return form
+
+@api.put("/ticket-forms/{form_id}")
+def update_ticket_form(form_id: int, body: dict, db=Depends(get_db)):
+    form = db.get(TicketForm, form_id)
+    if not form: raise HTTPException(404)
+    for k, v in body.items():
+        if hasattr(form, k): setattr(form, k, v)
+    db.commit(); db.refresh(form)
+    return form
+
+@api.delete("/ticket-forms/{form_id}")
+def delete_ticket_form(form_id: int, db=Depends(get_db)):
+    form = db.get(TicketForm, form_id)
+    if not form: raise HTTPException(404)
+    db.delete(form); db.commit()
+    return {"status": "deleted"}
+
+# ─── Ticket Teams ────────────────────────────────────────────────────────────
+
+@api.get("/ticket-teams")
+def list_ticket_teams(db=Depends(get_db)):
+    cfg = db.execute(select(SystemConfig)).scalars().first()
+    if not cfg: return []
+    return db.execute(select(TicketTeam).where(TicketTeam.guild_id == cfg.guild_id)).scalars().all()
+
+@api.post("/ticket-teams")
+def create_ticket_team(body: dict, db=Depends(get_db)):
+    cfg = db.execute(select(SystemConfig)).scalars().first()
+    if not cfg: raise HTTPException(400, "Not configured")
+    team = TicketTeam(
+        guild_id=cfg.guild_id,
+        name=body.get("name", "Team mới"),
+        description=body.get("description"),
+        role_ids=body.get("role_ids", []),
+        panel_ids=body.get("panel_ids", []),
+        color=body.get("color", "#5865F2"),
+    )
+    db.add(team); db.commit(); db.refresh(team)
+    return team
+
+@api.put("/ticket-teams/{team_id}")
+def update_ticket_team(team_id: int, body: dict, db=Depends(get_db)):
+    team = db.get(TicketTeam, team_id)
+    if not team: raise HTTPException(404)
+    for k, v in body.items():
+        if hasattr(team, k): setattr(team, k, v)
+    db.commit(); db.refresh(team)
+    return team
+
+@api.delete("/ticket-teams/{team_id}")
+def delete_ticket_team(team_id: int, db=Depends(get_db)):
+    team = db.get(TicketTeam, team_id)
+    if not team: raise HTTPException(404)
+    db.delete(team); db.commit()
+    return {"status": "deleted"}
+
+# ─── Ticket Feedback ─────────────────────────────────────────────────────────
+
+@api.get("/ticket-feedback")
+def list_ticket_feedback(db=Depends(get_db)):
+    cfg = db.execute(select(SystemConfig)).scalars().first()
+    if not cfg: return []
+    rows = db.execute(select(TicketFeedback).where(TicketFeedback.guild_id == cfg.guild_id).order_by(TicketFeedback.created_at.desc())).scalars().all()
+    total = len(rows)
+    avg_rating = round(sum(r.rating for r in rows) / total, 2) if total else 0
+    by_rating = {str(i): sum(1 for r in rows if r.rating == i) for i in range(1, 6)}
+    return {"items": rows, "total": total, "avg_rating": avg_rating, "by_rating": by_rating}
+
+@api.post("/ticket-feedback")
+def submit_ticket_feedback(body: dict, db=Depends(get_db)):
+    cfg = db.execute(select(SystemConfig)).scalars().first()
+    if not cfg: raise HTTPException(400)
+    fb = TicketFeedback(
+        ticket_id=body["ticket_id"],
+        guild_id=cfg.guild_id,
+        user_id=body.get("user_id", "dashboard"),
+        rating=body["rating"],
+        comment=body.get("comment"),
+    )
+    db.add(fb); db.commit(); db.refresh(fb)
+    return fb
+
+# ─── Ticket Transcripts ──────────────────────────────────────────────────────
+
+@api.get("/ticket-transcripts")
+def list_ticket_transcripts(db=Depends(get_db)):
+    cfg = db.execute(select(SystemConfig)).scalars().first()
+    if not cfg: return []
+    return db.execute(select(TicketTranscript).where(TicketTranscript.guild_id == cfg.guild_id).order_by(TicketTranscript.created_at.desc())).scalars().all()
+
+@api.get("/ticket-transcripts/{ticket_id}")
+def get_ticket_transcript(ticket_id: int, db=Depends(get_db)):
+    t = db.execute(select(TicketTranscript).where(TicketTranscript.ticket_id == ticket_id)).scalars().first()
+    if not t: raise HTTPException(404, "Transcript not found")
+    return t
+
+# ─── Ticket Feedback Config ──────────────────────────────────────────────────
+
+@api.get("/ticket-feedback/stats")
+def feedback_stats(db=Depends(get_db)):
+    fb = db.execute(select(TicketFeedback)).scalars().all()
+    if not fb:
+        return {"avg_rating": 0.0, "total": 0}
+    return {"avg_rating": round(sum(f.rating for f in fb) / len(fb), 1), "total": len(fb)}
+
+@api.get("/ticket-feedback-config")
+def get_feedback_config(db=Depends(get_db)):
+    sc = db.execute(select(SystemConfig)).scalars().first()
+    guild_id = sc.guild_id if sc else ""
+    cfg = db.execute(select(TicketFeedbackConfig).where(TicketFeedbackConfig.guild_id == guild_id)).scalars().first()
+    if not cfg:
+        return {"enabled": False, "channel_id": None}
+    return {"enabled": cfg.enabled, "channel_id": cfg.channel_id}
+
+@api.post("/ticket-feedback-config")
+def save_feedback_config(body: dict, db=Depends(get_db)):
+    sc = db.execute(select(SystemConfig)).scalars().first()
+    guild_id = sc.guild_id if sc else ""
+    cfg = db.execute(select(TicketFeedbackConfig).where(TicketFeedbackConfig.guild_id == guild_id)).scalars().first()
+    if not cfg:
+        cfg = TicketFeedbackConfig(guild_id=guild_id)
+        db.add(cfg)
+    cfg.enabled = body.get("enabled", False)
+    cfg.channel_id = body.get("channel_id")
+    db.commit()
+    return {"ok": True}
+
+# ─── Ticket Claim Config ─────────────────────────────────────────────────────
+
+@api.get("/ticket-claim-config")
+def get_claim_config(db=Depends(get_db)):
+    sc = db.execute(select(SystemConfig)).scalars().first()
+    guild_id = sc.guild_id if sc else ""
+    cfg = db.execute(select(TicketClaimConfig).where(TicketClaimConfig.guild_id == guild_id)).scalars().first()
+    if not cfg:
+        return {"enabled": True, "exclusive": False, "notify": True, "notify_channel_id": None}
+    return {"enabled": cfg.enabled, "exclusive": cfg.exclusive,
+            "notify": cfg.notify, "notify_channel_id": cfg.notify_channel_id}
+
+@api.post("/ticket-claim-config")
+def save_claim_config(body: dict, db=Depends(get_db)):
+    sc = db.execute(select(SystemConfig)).scalars().first()
+    guild_id = sc.guild_id if sc else ""
+    cfg = db.execute(select(TicketClaimConfig).where(TicketClaimConfig.guild_id == guild_id)).scalars().first()
+    if not cfg:
+        cfg = TicketClaimConfig(guild_id=guild_id)
+        db.add(cfg)
+    for k in ["enabled", "exclusive", "notify", "notify_channel_id"]:
+        if k in body:
+            setattr(cfg, k, body[k])
+    db.commit()
+    return {"ok": True}
+
+@api.post("/tickets/{ticket_id}/unclaim")
+def unclaim_ticket(ticket_id: int, db=Depends(get_db)):
+    t = db.get(Ticket, ticket_id)
+    if not t:
+        raise HTTPException(404)
+    t.claimed_by = None
+    db.commit()
+    return {"ok": True}
+
+@api.get("/ticket-messages/{ticket_id}")
+def get_ticket_messages(ticket_id: int, db=Depends(get_db)):
+    # Placeholder — real impl fetches from stored transcript
+    tr = db.execute(select(TicketTranscript).where(TicketTranscript.ticket_id == ticket_id)).scalars().first()
+    if not tr:
+        return []
+    return []

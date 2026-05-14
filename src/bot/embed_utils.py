@@ -101,6 +101,95 @@ DEFAULTS: dict[str, dict] = {
             {"name": "🔢 Tổng cảnh báo", "value": "{warn_count}", "inline": True},
         ],
     },
+    # ── Ticket System ─────────────────────────────────────────────────────────
+    "ticket_mo": {
+        "title": "🎫 Ticket đã được tạo",
+        "description": "Ticket **#{ticket.id}** của {user.mention} đã được tạo.\nStaff sẽ hỗ trợ bạn sớm nhất có thể.",
+        "color": "#5865F2",
+        "footer": "Dùng nút bên dưới để đóng ticket",
+        "fields": [
+            {"name": "📋 Chủ đề", "value": "{ticket.subject}", "inline": True},
+            {"name": "🔢 Mã ticket", "value": "#{ticket.id}", "inline": True},
+        ],
+    },
+    "ticket_dong": {
+        "title": "🔒 Ticket đã đóng",
+        "description": "Ticket **#{ticket.id}** đã được đóng bởi {closer.mention}.",
+        "color": "#ED4245",
+        "footer": "Dùng nút Mở lại để tiếp tục nếu cần",
+        "fields": [
+            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "⏱️ Thời gian xử lý", "value": "{duration}", "inline": True},
+        ],
+    },
+    "ticket_nhan": {
+        "title": "✋ Ticket đã được nhận",
+        "description": "{staff.mention} đã nhận ticket **#{ticket.id}** và đang xử lý.",
+        "color": "#57F287",
+        "footer": "Vui lòng mô tả vấn đề chi tiết",
+        "fields": [
+            {"name": "👮 Staff", "value": "{staff.name}", "inline": True},
+        ],
+    },
+    "ticket_transcript": {
+        "title": "📄 Transcript Ticket",
+        "description": "Transcript của ticket **#{ticket.id}** đã được lưu.",
+        "color": "#5865F2",
+        "footer": "Infinity Mall — Support System",
+        "fields": [
+            {"name": "👤 Tạo bởi", "value": "{user.name}", "inline": True},
+            {"name": "💬 Số tin nhắn", "value": "{message_count}", "inline": True},
+        ],
+    },
+    # ── Moderation ────────────────────────────────────────────────────────────
+    "kick": {
+        "title": "👟 Đã bị kick",
+        "description": "{user.mention} đã bị kick khỏi server **{server}**.",
+        "color": "#ED4245",
+        "footer": "Hành động được thực hiện bởi ban quản trị",
+        "fields": [
+            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
+        ],
+    },
+    "ban": {
+        "title": "🔨 Đã bị ban",
+        "description": "{user.mention} đã bị ban vĩnh viễn khỏi server **{server}**.",
+        "color": "#ED4245",
+        "footer": "Kháng cáo nếu bạn cho rằng đây là nhầm lẫn",
+        "fields": [
+            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
+        ],
+    },
+    "timeout": {
+        "title": "⏱️ Bị timeout",
+        "description": "{user.mention} đã bị timeout trong server **{server}**.",
+        "color": "#FEE75C",
+        "footer": "Hãy tuân thủ nội quy server",
+        "fields": [
+            {"name": "⏰ Thời gian", "value": "{duration}", "inline": True},
+            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+        ],
+    },
+    # ── Invite / Community ────────────────────────────────────────────────────
+    "invite_join": {
+        "title": "🎉 Thành viên mới từ invite",
+        "description": "{user.mention} đã tham gia qua link của **{inviter.name}**!",
+        "color": "#57F287",
+        "footer": "Infinity Mall — Invite Tracking",
+        "fields": [
+            {"name": "🔗 Code invite", "value": "{invite.code}", "inline": True},
+            {"name": "📊 Tổng invite của {inviter.name}", "value": "{inviter.total_invites}", "inline": True},
+        ],
+    },
+    "leaderboard": {
+        "title": "🏆 Bảng xếp hạng Invite",
+        "description": "Top thành viên có nhiều lượt invite nhất trong **{server}**.",
+        "color": "#F0B232",
+        "footer": "Cập nhật: {updated_at}",
+        "fields": [],
+    },
 }
 
 

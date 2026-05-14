@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import discord
 import logging
 import os
@@ -11,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 bot_task = None
 bot = None
+bot_start_time: datetime.datetime | None = None
 
 
 def get_session():
@@ -223,7 +225,9 @@ def create_bot():
     # ── Events ───────────────────────────────────────────────
     @bot_client.event
     async def on_ready():
+        global bot_start_time
         logger.info(f"Bot on_ready: Logged in as {bot_client.user} (ID: {bot_client.user.id})")
+        bot_start_time = datetime.datetime.utcnow()
         await asyncio.to_thread(update_bot_status, "running")
         bot_client.loop.create_task(_check_expired_orders(bot_client))
 

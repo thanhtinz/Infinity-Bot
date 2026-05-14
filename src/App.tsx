@@ -1,15 +1,20 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight } from "lucide-react";
+import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 
 import { DashboardHome } from "./pages/DashboardHome";
 import { BotConfig } from "./pages/BotConfig";
+import { ConfigDiscord } from "./pages/ConfigDiscord";
+import { ConfigPayOS } from "./pages/ConfigPayOS";
+import { ConfigChannels } from "./pages/ConfigChannels";
+import { ConfigVoice } from "./pages/ConfigVoice";
 import { ProductsManager } from "./pages/ProductsManager";
 import { OrdersManager } from "./pages/OrdersManager";
 import { CouponsManager } from "./pages/CouponsManager";
 import { EmbedsManager } from "./pages/EmbedsManager";
+import { EmojiManager } from "./pages/EmojiManager";
 import { FeedbackManager } from "./pages/FeedbackManager";
 import { UsersManager } from "./pages/UsersManager";
 import { GiveawaysManager } from "./pages/GiveawaysManager";
@@ -20,8 +25,14 @@ import { StickyManager } from "./pages/StickyManager";
 import { TicketsPage } from "./pages/TicketsPage";
 import { TicketPanels } from "./pages/TicketPanels";
 import { TicketConfig } from "./pages/TicketConfig";
+import { TicketForms } from "./pages/TicketForms";
+import { TicketTeams } from "./pages/TicketTeams";
+import { TicketFeedback } from "./pages/TicketFeedback";
+import { TicketTranscripts } from "./pages/TicketTranscripts";
+import { TicketClaiming } from "./pages/TicketClaiming";
 import { Login } from "./pages/Login";
 import { InitialSetup } from "./pages/InitialSetup";
+import { BotStatus } from "./pages/BotStatus";
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -63,6 +74,11 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/tickets", icon: Ticket, label: "Tickets" },
       { to: "/ticket-panels", icon: Palette, label: "Panels" },
+      { to: "/ticket-forms", icon: ClipboardList, label: "Forms" },
+      { to: "/ticket-teams", icon: Users2, label: "Teams" },
+      { to: "/ticket-transcripts", icon: FileText, label: "Transcripts" },
+      { to: "/ticket-claiming", icon: UserCheck2, label: "Claiming" },
+      { to: "/ticket-feedback", icon: Star, label: "Feedback" },
       { to: "/ticket-config", icon: Settings, label: "Cấu hình" },
     ],
   },
@@ -83,13 +99,25 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/sticky", icon: Pin, label: "Sticky" },
       { to: "/embeds", icon: Palette, label: "Embeds" },
+      { to: "/emojis", icon: Smile, label: "Emoji" },
+    ],
+  },
+  {
+    key: "config",
+    icon: Settings,
+    label: "Cấu hình",
+    items: [
+      { to: "/config/discord", icon: Bot, label: "Discord Bot" },
+      { to: "/config/payos", icon: CreditCard, label: "PayOS" },
+      { to: "/config/channels", icon: Hash, label: "Kênh & Quyền" },
+      { to: "/config/voice", icon: Mic, label: "Temp Voice" },
     ],
   },
 ];
 
 const standaloneItems: NavItem[] = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/config", icon: Settings, label: "Cấu hình Bot" },
+  { to: "/bot-status", icon: Activity, label: "Trạng thái Bot" },
 ];
 
 const queryClient = new QueryClient();
@@ -164,35 +192,40 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               <button
                 onClick={() => toggleGroup(group.key)}
                 className={cn(
-                  "flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground transition-colors rounded-md",
-                  isActive && "text-foreground"
+                  "flex items-center justify-between w-full px-3 py-2 text-sm font-medium cursor-pointer rounded-md transition-colors",
+                  isActive
+                    ? "bg-accent/60 text-foreground"
+                    : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
                 )}
               >
-                <span className="flex items-center gap-2">
-                  <GroupIcon className="w-4 h-4" />
+                <span className="flex items-center gap-2.5">
+                  <GroupIcon className="w-4 h-4 shrink-0" />
                   {group.label}
                 </span>
                 {isOpen ? (
-                  <ChevronDown className="h-3.5 w-3.5" />
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
                 ) : (
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-60" />
                 )}
               </button>
               {isOpen && (
-                <div className="space-y-0.5 ml-1 mt-0.5">
+                <div className="mt-0.5 ml-3 pl-3 border-l border-border space-y-0.5">
                   {group.items.map((item) => {
                     const ItemIcon = item.icon;
+                    const isItemActive = location.pathname === item.to;
                     return (
                       <Link
                         key={item.to}
                         to={item.to}
                         onClick={onClose}
                         className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
-                          location.pathname === item.to && "bg-accent text-accent-foreground font-medium"
+                          "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm transition-colors",
+                          isItemActive
+                            ? "bg-primary text-primary-foreground font-medium"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
                         )}
                       >
-                        <ItemIcon className="w-4 h-4" />
+                        <ItemIcon className="w-3.5 h-3.5 shrink-0" />
                         {item.label}
                       </Link>
                     );
@@ -296,10 +329,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (isError) return <Navigate to="/login" replace />;
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground flex-col md:flex-row">
+    <div className="flex min-h-screen bg-background text-foreground flex-col md:flex-row overflow-x-hidden">
       <MobileNav />
       <Sidebar />
-      <main className="flex-1 md:ml-64 p-4 md:p-8">
+      <main className="flex-1 md:ml-64 p-4 md:p-8 min-w-0 overflow-x-hidden">
         {children}
       </main>
     </div>
@@ -341,7 +374,12 @@ function ProtectedAppRoutes() {
     <ProtectedRoute>
       <Routes>
         <Route path="/" element={<DashboardHome />} />
+        <Route path="/bot-status" element={<BotStatus />} />
         <Route path="/config" element={<BotConfig />} />
+        <Route path="/config/discord" element={<ConfigDiscord />} />
+        <Route path="/config/payos" element={<ConfigPayOS />} />
+        <Route path="/config/channels" element={<ConfigChannels />} />
+        <Route path="/config/voice" element={<ConfigVoice />} />
         <Route path="/products" element={<ProductsManager />} />
         <Route path="/orders" element={<OrdersManager />} />
         <Route path="/feedback" element={<FeedbackManager />} />
@@ -353,9 +391,15 @@ function ProtectedAppRoutes() {
         <Route path="/giveaways" element={<GiveawaysManager />} />
         <Route path="/invites" element={<InviteTracking />} />
         <Route path="/embeds" element={<EmbedsManager />} />
+        <Route path="/emojis" element={<EmojiManager />} />
         <Route path="/tickets" element={<TicketsPage />} />
         <Route path="/ticket-panels" element={<TicketPanels />} />
         <Route path="/ticket-config" element={<TicketConfig />} />
+        <Route path="/ticket-forms" element={<TicketForms />} />
+        <Route path="/ticket-teams" element={<TicketTeams />} />
+        <Route path="/ticket-feedback" element={<TicketFeedback />} />
+        <Route path="/ticket-transcripts" element={<TicketTranscripts />} />
+        <Route path="/ticket-claiming" element={<TicketClaiming />} />
       </Routes>
     </ProtectedRoute>
   );
