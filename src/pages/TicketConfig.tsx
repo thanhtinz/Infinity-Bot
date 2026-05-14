@@ -90,30 +90,6 @@ function formToPayload(form: ConfigForm): TicketConfigData {
   };
 }
 
-
-  return (
-    <div className="rounded-md overflow-hidden text-sm mt-2" style={{ backgroundColor: "#2b2d31" }}>
-      <div className="px-3 py-2">
-        <div className="flex items-start gap-2.5">
-          <div className="h-7 w-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold" style={{ backgroundColor: color, color: "#fff" }}>TB</div>
-          <div className="min-w-0 flex-1">
-            <span className="font-semibold text-xs" style={{ color }}>TicketBot</span>
-            <div className="mt-1 rounded overflow-hidden max-w-[320px]" style={{ backgroundColor: "#2b2d31" }}>
-              <div className="flex">
-                <div className="w-1 shrink-0 rounded-l" style={{ backgroundColor: color }} />
-                <div className="p-2 flex-1 min-w-0">
-                  {title && <p className="font-semibold text-xs" style={{ color: "#dbdee1" }}>{title}</p>}
-                  {body && <p className="text-[11px] mt-0.5 whitespace-pre-wrap" style={{ color: "#949ba4" }}>{body}</p>}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Section Card ────────────────────────────────────────────────────────────
 
 function SectionCard({
