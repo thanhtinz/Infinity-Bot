@@ -15,6 +15,10 @@ export default defineConfig({
     proxy: {
       "/api": `http://localhost:${process.env.VITE_BACKEND_PORT || 3101}`,
     },
+    hmr: {
+      clientPort: 443,
+      protocol: "wss",
+    },
     watch: {
       ignored: [
         "**/node_modules/**",
