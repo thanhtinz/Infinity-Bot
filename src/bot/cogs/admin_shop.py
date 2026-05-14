@@ -341,7 +341,7 @@ class AdminShopCog(discord.Cog):
 
             # Build embed từ template (hoặc default)
             from src.bot.embed_utils import build_embed
-            embed = build_embed("don_hang_moi", session, vars={
+            order_vars = {
                 "order.id": order.id,
                 "user.mention": user.mention,
                 "user": user.display_name,
@@ -349,6 +349,23 @@ class AdminShopCog(discord.Cog):
                 "product.name": product_display,
                 "package": matched_pkg_name,
                 "order.total": f"{total:,.0f}",
+            }
+
+            # 1) Gửi thông báo đơn hàng → don_hang_channel (nếu có)
+            if config.don_hang_channel_id:
+                don_hang_ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
+                if don_hang_ch:
+                    order_embed = build_embed("don_hang_moi", session, vars=order_vars)
+                    await don_hang_ch.send(
+                        content=f"{user.mention} Bạn có đơn hàng mới!",
+                        embed=order_embed,
+                    )
+
+            # 2) Gửi mã QR thanh toán → kênh chỉ định hoặc kênh hiện tại
+            qr_embed = build_embed("qr_thanh_toan", session, vars={
+                **order_vars,
+                "qr_url": checkout_url,
+                "transfer_content": f"Don {order.id}",
             })
 
             view = OrderPayView(
@@ -358,12 +375,10 @@ class AdminShopCog(discord.Cog):
                 admin_id=ctx.author.id,
             )
 
-            # Gửi QR: chỉ định kênh > kênh hiện tại
-            target_channel = channel or ctx.channel
-
-            msg = await target_channel.send(
-                content=f"{user.mention} Bạn có đơn hàng mới!",
-                embed=embed,
+            qr_channel = channel or ctx.channel
+            msg = await qr_channel.send(
+                content=f"{user.mention} Thanh toán đơn hàng #{order.id}",
+                embed=qr_embed,
                 view=view,
             )
             view.message = msg
@@ -373,10 +388,12 @@ class AdminShopCog(discord.Cog):
             order.discord_channel_id = str(msg.channel.id)
             session.commit()
 
-            if target_channel != ctx.channel:
-                await ctx.respond(f"✅ Đã tạo đơn #{order.id} và gửi tới {target_channel.mention}.", ephemeral=True)
-            else:
-                await ctx.respond(f"✅ Đã tạo đơn #{order.id}.", ephemeral=True)
+            parts = [f"✅ Đã tạo đơn #{order.id}."]
+            if config.don_hang_channel_id:
+                parts.append(f"📦 Thông báo đơn → <#{config.don_hang_channel_id}>")
+            if qr_channel != ctx.channel:
+                parts.append(f"💳 QR → {qr_channel.mention}")
+            await ctx.respond(" ".join(parts), ephemeral=True)
 
         except Exception as e:
             logger.error(f"tao_don_cmd error: {e}")
@@ -455,9 +472,9 @@ class AdminShopCog(discord.Cog):
             order.checkout_url = checkout_url
             session.commit()
 
-            # Build embed từ template don_hang_moi (hoặc default)
+            # Build embeds
             from src.bot.embed_utils import build_embed
-            embed_vars = {
+            order_vars = {
                 "order.id": order.id,
                 "user.mention": user.mention,
                 "user": user.display_name,
@@ -466,9 +483,25 @@ class AdminShopCog(discord.Cog):
                 "package": san_pham,
                 "order.total": f"{total:,.0f}",
             }
-            embed = build_embed("don_hang_moi", session, vars=embed_vars)
-            if ghi_chu:
-                embed.add_field(name="Ghi chú", value=ghi_chu, inline=False)
+
+            # 1) Gửi thông báo đơn hàng → don_hang_channel (nếu có)
+            if config.don_hang_channel_id:
+                don_hang_ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
+                if don_hang_ch:
+                    order_embed = build_embed("don_hang_moi", session, vars=order_vars)
+                    if ghi_chu:
+                        order_embed.add_field(name="Ghi chú", value=ghi_chu, inline=False)
+                    await don_hang_ch.send(
+                        content=f"{user.mention} Bạn có đơn hàng mới!",
+                        embed=order_embed,
+                    )
+
+            # 2) Gửi mã QR thanh toán → kênh chỉ định hoặc kênh hiện tại
+            qr_embed = build_embed("qr_thanh_toan", session, vars={
+                **order_vars,
+                "qr_url": checkout_url,
+                "transfer_content": f"Don {order.id}",
+            })
 
             view = OrderPayView(
                 order_id=order.id,
@@ -477,12 +510,10 @@ class AdminShopCog(discord.Cog):
                 admin_id=ctx.author.id,
             )
 
-            # Gửi QR: chỉ định kênh > kênh hiện tại
-            target_channel = channel or ctx.channel
-
-            msg = await target_channel.send(
-                content=f"{user.mention} Bạn có đơn hàng mới!",
-                embed=embed,
+            qr_channel = channel or ctx.channel
+            msg = await qr_channel.send(
+                content=f"{user.mention} Thanh toán đơn hàng #{order.id}",
+                embed=qr_embed,
                 view=view,
             )
             view.message = msg
@@ -491,10 +522,12 @@ class AdminShopCog(discord.Cog):
             order.discord_channel_id = str(msg.channel.id)
             session.commit()
 
-            info = f"✅ Đã tạo đơn custom #{order.id}"
-            if target_channel != ctx.channel:
-                info += f" và gửi tới {target_channel.mention}"
-            await ctx.respond(info + ".", ephemeral=True)
+            parts = [f"✅ Đã tạo đơn custom #{order.id}."]
+            if config.don_hang_channel_id:
+                parts.append(f"📦 Thông báo đơn → <#{config.don_hang_channel_id}>")
+            if qr_channel != ctx.channel:
+                parts.append(f"💳 QR → {qr_channel.mention}")
+            await ctx.respond(" ".join(parts), ephemeral=True)
 
         except Exception as e:
             logger.error(f"tao_don_custom error: {e}")
