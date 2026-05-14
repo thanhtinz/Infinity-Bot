@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight } from "lucide-react";
+import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -42,6 +42,7 @@ const AutoModConfig = lazy(() => import("./pages/AutoModConfig").then(m => ({ de
 const ReactionRoles = lazy(() => import("./pages/ReactionRoles").then(m => ({ default: m.ReactionRoles })));
 const CustomCommands = lazy(() => import("./pages/CustomCommands").then(m => ({ default: m.CustomCommands })));
 const ScheduledMessages = lazy(() => import("./pages/ScheduledMessages").then(m => ({ default: m.ScheduledMessages })));
+const AutoResponder = lazy(() => import("./pages/AutoResponder").then(m => ({ default: m.AutoResponder })));
 const BackupRestore = lazy(() => import("./pages/BackupRestore").then(m => ({ default: m.BackupRestore })));
 const Features = lazy(() => import("./pages/Features"));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
@@ -142,6 +143,7 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/sticky", icon: Pin, label: "Sticky", feature: "sticky" },
       { to: "/custom-commands", icon: Terminal, label: "Custom Commands", feature: "custom_commands" },
+      { to: "/autoresponder", icon: MessageCircleReply, label: "Auto Responder", feature: "autoresponder" },
       { to: "/scheduled-messages", icon: Clock, label: "Tin nhắn hẹn giờ", feature: "scheduler" },
       { to: "/embeds", icon: Palette, label: "Embeds" },
       { to: "/emojis", icon: Smile, label: "Emoji & Sticker" },
@@ -521,6 +523,7 @@ function ProtectedAppRoutes() {
         <Route path="/automod" element={<AutoModConfig />} />
         <Route path="/reaction-roles" element={<ReactionRoles />} />
         <Route path="/custom-commands" element={<CustomCommands />} />
+        <Route path="/autoresponder" element={<AutoResponder />} />
         <Route path="/scheduled-messages" element={<ScheduledMessages />} />
         <Route path="/backup" element={<BackupRestore />} />
       </Routes>

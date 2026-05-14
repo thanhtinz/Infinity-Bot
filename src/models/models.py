@@ -617,3 +617,30 @@ class CustomCommand(Base):
     allowed_channels = Column(JSON, default=list)  # restrict to specific channels (empty = all)
     delete_trigger = Column(Boolean, default=False)  # delete the user's !command message
     auto_react = Column(String, nullable=True)     # emoji to react to the response
+
+
+class AutoResponder(Base):
+    __tablename__ = "auto_responders"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    trigger_type = Column(String, default="contains")  # exact, contains, startswith, endswith, regex, wildcard
+    trigger_text = Column(String, nullable=False)
+    ignore_case = Column(Boolean, default=True)
+    response_type = Column(String, default="text")  # text, embed, react, text+react, embed+react
+    response_text = Column(Text, nullable=True)
+    response_embed = Column(JSON, nullable=True)
+    reaction_emojis = Column(JSON, default=list)
+    reply_to_message = Column(Boolean, default=True)
+    delete_trigger = Column(Boolean, default=False)
+    send_dm = Column(Boolean, default=False)
+    cooldown = Column(Integer, default=0)
+    cooldown_type = Column(String, default="per_user")  # per_user, per_channel, global
+    allowed_channels = Column(JSON, default=list)
+    blocked_channels = Column(JSON, default=list)
+    allowed_roles = Column(JSON, default=list)
+    blocked_roles = Column(JSON, default=list)
+    ignore_bots = Column(Boolean, default=True)
+    enabled = Column(Boolean, default=True)
+    priority = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)

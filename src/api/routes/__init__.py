@@ -13,9 +13,11 @@ from src.api.routes.starboard import router as starboard_router
 from src.api.routes.automod import router as automod_router
 from src.api.routes.reaction_roles import router as reaction_roles_router
 from src.api.routes.custom_commands import router as custom_commands_router
+from src.api.routes.autoresponder import router as autoresponder_router
 from src.api.routes.scheduler import router as scheduler_router
 from src.api.routes.backup import router as backup_router
 from src.api.routes.features import router as features_router
+from src.api.routes.autoresponder import router as autoresponder_router
 
 router = APIRouter()
 
@@ -31,6 +33,8 @@ router.include_router(starboard_router, tags=["starboard"])
 router.include_router(automod_router, tags=["automod"])
 router.include_router(reaction_roles_router, tags=["reaction-roles"])
 router.include_router(custom_commands_router, tags=["custom-commands"])
+router.include_router(autoresponder_router, tags=["auto-responders"])
 router.include_router(scheduler_router, tags=["scheduler"])
 router.include_router(backup_router, tags=["backup"])
 router.include_router(features_router, tags=["features"])
+router.include_router(autoresponder_router, tags=["auto-responders"])

@@ -24,7 +24,9 @@ FEATURE_DEFS: list[dict] = [
     {"key": "sticky",          "label": "Sticky Message",      "desc": "Ghim tin nhắn tự động",                      "icon": "Pin",           "cogs": ["StickyCog"]},
     {"key": "utility",         "label": "Tiện ích",            "desc": "Avatar, serverinfo, poll, QR, AFK",          "icon": "Wrench",        "cogs": ["UtilityCog", "AFKCog"]},
     {"key": "custom_commands", "label": "Custom Commands",     "desc": "Tạo lệnh tùy chỉnh",                        "icon": "Terminal",      "cogs": ["CustomCommandsCog"]},
+    {"key": "autoresponder",  "label": "Auto Responder",      "desc": "Tự động trả lời theo keyword",               "icon": "MessageCircleReply", "cogs": ["AutoResponderCog"]},
     {"key": "scheduler",       "label": "Tin nhắn hẹn giờ",   "desc": "Gửi tin nhắn theo lịch",                     "icon": "Clock",         "cogs": ["SchedulerCog"]},
+    {"key": "autoresponder",   "label": "Auto Responder",     "desc": "Tự động trả lời theo keyword",                "icon": "MessageCircleReply", "cogs": ["AutoResponderCog"]},
 ]
 
 
