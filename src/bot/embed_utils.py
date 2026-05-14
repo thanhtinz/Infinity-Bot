@@ -198,6 +198,21 @@ DEFAULTS: dict[str, dict] = {
         "footer": "Cập nhật: {updated_at}",
         "fields": [],
     },
+    # ── BXH Chi tiêu / Đơn hàng ─────────────────────────────────────────────
+    "bxh_chi_tieu": {
+        "title": "🏆 BXH Chi tiêu — {time_label}",
+        "description": "{leaderboard_lines}",
+        "color": "#F0B232",
+        "footer": "Cập nhật: {updated_at}",
+        "fields": [],
+    },
+    "bxh_don_hang": {
+        "title": "🏆 BXH Đơn hàng — {time_label}",
+        "description": "{leaderboard_lines}",
+        "color": "#F0B232",
+        "footer": "Cập nhật: {updated_at}",
+        "fields": [],
+    },
     # ── QR / Payment ──────────────────────────────────────────────────────────
     "qr_thanh_toan": {
         "title": "💳 Thanh toán đơn hàng #{order.id}",

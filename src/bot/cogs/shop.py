@@ -350,20 +350,21 @@ class ShopCog(discord.Cog):
             sort_key = "total" if loai == "chi_tieu" else "count"
             top = sorted(agg.values(), key=lambda x: x[sort_key], reverse=True)[:10]
 
-            label_map = {"chi_tieu": "Chi tiêu", "don_hang": "Đơn hàng"}
             time_map = {"daily": "Hôm nay", "7days": "7 ngày", "30days": "30 ngày", "all": "Tất cả"}
             medals = ["🥇", "🥈", "🥉"] + ["🏅"] * 7
 
-            embed = discord.Embed(
-                title=f"🏆 BXH {label_map[loai]} — {time_map[thoi_gian]}",
-                color=discord.Color.gold(),
-            )
             lines = []
             for i, u in enumerate(top):
                 val = f"{u['total']:,.0f}đ" if loai == "chi_tieu" else f"{u['count']} đơn"
                 lines.append(f"{medals[i]} **{u['username']}** — {val}")
-            embed.description = "\n".join(lines)
-            embed.timestamp = datetime.datetime.utcnow()
+
+            from src.bot.embed_utils import build_embed
+            event_key = "bxh_chi_tieu" if loai == "chi_tieu" else "bxh_don_hang"
+            embed = build_embed(event_key, session, vars={
+                "time_label": time_map[thoi_gian],
+                "leaderboard_lines": "\n".join(lines),
+                "updated_at": datetime.datetime.utcnow().strftime("%H:%M %d/%m/%Y"),
+            })
             await ctx.respond(embed=embed)
         finally:
             session.close()

@@ -79,6 +79,8 @@ const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "coupon",            label: "Mã giảm giá",            icon: Tag,          desc: "Khi tạo/áp dụng coupon" },
   { key: "ban_shop",          label: "Cấm mua hàng",           icon: UserX,        desc: "Khi user bị cấm mua hàng" },
   { key: "unban_shop",        label: "Bỏ cấm mua hàng",       icon: ShieldOff,    desc: "Khi user được bỏ cấm shop" },
+  { key: "bxh_chi_tieu",      label: "BXH Chi tiêu",           icon: Trophy,       desc: "Embed bảng xếp hạng chi tiêu" },
+  { key: "bxh_don_hang",      label: "BXH Đơn hàng",           icon: Trophy,       desc: "Embed bảng xếp hạng đơn hàng" },
   { key: "feedback",          label: "Feedback khách hàng",    icon: Star,         desc: "Khi user dùng /feedback" },
   { key: "giveaway",          label: "Giveaway bắt đầu",       icon: Gift,         desc: "Khi tạo /giveaway" },
   { key: "ket_qua_giveaway",  label: "Kết quả Giveaway",       icon: Trophy,       desc: "Khi giveaway kết thúc, công bố winner" },
@@ -129,7 +131,7 @@ const EMBED_EVENTS: EmbedEventDef[] = [
 // ─── Event groups ────────────────────────────────────────────────────────────
 
 const EVENT_GROUPS: { label: string; keys: string[] }[] = [
-  { label: "Đơn hàng",    keys: ["don_hang_moi", "qr_thanh_toan", "thanh_toan", "giao_hang", "don_hang_het_han", "don_hang_chi_tiet", "san_pham", "coupon", "ban_shop", "unban_shop"] },
+  { label: "Đơn hàng",    keys: ["don_hang_moi", "qr_thanh_toan", "thanh_toan", "giao_hang", "don_hang_het_han", "don_hang_chi_tiet", "san_pham", "coupon", "ban_shop", "unban_shop", "bxh_chi_tieu", "bxh_don_hang"] },
   { label: "Cộng đồng",   keys: ["giveaway", "ket_qua_giveaway", "giveaway_banned", "feedback", "dm_welcome", "reaction_role_panel", "starboard_post"] },
   { label: "Ticket",      keys: ["ticket_mo", "ticket_dong", "ticket_nhan", "ticket_unclaim", "ticket_transcript", "ticket_panel", "ticket_feedback"] },
   { label: "Kiểm duyệt", keys: ["canh_bao", "kick", "ban", "unban", "timeout", "invite_join", "invite_leaderboard", "automod_warn", "automod_mute", "automod_kick", "automod_delete"] },
@@ -460,6 +462,30 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     fields: [
       { name: "Người thực hiện", value: "{moderator}", inline: true },
     ],
+    enabled: true,
+  },
+  bxh_chi_tieu: {
+    title: "🏆 BXH Chi tiêu — {time_label}",
+    description: "{leaderboard_lines}",
+    color: "#F0B232",
+    author: "",
+    author_icon_url: "",
+    footer: "Cập nhật: {updated_at}",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  bxh_don_hang: {
+    title: "🏆 BXH Đơn hàng — {time_label}",
+    description: "{leaderboard_lines}",
+    color: "#F0B232",
+    author: "",
+    author_icon_url: "",
+    footer: "Cập nhật: {updated_at}",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
     enabled: true,
   },
   giveaway_banned: {
@@ -811,6 +837,9 @@ const VARIABLES: { token: string; desc: string }[] = [
   { token: "{reason}",            desc: "Lý do (automod, afk)" },
   { token: "{duration}",          desc: "Thời gian (mute, AFK)" },
   { token: "{message.url}",       desc: "Link tới tin nhắn gốc" },
+  { token: "{time_label}",        desc: "Thời gian BXH (Hôm nay, 7 ngày...)" },
+  { token: "{leaderboard_lines}", desc: "Nội dung BXH (danh sách top)" },
+  { token: "{updated_at}",        desc: "Thời gian cập nhật BXH" },
 ];
 
 // ─── Dummy data for preview ─────────────────────────────────────────────────
@@ -842,6 +871,9 @@ const DUMMY: Record<string, string> = {
   "{mod}": "Mod Trần",
   "{invite_code}": "abc123",
   "{inviter}": "@Admin",
+  "{time_label}": "Tất cả",
+  "{leaderboard_lines}": "🥇 **Nguyễn Văn A** — 500,000đ\n🥈 **Trần Văn B** — 300,000đ\n🥉 **Lê Thị C** — 150,000đ",
+  "{updated_at}": "15:30 14/05/2026",
 };
 
 function replaceVars(text: string): string {
