@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Collapsible,
   CollapsibleContent,
@@ -197,7 +196,7 @@ const emptyButtonForm = (): ButtonForm => ({
 
 const emptyPanelGroupForm = (): PanelGroupForm => ({
   name: "",
-  title: "",
+  title: "Hỗ trợ",
   description: "",
   color: DEFAULT_COLOR,
   channel_id: "",
@@ -590,7 +589,7 @@ export function TicketPanels() {
     staleTime: 60_000,
   });
 
-  const { data: groups = [], isLoading: isLoadingGroups } = useQuery<TicketPanelGroup[]>({
+  const { data: groups = [] } = useQuery<TicketPanelGroup[]>({
     queryKey: ["ticket-panel-groups"],
     queryFn: () =>
       fetch("/api/ticket-panel-groups", { credentials: "include" }).then((r) =>
@@ -910,20 +909,6 @@ export function TicketPanels() {
     } else {
       createGroupMutation.mutate(payload);
     }
-  };
-
-  const setGroupField = <K extends keyof PanelGroupForm>(
-    field: K,
-    value: PanelGroupForm[K]
-  ) => setGroupForm((prev) => ({ ...prev, [field]: value }));
-
-  const togglePanelInGroup = (panelId: number) => {
-    setGroupForm((prev) => ({
-      ...prev,
-      panel_ids: prev.panel_ids.includes(panelId)
-        ? prev.panel_ids.filter((id) => id !== panelId)
-        : [...prev.panel_ids, panelId],
-    }));
   };
 
   const isSavingGroup = createGroupMutation.isPending || updateGroupMutation.isPending;
@@ -1582,203 +1567,103 @@ export function TicketPanels() {
         </DialogContent>
       </Dialog>
 
-      {/* ── Create / Edit Group Sheet ── */}
-      <Sheet
-        open={groupSheetOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setGroupSheetOpen(false);
-            setEditingGroup(null);
-          }
-        }}
-      >
-        <SheetContent className="sm:max-w-lg overflow-y-auto">
+      {/* ── Group Edit Sheet ── */}
+      <Sheet open={groupSheetOpen} onOpenChange={open => { if (!open) { setGroupSheetOpen(false); setEditingGroup(null); } }}>
+        <SheetContent className="sm:max-w-md overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>
-              {editingGroup ? "Chỉnh sửa Nhóm Panel" : "Tạo Nhóm Panel"}
-            </SheetTitle>
-            <SheetDescription>
-              {editingGroup
-                ? "Cập nhật cấu hình nhóm panel"
-                : "Gộp nhiều panel vào một nhóm để gửi cùng lúc"}
-            </SheetDescription>
+            <SheetTitle>{editingGroup ? "Chỉnh sửa Group" : "Tạo Group"}</SheetTitle>
+            <SheetDescription>Gộp nhiều panel vào 1 embed message</SheetDescription>
           </SheetHeader>
-
           <div className="mt-6 space-y-4">
             <div className="space-y-1.5">
-              <Label>
-                Tên nhóm <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                placeholder="Ví dụ: Hỗ trợ chung"
-                value={groupForm.name}
-                onChange={(e) => setGroupField("name", e.target.value)}
-              />
+              <Label>Tên Group <span className="text-destructive">*</span></Label>
+              <Input value={groupForm.name} onChange={e => setGroupForm(f => ({...f, name: e.target.value}))} placeholder="Ví dụ: Hỗ trợ chung" />
             </div>
-
             <div className="space-y-1.5">
-              <Label>Tiêu đề</Label>
-              <Input
-                placeholder="Tiêu đề embed hiển thị..."
-                value={groupForm.title}
-                onChange={(e) => setGroupField("title", e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Mô tả</Label>
-              <Textarea
-                placeholder="Mô tả nhóm panel..."
-                value={groupForm.description}
-                onChange={(e) => setGroupField("description", e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Màu</Label>
-              <div className="flex gap-2 items-center">
-                <input
-                  type="color"
-                  value={groupForm.color}
-                  onChange={(e) => setGroupField("color", e.target.value)}
-                  className="h-9 w-12 rounded border cursor-pointer shrink-0"
-                />
-                <Input
-                  value={groupForm.color}
-                  onChange={(e) => setGroupField("color", e.target.value)}
-                  className="w-28 font-mono"
-                  placeholder="#5865F2"
-                />
-              </div>
-              <div className="flex gap-2 mt-2">
-                {PRESET_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setGroupField("color", c)}
-                    className={cn(
-                      "h-7 w-7 rounded-full border-2 transition-all",
-                      groupForm.color === c
-                        ? "border-foreground scale-110"
-                        : "border-transparent hover:scale-105"
-                    )}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Kênh Discord</Label>
-              <ChannelSelect
-                filter="text"
-                value={groupForm.channel_id}
-                onChange={(v) => setGroupField("channel_id", v === "__clear__" ? "" : v)}
-                placeholder="Chọn kênh..."
-              />
+              <Label>Kênh gửi</Label>
+              <ChannelSelect value={groupForm.channel_id} onChange={v => setGroupForm(f => ({...f, channel_id: v === "__clear__" ? "" : v}))} placeholder="Chọn kênh..." filter="text" />
             </div>
 
             <Separator />
 
-            <div className="space-y-3">
-              <Label>Panel trong nhóm</Label>
-              {panels.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  Chưa có panel nào. Tạo panel trước khi thêm vào nhóm.
-                </p>
-              ) : (
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {panels.map((p) => (
-                    <label
+            <div className="space-y-1.5">
+              <Label>Tiêu đề Embed</Label>
+              <Input value={groupForm.title} onChange={e => setGroupForm(f => ({...f, title: e.target.value}))} placeholder="Hỗ trợ" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Mô tả</Label>
+              <Textarea value={groupForm.description} onChange={e => setGroupForm(f => ({...f, description: e.target.value}))} placeholder="Chọn loại hỗ trợ bên dưới..." rows={3} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Màu</Label>
+              <div className="flex gap-2 items-center">
+                <input type="color" value={groupForm.color} onChange={e => setGroupForm(f => ({...f, color: e.target.value}))} className="h-9 w-12 rounded border cursor-pointer shrink-0" />
+                <Input value={groupForm.color} onChange={e => setGroupForm(f => ({...f, color: e.target.value}))} className="w-28 font-mono" />
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2">
+              <Label>Panels trong group</Label>
+              <p className="text-xs text-muted-foreground">Chọn panels để gộp vào group này</p>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                {panels.map(p => {
+                  const isInGroup = groupForm.panel_ids.includes(p.id);
+                  const isInOtherGroup = !isInGroup && groups.some(g => g.id !== editingGroup?.id && g.panel_ids.includes(p.id));
+                  return (
+                    <button
                       key={p.id}
+                      type="button"
+                      disabled={isInOtherGroup}
+                      onClick={() => {
+                        setGroupForm(f => ({
+                          ...f,
+                          panel_ids: isInGroup
+                            ? f.panel_ids.filter(id => id !== p.id)
+                            : [...f.panel_ids, p.id]
+                        }));
+                      }}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg border p-2.5 cursor-pointer transition-colors",
-                        groupForm.panel_ids.includes(p.id)
-                          ? "bg-primary/5 border-primary/30"
-                          : "hover:bg-muted/50"
+                        "w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors",
+                        isInGroup ? "bg-primary/10 border border-primary/30" : "border hover:bg-muted/50",
+                        isInOtherGroup && "opacity-40 cursor-not-allowed"
                       )}
                     >
-                      <Checkbox
-                        checked={groupForm.panel_ids.includes(p.id)}
-                        onCheckedChange={() => togglePanelInGroup(p.id)}
-                      />
-                      <span
-                        className="h-2.5 w-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: p.color || DEFAULT_COLOR }}
-                      />
-                      <span className="text-sm truncate">{p.name}</span>
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] font-mono ml-auto shrink-0 px-1.5"
-                      >
-                        #{p.id}
-                      </Badge>
-                    </label>
-                  ))}
-                </div>
-              )}
-              {groupForm.panel_ids.length > 0 && (
-                <p className="text-[11px] text-muted-foreground">
-                  Đã chọn {groupForm.panel_ids.length} panel
-                </p>
-              )}
+                      <div className={cn("w-4 h-4 rounded border-2 flex items-center justify-center shrink-0", isInGroup ? "bg-primary border-primary" : "border-muted-foreground/30")}>
+                        {isInGroup && <CheckCircle2 className="h-3 w-3 text-primary-foreground" />}
+                      </div>
+                      <span>{p.name}</span>
+                      {isInOtherGroup && <span className="text-xs text-muted-foreground ml-auto">Đã trong group khác</span>}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="flex gap-2 pt-4">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  setGroupSheetOpen(false);
-                  setEditingGroup(null);
-                }}
-              >
-                Hủy
-              </Button>
-              <Button
-                className="flex-1"
-                disabled={!groupForm.name.trim() || isSavingGroup}
-                onClick={handleSaveGroup}
-              >
-                {isSavingGroup
-                  ? "Đang lưu..."
-                  : editingGroup
-                    ? "Cập nhật"
-                    : "Tạo"}
+              <Button variant="outline" className="flex-1" onClick={() => { setGroupSheetOpen(false); setEditingGroup(null); }}>Hủy</Button>
+              <Button className="flex-1" disabled={!groupForm.name.trim() || isSavingGroup} onClick={handleSaveGroup}>
+                {isSavingGroup ? "Đang lưu..." : editingGroup ? "Cập nhật" : "Tạo"}
               </Button>
             </div>
           </div>
         </SheetContent>
       </Sheet>
 
-      {/* ── Delete Group Confirmation Dialog ── */}
-      <Dialog
-        open={!!deleteGroupTarget}
-        onOpenChange={(open) => !open && setDeleteGroupTarget(null)}
-      >
+      {/* ── Delete Group Dialog ── */}
+      <Dialog open={!!deleteGroupTarget} onOpenChange={open => !open && setDeleteGroupTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Xóa nhóm panel?</DialogTitle>
+            <DialogTitle>Xóa group?</DialogTitle>
             <DialogDescription>
-              Nhóm{" "}
-              <strong className="text-foreground">{deleteGroupTarget?.name}</strong>{" "}
-              sẽ bị xóa. Các panel trong nhóm sẽ được gỡ ra nhưng không bị xóa.
+              Group <strong className="text-foreground">{deleteGroupTarget?.name}</strong> sẽ bị xóa. Các panel bên trong sẽ trở thành standalone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteGroupTarget(null)}>
-              Hủy
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={deleteGroupMutation.isPending}
-              onClick={() =>
-                deleteGroupTarget && deleteGroupMutation.mutate(deleteGroupTarget.id)
-              }
-            >
+            <Button variant="outline" onClick={() => setDeleteGroupTarget(null)}>Hủy</Button>
+            <Button variant="destructive" disabled={deleteGroupMutation.isPending} onClick={() => deleteGroupTarget && deleteGroupMutation.mutate(deleteGroupTarget.id)}>
               {deleteGroupMutation.isPending ? "Đang xóa..." : "Xóa"}
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
