@@ -394,3 +394,75 @@ class TicketClaimConfig(Base):
     exclusive = Column(Boolean, default=False)
     notify = Column(Boolean, default=True)
     notify_channel_id = Column(String, nullable=True)
+
+# ── Phase 3: Welcome & Auto Role ──────────────────────────────────────────────
+
+class WelcomeConfig(Base):
+    __tablename__ = "welcome_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, unique=True)
+    # Welcome
+    welcome_enabled = Column(Boolean, default=False)
+    welcome_channel_id = Column(String, nullable=True)
+    welcome_message = Column(Text, nullable=True)
+    welcome_embed_enabled = Column(Boolean, default=True)
+    # DM
+    welcome_dm_enabled = Column(Boolean, default=False)
+    welcome_dm_message = Column(Text, nullable=True)
+    # Goodbye
+    goodbye_enabled = Column(Boolean, default=False)
+    goodbye_channel_id = Column(String, nullable=True)
+    goodbye_message = Column(Text, nullable=True)
+    goodbye_embed_enabled = Column(Boolean, default=True)
+    # Extras
+    auto_nickname_template = Column(String, nullable=True)
+
+class AutoRoleConfig(Base):
+    __tablename__ = "auto_role_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, unique=True)
+    join_roles = Column(JSON, default=list)
+    bot_roles = Column(JSON, default=list)
+
+class ButtonRole(Base):
+    __tablename__ = "button_roles"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    channel_id = Column(String, nullable=True)
+    message_id = Column(String, nullable=True)
+    name = Column(String, nullable=False, default="Button Role Panel")
+    buttons = Column(JSON, default=list)
+    embed_title = Column(String, nullable=True)
+    embed_description = Column(Text, nullable=True)
+    embed_color = Column(String, default="#5865F2")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class SelectMenuRole(Base):
+    __tablename__ = "select_menu_roles"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    channel_id = Column(String, nullable=True)
+    message_id = Column(String, nullable=True)
+    name = Column(String, nullable=False, default="Select Role Panel")
+    placeholder = Column(String, default="Chọn role...")
+    options = Column(JSON, default=list)
+    min_values = Column(Integer, default=0)
+    max_values = Column(Integer, default=1)
+    embed_title = Column(String, nullable=True)
+    embed_description = Column(Text, nullable=True)
+    embed_color = Column(String, default="#5865F2")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+# ── Phase 4: Logging System ───────────────────────────────────────────────────
+
+class LoggingConfig(Base):
+    __tablename__ = "logging_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, unique=True)
+    message_log_channel_id = Column(String, nullable=True)
+    voice_log_channel_id = Column(String, nullable=True)
+    mod_log_channel_id = Column(String, nullable=True)
+    member_log_channel_id = Column(String, nullable=True)
+    server_log_channel_id = Column(String, nullable=True)
+    ignored_channels = Column(JSON, default=list)
+    ignored_roles = Column(JSON, default=list)

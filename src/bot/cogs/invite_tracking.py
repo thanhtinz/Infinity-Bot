@@ -87,32 +87,7 @@ class InviteTrackingCog(commands.Cog):
         finally:
             db.close()
 
-        # Gửi welcome embed
-        try:
-            from src.bot.embed_utils import build_embed
-            from src.models.models import SystemConfig
-            _db = SessionLocal()
-            try:
-                config = _db.execute(__import__("sqlalchemy").select(SystemConfig).limit(1)).scalars().first()
-                welcome_channel_id = config.welcome_channel_id if config else None
-                if welcome_channel_id:
-                    ch = guild.get_channel(int(welcome_channel_id))
-                    if not ch:
-                        ch = await guild.fetch_channel(int(welcome_channel_id))
-                    if ch:
-                        welcome_embed = build_embed("welcome", _db, vars={
-                            "user.mention": member.mention,
-                            "user": member.display_name,
-                            "user.id": member.id,
-                            "server": guild.name,
-                            "member_count": str(guild.member_count),
-                        })
-                        await ch.send(content=member.mention, embed=welcome_embed)
-            finally:
-                _db.close()
-        except Exception as _e:
-            import logging as _log
-            _log.getLogger(__name__).error(f"welcome embed error: {_e}")
+        # Welcome is now handled by WelcomeCog
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):

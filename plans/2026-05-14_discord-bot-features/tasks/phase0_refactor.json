@@ -1,31 +1,31 @@
 [
   {
-    "content": "[P0-1] Tạo src/api/routes/ package",
+    "content": "[P0-1] Tạo src/api/routes/ package — split routes.py thành config, shop, tickets, community, embeds modules",
     "id": "p0-1",
     "status": "completed"
   },
   {
-    "content": "[P0-2] Update __init__.py",
+    "content": "[P0-2] Update src/api/routes/__init__.py — main router include tất cả sub-routers",
     "id": "p0-2",
     "status": "completed"
   },
   {
-    "content": "[P0-3] Update imports",
+    "content": "[P0-3] Update imports trong routes.py (root) và app.py",
     "id": "p0-3",
     "status": "completed"
   },
   {
-    "content": "[P0-4] Add response_mode + text_template + ALTER TABLE",
+    "content": "[P0-4] Add response_mode + text_template columns to EmbedTemplate model + ALTER TABLE",
     "id": "p0-4",
     "status": "completed"
   },
   {
-    "content": "[P0-5] Update build_embed() → build_response()",
+    "content": "[P0-5] Update build_embed() → build_response() trả về embed hoặc text tùy config",
     "id": "p0-5",
     "status": "completed"
   },
   {
-    "content": "[P0-6] Verify server OK + test API",
+    "content": "[P0-6] Verify server khởi động OK + test API endpoints",
     "id": "p0-6",
     "status": "completed"
   }

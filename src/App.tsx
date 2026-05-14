@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2 } from "lucide-react";
+import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ScrollText } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -30,6 +30,11 @@ import { TicketTeams } from "./pages/TicketTeams";
 import { TicketFeedback } from "./pages/TicketFeedback";
 import { TicketTranscripts } from "./pages/TicketTranscripts";
 import { TicketClaiming } from "./pages/TicketClaiming";
+import { WelcomeConfig } from "./pages/WelcomeConfig";
+import { AutoRoleConfig } from "./pages/AutoRoleConfig";
+import { ButtonRoles } from "./pages/ButtonRoles";
+import { SelectMenuRoles } from "./pages/SelectMenuRoles";
+import { LoggingConfig } from "./pages/LoggingConfig";
 import { Login } from "./pages/Login";
 import { InitialSetup } from "./pages/InitialSetup";
 import { BotStatus } from "./pages/BotStatus";
@@ -90,6 +95,25 @@ const navGroups: NavGroup[] = [
       { to: "/giveaways", icon: Gift, label: "Giveaway" },
       { to: "/invites", icon: Link2, label: "Invite" },
       { to: "/warnings", icon: ShieldAlert, label: "Cảnh cáo" },
+    ],
+  },
+  {
+    key: "welcome",
+    icon: Hand,
+    label: "Chào mừng",
+    items: [
+      { to: "/welcome", icon: MessageSquare, label: "Welcome & Goodbye" },
+      { to: "/autorole", icon: UserPlus, label: "Auto Role" },
+      { to: "/button-roles", icon: ToggleLeft, label: "Button Roles" },
+      { to: "/select-roles", icon: ListChecks, label: "Select Menu Roles" },
+    ],
+  },
+  {
+    key: "logging",
+    icon: ScrollText,
+    label: "Logging",
+    items: [
+      { to: "/logging", icon: ScrollText, label: "Cấu hình Log" },
     ],
   },
   {
@@ -400,6 +424,11 @@ function ProtectedAppRoutes() {
         <Route path="/ticket-feedback" element={<TicketFeedback />} />
         <Route path="/ticket-transcripts" element={<TicketTranscripts />} />
         <Route path="/ticket-claiming" element={<TicketClaiming />} />
+        <Route path="/welcome" element={<WelcomeConfig />} />
+        <Route path="/autorole" element={<AutoRoleConfig />} />
+        <Route path="/button-roles" element={<ButtonRoles />} />
+        <Route path="/select-roles" element={<SelectMenuRoles />} />
+        <Route path="/logging" element={<LoggingConfig />} />
       </Routes>
     </ProtectedRoute>
   );

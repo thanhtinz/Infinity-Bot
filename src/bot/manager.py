@@ -102,6 +102,10 @@ def create_bot():
     from src.bot.cogs.invite_tracking import InviteTrackingCog
     from src.bot.cogs.sticky import StickyCog
     from src.bot.cogs.ticket import TicketCog
+    from src.bot.cogs.utility import UtilityCog
+    from src.bot.cogs.welcome import WelcomeCog
+    from src.bot.cogs.roles import RolesCog
+    from src.bot.cogs.logging_cog import LoggingCog
 
     bot_client.add_cog(ShopCog(bot_client))
     bot_client.add_cog(AdminShopCog(bot_client))
@@ -111,6 +115,10 @@ def create_bot():
     bot_client.add_cog(InviteTrackingCog(bot_client))
     bot_client.add_cog(StickyCog(bot_client))
     bot_client.add_cog(TicketCog(bot_client))
+    bot_client.add_cog(UtilityCog(bot_client))
+    bot_client.add_cog(WelcomeCog(bot_client))
+    bot_client.add_cog(RolesCog(bot_client))
+    bot_client.add_cog(LoggingCog(bot_client))
 
     # ── Legacy commands (status, san_pham, account) ──────────
     @bot_client.slash_command(name="status", description="Xem trạng thái bot hiện tại")

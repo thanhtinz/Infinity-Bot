@@ -324,6 +324,102 @@ DEFAULTS: dict[str, dict] = {
         "color": "#5865F2",
         "fields": [],
     },
+    # ── Phase 3: Welcome extras ───────────────────────────────────────────────
+    "dm_welcome": {
+        "title": "👋 Chào mừng!",
+        "description": "Xin chào {user.mention}! Cảm ơn bạn đã tham gia **{server}**.",
+        "color": "#5865F2",
+        "fields": [],
+    },
+    # ── Phase 4: Logging ──────────────────────────────────────────────────────
+    "log_message_delete": {
+        "title": "🗑️ Tin nhắn bị xóa",
+        "description": "Tin nhắn của {user.mention} trong {channel} đã bị xóa.",
+        "color": "#ED4245",
+        "fields": [
+            {"name": "Nội dung", "value": "{content}", "inline": False},
+        ],
+    },
+    "log_message_edit": {
+        "title": "✏️ Tin nhắn được sửa",
+        "description": "{user.mention} đã sửa tin nhắn trong {channel}. [Nhảy tới]({message.url})",
+        "color": "#FEE75C",
+        "fields": [
+            {"name": "Trước", "value": "{before}", "inline": False},
+            {"name": "Sau", "value": "{after}", "inline": False},
+        ],
+    },
+    "log_message_bulk_delete": {
+        "title": "🗑️ Xóa hàng loạt",
+        "description": "**{count}** tin nhắn đã bị xóa trong {channel}.",
+        "color": "#ED4245",
+        "fields": [],
+    },
+    "log_voice_join": {
+        "title": "🔊 Vào voice",
+        "description": "{user.mention} đã vào {channel}.",
+        "color": "#57F287",
+        "fields": [],
+    },
+    "log_voice_leave": {
+        "title": "🔇 Rời voice",
+        "description": "{user.mention} đã rời {channel}.",
+        "color": "#ED4245",
+        "fields": [],
+    },
+    "log_voice_move": {
+        "title": "🔀 Chuyển voice",
+        "description": "{user.mention} đã chuyển từ {from} sang {to}.",
+        "color": "#FEE75C",
+        "fields": [],
+    },
+    "log_member_join": {
+        "title": "📥 Thành viên mới",
+        "description": "{user.mention} đã tham gia server.",
+        "color": "#57F287",
+        "fields": [
+            {"name": "Tạo tài khoản", "value": "{account_age}", "inline": True},
+            {"name": "Thành viên thứ", "value": "{member_count}", "inline": True},
+        ],
+    },
+    "log_member_leave": {
+        "title": "📤 Thành viên rời",
+        "description": "{user.mention} đã rời server.",
+        "color": "#ED4245",
+        "fields": [
+            {"name": "Roles", "value": "{roles}", "inline": False},
+            {"name": "Còn lại", "value": "{member_count} thành viên", "inline": True},
+        ],
+    },
+    "log_nickname_change": {
+        "title": "📝 Đổi nickname",
+        "description": "{user.mention} đã đổi nickname.",
+        "color": "#5865F2",
+        "fields": [
+            {"name": "Trước", "value": "{before}", "inline": True},
+            {"name": "Sau", "value": "{after}", "inline": True},
+        ],
+    },
+    "log_role_update": {
+        "title": "🎭 Thay đổi role",
+        "description": "Role của {user.mention} đã được thay đổi.",
+        "color": "#5865F2",
+        "fields": [
+            {"name": "Thay đổi", "value": "{changes}", "inline": False},
+        ],
+    },
+    "log_channel_create": {
+        "title": "📺 Kênh mới",
+        "description": "Kênh {channel} ({type}) đã được tạo.",
+        "color": "#57F287",
+        "fields": [],
+    },
+    "log_channel_delete": {
+        "title": "📺 Kênh bị xóa",
+        "description": "Kênh **{channel.name}** ({type}) đã bị xóa.",
+        "color": "#ED4245",
+        "fields": [],
+    },
 }
 
 
