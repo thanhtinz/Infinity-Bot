@@ -153,16 +153,6 @@ const TRIGGER_TYPE_CONFIG: Record<
   wildcard: { label: "Wildcard", color: "bg-orange-500/15 text-orange-600 border-orange-500/30", helper: "Dùng * cho wildcard. VD: hello*world", icon: Asterisk },
 };
 
-const RESPONSE_TYPE_CONFIG: Record<
-  AutoResponderRule["response_type"],
-  { label: string; icon: typeof Type }
-> = {
-  text: { label: "Text", icon: Type },
-  embed: { label: "Embed", icon: Layout },
-  react: { label: "React", icon: Smile },
-  "text+react": { label: "Text + React", icon: Type },
-  "embed+react": { label: "Embed + React", icon: Layout },
-};
 
 const PRESET_COLORS = [
   "#5865F2",
@@ -409,9 +399,10 @@ function RuleCard({
   togglePending: boolean;
 }) {
   const triggerCfg = TRIGGER_TYPE_CONFIG[rule.trigger_type];
-  const responseCfg = RESPONSE_TYPE_CONFIG[rule.response_type];
   const TriggerIcon = triggerCfg.icon;
-  const ResponseIcon = responseCfg.icon;
+  const showText = rule.response_type.includes("text");
+  const showEmbed = rule.response_type.includes("embed");
+  const showReact = rule.response_type === "react" || rule.response_type.includes("+react");
 
   return (
     <Card className="overflow-hidden group transition-shadow hover:shadow-md">
@@ -427,8 +418,9 @@ function RuleCard({
               {triggerCfg.label}
             </Badge>
             <Badge variant="outline" className="text-[10px] px-1.5 shrink-0">
-              <ResponseIcon className="h-3 w-3 mr-0.5" />
-              {responseCfg.label}
+              {showText && <><Type className="h-3 w-3 mr-0.5" />Text</>}
+              {showEmbed && <><Layout className="h-3 w-3 mr-0.5" />Embed</>}
+              {showReact && <><Smile className="h-3 w-3 mr-0.5" />React</>}
             </Badge>
           </div>
           <div className="flex items-center gap-2">
@@ -451,14 +443,14 @@ function RuleCard({
         </div>
 
         {/* Response preview */}
-        {(rule.response_type === "text" || rule.response_type === "text+react") && rule.response_text && (
+        {showText && rule.response_text && (
           <div className="mx-4 mb-3 rounded bg-muted/30 p-2.5 border border-border/50">
             <p className="text-[11px] text-muted-foreground line-clamp-2">
               {rule.response_text}
             </p>
           </div>
         )}
-        {(rule.response_type === "embed" || rule.response_type === "embed+react") && rule.response_embed && (
+        {showEmbed && rule.response_embed && (
           <div className="mx-4 mb-3 rounded overflow-hidden border border-border/50">
             <div className="flex">
               <div
@@ -476,7 +468,7 @@ function RuleCard({
             </div>
           </div>
         )}
-        {(rule.response_type === "react" || rule.response_type === "text+react" || rule.response_type === "embed+react") && rule.reaction_emojis?.length > 0 && (
+        {showReact && rule.reaction_emojis?.length > 0 && (
           <div className="mx-4 mb-3 flex items-center gap-1">
             <Smile className="h-3.5 w-3.5 text-muted-foreground" />
             <div className="flex gap-0.5">
@@ -1067,33 +1059,61 @@ export function AutoResponder() {
                 Phản hồi
               </p>
 
-              {/* Response type select */}
+              {/* Response type toggles */}
               <div className="space-y-2">
                 <Label>Loại phản hồi</Label>
-                <div className="flex flex-wrap gap-2">
-                  {(Object.keys(RESPONSE_TYPE_CONFIG) as AutoResponderRule["response_type"][]).map((type) => {
-                    const cfg = RESPONSE_TYPE_CONFIG[type];
-                    const Icon = cfg.icon;
+                <div className="flex flex-wrap gap-3">
+                  {([
+                    { key: "text" as const, label: "Text", icon: Type },
+                    { key: "embed" as const, label: "Embed", icon: Layout },
+                    { key: "react" as const, label: "Reaction", icon: Smile },
+                  ] as const).map(({ key, label, icon: Icon }) => {
+                    const active =
+                      key === "text" ? hasText :
+                      key === "embed" ? hasEmbed :
+                      hasReact;
                     return (
                       <button
-                        key={type}
+                        key={key}
                         type="button"
-                        onClick={() =>
-                          setForm((p) => ({ ...p, response_type: type }))
-                        }
+                        onClick={() => {
+                          setForm((p) => {
+                            let t = p.response_type === "react" && key !== "react" ? "" : p.response_type;
+                            // Parse current flags
+                            let text = t.includes("text");
+                            let embed = t.includes("embed");
+                            let react = t === "react" || t.includes("+react");
+                            // Toggle
+                            if (key === "text") { text = !text; if (text) embed = false; }
+                            if (key === "embed") { embed = !embed; if (embed) text = false; }
+                            if (key === "react") react = !react;
+                            // Build response_type
+                            let newType: AutoResponderRule["response_type"] = "text";
+                            if (text && react) newType = "text+react";
+                            else if (embed && react) newType = "embed+react";
+                            else if (text) newType = "text";
+                            else if (embed) newType = "embed";
+                            else if (react) newType = "react";
+                            else newType = "text"; // fallback
+                            return { ...p, response_type: newType };
+                          });
+                        }}
                         className={cn(
                           "flex items-center gap-1.5 rounded-lg border-2 px-3 py-2 transition-all text-xs",
-                          form.response_type === type
+                          active
                             ? "border-foreground bg-foreground/5"
                             : "border-transparent bg-muted/30 hover:bg-muted/50"
                         )}
                       >
                         <Icon className="h-3.5 w-3.5" />
-                        {cfg.label}
+                        {label}
                       </button>
                     );
                   })}
                 </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Chọn nhiều loại cùng lúc. Text và Embed không thể bật đồng thời.
+                </p>
               </div>
 
               {/* Variables Reference Panel */}
