@@ -42,10 +42,19 @@ class TempVoiceCog(discord.Cog):
             # User join "Join to Create"
             if after.channel and str(after.channel.id) == config.join_channel_id:
                 category = member.guild.get_channel(int(config.category_id)) if config.category_id else after.channel.category
+                # Apply saved config
+                naming = (config.naming_format or "🎙 {user}").replace("{user}", member.display_name)
+                user_limit = config.default_user_limit or 0
+                bitrate = config.default_bitrate or 64000
+                # Clamp bitrate to guild limits
+                max_bitrate = member.guild.bitrate_limit
+                bitrate = min(bitrate, max_bitrate)
+
                 new_ch = await member.guild.create_voice_channel(
-                    name=f"🎙 {member.display_name}",
+                    name=naming,
                     category=category,
-                    user_limit=0,
+                    user_limit=user_limit,
+                    bitrate=bitrate,
                 )
                 await member.move_to(new_ch)
                 room = TempVoiceRoom(
