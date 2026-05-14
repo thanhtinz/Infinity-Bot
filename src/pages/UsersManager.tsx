@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
@@ -264,12 +263,12 @@ export function UsersManager() {
         </CardContent>
       </Card>
 
-      {/* ── Order History Sheet ── */}
-      <Sheet open={!!orderSheetUser} onOpenChange={(o) => { if (!o) setOrderSheetUser(null); }}>
-        <SheetContent className="w-full sm:max-w-lg overflow-auto">
-          <SheetHeader>
-            <SheetTitle>Đơn hàng của {orderSheetUser?.username}</SheetTitle>
-          </SheetHeader>
+      {/* ── Order History Dialog ── */}
+      <Dialog open={!!orderSheetUser} onOpenChange={(o) => { if (!o) setOrderSheetUser(null); }}>
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Đơn hàng của {orderSheetUser?.username}</DialogTitle>
+          </DialogHeader>
           <Separator className="my-4" />
           {userOrders.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">Chưa có đơn hàng nào.</p>
@@ -303,8 +302,8 @@ export function UsersManager() {
               </TableBody>
             </Table>
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Ban Dialog ── */}
       <Dialog open={!!banTarget} onOpenChange={(o) => { if (!o) { setBanTarget(null); setBanReason(""); } }}>

@@ -8,12 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
 import {
   Dialog,
   DialogContent,
@@ -289,15 +283,15 @@ export function TicketTeams() {
         </div>
       )}
 
-      {/* ── Sheet Editor ── */}
-      <Sheet open={sheetOpen} onOpenChange={(open) => { if (!open) closeSheet(); }}>
-        <SheetContent className="sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editingTeam ? "Chỉnh sửa team" : "Tạo team mới"}</SheetTitle>
-            <SheetDescription>
+      {/* ── Dialog Editor ── */}
+      <Dialog open={sheetOpen} onOpenChange={(open) => { if (!open) closeSheet(); }}>
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingTeam ? "Chỉnh sửa team" : "Tạo team mới"}</DialogTitle>
+            <DialogDescription>
               {editingTeam ? "Cập nhật thông tin team" : "Thiết lập team hỗ trợ"}
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
 
           <div className="space-y-4 mt-4">
             {/* Name */}
@@ -398,8 +392,8 @@ export function TicketTeams() {
               {isSaving ? "Đang lưu..." : editingTeam ? "Cập nhật" : "Tạo"}
             </Button>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Delete Dialog ── */}
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>

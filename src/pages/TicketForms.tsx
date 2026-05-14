@@ -14,12 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
 import {
   Dialog,
   DialogContent,
@@ -299,15 +293,15 @@ export function TicketForms() {
         </div>
       )}
 
-      {/* ── Sheet Editor ── */}
-      <Sheet open={sheetOpen} onOpenChange={(open) => { if (!open) closeSheet(); }}>
-        <SheetContent className="sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editingForm ? "Chỉnh sửa form" : "Tạo form mới"}</SheetTitle>
-            <SheetDescription>
+      {/* ── Dialog Editor ── */}
+      <Dialog open={sheetOpen} onOpenChange={(open) => { if (!open) closeSheet(); }}>
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingForm ? "Chỉnh sửa form" : "Tạo form mới"}</DialogTitle>
+            <DialogDescription>
               {editingForm ? "Cập nhật thông tin và câu hỏi" : "Thiết lập form câu hỏi cho ticket"}
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
 
           <Tabs defaultValue="form" className="mt-4">
             <TabsList className="w-full">
@@ -450,8 +444,8 @@ export function TicketForms() {
               {isSaving ? "Đang lưu..." : editingForm ? "Cập nhật" : "Tạo"}
             </Button>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Delete Dialog ── */}
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>

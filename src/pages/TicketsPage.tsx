@@ -21,12 +21,12 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -746,16 +746,15 @@ export function TicketsPage() {
         </TabsContent>
       </Tabs>
 
-      {/* ═══════════════════ DETAIL SHEET ═══════════════════ */}
-      <Sheet
+      {/* ═══════════════════ DETAIL DIALOG ═══════════════════ */}
+      <Dialog
         open={selectedTicketId !== null}
         onOpenChange={(open) => {
           if (!open) setSelectedTicketId(null);
         }}
       >
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-lg flex flex-col p-0"
+        <DialogContent
+          className="max-w-4xl w-full max-h-[90vh] overflow-y-auto"
         >
           {detailLoading || !detail ? (
             <div className="flex-1 p-6 space-y-4">
@@ -769,10 +768,10 @@ export function TicketsPage() {
             </div>
           ) : (
             <>
-              {/* Sheet header */}
+              {/* Dialog header */}
               <div className="px-6 pt-6 pb-4 border-b shrink-0">
-                <SheetHeader>
-                  <SheetTitle className="flex items-center gap-2">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
                     <span className="font-mono">#{detail.id}</span>
                     <span className="text-muted-foreground font-normal">
                       —
@@ -780,8 +779,8 @@ export function TicketsPage() {
                     <span className="truncate">
                       {detail.subject || "Không có chủ đề"}
                     </span>
-                  </SheetTitle>
-                  <SheetDescription className="flex items-center gap-2 mt-1">
+                  </DialogTitle>
+                  <DialogDescription className="flex items-center gap-2 mt-1">
                     <Badge
                       variant="outline"
                       className={cn(
@@ -800,11 +799,11 @@ export function TicketsPage() {
                     >
                       {PRIORITY_CONFIG[detail.priority]?.label}
                     </Badge>
-                  </SheetDescription>
-                </SheetHeader>
+                  </DialogDescription>
+                </DialogHeader>
               </div>
 
-              {/* Sheet tabs */}
+              {/* Dialog tabs */}
               <div className="px-6 pt-3 shrink-0">
                 <Tabs
                   value={detailTab}
@@ -1100,8 +1099,8 @@ export function TicketsPage() {
               </div>
             </>
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -9,13 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -1054,8 +1047,8 @@ export function TicketPanels() {
         )}
       </div>
 
-      {/* ── Create / Edit Panel Sheet ── */}
-      <Sheet
+      {/* ── Create / Edit Panel Dialog ── */}
+      <Dialog
         open={sheetOpen}
         onOpenChange={(open) => {
           if (!open) {
@@ -1064,17 +1057,17 @@ export function TicketPanels() {
           }
         }}
       >
-        <SheetContent className="sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
               {editingPanel ? "Chỉnh sửa Panel" : "Tạo Panel"}
-            </SheetTitle>
-            <SheetDescription>
+            </DialogTitle>
+            <DialogDescription>
               {editingPanel
                 ? "Cập nhật cấu hình panel ticket"
                 : "Tạo panel ticket mới cho server"}
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
 
           <div className="mt-6 space-y-4">
             {/* Panel name */}
@@ -1533,8 +1526,8 @@ export function TicketPanels() {
               </Button>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Delete Panel Confirmation Dialog ── */}
       <Dialog
@@ -1567,13 +1560,13 @@ export function TicketPanels() {
         </DialogContent>
       </Dialog>
 
-      {/* ── Group Edit Sheet ── */}
-      <Sheet open={groupSheetOpen} onOpenChange={open => { if (!open) { setGroupSheetOpen(false); setEditingGroup(null); } }}>
-        <SheetContent className="sm:max-w-md overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>{editingGroup ? "Chỉnh sửa Nhóm" : "Tạo Nhóm"}</SheetTitle>
-            <SheetDescription>Gộp nhiều panel vào 1 embed message</SheetDescription>
-          </SheetHeader>
+      {/* ── Group Edit Dialog ── */}
+      <Dialog open={groupSheetOpen} onOpenChange={open => { if (!open) { setGroupSheetOpen(false); setEditingGroup(null); } }}>
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingGroup ? "Chỉnh sửa Nhóm" : "Tạo Nhóm"}</DialogTitle>
+            <DialogDescription>Gộp nhiều panel vào 1 embed message</DialogDescription>
+          </DialogHeader>
           <div className="mt-6 space-y-4">
             <div className="space-y-1.5">
               <Label>Tên nhóm <span className="text-destructive">*</span></Label>
@@ -1648,8 +1641,8 @@ export function TicketPanels() {
               </Button>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Delete Group Dialog ── */}
       <Dialog open={!!deleteGroupTarget} onOpenChange={open => !open && setDeleteGroupTarget(null)}>
