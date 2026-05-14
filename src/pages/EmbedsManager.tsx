@@ -1119,7 +1119,7 @@ export function EmbedsManager() {
           )}
 
           {/* ── Embed Section — collapsible card with colored left border ── */}
-          {form.response_mode === "embed" && (
+          {form.response_mode === "embed" && (<>
           <div className="rounded-lg border overflow-hidden" style={{ borderLeftWidth: 4, borderLeftColor: form.color || "#5865F2" }}>
             <div
               role="button"
@@ -1360,7 +1360,7 @@ export function EmbedsManager() {
               </div>
             )}
           </div>
-          )}
+          </>)}
 
           {/* ── Variables — collapsible ── */}
           <div className="rounded-lg border">
