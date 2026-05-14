@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin } from "lucide-react";
-import { useState } from "react";
+import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight } from "lucide-react";
+import { useState, useMemo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 
 import { DashboardHome } from "./pages/DashboardHome";
@@ -17,12 +17,80 @@ import { InviteTracking } from "./pages/InviteTracking";
 import { Leaderboard } from "./pages/Leaderboard";
 import { WarningsManager } from "./pages/WarningsManager";
 import { StickyManager } from "./pages/StickyManager";
+import { TicketsPage } from "./pages/TicketsPage";
+import { TicketPanels } from "./pages/TicketPanels";
+import { TicketConfig } from "./pages/TicketConfig";
 import { Login } from "./pages/Login";
 import { InitialSetup } from "./pages/InitialSetup";
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import type { LucideIcon } from "lucide-react";
+
+interface NavItem {
+  to: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+interface NavGroup {
+  key: string;
+  icon: LucideIcon;
+  label: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    key: "shop",
+    icon: ShoppingBag,
+    label: "Shop",
+    items: [
+      { to: "/products", icon: Package, label: "Sản phẩm" },
+      { to: "/orders", icon: ShoppingCart, label: "Đơn hàng" },
+      { to: "/coupons", icon: Tag, label: "Coupon" },
+      { to: "/users", icon: Users, label: "Người dùng" },
+      { to: "/leaderboard", icon: Trophy, label: "Bảng xếp hạng" },
+      { to: "/feedback", icon: MessageSquare, label: "Feedback" },
+    ],
+  },
+  {
+    key: "ticket",
+    icon: Ticket,
+    label: "Ticket",
+    items: [
+      { to: "/tickets", icon: Ticket, label: "Tickets" },
+      { to: "/ticket-panels", icon: Palette, label: "Panels" },
+      { to: "/ticket-config", icon: Settings, label: "Cấu hình" },
+    ],
+  },
+  {
+    key: "community",
+    icon: Users,
+    label: "Cộng đồng",
+    items: [
+      { to: "/giveaways", icon: Gift, label: "Giveaway" },
+      { to: "/invites", icon: Link2, label: "Invite" },
+      { to: "/warnings", icon: ShieldAlert, label: "Cảnh cáo" },
+    ],
+  },
+  {
+    key: "utilities",
+    icon: Wrench,
+    label: "Tiện ích",
+    items: [
+      { to: "/sticky", icon: Pin, label: "Sticky" },
+      { to: "/embeds", icon: Palette, label: "Embeds" },
+    ],
+  },
+];
+
+const standaloneItems: NavItem[] = [
+  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/config", icon: Settings, label: "Cấu hình Bot" },
+];
 
 const queryClient = new QueryClient();
 
@@ -37,21 +105,27 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     retry: false
   });
 
-  const navItems = [
-    { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-    { to: "/config", icon: Settings, label: "Cấu hình Bot" },
-    { to: "/products", icon: Package, label: "Sản phẩm" },
-    { to: "/orders", icon: ShoppingCart, label: "Đơn hàng" },
-    { to: "/feedback", icon: MessageSquare, label: "Feedback" },
-    { to: "/coupons", icon: Tag, label: "Coupon" },
-    { to: "/users", icon: Users, label: "Người dùng" },
-    { to: "/leaderboard", icon: Trophy, label: "Bảng xếp hạng" },
-    { to: "/warnings", icon: ShieldAlert, label: "Cảnh cáo" },
-    { to: "/sticky", icon: Pin, label: "Sticky" },
-    { to: "/giveaways", icon: Gift, label: "Giveaway" },
-    { to: "/invites", icon: Link2, label: "Invite" },
-    { to: "/embeds", icon: Palette, label: "Embeds" },
-  ];
+  // Determine which groups should be open by default based on current path
+  const defaultOpenGroups = useMemo(() => {
+    const open = new Set<string>();
+    for (const group of navGroups) {
+      if (group.items.some((item) => item.to === location.pathname)) {
+        open.add(group.key);
+      }
+    }
+    return open;
+  }, [location.pathname]);
+
+  const [openGroups, setOpenGroups] = useState<Set<string>>(defaultOpenGroups);
+
+  const toggleGroup = (key: string) => {
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -60,21 +134,93 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         <h1 className="font-bold text-lg">Infinity Mall</h1>
       </div>
       
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {navItems.map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            onClick={onClose}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
-              location.pathname === item.to && "bg-accent text-accent-foreground font-medium"
-            )}
-          >
-            <item.icon className="w-4 h-4" />
-            {item.label}
-          </Link>
-        ))}
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {/* Standalone: Dashboard */}
+        {standaloneItems.slice(0, 1).map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={onClose}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
+                location.pathname === item.to && "bg-accent text-accent-foreground font-medium"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              {item.label}
+            </Link>
+          );
+        })}
+
+        {/* Grouped nav */}
+        {navGroups.map((group) => {
+          const isOpen = openGroups.has(group.key);
+          const isActive = group.items.some((item) => item.to === location.pathname);
+          const GroupIcon = group.icon;
+          return (
+            <div key={group.key}>
+              <button
+                onClick={() => toggleGroup(group.key)}
+                className={cn(
+                  "flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground transition-colors rounded-md",
+                  isActive && "text-foreground"
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  <GroupIcon className="w-4 h-4" />
+                  {group.label}
+                </span>
+                {isOpen ? (
+                  <ChevronDown className="h-3.5 w-3.5" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5" />
+                )}
+              </button>
+              {isOpen && (
+                <div className="space-y-0.5 ml-1 mt-0.5">
+                  {group.items.map((item) => {
+                    const ItemIcon = item.icon;
+                    return (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={onClose}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
+                          location.pathname === item.to && "bg-accent text-accent-foreground font-medium"
+                        )}
+                      >
+                        <ItemIcon className="w-4 h-4" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Standalone: Cấu hình Bot */}
+        {standaloneItems.slice(1).map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={onClose}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
+                location.pathname === item.to && "bg-accent text-accent-foreground font-medium"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
 
       {user && (
@@ -207,6 +353,9 @@ function ProtectedAppRoutes() {
         <Route path="/giveaways" element={<GiveawaysManager />} />
         <Route path="/invites" element={<InviteTracking />} />
         <Route path="/embeds" element={<EmbedsManager />} />
+        <Route path="/tickets" element={<TicketsPage />} />
+        <Route path="/ticket-panels" element={<TicketPanels />} />
+        <Route path="/ticket-config" element={<TicketConfig />} />
       </Routes>
     </ProtectedRoute>
   );

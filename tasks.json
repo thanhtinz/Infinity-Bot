@@ -1,27 +1,32 @@
 [
   {
-    "content": "Add StickyMessage model to models.py + run DB migration",
-    "id": "S1",
-    "status": "completed"
+    "id": "T1",
+    "content": "DB models: TicketConfig, TicketPanel, Ticket, TicketBlacklist, TicketNote + migration",
+    "status": "pending"
   },
   {
-    "content": "Create src/bot/cogs/sticky.py — full slash command cog + on_message listener + interval task",
-    "id": "S2",
-    "status": "completed"
+    "id": "T2",
+    "content": "Bot cog: src/bot/cogs/ticket.py — /ticket + /panel commands + persistent button + auto-close",
+    "status": "pending"
   },
   {
-    "content": "Add sticky API routes to routes.py (CRUD + stats)",
-    "id": "S3",
-    "status": "completed"
+    "id": "T3",
+    "content": "API routes: tickets, panels, config, blacklist, stats",
+    "status": "pending"
   },
   {
-    "content": "Create src/pages/StickyManager.tsx — dashboard page",
-    "id": "S4",
-    "status": "completed"
+    "id": "T4",
+    "content": "Frontend: TicketsPage.tsx, TicketPanels.tsx, TicketConfig.tsx",
+    "status": "pending"
   },
   {
-    "content": "Update App.tsx nav + manager.py load StickyManagerCog",
-    "id": "S5",
-    "status": "completed"
+    "id": "T5",
+    "content": "Nav redesign: collapsible dropdown groups in App.tsx",
+    "status": "pending"
+  },
+  {
+    "id": "T6",
+    "content": "Wire: App.tsx routes + manager.py load TicketCog",
+    "status": "pending"
   }
 ]

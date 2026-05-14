@@ -3,7 +3,8 @@ from sqlalchemy import select, func, case
 import os, uuid, shutil
 from sqlalchemy.orm import joinedload
 from src.database.config import get_db
-from src.models.models import SystemConfig, Product, Order, User, Coupon, StickyMessage
+from src.models.models import SystemConfig, Product, Order, User, Coupon, StickyMessage, \
+    Ticket, TicketPanel, TicketConfig, TicketBlacklist, TicketNote
 from src.schemas.schemas import SystemConfigBase, SystemConfigResponse, ProductBase, ProductResponse, OrderResponse
 from src.bot.manager import start_bot, stop_bot
 from src.api.auth import router as auth_router
@@ -1197,4 +1198,224 @@ def sticky_stats(db=Depends(get_db)):
         "total_resends": sum(s.resend_count or 0 for s in stickies),
         "embed_count": sum(1 for s in stickies if s.embed_enabled),
         "pinned_count": sum(1 for s in stickies if s.is_pinned),
+    }
+
+
+# ── Ticket System Routes ──────────────────────────────────────────────────────
+
+# ── Ticket Config ─────────────────────────────────────────────────────────────
+
+@router.get("/ticket-config")
+def get_ticket_config(db=Depends(get_db)):
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    guild_id = config.guild_id if config else None
+    if not guild_id:
+        return {"guild_id": None}
+    tc = db.execute(select(TicketConfig).where(TicketConfig.guild_id == guild_id)).scalars().first()
+    if not tc:
+        return {"guild_id": guild_id, "category_id": None, "log_channel_id": None,
+                "support_role_ids": [], "ticket_limit": 1, "cooldown_minutes": 0,
+                "auto_close_hours": 0, "naming_format": "ticket-{number}"}
+    return {
+        "id": tc.id, "guild_id": tc.guild_id, "category_id": tc.category_id,
+        "log_channel_id": tc.log_channel_id, "support_role_ids": tc.support_role_ids or [],
+        "ticket_limit": tc.ticket_limit, "cooldown_minutes": tc.cooldown_minutes,
+        "auto_close_hours": tc.auto_close_hours, "naming_format": tc.naming_format,
+    }
+
+
+@router.put("/ticket-config")
+def update_ticket_config(body: dict, db=Depends(get_db)):
+    sc = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    guild_id = sc.guild_id if sc else None
+    if not guild_id:
+        raise HTTPException(status_code=400, detail="guild_id not configured")
+    tc = db.execute(select(TicketConfig).where(TicketConfig.guild_id == guild_id)).scalars().first()
+    if not tc:
+        tc = TicketConfig(guild_id=guild_id)
+        db.add(tc)
+    for field in ["category_id", "log_channel_id", "support_role_ids",
+                  "ticket_limit", "cooldown_minutes", "auto_close_hours", "naming_format"]:
+        if field in body:
+            setattr(tc, field, body[field])
+    db.commit()
+    return {"ok": True}
+
+
+# ── Ticket Panels ─────────────────────────────────────────────────────────────
+
+@router.get("/ticket-panels")
+def list_ticket_panels(db=Depends(get_db)):
+    panels = db.execute(select(TicketPanel).order_by(TicketPanel.created_at.desc())).scalars().all()
+    return [{
+        "id": p.id, "guild_id": p.guild_id, "name": p.name,
+        "channel_id": p.channel_id, "message_id": p.message_id,
+        "title": p.title, "description": p.description, "color": p.color,
+        "button_label": p.button_label, "button_emoji": p.button_emoji,
+        "button_style": p.button_style, "category_id": p.category_id,
+        "created_at": p.created_at.isoformat() if p.created_at else None,
+        "is_sent": bool(p.message_id),
+    } for p in panels]
+
+
+@router.post("/ticket-panels")
+def create_ticket_panel(body: dict, db=Depends(get_db)):
+    sc = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    guild_id = sc.guild_id if sc else ""
+    panel = TicketPanel(
+        guild_id=guild_id,
+        name=body.get("name", "Panel"),
+        title=body.get("title", "Hỗ trợ"),
+        description=body.get("description", "Nhấn nút bên dưới để tạo ticket hỗ trợ."),
+        color=body.get("color", "#5865F2"),
+        button_label=body.get("button_label", "Tạo Ticket"),
+        button_emoji=body.get("button_emoji", "🎫"),
+        button_style=body.get("button_style", "primary"),
+        category_id=body.get("category_id"),
+    )
+    db.add(panel)
+    db.commit()
+    db.refresh(panel)
+    return {"ok": True, "id": panel.id}
+
+
+@router.put("/ticket-panels/{panel_id}")
+def update_ticket_panel(panel_id: int, body: dict, db=Depends(get_db)):
+    panel = db.get(TicketPanel, panel_id)
+    if not panel:
+        raise HTTPException(status_code=404, detail="Panel not found")
+    for field in ["name", "title", "description", "color", "button_label",
+                  "button_emoji", "button_style", "category_id"]:
+        if field in body:
+            setattr(panel, field, body[field])
+    db.commit()
+    return {"ok": True}
+
+
+@router.delete("/ticket-panels/{panel_id}")
+def delete_ticket_panel(panel_id: int, db=Depends(get_db)):
+    panel = db.get(TicketPanel, panel_id)
+    if not panel:
+        raise HTTPException(status_code=404, detail="Panel not found")
+    # Try delete Discord message
+    if panel.message_id and panel.channel_id:
+        try:
+            from src.bot.manager import bot as _bot
+            import asyncio as _asyncio
+            if _bot and _bot.loop:
+                async def _del():
+                    try:
+                        ch = await _bot.fetch_channel(int(panel.channel_id))
+                        msg = await ch.fetch_message(int(panel.message_id))
+                        await msg.delete()
+                    except Exception:
+                        pass
+                _asyncio.run_coroutine_threadsafe(_del(), _bot.loop)
+        except Exception:
+            pass
+    db.delete(panel)
+    db.commit()
+    return {"ok": True}
+
+
+# ── Tickets ───────────────────────────────────────────────────────────────────
+
+@router.get("/tickets")
+def list_tickets(status: str = None, db=Depends(get_db)):
+    q = select(Ticket).order_by(Ticket.created_at.desc())
+    if status:
+        q = q.where(Ticket.status == status)
+    tickets = db.execute(q).scalars().all()
+    return [{
+        "id": t.id, "guild_id": t.guild_id, "channel_id": t.channel_id,
+        "creator_id": t.creator_id, "claimed_by": t.claimed_by,
+        "status": t.status, "priority": t.priority, "subject": t.subject,
+        "close_reason": t.close_reason, "members": t.members or [],
+        "created_at": t.created_at.isoformat() if t.created_at else None,
+        "closed_at": t.closed_at.isoformat() if t.closed_at else None,
+    } for t in tickets]
+
+
+@router.get("/tickets/{ticket_id}")
+def get_ticket(ticket_id: int, db=Depends(get_db)):
+    t = db.get(Ticket, ticket_id)
+    if not t:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    notes = db.execute(
+        select(TicketNote).where(TicketNote.ticket_id == ticket_id).order_by(TicketNote.created_at)
+    ).scalars().all()
+    return {
+        "id": t.id, "guild_id": t.guild_id, "channel_id": t.channel_id,
+        "creator_id": t.creator_id, "claimed_by": t.claimed_by,
+        "status": t.status, "priority": t.priority, "subject": t.subject,
+        "close_reason": t.close_reason, "members": t.members or [],
+        "created_at": t.created_at.isoformat() if t.created_at else None,
+        "closed_at": t.closed_at.isoformat() if t.closed_at else None,
+        "notes": [{"id": n.id, "author_id": n.author_id, "content": n.content,
+                   "created_at": n.created_at.isoformat()} for n in notes],
+    }
+
+
+@router.put("/tickets/{ticket_id}")
+def update_ticket(ticket_id: int, body: dict, db=Depends(get_db)):
+    t = db.get(Ticket, ticket_id)
+    if not t:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    for field in ["status", "priority", "claimed_by", "close_reason", "subject"]:
+        if field in body:
+            setattr(t, field, body[field])
+    if body.get("status") == "closed" and not t.closed_at:
+        t.closed_at = datetime.datetime.utcnow()
+    elif body.get("status") == "open":
+        t.closed_at = None
+    db.commit()
+    return {"ok": True}
+
+
+# ── Ticket Blacklist ──────────────────────────────────────────────────────────
+
+@router.get("/ticket-blacklist")
+def list_ticket_blacklist(db=Depends(get_db)):
+    items = db.execute(select(TicketBlacklist).order_by(TicketBlacklist.created_at.desc())).scalars().all()
+    return [{
+        "id": b.id, "guild_id": b.guild_id, "discord_id": b.discord_id,
+        "reason": b.reason, "added_by": b.added_by,
+        "created_at": b.created_at.isoformat() if b.created_at else None,
+    } for b in items]
+
+
+@router.delete("/ticket-blacklist/{bl_id}")
+def remove_ticket_blacklist(bl_id: int, db=Depends(get_db)):
+    bl = db.get(TicketBlacklist, bl_id)
+    if not bl:
+        raise HTTPException(status_code=404, detail="Not found")
+    db.delete(bl)
+    db.commit()
+    return {"ok": True}
+
+
+# ── Ticket Stats ──────────────────────────────────────────────────────────────
+
+@router.get("/ticket-stats")
+def ticket_stats(db=Depends(get_db)):
+    tickets = db.execute(select(Ticket)).scalars().all()
+    open_t = [t for t in tickets if t.status == "open"]
+    closed_t = [t for t in tickets if t.status == "closed"]
+    # Avg close time in hours
+    close_times = []
+    for t in closed_t:
+        if t.created_at and t.closed_at:
+            delta = (t.closed_at - t.created_at).total_seconds() / 3600
+            close_times.append(delta)
+    avg_close = round(sum(close_times) / len(close_times), 1) if close_times else 0
+    priority_counts = {}
+    for t in open_t:
+        priority_counts[t.priority] = priority_counts.get(t.priority, 0) + 1
+    return {
+        "total": len(tickets),
+        "open": len(open_t),
+        "closed": len(closed_t),
+        "avg_close_hours": avg_close,
+        "by_priority": priority_counts,
+        "panels": db.execute(select(TicketPanel)).scalars().all().__len__(),
     }

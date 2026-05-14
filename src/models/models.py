@@ -201,3 +201,69 @@ class StickyMessage(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     expires_at = Column(DateTime, nullable=True)        # auto-disable after this time
     resend_count = Column(Integer, default=0)           # total times resent (analytics)
+
+
+# ── Ticket System ─────────────────────────────────────────────────────────────
+
+class TicketConfig(Base):
+    __tablename__ = "ticket_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, unique=True)
+    category_id = Column(String, nullable=True)          # Discord category chứa ticket channels
+    log_channel_id = Column(String, nullable=True)       # channel ghi log
+    support_role_ids = Column(JSON, default=list)        # [role_id, ...] — staff
+    ticket_limit = Column(Integer, default=1)            # max open tickets / user
+    cooldown_minutes = Column(Integer, default=0)
+    auto_close_hours = Column(Integer, default=0)        # 0 = tắt
+    naming_format = Column(String, default="ticket-{number}")  # hoặc ticket-{username}
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class TicketPanel(Base):
+    __tablename__ = "ticket_panels"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    channel_id = Column(String, nullable=True)           # channel panel được gửi vào
+    message_id = Column(String, nullable=True)           # Discord message ID
+    title = Column(String, default="Hỗ trợ")
+    description = Column(Text, default="Nhấn nút bên dưới để tạo ticket hỗ trợ.")
+    color = Column(String, default="#5865F2")
+    button_label = Column(String, default="Tạo Ticket")
+    button_emoji = Column(String, default="🎫")
+    button_style = Column(String, default="primary")     # primary | secondary | success | danger
+    category_id = Column(String, nullable=True)          # override category riêng cho panel
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class Ticket(Base):
+    __tablename__ = "tickets"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    channel_id = Column(String, nullable=True)           # ticket channel Discord ID
+    creator_id = Column(String, nullable=False)          # Discord user ID
+    claimed_by = Column(String, nullable=True)           # staff Discord ID
+    status = Column(String, default="open")              # open | closed | deleted
+    priority = Column(String, default="normal")          # low | normal | high | urgent
+    subject = Column(String, nullable=True)
+    panel_id = Column(Integer, ForeignKey("ticket_panels.id"), nullable=True)
+    close_reason = Column(String, nullable=True)
+    members = Column(JSON, default=list)                 # list Discord user IDs được add
+    tags = Column(JSON, default=list)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    closed_at = Column(DateTime, nullable=True)
+
+class TicketBlacklist(Base):
+    __tablename__ = "ticket_blacklists"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    discord_id = Column(String, nullable=False)
+    reason = Column(Text, nullable=True)
+    added_by = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class TicketNote(Base):
+    __tablename__ = "ticket_notes"
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(Integer, ForeignKey("tickets.id"), nullable=False)
+    author_id = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
