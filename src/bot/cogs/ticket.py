@@ -10,6 +10,7 @@ import discord
 from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import Ticket, TicketPanel, TicketConfig, TicketBlacklist, TicketNote, SystemConfig
+from src.bot.embed_utils import build_embed
 
 logger = logging.getLogger(__name__)
 
@@ -151,9 +152,10 @@ class _CloseBtn(discord.ui.Button):
             except Exception:
                 pass
 
-            embed = discord.Embed(title="🔒 Ticket đã đóng",
-                                  description=f"Đóng bởi {interaction.user.mention}",
-                                  color=0xFEE75C, timestamp=datetime.datetime.utcnow())
+            embed = build_embed("ticket_dong", session, vars={
+                "ticket.id": str(ticket.id), "closer.mention": interaction.user.mention,
+                "reason": ticket.close_reason or "", "duration": "",
+            })
             await interaction.response.send_message(embed=embed, view=_ReopenDeleteView(self.ticket_id))
             await _log_ticket(interaction.client, "close", ticket, interaction.user)
         finally:
@@ -301,12 +303,11 @@ class _PanelBtn(discord.ui.Button):
             session.commit()
 
             color = _hex(panel.color if panel else None)
-            embed = discord.Embed(
-                title=f"🎫 Ticket #{ticket.id}",
-                description=f"Chào {creator.mention}!\n\nMô tả vấn đề và đội hỗ trợ sẽ phản hồi sớm nhất.",
-                color=color, timestamp=datetime.datetime.utcnow(),
-            )
-            embed.set_footer(text=f"Ticket #{ticket.id} | Nhấn 🔒 để đóng")
+            embed = build_embed("ticket_mo", session, vars={
+                "ticket.id": str(ticket.id), "user": creator.display_name,
+                "user.mention": creator.mention, "user.id": str(creator.id),
+                "ticket.subject": "",
+            })
             await ch.send(content=creator.mention, embed=embed,
                           view=TicketControlView(ticket.id))
             await interaction.followup.send(f"✅ Ticket tạo thành công: {ch.mention}", ephemeral=True)
@@ -458,14 +459,11 @@ class TicketCog(discord.Cog):
                 ticket.subject = subject
             session.commit()
 
-            embed = discord.Embed(
-                title=f"🎫 Ticket #{ticket.id}",
-                description=f"Chào {ctx.author.mention}!\n\nMô tả vấn đề của bạn, đội hỗ trợ sẽ phản hồi sớm nhất.",
-                color=0x5865F2, timestamp=datetime.datetime.utcnow(),
-            )
-            if subject:
-                embed.add_field(name="📋 Chủ đề", value=subject, inline=False)
-            embed.set_footer(text=f"Ticket #{ticket.id} | Nhấn 🔒 để đóng")
+            embed = build_embed("ticket_mo", session, vars={
+                "ticket.id": str(ticket.id), "user": ctx.author.display_name,
+                "user.mention": ctx.author.mention, "user.id": str(ctx.author.id),
+                "ticket.subject": subject or "",
+            })
             await ch.send(content=ctx.author.mention, embed=embed,
                           view=TicketControlView(ticket.id))
             await ctx.followup.send(f"✅ Ticket đã tạo: {ch.mention}")
@@ -509,9 +507,10 @@ class TicketCog(discord.Cog):
             except Exception:
                 pass
 
-            embed = discord.Embed(title="🔒 Ticket đã đóng",
-                                  description=f"Đóng bởi {ctx.author.mention}" + (f"\n**Lý do:** {reason}" if reason else ""),
-                                  color=0xFEE75C, timestamp=datetime.datetime.utcnow())
+            embed = build_embed("ticket_dong", session, vars={
+                "ticket.id": str(ticket.id), "closer.mention": ctx.author.mention,
+                "reason": reason or "", "duration": "",
+            })
             await ctx.followup.send(embed=embed, view=_ReopenDeleteView(ticket.id))
             await _log_ticket(self.bot, "close", ticket, ctx.author, reason or "")
         finally:
@@ -613,10 +612,10 @@ class TicketCog(discord.Cog):
                 return
             ticket.claimed_by = str(ctx.author.id)
             session.commit()
-            embed = discord.Embed(
-                description=f"✋ {ctx.author.mention} đã nhận xử lý ticket này.",
-                color=0xEB459E,
-            )
+            embed = build_embed("ticket_nhan", session, vars={
+                "ticket.id": str(ticket.id), "staff.mention": ctx.author.mention,
+                "staff.name": ctx.author.display_name,
+            })
             await ctx.followup.send(embed=embed)
             await _log_ticket(self.bot, "claim", ticket, ctx.author)
         finally:
@@ -636,7 +635,10 @@ class TicketCog(discord.Cog):
                 return
             ticket.claimed_by = None
             session.commit()
-            await ctx.followup.send(f"↩️ {ctx.author.mention} đã bỏ claim ticket.")
+            embed = build_embed("ticket_unclaim", session, vars={
+                "ticket.id": str(ticket.id), "staff.mention": ctx.author.mention,
+            })
+            await ctx.followup.send(embed=embed)
         finally:
             session.close()
 
@@ -1038,11 +1040,16 @@ class TicketCog(discord.Cog):
                 except Exception:
                     pass
 
-            embed = discord.Embed(
-                title=p.title or "Hỗ trợ",
-                description=p.description or "Nhấn nút bên dưới để tạo ticket.",
-                color=_hex(p.color),
-            )
+            embed = build_embed("ticket_panel", session, vars={
+                "panel.name": p.name or "Hỗ trợ",
+            })
+            # Override with panel-specific title/desc/color if set
+            if p.title:
+                embed.title = p.title
+            if p.description:
+                embed.description = p.description
+            if p.color:
+                embed.color = _hex(p.color)
             view = PanelView(p)
             msg = await channel.send(embed=embed, view=view)
 

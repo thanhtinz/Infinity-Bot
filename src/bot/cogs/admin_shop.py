@@ -147,8 +147,16 @@ class OrderPayView(discord.ui.View):
                 order.status = "CANCELLED"
                 session.commit()
             self.stop()
-            embed = discord.Embed(title="❌ Đơn hàng đã bị hủy", color=discord.Color.red())
-            embed.set_footer(text=f"Hủy bởi {interaction.user.name}")
+            from src.bot.embed_utils import build_embed
+            session2 = get_session()
+            try:
+                embed = build_embed("don_hang_het_han", session2, vars={
+                    "order.id": str(self.order_id),
+                    "user": interaction.user.name,
+                    "product.name": "Đã hủy bởi admin",
+                })
+            finally:
+                session2.close()
             if self.message:
                 await self.message.edit(embed=embed, view=None)
             await interaction.response.send_message("Đã hủy đơn hàng.", ephemeral=True)
@@ -212,11 +220,15 @@ class OrderPayView(discord.ui.View):
 
         if self.message:
             try:
-                expire_embed = discord.Embed(
-                    title="⏰ Hết hạn thanh toán",
-                    description="Đơn hàng đã bị hủy tự động do quá thời gian thanh toán (15 phút).",
-                    color=discord.Color.red(),
-                )
+                from src.bot.embed_utils import build_embed
+                session2 = get_session()
+                try:
+                    expire_embed = build_embed("don_hang_het_han", session2, vars={
+                        "order.id": str(self.order_id),
+                        "product.name": "",
+                    })
+                finally:
+                    session2.close()
                 await self.message.edit(embed=expire_embed, view=None)
             except Exception:
                 pass

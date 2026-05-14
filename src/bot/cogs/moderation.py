@@ -29,11 +29,16 @@ class ModerationCog(discord.Cog):
     ):
         try:
             await user.ban(reason=reason, delete_message_days=delete_messages)
-            embed = discord.Embed(title="🔨 Đã ban thành viên", color=discord.Color.red())
-            embed.add_field(name="Thành viên", value=f"{user} (`{user.id}`)", inline=True)
-            embed.add_field(name="Lý do", value=reason, inline=False)
-            embed.add_field(name="Mod", value=ctx.author.mention, inline=True)
-            await ctx.respond(embed=embed)
+            session = get_session()
+            try:
+                embed = build_embed("ban", session, vars={
+                    "user": str(user), "user.mention": user.mention, "user.id": str(user.id),
+                    "reason": reason, "mod": ctx.author.mention, "mod.name": str(ctx.author),
+                    "moderator": ctx.author.mention, "server": ctx.guild.name,
+                })
+                await ctx.respond(embed=embed)
+            finally:
+                session.close()
         except discord.Forbidden:
             await ctx.respond("❌ Bot không có quyền ban thành viên này.", ephemeral=True)
 
@@ -48,7 +53,15 @@ class ModerationCog(discord.Cog):
         try:
             user = await self.bot.fetch_user(int(user_id))
             await ctx.guild.unban(user, reason=reason)
-            await ctx.respond(f"✅ Đã unban **{user}** (`{user_id}`).", ephemeral=True)
+            session = get_session()
+            try:
+                embed = build_embed("unban", session, vars={
+                    "user": str(user), "user.mention": user.mention, "user.id": str(user.id),
+                    "reason": reason, "moderator": ctx.author.mention, "server": ctx.guild.name,
+                })
+                await ctx.respond(embed=embed)
+            finally:
+                session.close()
         except discord.NotFound:
             await ctx.respond("❌ Không tìm thấy user này trong danh sách ban.", ephemeral=True)
         except Exception as e:
@@ -64,10 +77,16 @@ class ModerationCog(discord.Cog):
     ):
         try:
             await user.kick(reason=reason)
-            embed = discord.Embed(title="👢 Đã kick thành viên", color=discord.Color.orange())
-            embed.add_field(name="Thành viên", value=f"{user} (`{user.id}`)", inline=True)
-            embed.add_field(name="Lý do", value=reason, inline=False)
-            await ctx.respond(embed=embed)
+            session = get_session()
+            try:
+                embed = build_embed("kick", session, vars={
+                    "user": str(user), "user.mention": user.mention, "user.id": str(user.id),
+                    "reason": reason, "mod": ctx.author.mention, "mod.name": str(ctx.author),
+                    "moderator": ctx.author.mention, "server": ctx.guild.name,
+                })
+                await ctx.respond(embed=embed)
+            finally:
+                session.close()
         except discord.Forbidden:
             await ctx.respond("❌ Bot không có quyền kick thành viên này.", ephemeral=True)
 
@@ -98,11 +117,11 @@ class ModerationCog(discord.Cog):
             ).scalars().all())
 
             # Channel embed
-            embed = discord.Embed(title="⚠️ Cảnh cáo", color=discord.Color.yellow())
-            embed.add_field(name="Thành viên", value=user.mention, inline=True)
-            embed.add_field(name="Lý do", value=reason, inline=False)
-            embed.add_field(name="Tổng cảnh cáo", value=str(count), inline=True)
-            embed.add_field(name="Mod", value=ctx.author.mention, inline=True)
+            embed = build_embed("canh_bao", session, vars={
+                "user": str(user), "user.mention": user.mention, "user.id": str(user.id),
+                "reason": reason, "warn_count": str(count),
+                "mod": ctx.author.mention, "moderator": ctx.author.mention, "server": ctx.guild.name,
+            })
             await ctx.respond(embed=embed)
 
             # DM user sử dụng embed template từ DB

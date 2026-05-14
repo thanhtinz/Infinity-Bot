@@ -190,6 +190,140 @@ DEFAULTS: dict[str, dict] = {
         "footer": "Cập nhật: {updated_at}",
         "fields": [],
     },
+    # Alias for dashboard compatibility
+    "invite_leaderboard": {
+        "title": "🏆 Bảng xếp hạng Invite",
+        "description": "Top thành viên có nhiều lượt invite nhất trong **{server}**.",
+        "color": "#F0B232",
+        "footer": "Cập nhật: {updated_at}",
+        "fields": [],
+    },
+    # ── QR / Payment ──────────────────────────────────────────────────────────
+    "qr_thanh_toan": {
+        "title": "💳 Thanh toán đơn hàng #{order.id}",
+        "description": "Quét mã QR bên dưới để thanh toán.\nĐơn hàng sẽ hết hạn sau **15 phút**.",
+        "color": "#5865F2",
+        "footer": "Quét QR bằng app ngân hàng",
+        "image_url": "{qr_url}",
+        "fields": [
+            {"name": "💰 Số tiền", "value": "{order.total} VNĐ", "inline": True},
+            {"name": "📝 Nội dung CK", "value": "{transfer_content}", "inline": True},
+        ],
+    },
+    # ── Order details ─────────────────────────────────────────────────────────
+    "don_hang_chi_tiet": {
+        "title": "📋 Chi tiết đơn hàng #{order.id}",
+        "description": "Thông tin chi tiết đơn hàng.",
+        "color": "#5865F2",
+        "fields": [
+            {"name": "👤 Khách hàng", "value": "{user.mention}", "inline": True},
+            {"name": "📊 Trạng thái", "value": "{order.status}", "inline": True},
+            {"name": "📦 Sản phẩm", "value": "{product.name}", "inline": False},
+            {"name": "💰 Số tiền", "value": "{order.total} VNĐ", "inline": True},
+            {"name": "📅 Ngày tạo", "value": "{order.created_at}", "inline": True},
+        ],
+    },
+    # ── Product ───────────────────────────────────────────────────────────────
+    "san_pham": {
+        "title": "🛍️ {product.name}",
+        "description": "{product.description}",
+        "color": "#5865F2",
+        "thumbnail_url": "{product.image_url}",
+        "fields": [
+            {"name": "💰 Giá", "value": "{product.price} VNĐ", "inline": True},
+            {"name": "📦 Tồn kho", "value": "{product.stock}", "inline": True},
+        ],
+    },
+    # ── Coupon ────────────────────────────────────────────────────────────────
+    "coupon": {
+        "title": "🏷️ Mã giảm giá",
+        "description": "Mã **{coupon.code}** đã được áp dụng!",
+        "color": "#FEE75C",
+        "fields": [
+            {"name": "💸 Giảm", "value": "{coupon.discount}", "inline": True},
+            {"name": "⏰ Hạn sử dụng", "value": "{coupon.expires_at}", "inline": True},
+        ],
+    },
+    # ── Shop ban/unban ────────────────────────────────────────────────────────
+    "ban_shop": {
+        "title": "🚫 Cấm mua hàng",
+        "description": "{user.mention} đã bị cấm mua hàng.",
+        "color": "#ED4245",
+        "fields": [
+            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "👮 Người thực hiện", "value": "{moderator}", "inline": True},
+        ],
+    },
+    "unban_shop": {
+        "title": "✅ Bỏ cấm mua hàng",
+        "description": "{user.mention} đã được bỏ cấm mua hàng.",
+        "color": "#57F287",
+        "fields": [
+            {"name": "👮 Người thực hiện", "value": "{moderator}", "inline": True},
+        ],
+    },
+    # ── Goodbye ───────────────────────────────────────────────────────────────
+    "goodbye": {
+        "title": "👋 Tạm biệt",
+        "description": "**{user}** đã rời khỏi server.",
+        "color": "#95A5A6",
+        "footer": "Còn lại {member_count} thành viên",
+        "fields": [],
+    },
+    # ── Giveaway banned ───────────────────────────────────────────────────────
+    "giveaway_banned": {
+        "title": "⛔ Cấm tham gia Giveaway",
+        "description": "{user.mention} đã bị cấm tham gia giveaway.",
+        "color": "#ED4245",
+        "fields": [
+            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+        ],
+    },
+    # ── Unban ─────────────────────────────────────────────────────────────────
+    "unban": {
+        "title": "🔓 Unban thành viên",
+        "description": "{user.mention} đã được unban khỏi server **{server}**.",
+        "color": "#57F287",
+        "fields": [
+            {"name": "👮 Người thực hiện", "value": "{moderator}", "inline": True},
+        ],
+    },
+    # ── Ticket extras ─────────────────────────────────────────────────────────
+    "ticket_unclaim": {
+        "title": "↩️ Bỏ nhận Ticket",
+        "description": "{staff.mention} đã bỏ nhận ticket **#{ticket.id}**.",
+        "color": "#95A5A6",
+        "footer": "Ticket #{ticket.id}",
+        "fields": [],
+    },
+    "ticket_panel": {
+        "title": "🎫 Hỗ trợ",
+        "description": "Chọn loại hỗ trợ bên dưới để tạo ticket.",
+        "color": "#5865F2",
+        "fields": [],
+    },
+    "ticket_feedback": {
+        "title": "⭐ Đánh giá hỗ trợ",
+        "description": "Ticket **#{ticket.id}** đã được đóng.\nVui lòng đánh giá chất lượng hỗ trợ!",
+        "color": "#FEE75C",
+        "fields": [
+            {"name": "👮 Staff", "value": "{staff.mention}", "inline": True},
+        ],
+    },
+    # ── Sticky / TempVoice ────────────────────────────────────────────────────
+    "sticky_message": {
+        "title": "{sticky.title}",
+        "description": "{sticky.content}",
+        "color": "#5865F2",
+        "footer": "Sticky Message",
+        "fields": [],
+    },
+    "tempvoice_create": {
+        "title": "🔊 Voice tạm đã tạo",
+        "description": "{user.mention} đã tạo kênh voice **{channel.name}**.",
+        "color": "#5865F2",
+        "fields": [],
+    },
 }
 
 
@@ -268,8 +402,14 @@ def build_embed(
             description=_sub(d.get("description"), vars),
             color=color,
         )
+        if d.get("author"):
+            embed.set_author(name=_sub(d.get("author"), vars))
         if d.get("footer"):
             embed.set_footer(text=_sub(d.get("footer"), vars))
+        if d.get("thumbnail_url"):
+            embed.set_thumbnail(url=_sub(d.get("thumbnail_url"), vars))
+        if d.get("image_url"):
+            embed.set_image(url=_sub(d.get("image_url"), vars))
         for f in d.get("fields", []):
             embed.add_field(
                 name=_sub(f.get("name", ""), vars),

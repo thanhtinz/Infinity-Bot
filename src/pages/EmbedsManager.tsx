@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
@@ -24,9 +23,11 @@ import { useToast } from "@/hooks/use-toast";
 import {
   ShoppingCart, CheckCircle, Package, Timer, Star, Gift,
   Trophy, UserPlus, ShieldAlert, RotateCcw, Plus, Trash2,
-  ChevronDown, ChevronUp, Image, Variable,
+  ChevronDown, ChevronRight, Image, Variable,
   Ticket, TicketX, UserCheck, FileText, UserMinus, Ban,
-  Clock, UserPlus2, Users,
+  Clock, UserPlus2, Users, QrCode, Eye, Tag, UserX,
+  ShieldOff, Pin, Mic, Medal, LayoutGrid, MessageSquare,
+  UserRoundX, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -67,31 +68,47 @@ interface EmbedEventDef {
 
 const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "don_hang_moi",      label: "Đơn hàng mới",           icon: ShoppingCart, desc: "Khi admin tạo đơn /tao_don" },
+  { key: "qr_thanh_toan",     label: "QR Thanh toán",          icon: QrCode,       desc: "Gửi ảnh QR PayOS cho khách" },
   { key: "thanh_toan",        label: "Thanh toán thành công",  icon: CheckCircle,  desc: "Khi PayOS webhook PAID" },
   { key: "giao_hang",         label: "Giao hàng",              icon: Package,      desc: "Khi admin giao hàng" },
   { key: "don_hang_het_han",  label: "Đơn hàng hết hạn",      icon: Timer,        desc: "Khi đơn quá 15 phút chưa thanh toán" },
+  { key: "don_hang_chi_tiet", label: "Chi tiết đơn hàng",      icon: Eye,          desc: "Khi xem thông tin 1 đơn hàng" },
+  { key: "san_pham",          label: "Thông tin sản phẩm",     icon: Package,      desc: "Embed hiển thị sản phẩm" },
+  { key: "coupon",            label: "Mã giảm giá",            icon: Tag,          desc: "Khi tạo/áp dụng coupon" },
+  { key: "ban_shop",          label: "Cấm mua hàng",           icon: UserX,        desc: "Khi user bị cấm mua hàng" },
+  { key: "unban_shop",        label: "Bỏ cấm mua hàng",       icon: ShieldOff,    desc: "Khi user được bỏ cấm shop" },
   { key: "feedback",          label: "Feedback khách hàng",    icon: Star,         desc: "Khi user dùng /feedback" },
   { key: "giveaway",          label: "Giveaway bắt đầu",       icon: Gift,         desc: "Khi tạo /giveaway" },
   { key: "ket_qua_giveaway",  label: "Kết quả Giveaway",       icon: Trophy,       desc: "Khi giveaway kết thúc, công bố winner" },
+  { key: "giveaway_banned",   label: "Cấm Giveaway",           icon: UserRoundX,   desc: "Khi user bị cấm tham gia giveaway" },
   { key: "welcome",           label: "Chào mừng thành viên",   icon: UserPlus,     desc: "Khi member join server" },
+  { key: "goodbye",           label: "Tạm biệt thành viên",   icon: LogOut,       desc: "Khi member rời server" },
   { key: "canh_bao",          label: "Cảnh báo thành viên",    icon: ShieldAlert,  desc: "Khi admin dùng /warn" },
   { key: "ticket_mo",         label: "Mở Ticket",              icon: Ticket,       desc: "Khi user tạo ticket mới" },
   { key: "ticket_dong",       label: "Đóng Ticket",            icon: TicketX,      desc: "Khi ticket bị đóng" },
   { key: "ticket_nhan",       label: "Nhận Ticket",            icon: UserCheck,    desc: "Khi staff nhận ticket (claim)" },
+  { key: "ticket_unclaim",    label: "Bỏ nhận Ticket",         icon: UserMinus,    desc: "Khi staff bỏ claim ticket" },
   { key: "ticket_transcript", label: "Transcript",             icon: FileText,     desc: "Khi xuất transcript ticket" },
+  { key: "ticket_panel",      label: "Panel Ticket",           icon: LayoutGrid,   desc: "Embed panel chứa buttons tạo ticket" },
+  { key: "ticket_feedback",   label: "Feedback Ticket",        icon: MessageSquare, desc: "Yêu cầu đánh giá sau đóng ticket" },
   { key: "kick",              label: "Kick thành viên",        icon: UserMinus,    desc: "Khi bot kick user" },
   { key: "ban",               label: "Ban thành viên",         icon: Ban,          desc: "Khi bot ban user" },
+  { key: "unban",             label: "Unban thành viên",       icon: ShieldOff,    desc: "Khi bot unban user" },
   { key: "timeout",           label: "Timeout thành viên",     icon: Clock,        desc: "Khi bot timeout user" },
   { key: "invite_join",       label: "Tham gia qua Invite",    icon: UserPlus2,    desc: "Khi user join qua link invite" },
+  { key: "invite_leaderboard",label: "BXH Mời",               icon: Medal,        desc: "Embed bảng xếp hạng invite" },
+  { key: "sticky_message",    label: "Sticky Message",         icon: Pin,          desc: "Nội dung sticky gửi trong channel" },
+  { key: "tempvoice_create",  label: "Tạo Voice tạm",         icon: Mic,          desc: "Khi user tạo temp voice channel" },
 ];
 
 // ─── Event groups ────────────────────────────────────────────────────────────
 
 const EVENT_GROUPS: { label: string; keys: string[] }[] = [
-  { label: "Đơn hàng",    keys: ["don_hang_moi", "thanh_toan", "giao_hang", "don_hang_het_han"] },
-  { label: "Cộng đồng",   keys: ["giveaway", "ket_qua_giveaway", "welcome", "feedback"] },
-  { label: "Ticket",      keys: ["ticket_mo", "ticket_dong", "ticket_nhan", "ticket_transcript"] },
-  { label: "Kiểm duyệt", keys: ["canh_bao", "kick", "ban", "timeout", "invite_join"] },
+  { label: "Đơn hàng",    keys: ["don_hang_moi", "qr_thanh_toan", "thanh_toan", "giao_hang", "don_hang_het_han", "don_hang_chi_tiet", "san_pham", "coupon", "ban_shop", "unban_shop"] },
+  { label: "Cộng đồng",   keys: ["giveaway", "ket_qua_giveaway", "giveaway_banned", "welcome", "goodbye", "feedback"] },
+  { label: "Ticket",      keys: ["ticket_mo", "ticket_dong", "ticket_nhan", "ticket_unclaim", "ticket_transcript", "ticket_panel", "ticket_feedback"] },
+  { label: "Kiểm duyệt", keys: ["canh_bao", "kick", "ban", "unban", "timeout", "invite_join", "invite_leaderboard"] },
+  { label: "Tiện ích",    keys: ["sticky_message", "tempvoice_create"] },
 ];
 
 // ─── Hardcoded defaults ─────────────────────────────────────────────────────
@@ -339,37 +356,265 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     ],
     enabled: true,
   },
+  qr_thanh_toan: {
+    title: "💳 Thanh toán đơn hàng #{order.id}",
+    description: "Quét mã QR bên dưới để thanh toán.\nĐơn hàng sẽ hết hạn sau **15 phút**.",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "Quét QR bằng app ngân hàng",
+    thumbnail_url: "",
+    image_url: "{qr_url}",
+    fields: [
+      { name: "Số tiền", value: "{order.total} VNĐ", inline: true },
+      { name: "Nội dung CK", value: "{transfer_content}", inline: true },
+    ],
+    enabled: true,
+  },
+  don_hang_chi_tiet: {
+    title: "📋 Chi tiết đơn hàng #{order.id}",
+    description: "Thông tin chi tiết đơn hàng.",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Khách hàng", value: "{user.mention}", inline: true },
+      { name: "Trạng thái", value: "{order.status}", inline: true },
+      { name: "Sản phẩm", value: "{product.name}", inline: false },
+      { name: "Số tiền", value: "{order.total} VNĐ", inline: true },
+      { name: "Ngày tạo", value: "{order.created_at}", inline: true },
+    ],
+    enabled: true,
+  },
+  san_pham: {
+    title: "🛍️ {product.name}",
+    description: "{product.description}",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "{product.image_url}",
+    image_url: "",
+    fields: [
+      { name: "Giá", value: "{product.price} VNĐ", inline: true },
+      { name: "Tồn kho", value: "{product.stock}", inline: true },
+    ],
+    enabled: true,
+  },
+  coupon: {
+    title: "🏷️ Mã giảm giá",
+    description: "Mã **{coupon.code}** đã được áp dụng!",
+    color: "#FEE75C",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Giảm", value: "{coupon.discount}", inline: true },
+      { name: "Hạn sử dụng", value: "{coupon.expires_at}", inline: true },
+    ],
+    enabled: true,
+  },
+  ban_shop: {
+    title: "🚫 Cấm mua hàng",
+    description: "{user.mention} đã bị cấm mua hàng.",
+    color: "#ED4245",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Lý do", value: "{reason}", inline: false },
+      { name: "Người thực hiện", value: "{moderator}", inline: true },
+    ],
+    enabled: true,
+  },
+  unban_shop: {
+    title: "✅ Bỏ cấm mua hàng",
+    description: "{user.mention} đã được bỏ cấm mua hàng.",
+    color: "#57F287",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Người thực hiện", value: "{moderator}", inline: true },
+    ],
+    enabled: true,
+  },
+  goodbye: {
+    title: "👋 Tạm biệt",
+    description: "**{user}** đã rời khỏi server.",
+    color: "#95A5A6",
+    author: "",
+    author_icon_url: "",
+    footer: "Còn lại {member_count} thành viên",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  giveaway_banned: {
+    title: "⛔ Cấm tham gia Giveaway",
+    description: "{user.mention} đã bị cấm tham gia giveaway.",
+    color: "#ED4245",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Lý do", value: "{reason}", inline: false },
+    ],
+    enabled: true,
+  },
+  unban: {
+    title: "🔓 Unban thành viên",
+    description: "{user.mention} đã được unban.",
+    color: "#57F287",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Người thực hiện", value: "{moderator}", inline: true },
+    ],
+    enabled: true,
+  },
+  ticket_unclaim: {
+    title: "↩️ Bỏ nhận Ticket",
+    description: "{staff.mention} đã bỏ nhận ticket này.",
+    color: "#95A5A6",
+    author: "",
+    author_icon_url: "",
+    footer: "Ticket #{ticket.id}",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  ticket_panel: {
+    title: "🎫 Hỗ trợ",
+    description: "Chọn loại hỗ trợ bên dưới để tạo ticket.",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  ticket_feedback: {
+    title: "⭐ Đánh giá hỗ trợ",
+    description: "Ticket #{ticket.id} đã được đóng.\nVui lòng đánh giá chất lượng hỗ trợ!",
+    color: "#FEE75C",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Staff", value: "{staff.mention}", inline: true },
+    ],
+    enabled: true,
+  },
+  invite_leaderboard: {
+    title: "🏆 Bảng xếp hạng mời",
+    description: "Top người mời nhiều nhất server.",
+    color: "#FEE75C",
+    author: "",
+    author_icon_url: "",
+    footer: "Cập nhật lúc {date}",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "🥇 Top 1", value: "{top1}", inline: true },
+      { name: "🥈 Top 2", value: "{top2}", inline: true },
+      { name: "🥉 Top 3", value: "{top3}", inline: true },
+    ],
+    enabled: true,
+  },
+  sticky_message: {
+    title: "{sticky.title}",
+    description: "{sticky.content}",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "Sticky Message",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  tempvoice_create: {
+    title: "🔊 Voice tạm đã tạo",
+    description: "{user.mention} đã tạo kênh voice **{channel.name}**.",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
+    enabled: true,
+  },
 };
 
 // ─── Variables reference ─────────────────────────────────────────────────────
 
 const VARIABLES: { token: string; desc: string }[] = [
-  { token: "{user}",           desc: "Tên người dùng" },
-  { token: "{user.mention}",   desc: "@mention người dùng" },
-  { token: "{user.id}",        desc: "Discord ID" },
-  { token: "{order.id}",       desc: "Mã đơn hàng (#12345)" },
-  { token: "{order.total}",    desc: "Tổng tiền (100,000)" },
-  { token: "{product.name}",   desc: "Tên sản phẩm" },
-  { token: "{package}",        desc: "Nội dung gói (cho đơn custom)" },
-  { token: "{date}",           desc: "Ngày giờ hiện tại" },
-  { token: "{server}",         desc: "Tên server" },
-  { token: "{member_count}",   desc: "Số thành viên (welcome)" },
-  { token: "{prize}",          desc: "Phần thưởng (giveaway)" },
-  { token: "{ends_at}",        desc: "Thời gian kết thúc (giveaway)" },
-  { token: "{host}",           desc: "Người tổ chức (giveaway)" },
-  { token: "{winners_count}",  desc: "Số người thắng (giveaway)" },
-  { token: "{winners}",        desc: "Tên người thắng (ket_qua_giveaway)" },
-  { token: "{reason}",         desc: "Lý do cảnh báo (canh_bao)" },
-  { token: "{warn_count}",     desc: "Tổng số cảnh báo (canh_bao)" },
-  { token: "{stars}",          desc: "Số sao (feedback)" },
-  { token: "{content}",        desc: "Nội dung feedback" },
-  { token: "{ticket_id}",      desc: "ID ticket" },
-  { token: "{close_reason}",   desc: "Lý do đóng ticket" },
-  { token: "{staff.mention}",  desc: "Staff nhận ticket" },
-  { token: "{duration}",       desc: "Thời gian timeout" },
-  { token: "{mod}",            desc: "Tên mod thực hiện" },
-  { token: "{invite_code}",    desc: "Mã invite" },
-  { token: "{inviter}",        desc: "Người mời" },
+  { token: "{user}",              desc: "Tên người dùng" },
+  { token: "{user.mention}",      desc: "@mention người dùng" },
+  { token: "{user.id}",           desc: "Discord ID" },
+  { token: "{order.id}",          desc: "Mã đơn hàng (#12345)" },
+  { token: "{order.total}",       desc: "Tổng tiền (100,000)" },
+  { token: "{order.status}",      desc: "Trạng thái đơn hàng" },
+  { token: "{order.created_at}",  desc: "Ngày tạo đơn" },
+  { token: "{product.name}",      desc: "Tên sản phẩm" },
+  { token: "{product.description}", desc: "Mô tả sản phẩm" },
+  { token: "{product.price}",     desc: "Giá sản phẩm" },
+  { token: "{product.stock}",     desc: "Số lượng tồn kho" },
+  { token: "{product.image_url}", desc: "Ảnh sản phẩm" },
+  { token: "{qr_url}",            desc: "URL ảnh QR thanh toán" },
+  { token: "{transfer_content}",  desc: "Nội dung chuyển khoản" },
+  { token: "{coupon.code}",       desc: "Mã coupon" },
+  { token: "{coupon.discount}",   desc: "Giá trị giảm giá" },
+  { token: "{coupon.expires_at}", desc: "Hạn sử dụng coupon" },
+  { token: "{package}",           desc: "Nội dung gói (cho đơn custom)" },
+  { token: "{date}",              desc: "Ngày giờ hiện tại" },
+  { token: "{server}",            desc: "Tên server" },
+  { token: "{member_count}",      desc: "Số thành viên" },
+  { token: "{prize}",             desc: "Phần thưởng (giveaway)" },
+  { token: "{ends_at}",           desc: "Thời gian kết thúc (giveaway)" },
+  { token: "{host}",              desc: "Người tổ chức (giveaway)" },
+  { token: "{winners_count}",     desc: "Số người thắng (giveaway)" },
+  { token: "{winners}",           desc: "Tên người thắng (ket_qua_giveaway)" },
+  { token: "{reason}",            desc: "Lý do (warn/ban/kick/cấm)" },
+  { token: "{warn_count}",        desc: "Tổng số cảnh báo" },
+  { token: "{moderator}",         desc: "Người thực hiện (mod)" },
+  { token: "{stars}",             desc: "Số sao (feedback)" },
+  { token: "{content}",           desc: "Nội dung feedback" },
+  { token: "{ticket.id}",         desc: "ID ticket" },
+  { token: "{close_reason}",      desc: "Lý do đóng ticket" },
+  { token: "{staff.mention}",     desc: "Staff nhận ticket" },
+  { token: "{duration}",          desc: "Thời gian timeout" },
+  { token: "{mod}",               desc: "Tên mod thực hiện" },
+  { token: "{invite_code}",       desc: "Mã invite" },
+  { token: "{inviter}",           desc: "Người mời" },
+  { token: "{top1}",              desc: "Top 1 BXH mời" },
+  { token: "{top2}",              desc: "Top 2 BXH mời" },
+  { token: "{top3}",              desc: "Top 3 BXH mời" },
+  { token: "{sticky.title}",      desc: "Tiêu đề sticky" },
+  { token: "{sticky.content}",    desc: "Nội dung sticky" },
+  { token: "{channel.name}",      desc: "Tên kênh voice" },
 ];
 
 // ─── Dummy data for preview ─────────────────────────────────────────────────
@@ -598,6 +843,7 @@ export function EmbedsManager() {
   const [form, setForm] = useState<FormState>(defaultForm(EMBED_EVENTS[0].key));
 
   // Collapsible sections
+  const [embedOpen, setEmbedOpen] = useState(true);
   const [imagesOpen, setImagesOpen] = useState(false);
   const [fieldsOpen, setFieldsOpen] = useState(true);
   const [authorOpen, setAuthorOpen] = useState(false);
@@ -770,16 +1016,6 @@ export function EmbedsManager() {
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="embed-enabled" className="text-sm text-muted-foreground cursor-pointer">
-              {form.enabled ? "Bật" : "Tắt"}
-            </Label>
-            <Switch
-              id="embed-enabled"
-              checked={form.enabled}
-              onCheckedChange={(v) => setForm((f) => ({ ...f, enabled: v }))}
-            />
-          </div>
           <Button
             variant="outline"
             size="sm"
@@ -799,263 +1035,280 @@ export function EmbedsManager() {
         </div>
       </div>
 
-      {/* ── 2-Column: Editor | Preview ── */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-0">
-        {/* Left: Editor (scrollable) */}
-        <div className="overflow-y-auto">
-          <div className="max-w-2xl p-4 lg:p-6 space-y-5">
+      {/* ── Single-column Discohook-style Editor ── */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-2xl mx-auto p-4 space-y-3">
 
-            {/* Title */}
-            <div className="space-y-1.5">
-              <Label htmlFor="embed-title">Tiêu đề</Label>
-              <Input
-                id="embed-title"
-                placeholder="Nhập tiêu đề embed..."
-                value={form.title}
-                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-1.5">
-              <Label htmlFor="embed-desc">Mô tả</Label>
-              <Textarea
-                id="embed-desc"
-                placeholder="Nhập mô tả embed..."
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                rows={4}
-                className="resize-y"
-              />
-            </div>
-
-            {/* Color */}
-            <div className="space-y-1.5">
-              <Label>Màu sắc</Label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={form.color}
-                  onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-                  className="h-8 w-8 rounded cursor-pointer border-0 p-0"
-                />
-                <Input
-                  value={form.color}
-                  onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-                  className="w-28 font-mono text-sm"
-                  maxLength={7}
-                />
-                <div
-                  className="h-8 w-8 rounded-md border"
-                  style={{ backgroundColor: form.color }}
+          {/* ── Embed Section — collapsible card with colored left border ── */}
+          <div className="rounded-lg border overflow-hidden" style={{ borderLeftWidth: 4, borderLeftColor: form.color || "#5865F2" }}>
+            <div
+              role="button"
+              tabIndex={0}
+              className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors cursor-pointer select-none"
+              onClick={() => setEmbedOpen(!embedOpen)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setEmbedOpen(!embedOpen); } }}
+            >
+              <span className="flex items-center gap-2">
+                <ChevronDown className={cn("h-4 w-4 transition-transform", embedOpen && "rotate-180")} />
+                Embed — {form.title || "Không có tiêu đề"}
+              </span>
+              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                <Label htmlFor="embed-enabled" className="text-xs text-muted-foreground cursor-pointer">
+                  {form.enabled ? "Bật" : "Tắt"}
+                </Label>
+                <Switch
+                  id="embed-enabled"
+                  checked={form.enabled}
+                  onCheckedChange={(v) => setForm((f) => ({ ...f, enabled: v }))}
                 />
               </div>
             </div>
-
-            {/* Footer */}
-            <div className="space-y-1.5">
-              <Label htmlFor="embed-footer">Chân trang</Label>
-              <Input
-                id="embed-footer"
-                placeholder="Nội dung chân trang"
-                value={form.footer}
-                onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
-              />
-            </div>
-
-            <Separator />
-
-            {/* ── Collapsible: Author ── */}
-            <div className="rounded-lg border">
-              <button
-                className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
-                onClick={() => setAuthorOpen(!authorOpen)}
-              >
-                <span className="flex items-center gap-2">
-                  <UserPlus className="h-4 w-4 text-muted-foreground" />
-                  Tác giả
-                </span>
-                {authorOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </button>
-              {authorOpen && (
-                <div className="px-3 pb-3 space-y-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Tên tác giả</Label>
-                    <Input
-                      placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
-                      value={form.author}
-                      onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Icon URL</Label>
-                    <Input
-                      placeholder="https://example.com/icon.png"
-                      value={form.author_icon_url}
-                      onChange={(e) => setForm((f) => ({ ...f, author_icon_url: e.target.value }))}
-                    />
-                  </div>
+            {embedOpen && (
+              <div className="px-4 pb-4 space-y-4">
+                {/* Title */}
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Tiêu đề</Label>
+                  <Input
+                    placeholder="Nhập tiêu đề embed..."
+                    value={form.title}
+                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  />
                 </div>
-              )}
-            </div>
-
-            {/* ── Collapsible: Images ── */}
-            <div className="rounded-lg border">
-              <button
-                className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
-                onClick={() => setImagesOpen(!imagesOpen)}
-              >
-                <span className="flex items-center gap-2">
-                  <Image className="h-4 w-4 text-muted-foreground" />
-                  Hình ảnh
-                </span>
-                {imagesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </button>
-              {imagesOpen && (
-                <div className="px-3 pb-3 space-y-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Thumbnail URL</Label>
-                    <Input
-                      placeholder="https://example.com/thumb.png"
-                      value={form.thumbnail_url}
-                      onChange={(e) => setForm((f) => ({ ...f, thumbnail_url: e.target.value }))}
-                    />
+                {/* Description with char count */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-muted-foreground">Mô tả</Label>
+                    <span className="text-[11px] text-muted-foreground">{form.description.length}/4096</span>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Image URL</Label>
+                  <Textarea
+                    placeholder="Nhập mô tả embed..."
+                    value={form.description}
+                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    rows={5}
+                    className="resize-y"
+                  />
+                </div>
+                {/* Color */}
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Màu sắc</Label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={form.color}
+                      onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                      className="h-8 w-8 rounded cursor-pointer border-0 p-0"
+                    />
                     <Input
-                      placeholder="https://example.com/image.png"
-                      value={form.image_url}
-                      onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
+                      value={form.color}
+                      onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                      className="w-28 font-mono text-xs"
+                      maxLength={7}
                     />
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* ── Collapsible: Fields ── */}
-            <div className="rounded-lg border">
-              <button
-                className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
-                onClick={() => setFieldsOpen(!fieldsOpen)}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="flex h-4 w-4 items-center justify-center rounded bg-muted text-[10px] font-bold text-muted-foreground">
-                    {form.fields.length}
-                  </span>
-                  Fields
-                </span>
-                {fieldsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </button>
-              {fieldsOpen && (
-                <div className="px-3 pb-3 space-y-3">
-                  {form.fields.map((field, i) => (
-                    <div key={i} className="rounded-md border bg-muted/30 p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-muted-foreground">Field {i + 1}</span>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6 text-destructive hover:text-destructive"
-                          onClick={() => removeField(i)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder="Tên field"
-                          value={field.name}
-                          onChange={(e) => updateField(i, "name", e.target.value)}
-                          className="text-sm"
-                        />
-                        <Input
-                          placeholder="Giá trị"
-                          value={field.value}
-                          onChange={(e) => updateField(i, "value", e.target.value)}
-                          className="text-sm"
-                        />
-                      </div>
-                      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={field.inline}
-                          onChange={(e) => updateField(i, "inline", e.target.checked)}
-                          className="rounded border-input"
-                        />
-                        Inline (hiển thị cùng dòng)
-                      </label>
-                    </div>
-                  ))}
-                  {form.fields.length < 10 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={addField}
-                      className="w-full border-dashed"
-                    >
-                      <Plus className="h-3.5 w-3.5 mr-1.5" />
-                      Thêm field
-                    </Button>
-                  )}
-                  {form.fields.length >= 10 && (
-                    <p className="text-xs text-muted-foreground text-center">Đã đạt giới hạn 10 fields</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <Separator />
-
-            {/* ── Variables Reference ── */}
-            <div className="rounded-lg border bg-muted/20">
-              <button
-                className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg"
-                onClick={() => setVarsOpen(!varsOpen)}
-              >
-                <span className="flex items-center gap-2">
-                  <Variable className="h-4 w-4 text-muted-foreground" />
-                  Variables
-                  <span className="text-xs text-muted-foreground font-normal">({VARIABLES.length} biến)</span>
-                </span>
-                {varsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </button>
-              {varsOpen && (
-                <div className="px-3 pb-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
-                    {VARIABLES.map((v) => (
-                      <div key={v.token} className="flex items-baseline gap-2 text-xs py-0.5">
-                        <code className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-primary">
-                          {v.token}
-                        </code>
-                        <span className="text-muted-foreground truncate">{v.desc}</span>
-                      </div>
-                    ))}
+                {/* Footer with char count */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-muted-foreground">Chân trang</Label>
+                    <span className="text-[11px] text-muted-foreground">{form.footer.length}/2048</span>
                   </div>
+                  <Input
+                    placeholder="Nội dung chân trang"
+                    value={form.footer}
+                    onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
+                  />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* Right: Discord Preview (sticky on desktop, collapsible on mobile) */}
-        <div className="overflow-y-auto border-t lg:border-t-0 bg-card">
-          <div className="p-4 lg:p-5 lg:sticky lg:top-0">
+          {/* ── Author — collapsible, no colored border ── */}
+          <div className="rounded-lg border">
             <button
               type="button"
-              onClick={() => setShowPreview((v) => !v)}
-              className="flex items-center gap-2 text-sm font-semibold mb-3 lg:cursor-default w-full text-left"
+              className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
+              onClick={() => setAuthorOpen(!authorOpen)}
             >
-              Xem trước Discord
-              <ChevronDown className={cn("h-4 w-4 lg:hidden transition-transform", showPreview && "rotate-180")} />
+              <span className="flex items-center gap-2">
+                <ChevronDown className={cn("h-4 w-4 transition-transform", authorOpen && "rotate-180")} />
+                Tác giả
+              </span>
             </button>
-            <div className={cn("lg:block", showPreview ? "block" : "hidden")}>
-              <DiscordPreview form={form} />
-              <p className="text-[11px] text-muted-foreground italic mt-3">
-                * Preview sử dụng dữ liệu giả để minh họa
-              </p>
-            </div>
+            {authorOpen && (
+              <div className="px-4 pb-4 space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Tên tác giả</Label>
+                  <Input
+                    placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
+                    value={form.author}
+                    onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Icon URL</Label>
+                  <Input
+                    placeholder="https://example.com/icon.png"
+                    value={form.author_icon_url}
+                    onChange={(e) => setForm((f) => ({ ...f, author_icon_url: e.target.value }))}
+                  />
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* ── Images — collapsible ── */}
+          <div className="rounded-lg border">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
+              onClick={() => setImagesOpen(!imagesOpen)}
+            >
+              <span className="flex items-center gap-2">
+                <ChevronDown className={cn("h-4 w-4 transition-transform", imagesOpen && "rotate-180")} />
+                Hình ảnh
+              </span>
+            </button>
+            {imagesOpen && (
+              <div className="px-4 pb-4 space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Thumbnail URL</Label>
+                  <Input
+                    placeholder="https://example.com/thumb.png"
+                    value={form.thumbnail_url}
+                    onChange={(e) => setForm((f) => ({ ...f, thumbnail_url: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Image URL</Label>
+                  <Input
+                    placeholder="https://example.com/image.png"
+                    value={form.image_url}
+                    onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Fields — collapsible, with count badge ── */}
+          <div className="rounded-lg border">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
+              onClick={() => setFieldsOpen(!fieldsOpen)}
+            >
+              <span className="flex items-center gap-2">
+                <ChevronDown className={cn("h-4 w-4 transition-transform", fieldsOpen && "rotate-180")} />
+                Fields ({form.fields.length}/25)
+              </span>
+            </button>
+            {fieldsOpen && (
+              <div className="px-4 pb-4 space-y-3">
+                {form.fields.map((field, i) => (
+                  <div key={i} className="rounded-md border bg-muted/30 p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">Field {i + 1}</span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6 text-destructive hover:text-destructive"
+                        onClick={() => removeField(i)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        placeholder="Tên field"
+                        value={field.name}
+                        onChange={(e) => updateField(i, "name", e.target.value)}
+                        className="text-sm"
+                      />
+                      <Input
+                        placeholder="Giá trị"
+                        value={field.value}
+                        onChange={(e) => updateField(i, "value", e.target.value)}
+                        className="text-sm"
+                      />
+                    </div>
+                    <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={field.inline}
+                        onChange={(e) => updateField(i, "inline", e.target.checked)}
+                        className="rounded border-input"
+                      />
+                      Inline (hiển thị cùng dòng)
+                    </label>
+                  </div>
+                ))}
+                {form.fields.length < 25 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addField}
+                    className="w-full border-dashed"
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1.5" />
+                    Thêm field
+                  </Button>
+                )}
+                {form.fields.length >= 25 && (
+                  <p className="text-xs text-muted-foreground text-center">Đã đạt giới hạn 25 fields</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* ── Variables — collapsible ── */}
+          <div className="rounded-lg border">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
+              onClick={() => setVarsOpen(!varsOpen)}
+            >
+              <span className="flex items-center gap-2">
+                <ChevronDown className={cn("h-4 w-4 transition-transform", varsOpen && "rotate-180")} />
+                Biến hỗ trợ
+                <span className="text-xs text-muted-foreground font-normal">({VARIABLES.length})</span>
+              </span>
+            </button>
+            {varsOpen && (
+              <div className="px-4 pb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+                  {VARIABLES.map((v) => (
+                    <div key={v.token} className="flex items-baseline gap-2 text-xs py-0.5">
+                      <code className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-primary">
+                        {v.token}
+                      </code>
+                      <span className="text-muted-foreground truncate">{v.desc}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Discord Preview — collapsible, always last ── */}
+          <div className="rounded-lg border">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
+              onClick={() => setShowPreview(!showPreview)}
+            >
+              <span className="flex items-center gap-2">
+                <ChevronDown className={cn("h-4 w-4 transition-transform", showPreview && "rotate-180")} />
+                Xem trước Discord
+              </span>
+            </button>
+            {showPreview && (
+              <div className="p-4">
+                <DiscordPreview form={form} />
+                <p className="text-[11px] text-muted-foreground italic mt-3">* Preview sử dụng dữ liệu giả</p>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
 
