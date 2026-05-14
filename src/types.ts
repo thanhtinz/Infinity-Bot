@@ -16,6 +16,7 @@ export interface SystemConfig {
   feedback_channel_id?: string;
   coupon_channel_id?: string;
   bang_gia_channel_id?: string;
+  welcome_channel_id?: string;
   bot_status: string;
 }
 

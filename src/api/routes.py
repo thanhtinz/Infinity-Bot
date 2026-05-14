@@ -416,16 +416,20 @@ async def deliver_order(order_id: int, body: dict, db = Depends(get_db)):
             try:
                 discord_user = await bot.fetch_user(int(order.user.discord_id))
                 if discord_user:
-                    import discord as _discord
-                    embed = _discord.Embed(
-                        title="📦 Đơn hàng đã được giao",
-                        color=_discord.Color.green(),
-                    )
-                    embed.add_field(name="ID Đơn", value=f"#{order.id}", inline=True)
-                    if order.product:
-                        embed.add_field(name="Sản phẩm", value=order.product.name, inline=True)
-                    embed.add_field(name="Nội dung", value=dm_content, inline=False)
-                    await discord_user.send(embed=embed)
+                    from src.bot.embed_utils import build_embed
+                    dm_vars = {
+                        "order.id": order.id,
+                        "user.mention": f"<@{order.user.discord_id}>",
+                        "user": order.user.username or order.user.discord_id,
+                        "user.id": order.user.discord_id,
+                        "product.name": order.product.name if order.product else (order.package_name or ""),
+                        "package": order.package_name or "",
+                        "order.total": f"{order.total_price:,.0f}",
+                    }
+                    dm_embed = build_embed("giao_hang", db, vars=dm_vars)
+                    if dm_content:
+                        dm_embed.add_field(name="Nội dung", value=dm_content, inline=False)
+                    await discord_user.send(embed=dm_embed)
             except Exception as e:
                 logger.error(f"deliver DM error: {e}")
 
@@ -623,20 +627,39 @@ async def payos_webhook(request: Request, db = Depends(get_db)):
                 order.user.total_spent = (order.user.total_spent or 0) + order.total_price
             db.commit()
 
-            # Cập nhật embed Discord
+            # Cập nhật embed Discord → màu xanh + dùng template thanh_toan để gửi DM
             from src.bot.manager import bot
+            from src.bot.embed_utils import build_embed
             if bot and order.discord_channel_id and order.discord_message_id:
                 try:
                     channel = bot.get_channel(int(order.discord_channel_id))
                     if channel:
                         msg = await channel.fetch_message(int(order.discord_message_id))
                         if msg and msg.embeds:
-                            embed = msg.embeds[0].copy()
-                            embed.color = discord.Color.green()
-                            embed.set_footer(text="Trạng thái: ✅ Đã thanh toán thành công!")
-                            await msg.edit(embed=embed)
+                            paid_embed = msg.embeds[0].copy()
+                            paid_embed.color = discord.Color.green()
+                            paid_embed.set_footer(text="Trạng thái: ✅ Đã thanh toán thành công!")
+                            await msg.edit(embed=paid_embed, view=None)
                 except Exception as e:
                     logger.error(f"Discord embed update error: {e}")
+
+            # Gửi DM thanh toán thành công cho user
+            if bot and order.user:
+                try:
+                    discord_user = await bot.fetch_user(int(order.user.discord_id))
+                    if discord_user:
+                        dm_embed = build_embed("thanh_toan", db, vars={
+                            "order.id": order.id,
+                            "user.mention": f"<@{order.user.discord_id}>",
+                            "user": order.user.username or order.user.discord_id,
+                            "user.id": order.user.discord_id,
+                            "product.name": order.product.name if order.product else (order.package_name or ""),
+                            "package": order.package_name or "",
+                            "order.total": f"{order.total_price:,.0f}",
+                        })
+                        await discord_user.send(embed=dm_embed)
+                except Exception as e:
+                    logger.error(f"PayOS webhook DM error: {e}")
 
     return {"code": "00", "desc": "success"}
 

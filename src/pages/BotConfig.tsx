@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
+import { Mic } from "lucide-react";
 
 // ─── Schemas ────────────────────────────────────────────────
 const discordSchema = z.object({
@@ -29,6 +30,7 @@ const serverSchema = z.object({
   feedback_channel_id: z.string().optional(),
   coupon_channel_id: z.string().optional(),
   bang_gia_channel_id: z.string().optional(),
+  welcome_channel_id: z.string().optional(),
 });
 
 type DiscordValues = z.infer<typeof discordSchema>;
@@ -129,9 +131,9 @@ export function BotConfig() {
   // ── Form: Server & Channels ── (must be before queries that watch it)
   const serverForm = useForm<ServerValues>({
     resolver: zodResolver(serverSchema),
-    defaultValues: { guild_id: "", admin_role_id: "", don_hang_channel_id: "", feedback_channel_id: "", coupon_channel_id: "", bang_gia_channel_id: "" },
+    defaultValues: { guild_id: "", admin_role_id: "", don_hang_channel_id: "", feedback_channel_id: "", coupon_channel_id: "", bang_gia_channel_id: "", welcome_channel_id: "" },
   });
-  useEffect(() => { if (config) serverForm.reset({ guild_id: config.guild_id || "", admin_role_id: config.admin_role_id || "", don_hang_channel_id: config.don_hang_channel_id || "", feedback_channel_id: config.feedback_channel_id || "", coupon_channel_id: config.coupon_channel_id || "", bang_gia_channel_id: config.bang_gia_channel_id || "" }); }, [config]);
+  useEffect(() => { if (config) serverForm.reset({ guild_id: config.guild_id || "", admin_role_id: config.admin_role_id || "", don_hang_channel_id: config.don_hang_channel_id || "", feedback_channel_id: config.feedback_channel_id || "", coupon_channel_id: config.coupon_channel_id || "", bang_gia_channel_id: config.bang_gia_channel_id || "", welcome_channel_id: config.welcome_channel_id || "" }); }, [config]);
 
   const { data: guilds = [] } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["discord_guilds"],
@@ -357,6 +359,7 @@ export function BotConfig() {
                   { name: "feedback_channel_id" as const, label: "Kênh Feedback" },
                   { name: "coupon_channel_id" as const, label: "Kênh Coupon" },
                   { name: "bang_gia_channel_id" as const, label: "Kênh Bảng giá" },
+                  { name: "welcome_channel_id" as const, label: "Kênh Welcome" },
                 ].map(({ name, label }) => (
                   <FormField key={name} control={serverForm.control} name={name} render={({ field }) => (
                     <FormItem>
@@ -384,7 +387,7 @@ export function BotConfig() {
       {/* ── Card: Temp Voice ── */}
       <Card>
         <CardHeader>
-          <CardTitle>🎙 Temp Voice</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Mic className="w-4 h-4" /> Temp Voice</CardTitle>
           <CardDescription>Khi user join kênh này, bot tự tạo voice room riêng cho họ.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -407,7 +410,7 @@ export function BotConfig() {
           <div className="space-y-2">
             <label className="text-sm font-medium">Kênh "Join to Create"</label>
             {tvVoiceChannels.length > 0 ? (
-              <DiscordSelect value={tvJoinChannel} onChange={setTvJoinChannel} options={tvVoiceChannels.map((c) => ({ id: c.id, name: `🔊 ${c.name}` }))} placeholder="Chọn kênh voice..." />
+              <DiscordSelect value={tvJoinChannel} onChange={setTvJoinChannel} options={tvVoiceChannels.map((c) => ({ id: c.id, name: c.name }))} placeholder="Chọn kênh voice..." />
             ) : (
               <Input placeholder={activeGuildId ? "Đang tải voice channels..." : "Chọn Server trước"} disabled={!activeGuildId} value={tvJoinChannel} onChange={(e) => setTvJoinChannel(e.target.value)} />
             )}

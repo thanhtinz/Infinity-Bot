@@ -19,6 +19,7 @@ class SystemConfig(Base):
     feedback_channel_id = Column(String, nullable=True)
     coupon_channel_id = Column(String, nullable=True)
     bang_gia_channel_id = Column(String, nullable=True)
+    welcome_channel_id = Column(String, nullable=True)
     bot_status = Column(String, default="offline") # offline, running
 
 class User(Base):

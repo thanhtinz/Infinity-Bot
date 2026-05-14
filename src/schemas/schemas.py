@@ -16,6 +16,7 @@ class SystemConfigBase(BaseModel):
     feedback_channel_id: Optional[str] = None
     coupon_channel_id: Optional[str] = None
     bang_gia_channel_id: Optional[str] = None
+    welcome_channel_id: Optional[str] = None
     
 class SystemConfigResponse(SystemConfigBase):
     id: int

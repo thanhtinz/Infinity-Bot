@@ -58,17 +58,16 @@ class FeedbackModal(discord.ui.Modal):
             session.flush()
 
             star_str = "⭐" * stars + "☆" * (5 - stars)
-            embed = discord.Embed(
-                title=f"📝 Đánh giá mới",
-                color=discord.Color.gold(),
-            )
-            embed.add_field(name="Sản phẩm", value=self.product.name, inline=True)
-            embed.add_field(name="Sao", value=star_str, inline=True)
-            embed.add_field(name="Người dùng", value=interaction.user.mention, inline=True)
-            if self.content_input.value:
-                embed.add_field(name="Nội dung", value=self.content_input.value, inline=False)
+            from src.bot.embed_utils import build_embed
+            embed = build_embed("feedback", session, vars={
+                "user.mention": interaction.user.mention,
+                "user": interaction.user.display_name,
+                "user.id": interaction.user.id,
+                "product.name": self.product.name,
+                "stars": star_str,
+                "content": self.content_input.value or "",
+            })
             embed.set_thumbnail(url=interaction.user.display_avatar.url)
-            embed.timestamp = datetime.datetime.utcnow()
 
             sent_msg = None
             if config and config.feedback_channel_id:

@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Palette, RotateCcw } from "lucide-react";
+import { Plus, Trash2, Palette, RotateCcw, ShoppingCart, CheckCircle, Package, Star, Gift, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface EmbedField {
@@ -34,14 +34,14 @@ interface EmbedTemplate {
   enabled: boolean;
 }
 
-const EMBED_EVENTS = [
-  { key: "don_hang_moi",  label: "Đơn hàng mới",            icon: "🛒", desc: "Gửi khi admin tạo đơn bằng /tao_don" },
-  { key: "thanh_toan",    label: "Thanh toán thành công",    icon: "✅", desc: "Gửi khi webhook PayOS xác nhận PAID" },
-  { key: "giao_hang",     label: "Giao hàng",                icon: "📦", desc: "Gửi khi admin nhấn Giao hàng trên Dashboard" },
-  { key: "feedback",      label: "Feedback từ user",         icon: "⭐", desc: "Gửi vào feedback channel khi user dùng /feedback" },
-  { key: "giveaway",      label: "Giveaway",                 icon: "🎉", desc: "Embed khi tạo giveaway bằng /giveaway" },
-  { key: "welcome",       label: "Chào mừng thành viên",     icon: "👋", desc: "Gửi vào welcome channel khi member join" },
-] as const;
+const EMBED_EVENTS: { key: string; label: string; icon: React.ComponentType<{className?: string}>; desc: string }[] = [
+  { key: "don_hang_moi",  label: "Đơn hàng mới",           icon: ShoppingCart, desc: "Gửi khi admin tạo đơn bằng /tao_don" },
+  { key: "thanh_toan",    label: "Thanh toán thành công",   icon: CheckCircle,  desc: "Gửi khi webhook PayOS xác nhận PAID" },
+  { key: "giao_hang",     label: "Giao hàng",               icon: Package,      desc: "Gửi khi admin nhấn Giao hàng trên Dashboard" },
+  { key: "feedback",      label: "Feedback từ user",        icon: Star,         desc: "Gửi vào feedback channel khi user /feedback" },
+  { key: "giveaway",      label: "Giveaway",                icon: Gift,         desc: "Embed khi tạo giveaway bằng /giveaway" },
+  { key: "welcome",       label: "Chào mừng thành viên",    icon: UserPlus,     desc: "Gửi vào welcome channel khi member join" },
+];
 
 const emptyForm = (eventKey: string): Omit<EmbedTemplate, "id"> => ({
   name: EMBED_EVENTS.find(e => e.key === eventKey)?.label ?? eventKey,
@@ -241,7 +241,7 @@ export function EmbedsManager() {
               >
                 <CardContent className="p-3">
                   <div className="flex items-start gap-3">
-                    <span className="text-xl leading-none mt-0.5">{ev.icon}</span>
+                    <ev.icon className="w-5 h-5 text-primary mt-0.5" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-sm">{ev.label}</p>
@@ -270,7 +270,7 @@ export function EmbedsManager() {
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <p className="font-medium text-sm">
-                  Chỉnh sửa: {currentEventInfo?.icon} {currentEventInfo?.label}
+                  Chỉnh sửa: {currentEventInfo && <currentEventInfo.icon className="w-5 h-5" />} {currentEventInfo?.label}
                 </p>
                 {existingId && (
                   <Button

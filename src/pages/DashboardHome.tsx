@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Square, RefreshCw, Activity, UserPlus, TrendingUp, ShoppingCart, Users, Package } from "lucide-react";
+import { Play, Square, RefreshCw, Activity, UserPlus, TrendingUp, ShoppingCart, Users, Package, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AreaChart, Area, BarChart, Bar,
@@ -247,7 +247,7 @@ export function DashboardHome() {
             )}
           </div>
           {!config?.discord_token && (
-            <p className="text-xs text-muted-foreground mt-2">⚠ Chưa có Bot Token. Vào Cấu hình Bot để thêm.</p>
+            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> Chưa có Bot Token. Vào Cấu hình Bot để thêm.</p>
           )}
         </CardContent>
       </Card>

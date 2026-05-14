@@ -326,18 +326,17 @@ class AdminShopCog(discord.Cog):
             order.payos_order_code = str(order.id)
             session.commit()
 
-            # Build embed
-            embed = discord.Embed(title="🛒 Đơn hàng mới", color=discord.Color.gold())
-            embed.description = (
-                f"Vui lòng thanh toán để hoàn tất đơn hàng.\n"
-                f"⏰ Hết hạn sau **15 phút**."
-            )
-            embed.add_field(name="🔢 ID Đơn", value=f"#{order.id}", inline=True)
-            embed.add_field(name="👤 Khách hàng", value=user.mention, inline=True)
-            embed.add_field(name="📦 Sản phẩm", value=product_display, inline=False)
-            embed.add_field(name="💰 Số tiền", value=f"{total:,.0f} VNĐ", inline=True)
-            embed.set_footer(text="⏳ Đang chờ thanh toán...")
-            embed.timestamp = datetime.datetime.utcnow()
+            # Build embed từ template (hoặc default)
+            from src.bot.embed_utils import build_embed
+            embed = build_embed("don_hang_moi", session, vars={
+                "order.id": order.id,
+                "user.mention": user.mention,
+                "user": user.display_name,
+                "user.id": user.id,
+                "product.name": product_display,
+                "package": matched_pkg_name,
+                "order.total": f"{total:,.0f}",
+            })
 
             view = OrderPayView(
                 order_id=order.id,
@@ -448,20 +447,20 @@ class AdminShopCog(discord.Cog):
             order.payos_order_code = str(order.id)
             session.commit()
 
-            # Build embed
-            embed = discord.Embed(title="🛒 Đơn hàng Custom", color=discord.Color.gold())
-            embed.description = (
-                f"Vui lòng thanh toán để hoàn tất đơn hàng.\n"
-                f"⏰ Hết hạn sau **15 phút**."
-            )
-            embed.add_field(name="🔢 ID Đơn", value=f"#{order.id}", inline=True)
-            embed.add_field(name="👤 Khách hàng", value=user.mention, inline=True)
-            embed.add_field(name="📦 Sản phẩm", value=product_display, inline=False)
+            # Build embed từ template don_hang_moi (hoặc default)
+            from src.bot.embed_utils import build_embed
+            embed_vars = {
+                "order.id": order.id,
+                "user.mention": user.mention,
+                "user": user.display_name,
+                "user.id": user.id,
+                "product.name": product_display,
+                "package": san_pham,
+                "order.total": f"{total:,.0f}",
+            }
+            embed = build_embed("don_hang_moi", session, vars=embed_vars)
             if ghi_chu:
-                embed.add_field(name="📝 Ghi chú", value=ghi_chu, inline=False)
-            embed.add_field(name="💰 Số tiền", value=f"{total:,.0f} VNĐ", inline=True)
-            embed.set_footer(text="⏳ Đang chờ thanh toán...")
-            embed.timestamp = datetime.datetime.utcnow()
+                embed.add_field(name="Ghi chú", value=ghi_chu, inline=False)
 
             view = OrderPayView(
                 order_id=order.id,

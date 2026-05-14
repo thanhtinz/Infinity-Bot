@@ -217,13 +217,18 @@ class GiveawayCog(discord.Cog):
             session.add(giveaway)
             session.commit()
 
-            embed = discord.Embed(title=f"🎉 {title}", color=discord.Color.blurple())
-            if description:
+            from src.bot.embed_utils import build_embed
+            embed = build_embed("giveaway", session, vars={
+                "prize": prize,
+                "ends_at": f"<t:{int(ends_at.timestamp())}:R>",
+                "host": ctx.author.display_name,
+                "winners_count": str(winners),
+                "server": ctx.guild.name if ctx.guild else "Server",
+            })
+            if title:
+                embed.title = f"🎉 {title}"
+            if description and not embed.description:
                 embed.description = description
-            embed.add_field(name="🎁 Phần thưởng", value=prize, inline=True)
-            embed.add_field(name="👑 Số người thắng", value=str(winners), inline=True)
-            embed.add_field(name="🕐 Kết thúc", value=f"<t:{int(ends_at.timestamp())}:R>", inline=True)
-            embed.set_footer(text=f"Host: {ctx.author.display_name} • ID: {giveaway.id}")
 
             view = GiveawayJoinView(giveaway_id=giveaway.id)
             msg = await ctx.respond(embed=embed, view=view)
