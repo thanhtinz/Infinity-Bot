@@ -31,6 +31,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { MultiRoleSelect } from "@/components/RoleSelect";
 import { ChannelSelect } from "@/components/ChannelSelect";
+import { EmojiPicker } from "@/components/EmojiPicker";
 import {
   Terminal,
   Plus,
@@ -1437,16 +1438,26 @@ export function CustomCommands() {
                   <div className="space-y-2">
                     <Label>Tự động react</Label>
                     <div className="flex items-center gap-2">
-                      <Input
-                        value={form.auto_react}
-                        onChange={(e) =>
-                          setForm((p) => ({ ...p, auto_react: e.target.value }))
+                      <EmojiPicker
+                        onSelect={(emoji) =>
+                          setForm((p) => ({ ...p, auto_react: emoji }))
                         }
-                        placeholder="👍"
-                        className="w-28"
                       />
                       {form.auto_react && (
                         <span className="text-lg">{form.auto_react}</span>
+                      )}
+                      {form.auto_react && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() =>
+                            setForm((p) => ({ ...p, auto_react: "" }))
+                          }
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
                       )}
                     </div>
                     <p className="text-[11px] text-muted-foreground">
