@@ -535,26 +535,6 @@ def get_users(db = Depends(get_db)):
         })
     return out
 
-@router.get("/users/{user_id}/orders")
-def get_user_orders(user_id: int, db = Depends(get_db)):
-    result = db.execute(
-        select(Order)
-        .options(joinedload(Order.product))
-        .where(Order.user_id == user_id)
-        .order_by(Order.created_at.desc())
-    )
-    orders = result.unique().scalars().all()
-    return [
-        {
-            "id": o.id,
-            "product_name": o.product.name if o.product else f"#{o.product_id}",
-            "package_name": o.package_name,
-            "total_price": float(o.total_price),
-            "status": o.status,
-            "created_at": o.created_at.isoformat() if o.created_at else None,
-        } for o in orders
-    ]
-
 
 # ─── Stats (Dashboard) ────────────────────────────────────────
 
@@ -708,21 +688,6 @@ async def payos_webhook(request: Request, db = Depends(get_db)):
                     logger.error(f"PayOS webhook DM error: {e}")
 
     return {"code": "00", "desc": "success"}
-
-
-# ─── Warnings (Dashboard) ─────────────────────────────────────
-
-@router.get("/warnings")
-def get_warnings(db = Depends(get_db)):
-    from src.models.models import Warning
-    rows = db.execute(select(Warning).order_by(Warning.created_at.desc())).scalars().all()
-    return [
-        {
-            "id": w.id, "discord_id": w.discord_id,
-            "reason": w.reason, "moderator_id": w.moderator_id,
-            "created_at": w.created_at.isoformat() if w.created_at else None,
-        } for w in rows
-    ]
 
 
 # ─── Giveaways (Dashboard) ────────────────────────────────────

@@ -2,7 +2,7 @@ import asyncio
 import discord
 import logging
 import os
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 from src.database.config import SessionLocal
 from src.models.models import SystemConfig, User, Product, Order
@@ -97,6 +97,69 @@ def create_bot():
                     )
             embed.set_footer(text="Liên hệ admin để đặt hàng hoặc dùng /help")
             await ctx.respond(embed=embed)
+        finally:
+            session.close()
+
+    @bot_client.slash_command(name="account", description="Xem thông tin tài khoản & lịch sử mua hàng")
+    async def account_cmd(ctx: discord.ApplicationContext):
+        await ctx.defer(ephemeral=True)
+        session = get_session()
+        try:
+            from src.models.models import User as UserM
+            user_record = session.execute(
+                select(UserM).where(UserM.discord_id == str(ctx.author.id))
+            ).scalars().first()
+
+            if not user_record:
+                await ctx.respond(
+                    "Bạn chưa có tài khoản trong hệ thống. Hãy đặt hàng lần đầu để tạo tài khoản!",
+                    ephemeral=True,
+                )
+                return
+
+            # Lấy 5 đơn gần nhất
+            recent_orders = session.execute(
+                select(Order)
+                .where(Order.user_id == user_record.id)
+                .order_by(Order.created_at.desc())
+                .limit(5)
+            ).scalars().all()
+
+            total_orders = session.execute(
+                select(func.count(Order.id)).where(Order.user_id == user_record.id)
+            ).scalar() or 0
+
+            embed = discord.Embed(
+                title=f"👤 Tài khoản — {ctx.author.display_name}",
+                color=discord.Color.blurple(),
+            )
+            embed.set_thumbnail(url=ctx.author.display_avatar.url)
+            embed.add_field(name="💰 Tổng chi tiêu", value=f"{user_record.total_spent or 0:,.0f}đ", inline=True)
+            embed.add_field(name="📦 Tổng đơn", value=str(total_orders), inline=True)
+            embed.add_field(name="🆔 Discord ID", value=f"`{ctx.author.id}`", inline=True)
+
+            if recent_orders:
+                status_map = {
+                    "PENDING": "⏳", "PAID": "✅", "DELIVERING": "🚚",
+                    "DELIVERED": "📦", "CANCELLED": "❌", "ERROR": "⚠",
+                }
+                lines = []
+                for o in recent_orders:
+                    product_name = o.package_name or f"#{o.product_id}"
+                    if o.product_id:
+                        prod = session.get(Product, o.product_id)
+                        if prod:
+                            product_name = f"{prod.name}" + (f" ({o.package_name})" if o.package_name else "")
+                    icon = status_map.get(o.status, "•")
+                    lines.append(f"{icon} **#{o.id}** {product_name} — {o.total_price:,.0f}đ")
+                embed.add_field(
+                    name="📋 5 đơn gần nhất",
+                    value="\n".join(lines),
+                    inline=False,
+                )
+
+            embed.set_footer(text="Dùng /orders để xem chi tiết đơn hàng")
+            await ctx.respond(embed=embed, ephemeral=True)
         finally:
             session.close()
 
