@@ -17,11 +17,11 @@
   {
     "content": "Create src/pages/StickyManager.tsx — dashboard page",
     "id": "S4",
-    "status": "in_progress"
+    "status": "completed"
   },
   {
     "content": "Update App.tsx nav + manager.py load StickyManagerCog",
     "id": "S5",
-    "status": "pending"
+    "status": "completed"
   }
 ]
