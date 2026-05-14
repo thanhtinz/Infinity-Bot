@@ -234,6 +234,7 @@ def get_orders(db = Depends(get_db)):
             "total_price": float(o.total_price),
             "status": o.status,
             "payos_order_code": o.payos_order_code,
+            "checkout_url": o.checkout_url,
             "package_name": o.package_name,
             "created_at": o.created_at.isoformat() if o.created_at else None,
             "user_discord_id": o.user.discord_id if o.user else None,
@@ -315,6 +316,7 @@ def create_order(body: dict, db = Depends(get_db)):
                 payos_res = payos.createPaymentLink(payment_data)
                 checkout_url = payos_res.checkoutUrl
                 order.payos_order_code = str(order.id)
+                order.checkout_url = checkout_url
                 db.commit()
 
                 # Gửi vào Discord channel qua bot

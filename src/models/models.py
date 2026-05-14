@@ -51,6 +51,7 @@ class Order(Base):
     total_price = Column(Float)
     status = Column(String, default="PENDING") # PENDING, PAID, DELIVERED, CANCELLED, ERROR
     payos_order_code = Column(String, nullable=True) # orderCode from payos (must be unique integer mapped to string)
+    checkout_url = Column(String, nullable=True)     # PayOS checkout link, lưu để hiện trên dashboard
     discord_message_id = Column(String, nullable=True)
     discord_channel_id = Column(String, nullable=True)
     package_name = Column(String, nullable=True)  # tên gói đã mua

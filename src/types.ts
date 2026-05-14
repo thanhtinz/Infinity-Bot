@@ -44,6 +44,7 @@ export interface Order {
   total_price: number;
   status: string;
   payos_order_code?: string;
+  checkout_url?: string;
   package_name?: string;
   created_at: string;
   user_discord_id?: string;

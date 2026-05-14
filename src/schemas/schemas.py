@@ -45,6 +45,7 @@ class OrderResponse(BaseModel):
     total_price: float
     status: str
     payos_order_code: Optional[str] = None
+    checkout_url: Optional[str] = None
     package_name: Optional[str] = None
     created_at: datetime
     # Joined info

@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { RefreshCw, Plus, ShoppingCart, User2, Truck } from "lucide-react";
+import { RefreshCw, Plus, ShoppingCart, User2, Truck, ExternalLink, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Order, Product } from "../types";
 
@@ -254,6 +254,32 @@ export function OrdersManager() {
                       >
                         <Truck className="mr-1 h-3.5 w-3.5" /> Giao hàng
                       </Button>
+                    )}
+                    {order.status === "PENDING" && order.checkout_url && (
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-7 text-yellow-600 border-yellow-500/40 hover:bg-yellow-500/10"
+                          asChild
+                        >
+                          <a href={order.checkout_url} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="mr-1 h-3 w-3" /> Thanh toán
+                          </a>
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-muted-foreground"
+                          title="Copy link"
+                          onClick={() => {
+                            navigator.clipboard.writeText(order.checkout_url!);
+                            toast({ title: "Đã copy link thanh toán" });
+                          }}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>

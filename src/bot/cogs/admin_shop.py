@@ -324,6 +324,7 @@ class AdminShopCog(discord.Cog):
             payos_res = await asyncio.to_thread(payos.createPaymentLink, payment_data)
             checkout_url = payos_res.checkoutUrl
             order.payos_order_code = str(order.id)
+            order.checkout_url = checkout_url
             session.commit()
 
             # Build embed từ template (hoặc default)
@@ -445,6 +446,7 @@ class AdminShopCog(discord.Cog):
             payos_res = await asyncio.to_thread(payos.createPaymentLink, payment_data)
             checkout_url = payos_res.checkoutUrl
             order.payos_order_code = str(order.id)
+            order.checkout_url = checkout_url
             session.commit()
 
             # Build embed từ template don_hang_moi (hoặc default)
