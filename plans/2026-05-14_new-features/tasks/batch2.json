@@ -10,14 +10,14 @@
     "status": "completed"
   },
   {
-    "content": "[Phase3-6] Register cogs in manager + create ALL API routes (starboard, automod, reaction-roles, custom-commands, scheduler, backup)",
+    "content": "[Phase3-6] Register cogs in manager + create ALL API routes",
     "id": "p3-backend",
     "status": "completed"
   },
   {
     "content": "[Phase3-6] Create dashboard pages: StarboardConfig, AutoModConfig, ReactionRoles, CustomCommands, ScheduledMessages, BackupRestore",
     "id": "p3-pages",
-    "status": "in_progress"
+    "status": "completed"
   },
   {
     "content": "[Phase7] Scheduled Messages cog (tasks.loop)",
@@ -27,6 +27,6 @@
   {
     "content": "[Phase8] Update App.tsx (lazy imports, sidebar, routes) + test",
     "id": "p8-finalize",
-    "status": "pending"
+    "status": "completed"
   }
 ]
