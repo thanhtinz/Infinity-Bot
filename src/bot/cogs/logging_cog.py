@@ -9,6 +9,7 @@ from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import LoggingConfig, LogEntry
 from src.bot.embed_utils import build_embed
+from src.bot.base_cog import check_feature
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,7 @@ class LoggingCog(discord.Cog):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message: discord.Message):
+        if not check_feature(self): return
         if not message.guild or message.author.bot:
             return
         self.snipe_cache[message.channel.id]["deleted"] = message
@@ -128,6 +130,7 @@ class LoggingCog(discord.Cog):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        if not check_feature(self): return
         if not before.guild or before.author.bot:
             return
         if before.content == after.content:
@@ -165,6 +168,7 @@ class LoggingCog(discord.Cog):
 
     @commands.Cog.listener()
     async def on_bulk_message_delete(self, messages: list[discord.Message]):
+        if not check_feature(self): return
         if not messages or not messages[0].guild:
             return
         cfg = self._get_config(str(messages[0].guild.id))
@@ -197,6 +201,7 @@ class LoggingCog(discord.Cog):
         before: discord.VoiceState,
         after: discord.VoiceState,
     ):
+        if not check_feature(self): return
         if member.bot:
             return
         cfg = self._get_config(str(member.guild.id))
@@ -245,6 +250,7 @@ class LoggingCog(discord.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
+        if not check_feature(self): return
         cfg = self._get_config(str(member.guild.id))
         if not cfg:
             return
@@ -268,6 +274,7 @@ class LoggingCog(discord.Cog):
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
+        if not check_feature(self): return
         cfg = self._get_config(str(member.guild.id))
         if not cfg:
             return
@@ -295,6 +302,7 @@ class LoggingCog(discord.Cog):
 
     @commands.Cog.listener()
     async def on_member_update(self, before: discord.Member, after: discord.Member):
+        if not check_feature(self): return
         if before.bot:
             return
         cfg = self._get_config(str(before.guild.id))
@@ -352,6 +360,7 @@ class LoggingCog(discord.Cog):
 
     @commands.Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
+        if not check_feature(self): return
         cfg = self._get_config(str(channel.guild.id))
         if not cfg:
             return
@@ -374,6 +383,7 @@ class LoggingCog(discord.Cog):
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
+        if not check_feature(self): return
         cfg = self._get_config(str(channel.guild.id))
         if not cfg:
             return

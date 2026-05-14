@@ -1,0 +1,27 @@
+[
+  {
+    "content": "Add FeatureToggle model + ALTER TABLE + API route",
+    "id": "feat-1",
+    "status": "completed"
+  },
+  {
+    "content": "Create Features.tsx toggle page",
+    "id": "feat-2",
+    "status": "in_progress"
+  },
+  {
+    "content": "Add feature context + sidebar filtering in App.tsx",
+    "id": "feat-3",
+    "status": "pending"
+  },
+  {
+    "content": "Add bot-side feature_enabled() check + cog integration",
+    "id": "feat-4",
+    "status": "pending"
+  },
+  {
+    "content": "Wire up route + sidebar entry, test",
+    "id": "feat-5",
+    "status": "pending"
+  }
+]

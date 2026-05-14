@@ -7,6 +7,7 @@ from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import WelcomeConfig, AutoRoleConfig, SystemConfig
 from src.bot.embed_utils import build_embed
+from src.bot.base_cog import check_feature
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ class WelcomeCog(discord.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
+        if not check_feature(self): return
         guild = member.guild
         guild_id = str(guild.id)
         db = _get_db()
@@ -109,6 +111,7 @@ class WelcomeCog(discord.Cog):
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
+        if not check_feature(self): return
         guild = member.guild
         guild_id = str(guild.id)
         db = _get_db()

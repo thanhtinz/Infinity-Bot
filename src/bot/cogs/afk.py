@@ -7,6 +7,7 @@ from sqlalchemy import select, delete
 from src.database.config import SessionLocal
 from src.models.models import AFKStatus
 from src.bot.embed_utils import build_embed
+from src.bot.base_cog import check_feature
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +81,7 @@ class AFKCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_message(self, message: discord.Message):
+        if not check_feature(self): return
         if not message.guild or message.author.bot:
             return
 

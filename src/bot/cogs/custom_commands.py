@@ -5,6 +5,7 @@ import logging
 from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import CustomCommand
+from src.bot.base_cog import check_feature
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ class CustomCommandsCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_message(self, message: discord.Message):
+        if not check_feature(self): return
         if not message.guild or message.author.bot:
             return
         if not message.content.startswith(COMMAND_PREFIX):

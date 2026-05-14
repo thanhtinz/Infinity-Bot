@@ -113,24 +113,47 @@ def create_bot():
     from src.bot.cogs.reaction_roles import ReactionRolesCog
     from src.bot.cogs.scheduler import SchedulerCog
 
-    bot_client.add_cog(ShopCog(bot_client))
-    bot_client.add_cog(AdminShopCog(bot_client))
-    bot_client.add_cog(GiveawayCog(bot_client))
-    bot_client.add_cog(ModerationCog(bot_client))
-    bot_client.add_cog(TempVoiceCog(bot_client))
-    bot_client.add_cog(InviteTrackingCog(bot_client))
-    bot_client.add_cog(StickyCog(bot_client))
-    bot_client.add_cog(TicketCog(bot_client))
-    bot_client.add_cog(UtilityCog(bot_client))
-    bot_client.add_cog(WelcomeCog(bot_client))
-    bot_client.add_cog(RolesCog(bot_client))
-    bot_client.add_cog(LoggingCog(bot_client))
-    bot_client.add_cog(AFKCog(bot_client))
-    bot_client.add_cog(StarboardCog(bot_client))
-    bot_client.add_cog(AutoModCog(bot_client))
-    bot_client.add_cog(CustomCommandsCog(bot_client))
-    bot_client.add_cog(ReactionRolesCog(bot_client))
-    bot_client.add_cog(SchedulerCog(bot_client))
+    # Tag cogs with feature keys for runtime check
+    _COG_FEATURE_MAP = {
+        "ShopCog": "shop", "AdminShopCog": "shop",
+        "GiveawayCog": "giveaway",
+        "ModerationCog": "moderation", "AutoModCog": "moderation", "LoggingCog": "moderation",
+        "TempVoiceCog": "temp_voice",
+        "InviteTrackingCog": "invite_tracking",
+        "StickyCog": "sticky",
+        "TicketCog": "ticket",
+        "UtilityCog": "utility", "AFKCog": "utility",
+        "WelcomeCog": "welcome", "RolesCog": "welcome", "ReactionRolesCog": "welcome",
+        "StarboardCog": "starboard",
+        "CustomCommandsCog": "custom_commands",
+        "SchedulerCog": "scheduler",
+    }
+
+    cogs = [
+        ShopCog(bot_client), AdminShopCog(bot_client),
+        GiveawayCog(bot_client), ModerationCog(bot_client),
+        TempVoiceCog(bot_client), InviteTrackingCog(bot_client),
+        StickyCog(bot_client), TicketCog(bot_client),
+        UtilityCog(bot_client), WelcomeCog(bot_client),
+        RolesCog(bot_client), LoggingCog(bot_client),
+        AFKCog(bot_client), StarboardCog(bot_client),
+        AutoModCog(bot_client), CustomCommandsCog(bot_client),
+        ReactionRolesCog(bot_client), SchedulerCog(bot_client),
+    ]
+    for cog in cogs:
+        cog.feature_key = _COG_FEATURE_MAP.get(type(cog).__name__)
+        bot_client.add_cog(cog)
+
+    # ── Global before_invoke: block commands if feature disabled ──
+    from src.bot.feature_utils import feature_enabled
+
+    @bot_client.before_invoke
+    async def _check_feature(ctx: discord.ApplicationContext):
+        cog = ctx.command.cog
+        if cog and getattr(cog, "feature_key", None):
+            if not feature_enabled(cog.feature_key):
+                await ctx.respond("❌ Tính năng này đã bị tắt.", ephemeral=True)
+                raise Exception("Feature disabled")  # abort command
 
     # ── Legacy commands (status, san_pham, account) ──────────
     @bot_client.slash_command(name="status", description="Xem trạng thái bot hiện tại")

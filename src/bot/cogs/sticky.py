@@ -10,6 +10,7 @@ import discord
 from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import StickyMessage
+from src.bot.base_cog import check_feature
 
 logger = logging.getLogger(__name__)
 
@@ -235,11 +236,13 @@ class StickyCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_ready(self):
+        if not check_feature(self): return
         if self._interval_task is None or self._interval_task.done():
             self._interval_task = asyncio.get_event_loop().create_task(self._interval_loop())
 
     @discord.Cog.listener()
     async def on_message(self, message: discord.Message):
+        if not check_feature(self): return
         """Detect new messages and resend sticky if trigger reached."""
         if message.author.bot:
             return

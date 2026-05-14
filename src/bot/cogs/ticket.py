@@ -11,6 +11,7 @@ from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import Ticket, TicketPanel, TicketConfig, TicketBlacklist, TicketNote, SystemConfig
 from src.bot.embed_utils import build_embed
+from src.bot.base_cog import check_feature
 
 logger = logging.getLogger(__name__)
 
@@ -334,6 +335,7 @@ class TicketCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_ready(self):
+        if not check_feature(self): return
         # Register persistent panel views
         session = get_session()
         try:

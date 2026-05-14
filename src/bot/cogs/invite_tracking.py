@@ -10,6 +10,7 @@ from discord import SlashCommandGroup
 from sqlalchemy import select, func
 from src.database.config import SessionLocal
 from src.models.models import InviteTracking
+from src.bot.base_cog import check_feature
 
 
 class InviteTrackingCog(commands.Cog):
@@ -27,27 +28,32 @@ class InviteTrackingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        if not check_feature(self): return
         for guild in self.bot.guilds:
             await self._build_cache(guild)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
+        if not check_feature(self): return
         await self._build_cache(guild)
 
     @commands.Cog.listener()
     async def on_invite_create(self, invite: discord.Invite):
+        if not check_feature(self): return
         guild_id = str(invite.guild.id) if invite.guild else None
         if guild_id and guild_id in self._invite_cache:
             self._invite_cache[guild_id][invite.code] = invite.uses
 
     @commands.Cog.listener()
     async def on_invite_delete(self, invite: discord.Invite):
+        if not check_feature(self): return
         guild_id = str(invite.guild.id) if invite.guild else None
         if guild_id and guild_id in self._invite_cache:
             self._invite_cache[guild_id].pop(invite.code, None)
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
+        if not check_feature(self): return
         guild = member.guild
         guild_id = str(guild.id)
         old_cache = dict(self._invite_cache.get(guild_id, {}))
@@ -91,6 +97,7 @@ class InviteTrackingCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
+        if not check_feature(self): return
         guild_id = str(member.guild.id)
         db = SessionLocal()
         try:

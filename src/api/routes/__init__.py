@@ -15,6 +15,7 @@ from src.api.routes.reaction_roles import router as reaction_roles_router
 from src.api.routes.custom_commands import router as custom_commands_router
 from src.api.routes.scheduler import router as scheduler_router
 from src.api.routes.backup import router as backup_router
+from src.api.routes.features import router as features_router
 
 router = APIRouter()
 
@@ -32,3 +33,4 @@ router.include_router(reaction_roles_router, tags=["reaction-roles"])
 router.include_router(custom_commands_router, tags=["custom-commands"])
 router.include_router(scheduler_router, tags=["scheduler"])
 router.include_router(backup_router, tags=["backup"])
+router.include_router(features_router, tags=["features"])

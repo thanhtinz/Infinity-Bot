@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database } from "lucide-react";
+import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight } from "lucide-react";
 import { useState, useMemo, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -43,6 +43,7 @@ const ReactionRoles = lazy(() => import("./pages/ReactionRoles").then(m => ({ de
 const CustomCommands = lazy(() => import("./pages/CustomCommands").then(m => ({ default: m.CustomCommands })));
 const ScheduledMessages = lazy(() => import("./pages/ScheduledMessages").then(m => ({ default: m.ScheduledMessages })));
 const BackupRestore = lazy(() => import("./pages/BackupRestore").then(m => ({ default: m.BackupRestore })));
+const Features = lazy(() => import("./pages/Features"));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const InitialSetup = lazy(() => import("./pages/InitialSetup").then(m => ({ default: m.InitialSetup })));
 const BotStatus = lazy(() => import("./pages/BotStatus").then(m => ({ default: m.BotStatus })));
@@ -57,6 +58,7 @@ interface NavItem {
   to: string;
   icon: LucideIcon;
   label: string;
+  feature?: string;  // feature key — item hidden when this feature is disabled
 }
 
 interface NavGroup {
@@ -64,6 +66,7 @@ interface NavGroup {
   icon: LucideIcon;
   label: string;
   items: NavItem[];
+  feature?: string;  // if set, entire group hidden when disabled
 }
 
 const navGroups: NavGroup[] = [
@@ -71,6 +74,7 @@ const navGroups: NavGroup[] = [
     key: "shop",
     icon: ShoppingBag,
     label: "Shop",
+    feature: "shop",
     items: [
       { to: "/products", icon: Package, label: "Sản phẩm" },
       { to: "/orders", icon: ShoppingCart, label: "Đơn hàng" },
@@ -84,6 +88,7 @@ const navGroups: NavGroup[] = [
     key: "ticket",
     icon: Ticket,
     label: "Ticket",
+    feature: "ticket",
     items: [
       { to: "/tickets", icon: Ticket, label: "Tickets" },
       { to: "/ticket-panels", icon: Palette, label: "Panels" },
@@ -100,17 +105,18 @@ const navGroups: NavGroup[] = [
     icon: Users,
     label: "Cộng đồng",
     items: [
-      { to: "/giveaways", icon: Gift, label: "Giveaway" },
-      { to: "/invites", icon: Link2, label: "Invite" },
-      { to: "/warnings", icon: ShieldAlert, label: "Cảnh cáo" },
-      { to: "/starboard", icon: Star, label: "Starboard" },
-      { to: "/reaction-roles", icon: Smile, label: "Reaction Roles" },
+      { to: "/giveaways", icon: Gift, label: "Giveaway", feature: "giveaway" },
+      { to: "/invites", icon: Link2, label: "Invite", feature: "invite_tracking" },
+      { to: "/warnings", icon: ShieldAlert, label: "Cảnh cáo", feature: "moderation" },
+      { to: "/starboard", icon: Star, label: "Starboard", feature: "starboard" },
+      { to: "/reaction-roles", icon: Smile, label: "Reaction Roles", feature: "welcome" },
     ],
   },
   {
     key: "welcome",
     icon: Hand,
     label: "Chào mừng",
+    feature: "welcome",
     items: [
       { to: "/welcome", icon: MessageSquare, label: "Welcome & Goodbye" },
       { to: "/autorole", icon: UserPlus, label: "Auto Role" },
@@ -122,6 +128,7 @@ const navGroups: NavGroup[] = [
     key: "moderation",
     icon: Shield,
     label: "Kiểm duyệt",
+    feature: "moderation",
     items: [
       { to: "/automod", icon: Shield, label: "Auto Mod" },
       { to: "/logging", icon: ScrollText, label: "Cấu hình Log" },
@@ -133,9 +140,9 @@ const navGroups: NavGroup[] = [
     icon: Wrench,
     label: "Tiện ích",
     items: [
-      { to: "/sticky", icon: Pin, label: "Sticky" },
-      { to: "/custom-commands", icon: Terminal, label: "Custom Commands" },
-      { to: "/scheduled-messages", icon: Clock, label: "Tin nhắn hẹn giờ" },
+      { to: "/sticky", icon: Pin, label: "Sticky", feature: "sticky" },
+      { to: "/custom-commands", icon: Terminal, label: "Custom Commands", feature: "custom_commands" },
+      { to: "/scheduled-messages", icon: Clock, label: "Tin nhắn hẹn giờ", feature: "scheduler" },
       { to: "/embeds", icon: Palette, label: "Embeds" },
       { to: "/emojis", icon: Smile, label: "Emoji & Sticker" },
     ],
@@ -146,9 +153,9 @@ const navGroups: NavGroup[] = [
     label: "Cấu hình",
     items: [
       { to: "/config/discord", icon: Bot, label: "Discord Bot" },
-      { to: "/config/payos", icon: CreditCard, label: "PayOS" },
+      { to: "/config/payos", icon: CreditCard, label: "PayOS", feature: "shop" },
       { to: "/config/channels", icon: Hash, label: "Kênh & Quyền" },
-      { to: "/config/voice", icon: Mic, label: "Temp Voice" },
+      { to: "/config/voice", icon: Mic, label: "Temp Voice", feature: "temp_voice" },
       { to: "/backup", icon: Database, label: "Sao lưu & Khôi phục" },
     ],
   },
@@ -157,6 +164,7 @@ const navGroups: NavGroup[] = [
 const standaloneItems: NavItem[] = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/bot-status", icon: Activity, label: "Trạng thái Bot" },
+  { to: "/features", icon: ToggleRight, label: "Tính năng" },
 ];
 
 const queryClient = new QueryClient();
@@ -171,6 +179,29 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     }),
     retry: false
   });
+
+  const { data: features } = useQuery<{ key: string; enabled: boolean }[]>({
+    queryKey: ["features"],
+    queryFn: () => fetch("/api/features", { credentials: "include" }).then(r => r.ok ? r.json() : []),
+    retry: false,
+    staleTime: 30_000,
+  });
+
+  const disabledFeatures = useMemo(() => {
+    if (!features) return new Set<string>();
+    return new Set(features.filter(f => !f.enabled).map(f => f.key));
+  }, [features]);
+
+  // Filter navGroups based on enabled features
+  const filteredGroups = useMemo(() => {
+    return navGroups
+      .filter(g => !g.feature || !disabledFeatures.has(g.feature))
+      .map(g => ({
+        ...g,
+        items: g.items.filter(item => !item.feature || !disabledFeatures.has(item.feature)),
+      }))
+      .filter(g => g.items.length > 0);
+  }, [disabledFeatures]);
 
   // Determine which groups should be open by default based on current path
   const defaultOpenGroups = useMemo(() => {
@@ -222,7 +253,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         })}
 
         {/* Grouped nav */}
-        {navGroups.map((group) => {
+        {filteredGroups.map((group) => {
           const isOpen = openGroups.has(group.key);
           const isActive = group.items.some((item) => item.to === location.pathname);
           const GroupIcon = group.icon;
@@ -445,6 +476,7 @@ function ProtectedAppRoutes() {
         <Routes>
         <Route path="/" element={<DashboardHome />} />
         <Route path="/bot-status" element={<BotStatus />} />
+        <Route path="/features" element={<Features />} />
         <Route path="/config" element={<BotConfig />} />
         <Route path="/config/discord" element={<ConfigDiscord />} />
         <Route path="/config/payos" element={<ConfigPayOS />} />

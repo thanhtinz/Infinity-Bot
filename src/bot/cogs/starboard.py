@@ -5,6 +5,7 @@ import logging
 from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import StarboardConfig, StarboardEntry
+from src.bot.base_cog import check_feature
 
 logger = logging.getLogger(__name__)
 
@@ -157,12 +158,14 @@ class StarboardCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        if not check_feature(self): return
         if not payload.guild_id or (payload.member and payload.member.bot):
             return
         await self._update_starboard(payload)
 
     @discord.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        if not check_feature(self): return
         if not payload.guild_id:
             return
         await self._update_starboard(payload)

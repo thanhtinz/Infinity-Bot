@@ -590,6 +590,14 @@ class ScheduledMessage(Base):
     created_by = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
+class FeatureToggle(Base):
+    __tablename__ = "feature_toggles"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False)
+    feature_key = Column(String, nullable=False)  # e.g. "shop", "ticket", "giveaway"
+    enabled = Column(Boolean, default=True)
+
+
 class CustomCommand(Base):
     __tablename__ = "custom_commands"
     id = Column(Integer, primary_key=True, index=True)

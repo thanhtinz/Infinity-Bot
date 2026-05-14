@@ -10,6 +10,7 @@ from sqlalchemy.orm import joinedload
 from src.database.config import SessionLocal
 from src.models.models import Giveaway, GiveawayEntry, GiveawayBanned
 from src.bot.embed_utils import build_embed
+from src.bot.base_cog import check_feature
 
 logger = logging.getLogger(__name__)
 GIVEAWAY_EMOJI = "🎉"
@@ -111,6 +112,7 @@ class GiveawayCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_ready(self):
+        if not check_feature(self): return
         """Resume unfinished giveaways on restart."""
         session = get_session()
         try:
@@ -129,6 +131,7 @@ class GiveawayCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        if not check_feature(self): return
         if str(payload.emoji) != GIVEAWAY_EMOJI or payload.member.bot:
             return
         session = get_session()
@@ -179,6 +182,7 @@ class GiveawayCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        if not check_feature(self): return
         if str(payload.emoji) != GIVEAWAY_EMOJI:
             return
         session = get_session()

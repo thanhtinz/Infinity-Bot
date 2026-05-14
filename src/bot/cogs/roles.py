@@ -6,6 +6,7 @@ from discord.ext import commands
 from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import ButtonRole, SelectMenuRole
+from src.bot.base_cog import check_feature
 
 logger = logging.getLogger(__name__)
 
@@ -143,6 +144,7 @@ class RolesCog(discord.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        if not check_feature(self): return
         """Register persistent views for all existing panels."""
         db = SessionLocal()
         try:

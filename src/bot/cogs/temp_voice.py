@@ -4,6 +4,7 @@ import logging
 from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import TempVoiceConfig, TempVoiceRoom
+from src.bot.base_cog import check_feature
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class TempVoiceCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before, after):
+        if not check_feature(self): return
         session = get_session()
         try:
             config = session.execute(

@@ -10,6 +10,7 @@ from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import AutoModConfig, Warning
 from src.bot.embed_utils import build_embed
+from src.bot.base_cog import check_feature
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +120,7 @@ class AutoModCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_message(self, message: discord.Message):
+        if not check_feature(self): return
         if not message.guild or message.author.bot:
             return
         if not isinstance(message.author, discord.Member):
