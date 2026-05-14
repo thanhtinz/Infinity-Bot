@@ -44,7 +44,7 @@ def get_public_base_url(request: Request) -> str:
     return base_url
 
 
-def get_discord_oauth_config(db):
+def get_discord_oauth_config(db, request: Request | None = None):
     result = db.execute(select(SystemConfig).limit(1))
     config = result.scalars().first()
 
@@ -63,13 +63,29 @@ def get_discord_oauth_config(db):
     client_secret = client_secret or os.environ.get("DISCORD_CLIENT_SECRET")
     public_app_url = public_app_url or os.environ.get("PUBLIC_APP_URL")
 
+    # Auto-detect from request headers if still missing
+    if not public_app_url and request:
+        origin = request.headers.get("origin")
+        if origin and "localhost" not in origin:
+            public_app_url = origin.rstrip("/")
+        else:
+            referer = request.headers.get("referer")
+            if referer and "localhost" not in referer:
+                from urllib.parse import urlparse
+                parsed = urlparse(referer)
+                public_app_url = f"{parsed.scheme}://{parsed.netloc}"
+        # Auto-save to DB
+        if public_app_url and config and not config.public_app_url:
+            config.public_app_url = public_app_url
+            db.commit()
+
     return config, client_id, client_secret, discord_token, public_app_url
 
 OWNER_ID = "847746890808164383"
 
 @router.get("/auth/login")
 async def login(request: Request, db = Depends(get_db)):
-    _, client_id, client_secret, _, public_app_url = get_discord_oauth_config(db)
+    _, client_id, client_secret, _, public_app_url = get_discord_oauth_config(db, request)
     if not client_id or not client_secret:
         raise HTTPException(status_code=500, detail="Discord OAuth is not configured")
     if not public_app_url:
@@ -85,7 +101,7 @@ async def login(request: Request, db = Depends(get_db)):
 
 @router.get("/auth/callback")
 async def auth_callback(code: str, request: Request, response: Response, db = Depends(get_db)):
-    config, client_id, client_secret, discord_token, public_app_url = get_discord_oauth_config(db)
+    config, client_id, client_secret, discord_token, public_app_url = get_discord_oauth_config(db, request)
     if not client_id or not client_secret:
         raise HTTPException(status_code=500, detail="Discord OAuth is not configured")
     if not public_app_url:

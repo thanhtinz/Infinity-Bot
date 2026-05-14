@@ -371,7 +371,8 @@ function SetupGate() {
       if (!res.ok) throw new Error("Failed to load setup status");
       return res.json();
     }),
-    retry: false,
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
   });
 
   if (isLoading) {
@@ -379,7 +380,18 @@ function SetupGate() {
   }
 
   if (isError) {
-    return <Suspense fallback={<PageLoader />}><InitialSetup /></Suspense>;
+    return (
+      <div className="h-screen flex flex-col items-center justify-center gap-3 text-center px-4">
+        <p className="text-destructive font-medium">Không thể kết nối server</p>
+        <p className="text-sm text-muted-foreground">Server đang khởi động hoặc gặp lỗi. Thử lại sau vài giây.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90"
+        >
+          Tải lại
+        </button>
+      </div>
+    );
   }
 
   if (!data.oauth_configured) {

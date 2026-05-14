@@ -1,5 +1,5 @@
 """Config, Discord API, Bot management routes."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 import os
 import httpx
@@ -23,6 +23,26 @@ def is_oauth_configured(config: SystemConfig | None) -> bool:
     )
 
 
+def _resolve_public_url(config: SystemConfig | None, request: Request | None = None) -> str | None:
+    """Resolve public_app_url: DB → env → auto-detect from request Origin/Referer."""
+    if config and config.public_app_url:
+        return config.public_app_url
+    env_url = os.environ.get("PUBLIC_APP_URL")
+    if env_url:
+        return env_url
+    # Auto-detect from request headers (works behind Cloudflare proxy)
+    if request:
+        origin = request.headers.get("origin")
+        if origin and "localhost" not in origin:
+            return origin.rstrip("/")
+        referer = request.headers.get("referer")
+        if referer and "localhost" not in referer:
+            from urllib.parse import urlparse
+            parsed = urlparse(referer)
+            return f"{parsed.scheme}://{parsed.netloc}"
+    return None
+
+
 def get_config(db=Depends(get_db)):
     result = db.execute(select(SystemConfig).limit(1))
     config = result.scalars().first()
@@ -37,14 +57,37 @@ def get_config(db=Depends(get_db)):
 # ── Setup ─────────────────────────────────────────────────────────────────────
 
 @router.get("/setup/status")
-def get_setup_status(db=Depends(get_db)):
+def get_setup_status(request: Request, db=Depends(get_db)):
     result = db.execute(select(SystemConfig).limit(1))
     config = result.scalars().first()
     oauth_configured = is_oauth_configured(config)
-    has_public_url = bool(
-        (config and config.public_app_url)
-        or os.environ.get("PUBLIC_APP_URL")
-    )
+    has_public_url = bool(_resolve_public_url(config, request))
+
+    # Auto-save public_app_url if detected but missing in DB
+    if not (config and config.public_app_url) and has_public_url:
+        detected_url = _resolve_public_url(config, request)
+        if detected_url and config:
+            config.public_app_url = detected_url
+            db.commit()
+            logger.info(f"Auto-saved public_app_url: {detected_url}")
+
+    # Auto-recover guild_id if missing but bot token exists
+    if config and config.discord_token and not config.guild_id:
+        try:
+            r = httpx.get(
+                "https://discord.com/api/users/@me/guilds",
+                headers={"Authorization": f"Bot {config.discord_token}"},
+                timeout=5,
+            )
+            if r.status_code == 200:
+                guilds = r.json()
+                if len(guilds) == 1:
+                    config.guild_id = guilds[0]["id"]
+                    db.commit()
+                    logger.info("Auto-recovered guild_id: %s", config.guild_id)
+        except Exception:
+            logger.warning("Failed to auto-recover guild_id")
+
     return {
         "oauth_configured": oauth_configured and has_public_url,
         "has_discord_token": bool(config and config.discord_token),
