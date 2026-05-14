@@ -341,7 +341,7 @@ export function TicketTeams() {
                 value={roleIds}
                 onChange={setRoleIds}
                 placeholder="Chọn roles..."
-                disabled={!!editing}
+                disabled={!!editingTeam}
               />
             </div>
 

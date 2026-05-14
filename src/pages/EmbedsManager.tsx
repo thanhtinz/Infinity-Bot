@@ -103,6 +103,8 @@ const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "sticky_message",    label: "Sticky Message",         icon: Pin,          desc: "Nội dung sticky gửi trong channel" },
   { key: "tempvoice_create",  label: "Tạo Voice tạm",         icon: Mic,          desc: "Khi user tạo temp voice channel" },
   // Phase 3
+  { key: "welcome",           label: "Chào mừng",             icon: UserPlus2,    desc: "Embed chào mừng thành viên mới vào kênh" },
+  { key: "goodbye",           label: "Tạm biệt",             icon: LogOut,       desc: "Embed khi thành viên rời server" },
   { key: "dm_welcome",        label: "DM Chào mừng",          icon: MessageSquare, desc: "Tin nhắn DM khi member join" },
   // Phase 4 — Logging
   { key: "log_message_delete",     label: "Log: Xóa tin nhắn",       icon: Trash2,          desc: "Khi tin nhắn bị xóa" },
@@ -132,7 +134,7 @@ const EMBED_EVENTS: EmbedEventDef[] = [
 
 const EVENT_GROUPS: { label: string; keys: string[] }[] = [
   { label: "Đơn hàng",    keys: ["don_hang_moi", "qr_thanh_toan", "thanh_toan", "giao_hang", "don_hang_het_han", "don_hang_chi_tiet", "san_pham", "coupon", "ban_shop", "unban_shop", "bxh_chi_tieu", "bxh_don_hang"] },
-  { label: "Cộng đồng",   keys: ["giveaway", "ket_qua_giveaway", "giveaway_banned", "feedback", "dm_welcome", "reaction_role_panel", "starboard_post"] },
+  { label: "Cộng đồng",   keys: ["welcome", "goodbye", "giveaway", "ket_qua_giveaway", "giveaway_banned", "feedback", "dm_welcome", "reaction_role_panel", "starboard_post"] },
   { label: "Ticket",      keys: ["ticket_mo", "ticket_dong", "ticket_nhan", "ticket_unclaim", "ticket_transcript", "ticket_panel", "ticket_feedback"] },
   { label: "Kiểm duyệt", keys: ["canh_bao", "kick", "ban", "unban", "timeout", "invite_join", "invite_leaderboard", "automod_warn", "automod_mute", "automod_kick", "automod_delete"] },
   { label: "Tiện ích",    keys: ["sticky_message", "tempvoice_create", "afk_set", "afk_return"] },
@@ -587,6 +589,22 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     description: "{user.mention} đã tạo kênh voice **{channel.name}**.",
     color: "#5865F2",
     author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  welcome: {
+    title: "👋 Chào mừng đến với {server}!",
+    description: "Xin chào {user.mention}! Chúc bạn có thời gian vui vẻ tại server.\n\nDùng `/help` để xem danh sách lệnh bot.",
+    color: "#5865F2",
+    author: "", author_icon_url: "", footer: "Infinity Mall", thumbnail_url: "", image_url: "",
+    fields: [{ name: "Thành viên thứ", value: "{member_count}", inline: true }],
+    enabled: true,
+  },
+  goodbye: {
+    title: "👋 Tạm biệt",
+    description: "**{user}** đã rời khỏi server.",
+    color: "#95A5A6",
+    author: "", author_icon_url: "", footer: "Còn lại {member_count} thành viên", thumbnail_url: "", image_url: "",
     fields: [],
     enabled: true,
   },

@@ -1661,7 +1661,14 @@ export function TicketPanels() {
                         type="checkbox"
                         checked={isInGroup}
                         disabled={isInOtherGroup}
-                        onChange={() => togglePanelInGroup(p.id)}
+                        onChange={() => {
+                          setGroupForm(f => ({
+                            ...f,
+                            panel_ids: f.panel_ids.includes(p.id)
+                              ? f.panel_ids.filter(id => id !== p.id)
+                              : [...f.panel_ids, p.id],
+                          }));
+                        }}
                         className="rounded"
                       />
                       <div className="flex-1 min-w-0">
