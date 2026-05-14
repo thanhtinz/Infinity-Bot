@@ -149,11 +149,13 @@ def create_bot():
 
     @bot_client.before_invoke
     async def _check_feature(ctx: discord.ApplicationContext):
+        if not ctx.command:
+            return
         cog = ctx.command.cog
         if cog and getattr(cog, "feature_key", None):
             if not feature_enabled(cog.feature_key):
                 await ctx.respond("❌ Tính năng này đã bị tắt.", ephemeral=True)
-                raise Exception("Feature disabled")  # abort command
+                raise Exception("Feature disabled")
 
     # ── Legacy commands (status, san_pham, account) ──────────
     @bot_client.slash_command(name="status", description="Xem trạng thái bot hiện tại")

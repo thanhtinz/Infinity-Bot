@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
 import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight } from "lucide-react";
-import { useState, useMemo, lazy, Suspense } from "react";
+import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 
 // ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
@@ -215,6 +215,15 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   }, [location.pathname]);
 
   const [openGroups, setOpenGroups] = useState<Set<string>>(defaultOpenGroups);
+
+  // Auto-open the group containing the current route on navigation
+  useEffect(() => {
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      for (const key of defaultOpenGroups) next.add(key);
+      return next;
+    });
+  }, [defaultOpenGroups]);
 
   const toggleGroup = (key: string) => {
     setOpenGroups((prev) => {

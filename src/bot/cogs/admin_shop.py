@@ -174,18 +174,22 @@ class OrderPayView(discord.ui.View):
         """Cập nhật URL nút thanh toán và embed sau khi áp coupon."""
         self.checkout_url = checkout_url
         self.price = new_price
-        # Xóa nút pay cũ, thêm nút mới với URL mới
-        new_view = discord.ui.View(timeout=None)
-        new_view.add_item(discord.ui.Button(
+
+        # Rebuild view: giữ lại cancel button + timeout, cập nhật link
+        self.clear_items()
+        self.add_item(discord.ui.Button(
             label="💳 Thanh toán ngay",
             style=discord.ButtonStyle.link,
             url=checkout_url,
         ))
-        new_view.add_item(discord.ui.Button(
+        self.add_item(discord.ui.Button(
             label=f"✅ Coupon: {coupon_code}",
             style=discord.ButtonStyle.success,
             disabled=True,
         ))
+        cancel_btn = discord.ui.Button(label="❌ Hủy đơn", style=discord.ButtonStyle.danger, custom_id=f"cancel_{self.order_id}")
+        cancel_btn.callback = self.cancel_callback
+        self.add_item(cancel_btn)
 
         if self.message:
             try:
@@ -198,7 +202,7 @@ class OrderPayView(discord.ui.View):
                     value=f"`{coupon_code}` — {original_price:,.0f}đ → **{new_price:,.0f}đ**",
                     inline=False,
                 )
-                await self.message.edit(embed=new_embed, view=new_view)
+                await self.message.edit(embed=new_embed, view=self)
             except Exception as e:
                 logger.error(f"update_embed_with_coupon error: {e}")
 
