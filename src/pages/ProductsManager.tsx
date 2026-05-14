@@ -40,6 +40,7 @@ export function ProductsManager() {
   const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ["products"],
     queryFn: () => fetch("/api/products", { credentials: "include" }).then((r) => r.json()),
+    staleTime: 30_000,
   });
 
   const form = useForm<ProductForm>({

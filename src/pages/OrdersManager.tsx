@@ -56,6 +56,7 @@ export function OrdersManager() {
   const { data: channels = [] } = useQuery<{id: string; name: string; type: number}[]>({
     queryKey: ["discord-channels"],
     queryFn: () => fetch("/api/discord/channels/all", { credentials: "include" }).then(r => r.json()).catch(() => []),
+    staleTime: 120_000,
   });
   const textChannels = channels.filter(c => c.type === 0);
 

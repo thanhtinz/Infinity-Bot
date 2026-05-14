@@ -131,6 +131,7 @@ export function EmbedsManager() {
   const { data: embeds = [], isLoading } = useQuery<EmbedTemplate[]>({
     queryKey: ["embeds"],
     queryFn: () => fetch("/api/embeds", { credentials: "include" }).then((r) => r.json()),
+    staleTime: 30_000,
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["embeds"] });

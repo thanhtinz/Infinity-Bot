@@ -62,17 +62,17 @@ async def get_discord_channels(guild_id: str = None, db = Depends(get_db)):
     result = db.execute(select(SystemConfig).limit(1))
     config = result.scalars().first()
     if not config or not config.discord_token:
-        raise HTTPException(status_code=400, detail="Bot token chưa được cấu hình")
+        return []
     target_guild = guild_id or config.guild_id
     if not target_guild:
-        raise HTTPException(status_code=400, detail="Server ID chưa được cấu hình")
+        return []
     async with httpx.AsyncClient() as client:
         res = await client.get(
             f"https://discord.com/api/guilds/{target_guild}/channels",
             headers={"Authorization": f"Bot {config.discord_token}"}
         )
         if res.status_code != 200:
-            raise HTTPException(status_code=400, detail="Không thể lấy danh sách kênh")
+            return []
         channels = res.json()
         return [{"id": c["id"], "name": c["name"]} for c in channels if c.get("type") == 0]
 
@@ -81,17 +81,17 @@ async def get_discord_all_channels(guild_id: str = None, db = Depends(get_db)):
     result = db.execute(select(SystemConfig).limit(1))
     config = result.scalars().first()
     if not config or not config.discord_token:
-        raise HTTPException(status_code=400, detail="Bot token chưa được cấu hình")
+        return []
     target_guild = guild_id or config.guild_id
     if not target_guild:
-        raise HTTPException(status_code=400, detail="Server ID chưa được cấu hình")
+        return []
     async with httpx.AsyncClient() as client:
         res = await client.get(
             f"https://discord.com/api/guilds/{target_guild}/channels",
             headers={"Authorization": f"Bot {config.discord_token}"}
         )
         if res.status_code != 200:
-            raise HTTPException(status_code=400, detail="Không thể lấy danh sách kênh")
+            return []
         channels = res.json()
         return [{"id": c["id"], "name": c["name"], "type": c.get("type", 0)} for c in channels]
 
@@ -100,17 +100,17 @@ async def get_discord_roles(guild_id: str = None, db = Depends(get_db)):
     result = db.execute(select(SystemConfig).limit(1))
     config = result.scalars().first()
     if not config or not config.discord_token:
-        raise HTTPException(status_code=400, detail="Bot token chưa được cấu hình")
+        return []
     target_guild = guild_id or config.guild_id
     if not target_guild:
-        raise HTTPException(status_code=400, detail="Server ID chưa được cấu hình")
+        return []
     async with httpx.AsyncClient() as client:
         res = await client.get(
             f"https://discord.com/api/guilds/{target_guild}/roles",
             headers={"Authorization": f"Bot {config.discord_token}"}
         )
         if res.status_code != 200:
-            raise HTTPException(status_code=400, detail="Không thể lấy danh sách role")
+            return []
         roles = res.json()
         return [{"id": r["id"], "name": r["name"]} for r in roles if r.get("name") != "@everyone"]
 
@@ -593,6 +593,52 @@ def get_stats(db = Depends(get_db)):
         "total_users": total_users,
         "total_products": total_products,
     }
+
+@router.get("/leaderboard")
+def get_leaderboard(
+    loai: str = "chi_tieu",  # chi_tieu | don_hang
+    time: str = "all",       # all | 30days | 7days | daily
+    db = Depends(get_db)
+):
+    """Bảng xếp hạng mua hàng — dùng cho cả Dashboard và /bxh bot."""
+    from src.models.models import User as UserM
+    now = datetime.datetime.utcnow()
+    since_map = {
+        "daily":   now - datetime.timedelta(days=1),
+        "7days":   now - datetime.timedelta(days=7),
+        "30days":  now - datetime.timedelta(days=30),
+        "all":     None,
+    }
+    since = since_map.get(time)
+
+    query = select(
+        Order.user_id,
+        func.count(Order.id).label("don_count"),
+        func.sum(Order.total_price).label("total_spent"),
+    ).where(Order.status == "PAID")
+    if since:
+        query = query.where(Order.created_at >= since)
+    query = query.group_by(Order.user_id)
+
+    if loai == "don_hang":
+        query = query.order_by(func.count(Order.id).desc())
+    else:
+        query = query.order_by(func.sum(Order.total_price).desc())
+
+    rows = db.execute(query.limit(20)).all()
+
+    result = []
+    for r in rows:
+        user = db.get(UserM, r.user_id)
+        result.append({
+            "rank": len(result) + 1,
+            "user_id": r.user_id,
+            "discord_id": user.discord_id if user else None,
+            "username": user.username if user else f"User #{r.user_id}",
+            "don_count": r.don_count,
+            "total_spent": float(r.total_spent or 0),
+        })
+    return result
 
 
 # ─── PayOS Webhook ────────────────────────────────────────────

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Trash2, Search, Star } from "lucide-react";
+import { MessageSquare, Trash2, Search, Star, StarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FeedbackRow {
@@ -129,7 +129,7 @@ export function FeedbackManager() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold flex items-center justify-center gap-1">
-              ⭐ {stats.avg.toFixed(1)}
+              <StarIcon className="h-5 w-5 text-yellow-400 fill-yellow-400" /> {stats.avg.toFixed(1)}
             </p>
             <p className="text-xs text-muted-foreground">Trung bình sao</p>
           </CardContent>

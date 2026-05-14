@@ -52,12 +52,14 @@ export function DashboardHome() {
     queryKey: ["config"],
     queryFn: () => fetch("/api/config", { credentials: "include" }).then((r) => r.json()),
     refetchInterval: 8000,
+    staleTime: 30_000,
   });
 
   const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
     queryKey: ["stats"],
     queryFn: () => fetch("/api/stats", { credentials: "include" }).then((r) => r.json()),
     refetchInterval: 30000,
+    staleTime: 30_000,
   });
 
   const handleResponse = async (res: Response, label: string) => {

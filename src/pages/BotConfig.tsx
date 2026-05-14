@@ -112,6 +112,7 @@ export function BotConfig() {
   const { data: config, isLoading } = useQuery({
     queryKey: ["config"],
     queryFn: () => fetch("/api/config", { credentials: "include" }).then((r) => r.json()),
+    staleTime: 60_000,
   });
 
   // ── Form: Discord Bot ──
@@ -140,6 +141,7 @@ export function BotConfig() {
     queryFn: () => fetch("/api/discord/guilds", { credentials: "include" }).then((r) => r.ok ? r.json() : []),
     enabled: !!config?.discord_token,
     retry: false,
+    staleTime: 60_000,
   });
 
   // Watch selected guild_id from form to load channels/roles immediately on selection
@@ -151,6 +153,7 @@ export function BotConfig() {
     queryFn: () => fetch(`/api/discord/channels?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
     enabled: !!config?.discord_token && !!activeGuildId,
     retry: false,
+    staleTime: 60_000,
   });
 
   const { data: roles = [] } = useQuery<{ id: string; name: string }[]>({
@@ -158,6 +161,7 @@ export function BotConfig() {
     queryFn: () => fetch(`/api/discord/roles?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
     enabled: !!config?.discord_token && !!activeGuildId,
     retry: false,
+    staleTime: 60_000,
   });
 
   // ── Mutations ──
@@ -187,6 +191,7 @@ export function BotConfig() {
   const { data: tvConfig } = useQuery({
     queryKey: ["tempvoice_config"],
     queryFn: () => fetch("/api/tempvoice/config", { credentials: "include" }).then((r) => r.json()),
+    staleTime: 60_000,
   });
   useEffect(() => {
     if (tvConfig) {
@@ -201,6 +206,7 @@ export function BotConfig() {
     queryFn: () => fetch(`/api/discord/channels/all?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
     enabled: !!config?.discord_token && !!activeGuildId,
     retry: false,
+    staleTime: 60_000,
   });
 
   const tvCategories = allChannels.filter((c) => c.type === 4);
