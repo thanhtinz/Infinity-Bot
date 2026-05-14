@@ -62,3 +62,16 @@ async def init_db():
             with engine.begin() as connection:
                 for statement in missing_columns:
                     connection.execute(text(statement))
+
+        # Add response_mode + text_template to embed_templates if missing
+        if inspector.has_table("embed_templates"):
+            embed_cols = {c["name"] for c in inspector.get_columns("embed_templates")}
+            alter_stmts = []
+            if "response_mode" not in embed_cols:
+                alter_stmts.append("ALTER TABLE embed_templates ADD COLUMN response_mode VARCHAR DEFAULT 'embed'")
+            if "text_template" not in embed_cols:
+                alter_stmts.append("ALTER TABLE embed_templates ADD COLUMN text_template TEXT")
+            if alter_stmts:
+                with engine.begin() as connection:
+                    for stmt in alter_stmts:
+                        connection.execute(text(stmt))

@@ -172,6 +172,8 @@ class EmbedTemplate(Base):
     image_url = Column(String, nullable=True)
     fields = Column(JSON, default=list)             # [{"name": str, "value": str, "inline": bool}]
     enabled = Column(Boolean, default=True)
+    response_mode = Column(String, default="embed") # "embed" or "text"
+    text_template = Column(Text, nullable=True)     # Custom text template with {variables}
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 

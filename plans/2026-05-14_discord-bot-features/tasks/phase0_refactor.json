@@ -1,32 +1,32 @@
 [
   {
-    "id": "p0-1",
     "content": "[P0-1] Tạo src/api/routes/ package — split routes.py thành config, shop, tickets, community, embeds modules",
+    "id": "p0-1",
+    "status": "completed"
+  },
+  {
+    "content": "[P0-2] Update src/api/routes/__init__.py — main router include tất cả sub-routers",
+    "id": "p0-2",
+    "status": "completed"
+  },
+  {
+    "content": "[P0-3] Update imports trong routes.py (root) và app.py",
+    "id": "p0-3",
+    "status": "completed"
+  },
+  {
+    "content": "[P0-4] Add response_mode + text_template columns to EmbedTemplate model + ALTER TABLE",
+    "id": "p0-4",
     "status": "in_progress"
   },
   {
-    "id": "p0-2",
-    "content": "[P0-2] Update src/api/routes/__init__.py — main router include tất cả sub-routers",
-    "status": "pending"
-  },
-  {
-    "id": "p0-3",
-    "content": "[P0-3] Update imports trong routes.py (root) và app.py",
-    "status": "pending"
-  },
-  {
-    "id": "p0-4",
-    "content": "[P0-4] Add response_mode + text_template columns to EmbedTemplate model + ALTER TABLE",
-    "status": "pending"
-  },
-  {
-    "id": "p0-5",
     "content": "[P0-5] Update build_embed() → build_response() trả về embed hoặc text tùy config",
+    "id": "p0-5",
     "status": "pending"
   },
   {
-    "id": "p0-6",
     "content": "[P0-6] Verify server khởi động OK + test API endpoints",
+    "id": "p0-6",
     "status": "pending"
   }
 ]

@@ -351,6 +351,23 @@ def build_embed(
 ) -> discord.Embed:
     """
     Load template từ DB (hoặc dùng default), apply variable substitution, trả về discord.Embed.
+    Luôn trả về Embed — nếu cần check text mode, dùng build_response() thay thế.
+    """
+    result = build_response(event_type, db, vars)
+    if isinstance(result, discord.Embed):
+        return result
+    # Fallback: wrap text in a minimal embed
+    return discord.Embed(description=result, color=0x5865F2, timestamp=datetime.datetime.utcnow())
+
+
+def build_response(
+    event_type: str,
+    db: Session,
+    vars: dict | None = None,
+) -> discord.Embed | str:
+    """
+    Load template từ DB (hoặc dùng default), apply variable substitution.
+    Trả về discord.Embed nếu response_mode == "embed", hoặc str nếu "text".
 
     vars có thể chứa bất kỳ key nào. Các biến chuẩn:
         user, user.id, user.mention, order.id, order.total,
@@ -371,8 +388,31 @@ def build_embed(
         select(EmbedTemplate).where(EmbedTemplate.event_type == event_type)
     ).scalars().first()
 
+    # Check text mode
+    response_mode = "embed"
     if tmpl and tmpl.enabled:
-        # Dùng template tùy chỉnh
+        response_mode = getattr(tmpl, "response_mode", "embed") or "embed"
+
+    if response_mode == "text":
+        # Text mode: use text_template with variable substitution
+        text_tmpl = getattr(tmpl, "text_template", None) or ""
+        if not text_tmpl:
+            # Fallback: build text from embed title + description
+            parts = []
+            if tmpl.title:
+                parts.append(f"**{_sub(tmpl.title, vars)}**")
+            if tmpl.description:
+                parts.append(_sub(tmpl.description, vars))
+            for f in (tmpl.fields or []):
+                fname = _sub(f.get("name", ""), vars)
+                fval = _sub(f.get("value", ""), vars)
+                if fname and fval:
+                    parts.append(f"**{fname}**: {fval}")
+            text_tmpl = "\n".join(parts)
+        return _sub(text_tmpl, vars)
+
+    # Embed mode (default)
+    if tmpl and tmpl.enabled:
         color = _hex_to_int(tmpl.color or "#5865F2")
         embed = discord.Embed(
             title=_sub(tmpl.title, vars) or None,
@@ -394,7 +434,6 @@ def build_embed(
                 inline=f.get("inline", True),
             )
     else:
-        # Dùng default
         d = DEFAULTS.get(event_type, {})
         color = _hex_to_int(d.get("color", "#5865F2"))
         embed = discord.Embed(
