@@ -6,12 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Palette } from "lucide-react";
+import { Plus, Trash2, Palette, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface EmbedField {
@@ -35,18 +34,18 @@ interface EmbedTemplate {
   enabled: boolean;
 }
 
-const EVENT_TYPES: Record<string, string> = {
-  don_hang_moi: "Đơn hàng mới",
-  thanh_toan: "Thanh toán thành công",
-  giao_hang: "Giao hàng",
-  feedback: "Feedback",
-  giveaway: "Giveaway",
-  welcome: "Chào mừng thành viên",
-};
+const EMBED_EVENTS = [
+  { key: "don_hang_moi",  label: "Đơn hàng mới",            icon: "🛒", desc: "Gửi khi admin tạo đơn bằng /tao_don" },
+  { key: "thanh_toan",    label: "Thanh toán thành công",    icon: "✅", desc: "Gửi khi webhook PayOS xác nhận PAID" },
+  { key: "giao_hang",     label: "Giao hàng",                icon: "📦", desc: "Gửi khi admin nhấn Giao hàng trên Dashboard" },
+  { key: "feedback",      label: "Feedback từ user",         icon: "⭐", desc: "Gửi vào feedback channel khi user dùng /feedback" },
+  { key: "giveaway",      label: "Giveaway",                 icon: "🎉", desc: "Embed khi tạo giveaway bằng /giveaway" },
+  { key: "welcome",       label: "Chào mừng thành viên",     icon: "👋", desc: "Gửi vào welcome channel khi member join" },
+] as const;
 
-const emptyForm = (): Omit<EmbedTemplate, "id"> => ({
-  name: "",
-  event_type: "don_hang_moi",
+const emptyForm = (eventKey: string): Omit<EmbedTemplate, "id"> => ({
+  name: EMBED_EVENTS.find(e => e.key === eventKey)?.label ?? eventKey,
+  event_type: eventKey,
   title: "",
   description: "",
   color: "#5865F2",
@@ -125,9 +124,9 @@ function DiscordPreview({ embed }: { embed: Omit<EmbedTemplate, "id"> }) {
 export function EmbedsManager() {
   const { toast } = useToast();
   const qc = useQueryClient();
-  const [selected, setSelected] = useState<EmbedTemplate | null>(null);
-  const [form, setForm] = useState<Omit<EmbedTemplate, "id">>(emptyForm());
-  const [deleteTarget, setDeleteTarget] = useState<EmbedTemplate | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<string>("don_hang_moi");
+  const [existingId, setExistingId] = useState<number | null>(null);
+  const [form, setForm] = useState<Omit<EmbedTemplate, "id">>(emptyForm("don_hang_moi"));
 
   const { data: embeds = [], isLoading } = useQuery<EmbedTemplate[]>({
     queryKey: ["embeds"],
@@ -138,8 +137,8 @@ export function EmbedsManager() {
 
   const saveMutation = useMutation({
     mutationFn: (body: object) => {
-      const url = selected ? `/api/embeds/${selected.id}` : "/api/embeds";
-      const method = selected ? "PUT" : "POST";
+      const url = existingId ? `/api/embeds/${existingId}` : "/api/embeds";
+      const method = existingId ? "PUT" : "POST";
       return fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -147,58 +146,49 @@ export function EmbedsManager() {
         body: JSON.stringify(body),
       }).then(async (r) => { if (!r.ok) throw new Error(await r.text()); return r.json(); });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       invalidate();
-      toast({ title: selected ? "Đã cập nhật embed." : "Đã tạo embed." });
-      handleReset();
+      if (!existingId && data?.id) {
+        setExistingId(data.id);
+      }
+      toast({ title: existingId ? "Đã cập nhật embed." : "Đã tạo embed." });
     },
     onError: (e: Error) => toast({ variant: "destructive", title: "Lỗi", description: e.message }),
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => fetch(`/api/embeds/${id}`, { method: "DELETE", credentials: "include" })
+  const resetMutation = useMutation({
+    mutationFn: () => fetch(`/api/embeds/${existingId}`, { method: "DELETE", credentials: "include" })
       .then(async (r) => { if (!r.ok) throw new Error(await r.text()); }),
     onSuccess: () => {
       invalidate();
-      setDeleteTarget(null);
-      if (selected) handleReset();
-      toast({ title: "Đã xóa embed." });
+      setExistingId(null);
+      setForm(emptyForm(selectedEvent));
+      toast({ title: "Đã reset về mặc định." });
     },
     onError: (e: Error) => toast({ variant: "destructive", title: "Lỗi", description: e.message }),
   });
 
-  const toggleMutation = useMutation({
-    mutationFn: ({ id, enabled }: { id: number; enabled: boolean }) =>
-      fetch(`/api/embeds/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ enabled }),
-      }).then(async (r) => { if (!r.ok) throw new Error(await r.text()); return r.json(); }),
-    onSuccess: () => invalidate(),
-    onError: (e: Error) => toast({ variant: "destructive", title: "Lỗi", description: e.message }),
-  });
-
-  const handleSelect = (embed: EmbedTemplate) => {
-    setSelected(embed);
-    setForm({
-      name: embed.name,
-      event_type: embed.event_type,
-      title: embed.title,
-      description: embed.description,
-      color: embed.color,
-      author: embed.author,
-      footer: embed.footer,
-      thumbnail_url: embed.thumbnail_url,
-      image_url: embed.image_url,
-      fields: embed.fields,
-      enabled: embed.enabled,
-    });
-  };
-
-  const handleReset = () => {
-    setSelected(null);
-    setForm(emptyForm());
+  const handleSelectEvent = (key: string) => {
+    const existing = embeds.find(e => e.event_type === key);
+    setSelectedEvent(key);
+    setExistingId(existing?.id ?? null);
+    if (existing) {
+      setForm({
+        name: existing.name,
+        event_type: existing.event_type,
+        title: existing.title,
+        description: existing.description,
+        color: existing.color,
+        author: existing.author,
+        footer: existing.footer,
+        thumbnail_url: existing.thumbnail_url,
+        image_url: existing.image_url,
+        fields: existing.fields,
+        enabled: existing.enabled,
+      });
+    } else {
+      setForm(emptyForm(key));
+    }
   };
 
   const handleSave = () => {
@@ -220,6 +210,8 @@ export function EmbedsManager() {
     }));
   };
 
+  const currentEventInfo = EMBED_EVENTS.find(e => e.key === selectedEvent);
+
   if (isLoading) {
     return <div className="flex items-center justify-center h-64 text-muted-foreground">Đang tải...</div>;
   }
@@ -232,71 +224,44 @@ export function EmbedsManager() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ── Left: Embed List ── */}
-        <div className="lg:col-span-1 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-muted-foreground">Danh sách Embed</p>
-            <Button size="sm" variant="outline" onClick={handleReset}>
-              <Plus className="h-3.5 w-3.5 mr-1" /> Tạo mới
-            </Button>
-          </div>
-
-          {embeds.length === 0 ? (
-            <Card>
-              <CardContent className="p-6 text-center text-sm text-muted-foreground">
-                Chưa có embed nào. Tạo mới để bắt đầu.
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {embeds.map((embed) => (
-                <Card
-                  key={embed.id}
-                  className={cn(
-                    "cursor-pointer transition-colors hover:bg-accent/50",
-                    selected?.id === embed.id && "ring-2 ring-primary"
-                  )}
-                  onClick={() => handleSelect(embed)}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm truncate">{embed.name || "Untitled"}</p>
-                        <Badge variant="secondary" className="text-[10px] mt-1">
-                          {EVENT_TYPES[embed.event_type] || embed.event_type}
-                        </Badge>
+        {/* ── Left: Event Cards (fixed, no scroll) ── */}
+        <div className="lg:col-span-1 space-y-2">
+          <p className="text-sm font-medium text-muted-foreground mb-3">Loại embed</p>
+          {EMBED_EVENTS.map((ev) => {
+            const existing = embeds.find(e => e.event_type === ev.key);
+            const isSelected = selectedEvent === ev.key;
+            return (
+              <Card
+                key={ev.key}
+                className={cn(
+                  "cursor-pointer transition-all hover:bg-accent/50",
+                  isSelected && "ring-2 ring-primary bg-accent/30"
+                )}
+                onClick={() => handleSelectEvent(ev.key)}
+              >
+                <CardContent className="p-3">
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl leading-none mt-0.5">{ev.icon}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm">{ev.label}</p>
+                        {existing ? (
+                          <Badge variant="default" className="text-[10px] bg-primary/15 text-primary border-primary/30">
+                            Đã tùy chỉnh
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-[10px]">
+                            Mặc định
+                          </Badge>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <Switch
-                          checked={embed.enabled}
-                          onCheckedChange={(checked) => {
-                            toggleMutation.mutate({ id: embed.id, enabled: checked });
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-7 w-7"
-                          onClick={(e) => { e.stopPropagation(); handleSelect(embed); }}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-7 w-7 text-destructive"
-                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(embed); }}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">{ev.desc}</p>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* ── Right: Editor + Preview ── */}
@@ -305,39 +270,23 @@ export function EmbedsManager() {
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <p className="font-medium text-sm">
-                  {selected ? `Chỉnh sửa: ${selected.name}` : "Tạo Embed mới"}
+                  Chỉnh sửa: {currentEventInfo?.icon} {currentEventInfo?.label}
                 </p>
-                {selected && (
-                  <Button size="sm" variant="ghost" onClick={handleReset}>
-                    Hủy chỉnh sửa
+                {existingId && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-muted-foreground hover:text-destructive"
+                    disabled={resetMutation.isPending}
+                    onClick={() => resetMutation.mutate()}
+                  >
+                    <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                    {resetMutation.isPending ? "Đang reset..." : "Reset về mặc định"}
                   </Button>
                 )}
               </div>
 
               <Separator />
-
-              {/* Name + Event Type */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Tên embed</Label>
-                  <Input
-                    placeholder="VD: Đơn hàng mới"
-                    value={form.name}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Event type</Label>
-                  <Select value={form.event_type} onValueChange={(v) => setForm((f) => ({ ...f, event_type: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(EVENT_TYPES).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
 
               {/* Title */}
               <div className="space-y-1.5">
@@ -480,9 +429,8 @@ export function EmbedsManager() {
 
               {/* Save */}
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={handleReset}>Hủy</Button>
-                <Button onClick={handleSave} disabled={saveMutation.isPending || !form.name.trim()}>
-                  {saveMutation.isPending ? "Đang lưu..." : selected ? "Cập nhật" : "Tạo mới"}
+                <Button onClick={handleSave} disabled={saveMutation.isPending}>
+                  {saveMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
                 </Button>
               </div>
             </CardContent>
@@ -495,28 +443,6 @@ export function EmbedsManager() {
           </div>
         </div>
       </div>
-
-      {/* ── Confirm xóa ── */}
-      <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-        <DialogContent className="max-w-xs">
-          <DialogHeader>
-            <DialogTitle>Xóa embed?</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Embed <strong>{deleteTarget?.name}</strong> sẽ bị xóa vĩnh viễn.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Hủy</Button>
-            <Button
-              variant="destructive"
-              disabled={deleteMutation.isPending}
-              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
-            >
-              Xóa
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

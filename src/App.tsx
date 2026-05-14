@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette } from "lucide-react";
+import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -10,6 +10,7 @@ import { ProductsManager } from "./pages/ProductsManager";
 import { OrdersManager } from "./pages/OrdersManager";
 import { CouponsManager } from "./pages/CouponsManager";
 import { EmbedsManager } from "./pages/EmbedsManager";
+import { FeedbackManager } from "./pages/FeedbackManager";
 import { UsersManager } from "./pages/UsersManager";
 import { GiveawaysManager } from "./pages/GiveawaysManager";
 import { InviteTracking } from "./pages/InviteTracking";
@@ -38,6 +39,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     { to: "/config", icon: Settings, label: "Cấu hình Bot" },
     { to: "/products", icon: Package, label: "Sản phẩm" },
     { to: "/orders", icon: ShoppingCart, label: "Đơn hàng" },
+    { to: "/feedback", icon: MessageSquare, label: "Feedback" },
     { to: "/coupons", icon: Tag, label: "Coupon" },
     { to: "/users", icon: Users, label: "Người dùng" },
     { to: "/giveaways", icon: Gift, label: "Giveaway" },
@@ -52,7 +54,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         <h1 className="font-bold text-lg">Infinity Mall</h1>
       </div>
       
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {navItems.map((item) => (
           <Link
             key={item.to}
@@ -117,9 +119,11 @@ function MobileNav() {
             <Menu className="w-6 h-6" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-64">
+        <SheetContent side="left" className="p-0 w-64 flex flex-col">
           <SheetTitle className="sr-only">Menu điều hướng</SheetTitle>
-          <SidebarContent onClose={() => setOpen(false)} />
+          <div className="flex flex-col h-full overflow-hidden">
+            <SidebarContent onClose={() => setOpen(false)} />
+          </div>
         </SheetContent>
       </Sheet>
     </div>
@@ -188,6 +192,7 @@ function ProtectedAppRoutes() {
         <Route path="/config" element={<BotConfig />} />
         <Route path="/products" element={<ProductsManager />} />
         <Route path="/orders" element={<OrdersManager />} />
+        <Route path="/feedback" element={<FeedbackManager />} />
         <Route path="/coupons" element={<CouponsManager />} />
         <Route path="/users" element={<UsersManager />} />
         <Route path="/giveaways" element={<GiveawaysManager />} />

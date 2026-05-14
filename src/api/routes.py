@@ -957,3 +957,59 @@ def delete_warning(warning_id: int, db = Depends(get_db)):
     db.delete(w)
     db.commit()
     return {"ok": True}
+
+# ─────────────────────────── FEEDBACK ──────────────────────────────────────
+
+@router.get("/feedback")
+def list_feedback(db = Depends(get_db)):
+    from src.models.models import Feedback, User as UserM, Product
+    rows = db.execute(
+        select(Feedback).order_by(Feedback.created_at.desc()).limit(200)
+    ).scalars().all()
+    result = []
+    for r in rows:
+        user = db.get(UserM, r.user_id) if r.user_id else None
+        product = db.get(Product, r.product_id) if r.product_id else None
+        result.append({
+            "id": r.id,
+            "user_discord_id": user.discord_id if user else None,
+            "username": user.username if user else "Unknown",
+            "product_id": r.product_id,
+            "product_name": product.name if product else None,
+            "stars": r.stars,
+            "content": r.content,
+            "discord_message_id": r.discord_message_id,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        })
+    return result
+
+@router.delete("/feedback/{feedback_id}")
+async def delete_feedback(feedback_id: int, db = Depends(get_db)):
+    from src.models.models import Feedback
+    fb = db.get(Feedback, feedback_id)
+    if not fb:
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    # Xóa Discord message nếu có
+    if fb.discord_message_id:
+        try:
+            from src.bot.manager import bot
+            from src.models.models import SystemConfig
+            config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+            feedback_channel_id = config.feedback_channel_id if config else None
+            if bot and feedback_channel_id:
+                ch = bot.get_channel(int(feedback_channel_id))
+                if not ch:
+                    ch = await bot.fetch_channel(int(feedback_channel_id))
+                if ch:
+                    try:
+                        msg = await ch.fetch_message(int(fb.discord_message_id))
+                        await msg.delete()
+                    except Exception:
+                        pass
+        except Exception as e:
+            logger.error(f"delete feedback discord msg error: {e}")
+    
+    db.delete(fb)
+    db.commit()
+    return {"ok": True}
