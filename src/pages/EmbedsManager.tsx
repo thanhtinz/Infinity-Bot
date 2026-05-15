@@ -18,11 +18,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import {
   ShoppingCart, Timer, Star, Gift,
   Trophy, Plus, Trash2,
-  ChevronDown,
+  ChevronDown, ChevronRight,
   Ticket, TicketX, UserCheck, UserMinus, Ban,
   UserPlus2, QrCode,
   ShieldOff, LayoutGrid, ShieldAlert,
@@ -31,6 +46,7 @@ import {
   Type, Layout, RotateCcw, Heart, Mic, HelpCircle,
   Send, Link2, Copy, Check, MessageSquare, ExternalLink, Loader2,
   Mail, TrendingUp, Tag, Clock, UserPlus, Edit, MicOff, ArrowRight,
+  ArrowUp, ArrowDown, FileJson,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmojiPicker } from "@/components/EmojiPicker";
@@ -1710,6 +1726,10 @@ interface CustomEmbed {
   channel_id: string;
   message_id: string;
   guild_id: string;
+  content: string;
+  webhook_username: string;
+  webhook_avatar_url: string;
+  thread_name: string;
   title: string;
   description: string;
   color: string;
@@ -1719,12 +1739,12 @@ interface CustomEmbed {
   thumbnail_url: string;
   image_url: string;
   fields: EmbedField[];
+  embeds: EmbedData[];
   created_at: string;
   updated_at: string;
 }
 
-interface CustomFormState {
-  name: string;
+interface EmbedData {
   title: string;
   description: string;
   color: string;
@@ -1736,8 +1756,16 @@ interface CustomFormState {
   fields: EmbedField[];
 }
 
-const emptyCustomForm: CustomFormState = {
-  name: "",
+interface CustomFormState {
+  name: string;
+  content: string;
+  webhook_username: string;
+  webhook_avatar_url: string;
+  thread_name: string;
+  embeds: EmbedData[];
+}
+
+const emptyEmbed = (): EmbedData => ({
   title: "",
   description: "",
   color: "#5865F2",
@@ -1747,7 +1775,43 @@ const emptyCustomForm: CustomFormState = {
   thumbnail_url: "",
   image_url: "",
   fields: [],
+});
+
+const emptyCustomForm: CustomFormState = {
+  name: "",
+  content: "",
+  webhook_username: "",
+  webhook_avatar_url: "",
+  thread_name: "",
+  embeds: [emptyEmbed()],
 };
+
+/** Migrate from flat fields (old DB) to embeds array */
+function migrateToEmbeds(data: CustomEmbed): EmbedData[] {
+  if (data.embeds && data.embeds.length > 0) {
+    return data.embeds.map((e) => ({ ...e, fields: e.fields?.map((f) => ({ ...f })) ?? [] }));
+  }
+  return [{
+    title: data.title ?? "",
+    description: data.description ?? "",
+    color: data.color ?? "#5865F2",
+    author: data.author ?? "",
+    author_icon_url: data.author_icon_url ?? "",
+    footer: data.footer ?? "",
+    thumbnail_url: data.thumbnail_url ?? "",
+    image_url: data.image_url ?? "",
+    fields: data.fields?.map((f) => ({ ...f })) ?? [],
+  }];
+}
+
+// ── Per-embed collapsible state ──────────────────────────────────────────────
+interface EmbedOpenState {
+  main: boolean;
+  author: boolean;
+  images: boolean;
+  fields: boolean;
+}
+const defaultEmbedOpen = (): EmbedOpenState => ({ main: true, author: false, images: false, fields: true });
 
 function CustomMessagesTab() {
   const { toast } = useToast();
@@ -1762,12 +1826,17 @@ function CustomMessagesTab() {
   const [selectedChannelId, setSelectedChannelId] = useState<string>("");
   const [copiedUrl, setCopiedUrl] = useState(false);
 
-  // Collapsible sections
-  const [embedOpen, setEmbedOpen] = useState(true);
-  const [imagesOpen, setImagesOpen] = useState(false);
-  const [fieldsOpen, setFieldsOpen] = useState(true);
-  const [authorOpen, setAuthorOpen] = useState(false);
+  // Section collapsibles (message-level)
+  const [threadOpen, setThreadOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  // Per-embed open states
+  const [embedOpenStates, setEmbedOpenStates] = useState<EmbedOpenState[]>([defaultEmbedOpen()]);
+
+  // Dialogs
   const [showPreview, setShowPreview] = useState(false);
+  const [jsonEditorOpen, setJsonEditorOpen] = useState(false);
+  const [jsonText, setJsonText] = useState("");
 
   // ── Queries ──
   const { data: customEmbeds = [], isLoading: listLoading } = useQuery<CustomEmbed[]>({
@@ -1913,22 +1982,38 @@ function CustomMessagesTab() {
       queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
       setSelectedId(data.id);
       setEditingExistingId(data.id);
+      const loadedEmbeds = migrateToEmbeds(data);
       setForm({
         name: data.name,
-        title: data.title,
-        description: data.description,
-        color: data.color,
-        author: data.author,
-        author_icon_url: data.author_icon_url,
-        footer: data.footer,
-        thumbnail_url: data.thumbnail_url,
-        image_url: data.image_url,
-        fields: data.fields?.map((f) => ({ ...f })) ?? [],
+        content: data.content ?? "",
+        webhook_username: data.webhook_username ?? "",
+        webhook_avatar_url: data.webhook_avatar_url ?? "",
+        thread_name: data.thread_name ?? "",
+        embeds: loadedEmbeds,
       });
+      setEmbedOpenStates(loadedEmbeds.map(() => defaultEmbedOpen()));
       setLinkInput("");
     },
     onError: () => {
       toast({ title: "Lỗi", description: "Không thể tải embed từ link. Kiểm tra lại link Discord.", variant: "destructive" });
+    },
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/embeds/custom/${id}/duplicate`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Nhân đôi thất bại");
+      return res.json() as Promise<CustomEmbed>;
+    },
+    onSuccess: () => {
+      toast({ title: "Đã nhân đôi", description: "Tin nhắn đã được sao chép." });
+      queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
+    },
+    onError: () => {
+      toast({ title: "Lỗi", description: "Không thể nhân đôi.", variant: "destructive" });
     },
   });
 
@@ -1939,11 +2024,9 @@ function CustomMessagesTab() {
     setIsCreatingNew(true);
     setSelectedChannelId("");
     setForm(emptyCustomForm);
-    setEmbedOpen(true);
-    setImagesOpen(false);
-    setFieldsOpen(true);
-    setAuthorOpen(false);
-    setShowPreview(false);
+    setEmbedOpenStates([defaultEmbedOpen()]);
+    setThreadOpen(false);
+    setProfileOpen(false);
   };
 
   const handleSelectEmbed = (embed: CustomEmbed) => {
@@ -1951,23 +2034,18 @@ function CustomMessagesTab() {
     setEditingExistingId(embed.id);
     setIsCreatingNew(false);
     setSelectedChannelId(embed.channel_id || "");
+    const loadedEmbeds = migrateToEmbeds(embed);
     setForm({
       name: embed.name,
-      title: embed.title,
-      description: embed.description,
-      color: embed.color,
-      author: embed.author,
-      author_icon_url: embed.author_icon_url,
-      footer: embed.footer,
-      thumbnail_url: embed.thumbnail_url,
-      image_url: embed.image_url,
-      fields: embed.fields?.map((f) => ({ ...f })) ?? [],
+      content: embed.content ?? "",
+      webhook_username: embed.webhook_username ?? "",
+      webhook_avatar_url: embed.webhook_avatar_url ?? "",
+      thread_name: embed.thread_name ?? "",
+      embeds: loadedEmbeds,
     });
-    setEmbedOpen(true);
-    setImagesOpen(false);
-    setFieldsOpen(true);
-    setAuthorOpen(false);
-    setShowPreview(false);
+    setEmbedOpenStates(loadedEmbeds.map(() => defaultEmbedOpen()));
+    setThreadOpen(false);
+    setProfileOpen(false);
   };
 
   const handleSave = () => {
@@ -1993,38 +2071,127 @@ function CustomMessagesTab() {
     loadLinkMutation.mutate(linkInput.trim());
   };
 
-  // ── Field helpers ──
-  const addField = () => {
-    if (form.fields.length >= 25) return;
-    setForm((f) => ({ ...f, fields: [...f.fields, { name: "", value: "", inline: false }] }));
+  // ── Multi-embed helpers ──
+  const addEmbed = () => {
+    if (form.embeds.length >= 10) return;
+    setForm((f) => ({ ...f, embeds: [...f.embeds, emptyEmbed()] }));
+    setEmbedOpenStates((s) => [...s, defaultEmbedOpen()]);
   };
-  const removeField = (idx: number) => {
-    setForm((f) => ({ ...f, fields: f.fields.filter((_, i) => i !== idx) }));
+
+  const removeEmbed = (idx: number) => {
+    if (form.embeds.length <= 1) {
+      toast({ title: "Không thể xóa", description: "Cần ít nhất 1 embed.", variant: "destructive" });
+      return;
+    }
+    setForm((f) => ({ ...f, embeds: f.embeds.filter((_, i) => i !== idx) }));
+    setEmbedOpenStates((s) => s.filter((_, i) => i !== idx));
   };
-  const updateField = (idx: number, key: keyof EmbedField, val: string | boolean) => {
+
+  const duplicateEmbed = (idx: number) => {
+    const clone = JSON.parse(JSON.stringify(form.embeds[idx])) as EmbedData;
+    const newEmbeds = [...form.embeds];
+    newEmbeds.splice(idx + 1, 0, clone);
+    setForm((f) => ({ ...f, embeds: newEmbeds }));
+    setEmbedOpenStates((s) => {
+      const ns = [...s];
+      ns.splice(idx + 1, 0, defaultEmbedOpen());
+      return ns;
+    });
+  };
+
+  const moveEmbed = (idx: number, dir: "up" | "down") => {
+    const target = dir === "up" ? idx - 1 : idx + 1;
+    if (target < 0 || target >= form.embeds.length) return;
+    const newEmbeds = [...form.embeds];
+    [newEmbeds[idx], newEmbeds[target]] = [newEmbeds[target], newEmbeds[idx]];
+    setForm((f) => ({ ...f, embeds: newEmbeds }));
+    setEmbedOpenStates((s) => {
+      const ns = [...s];
+      [ns[idx], ns[target]] = [ns[target], ns[idx]];
+      return ns;
+    });
+  };
+
+  const updateEmbed = (idx: number, patch: Partial<EmbedData>) => {
     setForm((f) => ({
       ...f,
-      fields: f.fields.map((field, i) => (i === idx ? { ...field, [key]: val } : field)),
+      embeds: f.embeds.map((e, i) => (i === idx ? { ...e, ...patch } : e)),
     }));
   };
 
-  // Build a FormState-like object for DiscordPreview
-  const previewForm: FormState = useMemo(() => ({
-    ...form,
-    event_type: "",
-    enabled: true,
-    response_mode: "embed" as const,
-    text_template: "",
-    existingId: undefined,
-  }), [form]);
+  const setEmbedOpenState = (idx: number, patch: Partial<EmbedOpenState>) => {
+    setEmbedOpenStates((s) => s.map((o, i) => (i === idx ? { ...o, ...patch } : o)));
+  };
+
+  // ── Field helpers (per embed) ──
+  const addField = (embedIdx: number) => {
+    const emb = form.embeds[embedIdx];
+    if (!emb || emb.fields.length >= 25) return;
+    updateEmbed(embedIdx, { fields: [...emb.fields, { name: "", value: "", inline: false }] });
+  };
+
+  const removeField = (embedIdx: number, fieldIdx: number) => {
+    const emb = form.embeds[embedIdx];
+    if (!emb) return;
+    updateEmbed(embedIdx, { fields: emb.fields.filter((_, i) => i !== fieldIdx) });
+  };
+
+  const updateField = (embedIdx: number, fieldIdx: number, key: keyof EmbedField, val: string | boolean) => {
+    const emb = form.embeds[embedIdx];
+    if (!emb) return;
+    updateEmbed(embedIdx, {
+      fields: emb.fields.map((f, i) => (i === fieldIdx ? { ...f, [key]: val } : f)),
+    });
+  };
+
+  // ── JSON Editor ──
+  const openJsonEditor = () => {
+    setJsonText(JSON.stringify({ content: form.content, embeds: form.embeds }, null, 2));
+    setJsonEditorOpen(true);
+  };
+
+  const applyJsonEditor = () => {
+    try {
+      const parsed = JSON.parse(jsonText) as { content?: string; embeds?: EmbedData[] };
+      if (!Array.isArray(parsed.embeds)) throw new Error("embeds phải là array");
+      setForm((f) => ({
+        ...f,
+        content: parsed.content ?? f.content,
+        embeds: parsed.embeds!,
+      }));
+      setEmbedOpenStates(parsed.embeds!.map(() => defaultEmbedOpen()));
+      setJsonEditorOpen(false);
+      toast({ title: "Đã áp dụng JSON" });
+    } catch (e) {
+      toast({ title: "JSON không hợp lệ", description: String(e), variant: "destructive" });
+    }
+  };
+
+  const copyQueryData = () => {
+    const data = JSON.stringify({ content: form.content, embeds: form.embeds }, null, 2);
+    navigator.clipboard.writeText(data);
+    toast({ title: "Đã copy JSON!" });
+  };
+
+  // ── Preview form (uses first embed) ──
+  const previewForm: FormState = useMemo(() => {
+    const firstEmbed = form.embeds[0] ?? emptyEmbed();
+    return {
+      ...firstEmbed,
+      event_type: "",
+      enabled: true,
+      response_mode: "embed" as const,
+      text_template: "",
+      existingId: undefined,
+    };
+  }, [form]);
 
   const isEditing = editingExistingId !== null || isCreatingNew;
-  const hasMessageId = selectedEmbed?.message_id ? true : false;
+  const hasMessageId = Boolean(selectedEmbed?.message_id);
 
-  // ── Sidebar list ──
+  // ── Sidebar ──────────────────────────────────────────────────────────────
   const sidebar = (
     <div className="flex flex-col h-full">
-      {/* Create new + Load link */}
       <div className="p-3 space-y-2 border-b">
         <Button size="sm" className="w-full" onClick={handleCreateNew}>
           <Plus className="h-3.5 w-3.5 mr-1.5" />
@@ -2038,44 +2205,24 @@ function CustomMessagesTab() {
             className="text-xs h-8"
             onKeyDown={(e) => { if (e.key === "Enter") handleLoadLink(); }}
           />
-          <Button
-            size="sm"
-            variant="outline"
-            className="shrink-0 h-8 px-2.5"
-            onClick={handleLoadLink}
-            disabled={loadLinkMutation.isPending || !linkInput.trim()}
-          >
+          <Button size="sm" variant="outline" className="shrink-0 h-8 px-2.5" onClick={handleLoadLink}
+            disabled={loadLinkMutation.isPending || !linkInput.trim()}>
             {loadLinkMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
-            Tải
           </Button>
         </div>
       </div>
-
-      {/* List */}
       <div className="flex-1 overflow-y-auto">
         {listLoading ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
-            Đang tải...
-          </div>
+          <div className="p-4 text-center text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />Đang tải...</div>
         ) : customEmbeds.length === 0 ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            Chưa có tin nhắn nào
-          </div>
+          <div className="p-4 text-center text-sm text-muted-foreground">Chưa có tin nhắn nào</div>
         ) : (
           <div className="p-2 space-y-1">
             {customEmbeds.map((embed) => (
-              <div
-                key={embed.id}
-                role="button"
-                tabIndex={0}
-                className={cn(
-                  "w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted/50 cursor-pointer",
-                  selectedId === embed.id && "bg-muted"
-                )}
+              <div key={embed.id} role="button" tabIndex={0}
+                className={cn("w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted/50 cursor-pointer", selectedId === embed.id && "bg-muted")}
                 onClick={() => handleSelectEmbed(embed)}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelectEmbed(embed); } }}
-              >
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelectEmbed(embed); } }}>
                 <div className="font-medium truncate">{embed.name || "Không tên"}</div>
                 <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
                   <Hash className="h-3 w-3" />
@@ -2083,21 +2230,14 @@ function CustomMessagesTab() {
                   {embed.message_id && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1">Đã gửi</Badge>}
                 </div>
                 <div className="flex items-center gap-1 mt-1.5">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-6 w-6"
-                    onClick={(e) => { e.stopPropagation(); handleSelectEmbed(embed); }}
-                  >
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleSelectEmbed(embed); }}>
                     <Pencil className="h-3 w-3" />
                   </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-6 w-6 text-destructive hover:text-destructive"
-                    onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(embed.id); }}
-                    disabled={deleteMutation.isPending}
-                  >
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); duplicateMutation.mutate(embed.id); }} disabled={duplicateMutation.isPending}>
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive"
+                    onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(embed.id); }} disabled={deleteMutation.isPending}>
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -2109,395 +2249,382 @@ function CustomMessagesTab() {
     </div>
   );
 
-  // ── Editor ──
+  // ── Editor ────────────────────────────────────────────────────────────────
   const editor = (
-    <div className="flex-1 overflow-y-auto">
-      <div className="max-w-2xl mx-auto p-4 space-y-3">
-
-        {/* ── Embed Section — collapsible card with colored left border ── */}
-        <div className="rounded-lg border overflow-hidden" style={{ borderLeftWidth: 4, borderLeftColor: form.color || "#5865F2" }}>
-          <div
-            role="button"
-            tabIndex={0}
-            className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors cursor-pointer select-none"
-            onClick={() => setEmbedOpen(!embedOpen)}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setEmbedOpen(!embedOpen); } }}
-          >
-            <span className="flex items-center gap-2">
-              <ChevronDown className={cn("h-4 w-4 transition-transform", embedOpen && "rotate-180")} />
-              Embed — {form.title || "Không có tiêu đề"}
-            </span>
-          </div>
-          {embedOpen && (
-            <div className="px-4 pb-4 space-y-4">
-              {/* Title */}
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Tiêu đề</Label>
-                <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                  <Input
-                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                    placeholder="Nhập tiêu đề embed..."
-                    value={form.title}
-                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                  />
-                  <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, title: f.title + em }))} />
-                </div>
-              </div>
-              {/* Description */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs text-muted-foreground">Mô tả</Label>
-                  <span className="text-[11px] text-muted-foreground">{form.description.length}/4096</span>
-                </div>
-                <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                  <Textarea
-                    placeholder="Nhập mô tả embed..."
-                    value={form.description}
-                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                    rows={5}
-                    className="resize-y flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                  />
-                  <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, description: f.description + em }))} />
-                </div>
-              </div>
-              {/* Color */}
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Màu sắc</Label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={form.color}
-                    onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-                    className="h-8 w-8 rounded cursor-pointer border-0 p-0"
-                  />
-                  <Input
-                    value={form.color}
-                    onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
-                    className="w-28 font-mono text-xs"
-                    maxLength={7}
-                  />
-                </div>
-              </div>
-              {/* Footer */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs text-muted-foreground">Chân trang</Label>
-                  <span className="text-[11px] text-muted-foreground">{form.footer.length}/2048</span>
-                </div>
-                <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                  <Input
-                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                    placeholder="Nội dung chân trang"
-                    value={form.footer}
-                    onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
-                  />
-                  <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, footer: f.footer + em }))} />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── Author — collapsible ── */}
-        <div className="rounded-lg border">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
-            onClick={() => setAuthorOpen(!authorOpen)}
-          >
-            <span className="flex items-center gap-2">
-              <ChevronDown className={cn("h-4 w-4 transition-transform", authorOpen && "rotate-180")} />
-              Tác giả
-            </span>
-          </button>
-          {authorOpen && (
-            <div className="px-4 pb-4 space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Tên tác giả</Label>
-                <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                  <Input
-                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                    placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
-                    value={form.author}
-                    onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
-                  />
-                  <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, author: f.author + em }))} />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Icon URL</Label>
-                <Input
-                  placeholder="https://example.com/icon.png"
-                  value={form.author_icon_url}
-                  onChange={(e) => setForm((f) => ({ ...f, author_icon_url: e.target.value }))}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── Images — collapsible ── */}
-        <div className="rounded-lg border">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
-            onClick={() => setImagesOpen(!imagesOpen)}
-          >
-            <span className="flex items-center gap-2">
-              <ChevronDown className={cn("h-4 w-4 transition-transform", imagesOpen && "rotate-180")} />
-              Hình ảnh
-            </span>
-          </button>
-          {imagesOpen && (
-            <div className="px-4 pb-4 space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Thumbnail URL</Label>
-                <Input
-                  placeholder="https://example.com/thumb.png"
-                  value={form.thumbnail_url}
-                  onChange={(e) => setForm((f) => ({ ...f, thumbnail_url: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Image URL</Label>
-                <Input
-                  placeholder="https://example.com/image.png"
-                  value={form.image_url}
-                  onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── Fields — collapsible ── */}
-        <div className="rounded-lg border">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
-            onClick={() => setFieldsOpen(!fieldsOpen)}
-          >
-            <span className="flex items-center gap-2">
-              <ChevronDown className={cn("h-4 w-4 transition-transform", fieldsOpen && "rotate-180")} />
-              Fields ({form.fields.length}/25)
-            </span>
-          </button>
-          {fieldsOpen && (
-            <div className="px-4 pb-4 space-y-3">
-              {form.fields.map((field, i) => (
-                <div key={i} className="rounded-md border bg-muted/30 p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-muted-foreground">Field {i + 1}</span>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-6 w-6 text-destructive hover:text-destructive"
-                      onClick={() => removeField(i)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                      <Input
-                        placeholder="Tên field"
-                        value={field.name}
-                        onChange={(e) => updateField(i, "name", e.target.value)}
-                        className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      />
-                      <EmojiPicker onSelect={(em) => updateField(i, "name", field.name + em)} />
-                    </div>
-                    <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                      <Input
-                        placeholder="Giá trị"
-                        value={field.value}
-                        onChange={(e) => updateField(i, "value", e.target.value)}
-                        className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      />
-                      <EmojiPicker onSelect={(em) => updateField(i, "value", field.value + em)} />
-                    </div>
-                  </div>
-                  <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={field.inline}
-                      onChange={(e) => updateField(i, "inline", e.target.checked)}
-                      className="rounded border-input"
-                    />
-                    Inline (hiển thị cùng dòng)
-                  </label>
-                </div>
-              ))}
-              {form.fields.length < 25 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addField}
-                  className="w-full border-dashed"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1.5" />
-                  Thêm field
-                </Button>
-              )}
-              {form.fields.length >= 25 && (
-                <p className="text-xs text-muted-foreground text-center">Đã đạt giới hạn 25 fields</p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* ── Name + Channel + Actions ── */}
-        <div className="rounded-lg border p-4 space-y-3">
-          {/* Name */}
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Đặt tên cho embed này</Label>
-            <Input
-              placeholder="VD: Thông báo bảo trì"
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            />
-          </div>
-
-          {/* Channel select */}
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Kênh Discord</Label>
-            <Select
-              value={selectedChannelId}
-              onValueChange={setSelectedChannelId}
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue placeholder="Chọn kênh để gửi..." />
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Toolbar */}
+      <div className="border-b px-4 py-2 flex flex-wrap items-center gap-2 bg-background sticky top-0 z-10">
+        {/* Name */}
+        <Input
+          className="h-8 text-sm w-48 max-w-[180px]"
+          placeholder="Tên tin nhắn..."
+          value={form.name}
+          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+        />
+        {/* Lưu */}
+        <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending || createMutation.isPending}>
+          {(updateMutation.isPending || createMutation.isPending) ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
+          Lưu
+        </Button>
+        {/* Send dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="default" className="bg-indigo-600 hover:bg-indigo-700 gap-1">
+              <Send className="h-3.5 w-3.5" />
+              Gửi
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-72 p-2 space-y-2">
+            <div className="text-xs font-medium text-muted-foreground px-1 mb-1">Gửi lên kênh</div>
+            <Select value={selectedChannelId} onValueChange={setSelectedChannelId}>
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue placeholder="Chọn kênh..." />
               </SelectTrigger>
               <SelectContent>
-                {channels.map((ch) => (
+                {channels.filter((c) => c.type === 0).map((ch) => (
                   <SelectItem key={ch.id} value={ch.id}>
-                    <span className="flex items-center gap-2">
-                      <Hash className="h-3.5 w-3.5" />
-                      {ch.name}
-                    </span>
+                    <span className="flex items-center gap-2"><Hash className="h-3.5 w-3.5" />{ch.name}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              size="sm"
-              onClick={handleSave}
-              disabled={updateMutation.isPending || createMutation.isPending}
-            >
-              {(updateMutation.isPending || createMutation.isPending) ? (
-                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-              ) : null}
-              Lưu
+            <Button size="sm" className="w-full" onClick={() => selectedChannelId && handleSend(selectedChannelId)}
+              disabled={sendMutation.isPending || !selectedChannelId || isCreatingNew}>
+              {sendMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Send className="h-3.5 w-3.5 mr-1" />}
+              {isCreatingNew ? "Lưu trước" : "Gửi"}
             </Button>
-
-            {isEditing && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (selectedChannelId) handleSend(selectedChannelId);
-                  else toast({ title: "Chưa chọn kênh", description: "Hãy chọn kênh Discord trước.", variant: "destructive" });
-                }}
-                disabled={sendMutation.isPending || !selectedChannelId || isCreatingNew}
-              >
-                {sendMutation.isPending ? (
-                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                ) : (
-                  <Send className="h-3.5 w-3.5 mr-1.5" />
-                )}
-                {isCreatingNew ? "Lưu trước để gửi" : "Gửi lên Discord"}
-              </Button>
+            {hasMessageId && (
+              <>
+                <DropdownMenuSeparator />
+                <Button size="sm" variant="outline" className="w-full" onClick={handleUpdateMessage} disabled={updateMessageMutation.isPending}>
+                  {updateMessageMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Pencil className="h-3.5 w-3.5 mr-1" />}
+                  Cập nhật tin nhắn
+                </Button>
+              </>
             )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {/* Preview */}
+        <Button size="sm" variant="outline" onClick={() => setShowPreview(true)}>
+          Xem trước
+        </Button>
+        {/* Message link */}
+        {hasMessageId && selectedEmbed?.message_id && (
+          <a href={`https://discord.com/channels/${selectedEmbed.guild_id}/${selectedEmbed.channel_id}/${selectedEmbed.message_id}`}
+            target="_blank" rel="noopener noreferrer"
+            className="text-xs text-primary underline flex items-center gap-1">
+            <ExternalLink className="h-3 w-3" />Link tin nhắn
+          </a>
+        )}
+      </div>
 
-            {isEditing && hasMessageId && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleUpdateMessage}
-                disabled={updateMessageMutation.isPending}
-              >
-                {updateMessageMutation.isPending ? (
-                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                ) : (
-                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                )}
-                Cập nhật tin nhắn
-              </Button>
-            )}
+      {/* Editor body */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-2xl mx-auto p-4 space-y-3">
+
+          {/* ── Message block ── */}
+          <div className="rounded-lg border overflow-hidden bg-card">
+            {/* Content */}
+            <div className="p-4 space-y-1">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Content</Label>
+                <span className="text-[11px] text-muted-foreground">{form.content.length}/2000</span>
+              </div>
+              <Textarea
+                placeholder="Nội dung tin nhắn (plain text, hỗ trợ markdown Discord)"
+                value={form.content}
+                onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+                rows={3}
+                maxLength={2000}
+                className="resize-y text-sm"
+              />
+            </div>
+
+            {/* Thread — collapsible */}
+            <div className="border-t">
+              <button type="button" className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
+                onClick={() => setThreadOpen(!threadOpen)}>
+                {threadOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                Thread
+              </button>
+              {threadOpen && (
+                <div className="px-4 pb-4">
+                  <Input placeholder="Tên thread..." value={form.thread_name}
+                    onChange={(e) => setForm((f) => ({ ...f, thread_name: e.target.value }))} className="text-sm" />
+                </div>
+              )}
+            </div>
+
+            {/* Profile — collapsible */}
+            <div className="border-t">
+              <button type="button" className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
+                onClick={() => setProfileOpen(!profileOpen)}>
+                {profileOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                Profile
+              </button>
+              {profileOpen && (
+                <div className="px-4 pb-4 space-y-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Webhook Username</Label>
+                    <Input placeholder="Tên hiển thị..." value={form.webhook_username}
+                      onChange={(e) => setForm((f) => ({ ...f, webhook_username: e.target.value }))} className="text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Webhook Avatar URL</Label>
+                    <Input placeholder="https://..." value={form.webhook_avatar_url}
+                      onChange={(e) => setForm((f) => ({ ...f, webhook_avatar_url: e.target.value }))} className="text-sm" />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Message link */}
-          {isEditing && hasMessageId && selectedEmbed?.message_id && (
-            <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2">
-              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              <a
-                href={`https://discord.com/channels/${selectedEmbed.guild_id}/${selectedEmbed.channel_id}/${selectedEmbed.message_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-primary underline truncate"
-              >
-                Link tin nhắn
-              </a>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6 shrink-0 ml-auto"
-                onClick={() => {
-                  const url = `https://discord.com/channels/${selectedEmbed.guild_id}/${selectedEmbed.channel_id}/${selectedEmbed.message_id}`;
-                  navigator.clipboard.writeText(url);
-                  setCopiedUrl(true);
-                  setTimeout(() => setCopiedUrl(false), 2000);
-                }}
-              >
-                {copiedUrl ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
-              </Button>
-            </div>
-          )}
-        </div>
+          {/* ── Embed cards ── */}
+          {form.embeds.map((emb, idx) => {
+            const openState = embedOpenStates[idx] ?? defaultEmbedOpen();
+            const borderColor = emb.color || "#5865F2";
+            return (
+              <div key={idx} className="rounded-lg border overflow-hidden bg-card" style={{ borderLeftWidth: 4, borderLeftColor: borderColor }}>
+                {/* Embed header */}
+                <div className="flex items-center gap-1 px-3 py-2 bg-muted/30">
+                  <button type="button" className="flex-1 flex items-center gap-2 text-sm font-semibold text-left"
+                    onClick={() => setEmbedOpenState(idx, { main: !openState.main })}>
+                    {openState.main ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    Embed {idx + 1}{emb.title ? ` — ${emb.title}` : ""}
+                  </button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" title="Di chuyển lên" disabled={idx === 0} onClick={() => moveEmbed(idx, "up")}><ArrowUp className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" title="Di chuyển xuống" disabled={idx === form.embeds.length - 1} onClick={() => moveEmbed(idx, "down")}><ArrowDown className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" title="Nhân đôi" onClick={() => duplicateEmbed(idx)}><Copy className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" title="Xóa" onClick={() => removeEmbed(idx)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                </div>
 
-        {/* ── Discord Preview — collapsible ── */}
-        <div className="rounded-lg border">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
-            onClick={() => setShowPreview(!showPreview)}
-          >
-            <span className="flex items-center gap-2">
-              <ChevronDown className={cn("h-4 w-4 transition-transform", showPreview && "rotate-180")} />
-              Xem trước Discord
-            </span>
-          </button>
-          {showPreview && (
-            <div className="p-4">
-              <DiscordPreview form={previewForm} />
-              <p className="text-[11px] text-muted-foreground italic mt-3">* Preview sử dụng dữ liệu giả</p>
-            </div>
-          )}
-        </div>
+                {openState.main && (
+                  <div className="px-4 pb-4 pt-3 space-y-4">
+                    {/* Author — collapsible */}
+                    <div className="rounded-md border">
+                      <button type="button" className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted/50"
+                        onClick={() => setEmbedOpenState(idx, { author: !openState.author })}>
+                        {openState.author ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                        Tác giả
+                      </button>
+                      {openState.author && (
+                        <div className="px-3 pb-3 space-y-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Tên tác giả <span className="text-[10px]">{emb.author.length}/256</span></Label>
+                            <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                              <Input className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm" placeholder="Tên tác giả" maxLength={256}
+                                value={emb.author} onChange={(e) => updateEmbed(idx, { author: e.target.value })} />
+                              <EmojiPicker onSelect={(em) => updateEmbed(idx, { author: emb.author + em })} />
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Icon URL</Label>
+                            <Input className="text-sm" placeholder="https://..." value={emb.author_icon_url} onChange={(e) => updateEmbed(idx, { author_icon_url: e.target.value })} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
+                    {/* Body: Title, Description, Color */}
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs text-muted-foreground">Tiêu đề</Label>
+                          <span className="text-[11px] text-muted-foreground">{emb.title.length}/256</span>
+                        </div>
+                        <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                          <Input className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm" placeholder="Tiêu đề embed" maxLength={256}
+                            value={emb.title} onChange={(e) => updateEmbed(idx, { title: e.target.value })} />
+                          <EmojiPicker onSelect={(em) => updateEmbed(idx, { title: emb.title + em })} />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs text-muted-foreground">Mô tả</Label>
+                          <span className="text-[11px] text-muted-foreground">{emb.description.length}/4096</span>
+                        </div>
+                        <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                          <Textarea className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 text-sm resize-y" placeholder="Mô tả embed..." rows={4} maxLength={4096}
+                            value={emb.description} onChange={(e) => updateEmbed(idx, { description: e.target.value })} />
+                          <EmojiPicker onSelect={(em) => updateEmbed(idx, { description: emb.description + em })} />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Màu sắc</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={emb.color} onChange={(e) => updateEmbed(idx, { color: e.target.value })}
+                            className="h-8 w-8 rounded cursor-pointer border-0 p-0" />
+                          <Input value={emb.color} onChange={(e) => updateEmbed(idx, { color: e.target.value })}
+                            className="w-28 font-mono text-xs" maxLength={7} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Images — collapsible */}
+                    <div className="rounded-md border">
+                      <button type="button" className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted/50"
+                        onClick={() => setEmbedOpenState(idx, { images: !openState.images })}>
+                        {openState.images ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                        Hình ảnh
+                      </button>
+                      {openState.images && (
+                        <div className="px-3 pb-3 space-y-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Thumbnail URL</Label>
+                            <Input className="text-sm" placeholder="https://..." value={emb.thumbnail_url} onChange={(e) => updateEmbed(idx, { thumbnail_url: e.target.value })} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Image URL (lớn)</Label>
+                            <Input className="text-sm" placeholder="https://..." value={emb.image_url} onChange={(e) => updateEmbed(idx, { image_url: e.target.value })} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs text-muted-foreground">Chân trang</Label>
+                        <span className="text-[11px] text-muted-foreground">{emb.footer.length}/2048</span>
+                      </div>
+                      <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                        <Input className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm" placeholder="Nội dung chân trang" maxLength={2048}
+                          value={emb.footer} onChange={(e) => updateEmbed(idx, { footer: e.target.value })} />
+                        <EmojiPicker onSelect={(em) => updateEmbed(idx, { footer: emb.footer + em })} />
+                      </div>
+                    </div>
+
+                    {/* Fields — collapsible */}
+                    <div className="rounded-md border">
+                      <button type="button" className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted/50"
+                        onClick={() => setEmbedOpenState(idx, { fields: !openState.fields })}>
+                        {openState.fields ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                        Fields ({emb.fields.length}/25)
+                      </button>
+                      {openState.fields && (
+                        <div className="px-3 pb-3 space-y-2 pt-1">
+                          {emb.fields.map((field, fi) => (
+                            <div key={fi} className="rounded-md border bg-muted/30 p-3 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium text-muted-foreground">Field {fi + 1}</span>
+                                <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => removeField(idx, fi)}>
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                                  <Input placeholder="Tên field" value={field.name} onChange={(e) => updateField(idx, fi, "name", e.target.value)}
+                                    className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
+                                  <EmojiPicker onSelect={(em) => updateField(idx, fi, "name", field.name + em)} />
+                                </div>
+                                <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                                  <Input placeholder="Giá trị" value={field.value} onChange={(e) => updateField(idx, fi, "value", e.target.value)}
+                                    className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
+                                  <EmojiPicker onSelect={(em) => updateField(idx, fi, "value", field.value + em)} />
+                                </div>
+                              </div>
+                              <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+                                <input type="checkbox" checked={field.inline} onChange={(e) => updateField(idx, fi, "inline", e.target.checked)} className="rounded border-input" />
+                                Inline
+                              </label>
+                            </div>
+                          ))}
+                          {emb.fields.length < 25 && (
+                            <Button variant="outline" size="sm" onClick={() => addField(idx)} className="w-full border-dashed">
+                              <Plus className="h-3.5 w-3.5 mr-1.5" />Thêm field
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* ── Footer actions ── */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {/* Add dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="default" className="bg-indigo-600 hover:bg-indigo-700 gap-1">
+                  <Plus className="h-3.5 w-3.5" />Add<ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={addEmbed} disabled={form.embeds.length >= 10}>
+                  <Plus className="h-4 w-4 mr-2" />Add Embed
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Options dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-1">
+                  Options<ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={openJsonEditor}>
+                  <FileJson className="h-4 w-4 mr-2" />JSON Editor
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={copyQueryData}>
+                  <Copy className="h-4 w-4 mr-2" />Copy Query Data
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+        </div>
       </div>
+
+      {/* ── JSON Editor Dialog ── */}
+      <Dialog open={jsonEditorOpen} onOpenChange={setJsonEditorOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><FileJson className="h-5 w-5" />JSON Editor</DialogTitle>
+            <DialogDescription>Chỉnh sửa trực tiếp JSON của tin nhắn. Nhấn Áp dụng để cập nhật form.</DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={jsonText}
+            onChange={(e) => setJsonText(e.target.value)}
+            rows={18}
+            className="font-mono text-xs resize-y"
+          />
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => { navigator.clipboard.writeText(jsonText); toast({ title: "Đã copy!" }); }}>
+              <Copy className="h-4 w-4 mr-1" />Copy
+            </Button>
+            <Button variant="outline" onClick={() => setJsonEditorOpen(false)}>Hủy</Button>
+            <Button onClick={applyJsonEditor}>Áp dụng</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Preview Dialog ── */}
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader><DialogTitle>Xem trước Discord</DialogTitle></DialogHeader>
+          <div className="py-2">
+            {form.content && <p className="text-sm mb-3 whitespace-pre-wrap text-foreground">{form.content}</p>}
+            <DiscordPreview form={previewForm} />
+            {form.embeds.length > 1 && <p className="text-xs text-muted-foreground mt-2">* Preview chỉ hiển thị embed đầu tiên</p>}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 
   return (
     <div className="flex flex-col md:flex-row gap-0 h-full">
-      {/* Sidebar — hidden on mobile when editing, shown otherwise */}
-      <div className={cn(
-        "w-full md:w-72 shrink-0 border-b md:border-b-0 md:border-r bg-card",
-        isEditing && "hidden md:block"
-      )}>
+      <div className={cn("w-full md:w-72 shrink-0 border-b md:border-b-0 md:border-r bg-card", isEditing && "hidden md:block")}>
         {sidebar}
       </div>
-
-      {/* Editor — full width on mobile when editing */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {isEditing ? (
-          editor
-        ) : (
+        {isEditing ? editor : (
           <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground p-8">
             <div className="text-center space-y-2">
               <MessageSquare className="h-10 w-10 mx-auto text-muted-foreground/50" />
