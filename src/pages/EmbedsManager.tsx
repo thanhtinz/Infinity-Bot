@@ -3257,8 +3257,8 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             {varsOpen && (
               <div className="px-4 pb-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
-                  {VARIABLES.map((v) => (
-                    <div key={v.token} className="flex items-baseline gap-2 text-xs py-0.5">
+                  {VARIABLES.map((v, i) => (
+                    <div key={`${v.token}-${i}`} className="flex items-baseline gap-2 text-xs py-0.5">
                       <code className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-primary">
                         {v.token}
                       </code>
