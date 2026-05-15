@@ -10,7 +10,7 @@ from src.models.models import SystemConfig
 
 router = APIRouter()
 
-JWT_SECRET = os.environ.get("GEMINI_WORKSHOP_API_KEY", "fallback-secret-for-jwt-1234")
+JWT_SECRET = os.environ.get("JWT_SECRET_KEY") or os.environ.get("GEMINI_WORKSHOP_API_KEY", "fallback-secret-jwt-2025")
 
 
 def get_public_base_url(request: Request) -> str:

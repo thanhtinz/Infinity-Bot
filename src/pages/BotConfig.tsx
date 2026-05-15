@@ -31,7 +31,6 @@ const serverSchema = z.object({
   coupon_channel_id: z.string().optional(),
   bang_gia_channel_id: z.string().optional(),
   welcome_channel_id: z.string().optional(),
-  command_prefix: z.string().max(5).optional(),
 });
 
 type DiscordValues = z.infer<typeof discordSchema>;
@@ -58,18 +57,19 @@ function MaskedField({
 }: {
   field: { value: string | undefined; onChange: (v: string) => void; onBlur: () => void; name: string; ref: React.Ref<HTMLInputElement> };
   placeholder?: string;
-  savedValue?: string | null;
+  savedValue?: string | boolean | null;
 }) {
+  const isConfigured = typeof savedValue === "boolean" ? savedValue : !!savedValue;
   return (
     <div className="space-y-1">
       <Input
         type="password"
-        placeholder={savedValue ? "••••••••  (đã cấu hình)" : placeholder}
+        placeholder={isConfigured ? "••••••••  (đã cấu hình)" : placeholder}
         {...field}
         value={field.value || ""}
         autoComplete="new-password"
       />
-      {savedValue && !field.value && (
+      {isConfigured && !field.value && (
         <p className="text-xs text-green-600 dark:text-green-400">✓ Đã cấu hình — để trống nếu không muốn thay đổi</p>
       )}
     </div>
@@ -121,26 +121,26 @@ export function BotConfig() {
     resolver: zodResolver(discordSchema),
     defaultValues: { discord_token: "", discord_client_id: "", discord_client_secret: "" },
   });
-  useEffect(() => { if (config) discordForm.reset({ discord_token: config.discord_token || "", discord_client_id: config.discord_client_id || "", discord_client_secret: config.discord_client_secret || "" }); }, [config]);
+  useEffect(() => { if (config) discordForm.reset({ discord_token: "", discord_client_id: config.discord_client_id || "", discord_client_secret: "" }); }, [config]);
 
   // ── Form: PayOS ──
   const payosForm = useForm<PayosValues>({
     resolver: zodResolver(payosSchema),
     defaultValues: { payos_client_id: "", payos_api_key: "", payos_checksum_key: "" },
   });
-  useEffect(() => { if (config) payosForm.reset({ payos_client_id: config.payos_client_id || "", payos_api_key: config.payos_api_key || "", payos_checksum_key: config.payos_checksum_key || "" }); }, [config]);
+  useEffect(() => { if (config) payosForm.reset({ payos_client_id: config.payos_client_id || "", payos_api_key: "", payos_checksum_key: "" }); }, [config]);
 
   // ── Form: Server & Channels ── (must be before queries that watch it)
   const serverForm = useForm<ServerValues>({
     resolver: zodResolver(serverSchema),
-    defaultValues: { guild_id: "", admin_role_id: "", don_hang_channel_id: "", feedback_channel_id: "", coupon_channel_id: "", bang_gia_channel_id: "", welcome_channel_id: "", command_prefix: "!" },
+    defaultValues: { guild_id: "", admin_role_id: "", don_hang_channel_id: "", feedback_channel_id: "", coupon_channel_id: "", bang_gia_channel_id: "", welcome_channel_id: "" },
   });
-  useEffect(() => { if (config) serverForm.reset({ guild_id: config.guild_id || "", admin_role_id: config.admin_role_id || "", don_hang_channel_id: config.don_hang_channel_id || "", feedback_channel_id: config.feedback_channel_id || "", coupon_channel_id: config.coupon_channel_id || "", bang_gia_channel_id: config.bang_gia_channel_id || "", welcome_channel_id: config.welcome_channel_id || "", command_prefix: config.command_prefix || "!" }); }, [config]);
+  useEffect(() => { if (config) serverForm.reset({ guild_id: config.guild_id || "", admin_role_id: config.admin_role_id || "", don_hang_channel_id: config.don_hang_channel_id || "", feedback_channel_id: config.feedback_channel_id || "", coupon_channel_id: config.coupon_channel_id || "", bang_gia_channel_id: config.bang_gia_channel_id || "", welcome_channel_id: config.welcome_channel_id || "" }); }, [config]);
 
   const { data: guilds = [] } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["discord_guilds"],
     queryFn: () => fetch("/api/discord/guilds", { credentials: "include" }).then((r) => r.ok ? r.json() : []),
-    enabled: !!config?.discord_token,
+    enabled: !!config?.has_discord_token,
     retry: false,
     staleTime: 60_000,
   });
@@ -152,7 +152,7 @@ export function BotConfig() {
   const { data: channels = [] } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["discord_channels", activeGuildId],
     queryFn: () => fetch(`/api/discord/channels?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
-    enabled: !!config?.discord_token && !!activeGuildId,
+    enabled: !!config?.has_discord_token && !!activeGuildId,
     retry: false,
     staleTime: 60_000,
   });
@@ -160,7 +160,7 @@ export function BotConfig() {
   const { data: roles = [] } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["discord_roles", activeGuildId],
     queryFn: () => fetch(`/api/discord/roles?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
-    enabled: !!config?.discord_token && !!activeGuildId,
+    enabled: !!config?.has_discord_token && !!activeGuildId,
     retry: false,
     staleTime: 60_000,
   });
@@ -205,12 +205,7 @@ export function BotConfig() {
   const { data: allChannels = [] } = useQuery<{ id: string; name: string; type: number }[]>({
     queryKey: ["discord_channels_all", activeGuildId],
     queryFn: () => fetch(`/api/discord/channels/all?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
-    enabled: !!config?.discord_token && !!activeGuildId,
-    retry: false,
-    staleTime: 60_000,
-  });
-
-  const tvCategories = allChannels.filter((c) => c.type === 4);
+    enabled: !!config?.has_discord_token && !!activeGuildId,
   const tvVoiceChannels = allChannels.filter((c) => c.type === 2);
 
   const tvMutation = useMutation({
@@ -225,15 +220,6 @@ export function BotConfig() {
     onError: () => { toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }); },
   });
 
-  // ── Command Prefix ──
-  const [cmdPrefix, setCmdPrefix] = useState("!");
-  useEffect(() => { if (config?.command_prefix) setCmdPrefix(config.command_prefix); }, [config]);
-
-  const prefixMutation = useMutation({
-    mutationFn: () => savePartial({ command_prefix: cmdPrefix }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["config"] }); toast({ title: "Đã lưu", description: `Prefix đã đổi thành "${cmdPrefix}"` }); },
-    onError: () => { toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }); },
-  });
 
   if (isLoading) return <div>Đang tải cấu hình...</div>;
 
@@ -257,7 +243,7 @@ export function BotConfig() {
                 <FormItem>
                   <FormLabel>Bot Token</FormLabel>
                   <FormControl>
-                    <MaskedField field={field} placeholder="MTC..." savedValue={config?.discord_token} />
+                    <MaskedField field={field} placeholder="MTC..." savedValue={config?.has_discord_token} />
                   </FormControl>
                   <FormDescription>Lấy từ Discord Developer Portal.</FormDescription>
                   <FormMessage />
@@ -278,7 +264,7 @@ export function BotConfig() {
                 <FormItem>
                   <FormLabel>OAuth Client Secret</FormLabel>
                   <FormControl>
-                    <MaskedField field={field} savedValue={config?.discord_client_secret} />
+                    <MaskedField field={field} savedValue={config?.has_discord_client_secret} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -311,7 +297,7 @@ export function BotConfig() {
                 <FormItem>
                   <FormLabel>API Key</FormLabel>
                   <FormControl>
-                    <MaskedField field={field} savedValue={config?.payos_api_key} />
+                    <MaskedField field={field} savedValue={config?.has_payos_api_key} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -320,7 +306,7 @@ export function BotConfig() {
                 <FormItem>
                   <FormLabel>Checksum Key</FormLabel>
                   <FormControl>
-                    <MaskedField field={field} savedValue={config?.payos_checksum_key} />
+                    <MaskedField field={field} savedValue={config?.has_payos_checksum_key} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -400,33 +386,6 @@ export function BotConfig() {
           </Card>
         </form>
       </Form>
-
-      {/* ── Card: Command Prefix ── */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Command Prefix</CardTitle>
-          <CardDescription>Prefix cho các lệnh tương tác qua tin nhắn (vd: !hug @user, .kiss @user)</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-end gap-3">
-            <div className="space-y-2 flex-1 max-w-[200px]">
-              <label className="text-sm font-medium">Prefix</label>
-              <Input
-                value={cmdPrefix}
-                onChange={(e) => setCmdPrefix(e.target.value.slice(0, 5))}
-                placeholder="!"
-                className="font-mono text-lg"
-              />
-            </div>
-            <Button onClick={() => prefixMutation.mutate()} disabled={prefixMutation.isPending} size="sm">
-              {prefixMutation.isPending ? "Đang lưu..." : "Lưu Prefix"}
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Ví dụ: với prefix <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}</code>, user gõ <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}hug @user</code> để ôm. Ngoài ra có thể dùng slash command /hug.
-          </p>
-        </CardContent>
-      </Card>
 
       {/* ── Card: Temp Voice ── */}
       <Card>

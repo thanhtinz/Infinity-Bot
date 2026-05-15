@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -157,5 +158,77 @@ export function ChannelSelect({ value, onChange, placeholder = "Chọn kênh..."
         ))}
       </SelectContent>
     </Select>
+  );
+}
+
+interface MultiChannelSelectProps {
+  value: string[];
+  onChange: (value: string[]) => void;
+  placeholder?: string;
+  filter?: "text" | "voice" | "category" | "all";
+  guildId?: string;
+  disabled?: boolean;
+}
+
+export function MultiChannelSelect({ value, onChange, placeholder = "Chọn kênh...", filter = "text", guildId, disabled }: MultiChannelSelectProps) {
+  const { data: allChannels = [], isLoading } = useDiscordChannels(guildId);
+  const filtered = useMemo(() => filterChannels(allChannels, filter), [allChannels, filter]);
+  const channelMap = useMemo(() => new Map(allChannels.map((c) => [c.id, c])), [allChannels]);
+  const groups = useMemo(() => groupByCategory(filtered.filter((c) => !value.includes(c.id)), allChannels), [filtered, allChannels, value]);
+
+  if (!filtered.length && !isLoading) {
+    return (
+      <Input
+        placeholder={placeholder}
+        value={value.join(", ")}
+        onChange={(e) => onChange(e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
+        disabled={disabled}
+      />
+    );
+  }
+
+  const addChannel = (id: string) => {
+    if (!value.includes(id)) onChange([...value, id]);
+  };
+  const removeChannel = (id: string) => onChange(value.filter((v) => v !== id));
+
+  return (
+    <div className="space-y-2">
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {value.map((id) => {
+            const ch = channelMap.get(id);
+            const Icon = ch ? CHANNEL_ICONS[ch.type] || Hash : Hash;
+            return (
+              <Badge key={id} variant="secondary" className="cursor-pointer gap-1 pr-1" onClick={() => removeChannel(id)}>
+                <Icon className="h-3 w-3 text-muted-foreground" />
+                {ch?.name || id}
+                <span className="ml-0.5 text-muted-foreground hover:text-foreground">×</span>
+              </Badge>
+            );
+          })}
+        </div>
+      )}
+      <Select value="" onValueChange={addChannel} disabled={disabled || !groups.some((g) => g.channels.length)}>
+        <SelectTrigger>
+          <SelectValue placeholder={isLoading ? "Đang tải..." : groups.some((g) => g.channels.length) ? placeholder : "Đã chọn hết"} />
+        </SelectTrigger>
+        <SelectContent>
+          {groups.map((group) => (
+            <SelectGroup key={group.category?.id ?? "none"}>
+              {group.category && <SelectLabel className="text-xs uppercase text-muted-foreground">{group.category.name}</SelectLabel>}
+              {group.channels.map((ch) => {
+                const Icon = CHANNEL_ICONS[ch.type] || Hash;
+                return (
+                  <SelectItem key={ch.id} value={ch.id}>
+                    <span className="flex items-center gap-2"><Icon className="h-3.5 w-3.5 text-muted-foreground" />{ch.name}</span>
+                  </SelectItem>
+                );
+              })}
+            </SelectGroup>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

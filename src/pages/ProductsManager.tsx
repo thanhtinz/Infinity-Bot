@@ -21,6 +21,7 @@ import type { Product, ProductPackage } from "../types";
 const productSchema = z.object({
   name: z.string().min(1, "Tên không được để trống"),
   description: z.string().optional(),
+  note: z.string().optional(),
   image_url: z.string().optional(),
   active: z.boolean().default(true),
 });
@@ -46,7 +47,7 @@ export function ProductsManager() {
 
   const form = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
-    defaultValues: { name: "", description: "", image_url: "", active: true },
+    defaultValues: { name: "", description: "", note: "", image_url: "", active: true },
   });
 
   const imageUrl = form.watch("image_url");
@@ -126,14 +127,14 @@ export function ProductsManager() {
 
   const openCreate = () => {
     setEditingProduct(null);
-    form.reset({ name: "", description: "", image_url: "", active: true });
+    form.reset({ name: "", description: "", note: "", image_url: "", active: true });
     setPackages([emptyPackage()]);
     setDialogOpen(true);
   };
 
   const openEdit = (p: Product) => {
     setEditingProduct(p);
-    form.reset({ name: p.name, description: p.description || "", image_url: p.image_url || "", active: p.active });
+    form.reset({ name: p.name, description: p.description || "", note: p.note || "", image_url: p.image_url || "", active: p.active });
     setPackages(p.packages?.length ? p.packages.map((pkg) => ({ ...pkg })) : [emptyPackage()]);
     setDialogOpen(true);
   };
@@ -242,6 +243,18 @@ export function ProductsManager() {
                   <FormLabel>Mô tả</FormLabel>
                   <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <FormControl><Textarea {...field} rows={2} placeholder="Mô tả ngắn..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
+                    <EmojiPicker onSelect={(em) => field.onChange((field.value || "") + em)} />
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              {/* Ghi chú */}
+              <FormField control={form.control} name="note" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ghi chú <span className="text-xs text-muted-foreground font-normal">(nội bộ / hướng dẫn sau mua)</span></FormLabel>
+                  <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                    <FormControl><Textarea {...field} rows={3} placeholder="VD: Hướng dẫn nhận hàng, link tải, thông tin kích hoạt..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
                     <EmojiPicker onSelect={(em) => field.onChange((field.value || "") + em)} />
                   </div>
                   <FormMessage />

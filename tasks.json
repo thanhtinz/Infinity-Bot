@@ -1,27 +1,17 @@
 [
   {
-    "content": "[interaction-1] Create interaction cog with all 69 commands using otakugifs.xyz API",
+    "content": "[setup] Model CustomEmbedMessage + migrate DB",
     "id": "1",
     "status": "completed"
   },
   {
-    "content": "[interaction-2] Add interaction embed defaults to embed_utils.py DEFAULTS dict",
+    "content": "[api] Endpoints: send-to-channel, load-from-link, update-message, CRUD",
     "id": "2",
     "status": "completed"
   },
   {
-    "content": "[interaction-3] Register InteractionCog in manager.py + features API",
+    "content": "[ui] Tab 'Tin nhắn' trong EmbedsManager: paste link + editor + send/update",
     "id": "3",
-    "status": "completed"
-  },
-  {
-    "content": "[interaction-4] Add interaction embed events/groups/defaults/variables to EmbedsManager.tsx",
-    "id": "4",
-    "status": "completed"
-  },
-  {
-    "content": "[interaction-5] Verify all imports and compilation",
-    "id": "5",
     "status": "completed"
   }
 ]

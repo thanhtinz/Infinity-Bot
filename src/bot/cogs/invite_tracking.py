@@ -126,25 +126,27 @@ class InviteTrackingCog(commands.Cog):
         await ctx.defer(ephemeral=True)
         db = SessionLocal()
         try:
-            stats = db.execute(
-                select(
-                    func.count().label("total"),
-                    func.sum((InviteTracking.left == False).cast(db.bind.dialect.name == "postgresql" and "integer" or "integer")).label("active"),
-                ).where(
+            rows = db.execute(
+                select(InviteTracking).where(
                     InviteTracking.inviter_id == str(ctx.author.id),
                     InviteTracking.guild_id == str(ctx.guild.id),
                     InviteTracking.is_fake == False,
                 )
-            ).first()
+            ).scalars().all()
         finally:
             db.close()
 
-        total = stats.total if stats else 0
+        total = len(rows)
+        active = sum(1 for r in rows if not r.left)
+        left_count = sum(1 for r in rows if r.left)
+
         embed = discord.Embed(
             title="📨 Invite của bạn",
             color=0x5865F2,
         )
-        embed.add_field(name="Tổng invite", value=str(total or 0), inline=True)
+        embed.add_field(name="Tổng invite", value=str(total), inline=True)
+        embed.add_field(name="✅ Active", value=str(active), inline=True)
+        embed.add_field(name="❌ Đã rời", value=str(left_count), inline=True)
         embed.set_footer(text=f"ID: {ctx.author.id}")
         await ctx.respond(embed=embed, ephemeral=True)
 

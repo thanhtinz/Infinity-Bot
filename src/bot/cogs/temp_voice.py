@@ -3,14 +3,334 @@ import discord
 import logging
 from sqlalchemy import select
 from src.database.config import SessionLocal
-from src.models.models import TempVoiceConfig, TempVoiceRoom
+from src.models.models import TempVoiceConfig, TempVoiceRoom, LoggingConfig, LogEntry
 from src.bot.base_cog import check_feature
+from src.bot.embed_utils import build_embed
 
 logger = logging.getLogger(__name__)
 
 
 def get_session():
     return SessionLocal()
+TEMPVOICE_BUTTONS = {
+    "name": {"label": "Name", "emoji": "✏️", "style": discord.ButtonStyle.primary},
+    "limit": {"label": "Limit", "emoji": "👥", "style": discord.ButtonStyle.primary},
+    "privacy": {"label": "Privacy", "emoji": "🔐", "style": discord.ButtonStyle.secondary},
+    "trust": {"label": "Trust", "emoji": "✅", "style": discord.ButtonStyle.success},
+    "untrust": {"label": "Untrust", "emoji": "➖", "style": discord.ButtonStyle.secondary},
+    "invite": {"label": "Invite", "emoji": "📨", "style": discord.ButtonStyle.success},
+    "kick": {"label": "Kick", "emoji": "👢", "style": discord.ButtonStyle.danger},
+    "region": {"label": "Region", "emoji": "🌍", "style": discord.ButtonStyle.primary},
+    "block": {"label": "Block", "emoji": "🚫", "style": discord.ButtonStyle.danger},
+    "unblock": {"label": "Unblock", "emoji": "🔓", "style": discord.ButtonStyle.success},
+    "claim": {"label": "Claim", "emoji": "🙋", "style": discord.ButtonStyle.success},
+    "transfer": {"label": "Transfer", "emoji": "👑", "style": discord.ButtonStyle.primary},
+    "delete": {"label": "Delete", "emoji": "🗑️", "style": discord.ButtonStyle.danger},
+}
+TEMPVOICE_DEFAULT_BUTTONS = ["name", "limit", "privacy", "trust", "untrust", "invite", "kick", "region", "block", "unblock", "claim", "transfer", "delete"]
+TEMPVOICE_ACTION_ALIASES = {
+    "rename": "name", "private": "privacy", "public": "privacy",
+    "permit": "trust", "reject": "block", "boot": "kick",
+}
+
+
+def normalize_tempvoice_buttons(buttons: list[str] | None) -> list[str]:
+    if not buttons:
+        return TEMPVOICE_DEFAULT_BUTTONS.copy()
+    legacy_buttons = {"lock", "unlock", "hide", "unhide", "rename", "bitrate", "private", "public", "permit", "reject", "boot", "mute", "unmute"}
+    if any(button in legacy_buttons for button in buttons):
+        return TEMPVOICE_DEFAULT_BUTTONS.copy()
+    normalized: list[str] = []
+    for button in buttons:
+        action = TEMPVOICE_ACTION_ALIASES.get(button, button)
+        if action in TEMPVOICE_BUTTONS and action not in normalized:
+            normalized.append(action)
+    if len(normalized) < len(TEMPVOICE_DEFAULT_BUTTONS):
+        return TEMPVOICE_DEFAULT_BUTTONS.copy()
+    return normalized
+
+
+async def _respond_interaction(interaction: discord.Interaction, message: str):
+    if interaction.response.is_done():
+        await interaction.followup.send(message, ephemeral=True)
+    else:
+        await interaction.response.send_message(message, ephemeral=True)
+
+
+class _VoiceTextModal(discord.ui.Modal):
+    def __init__(self, action: str, title: str, label: str, placeholder: str = ""):
+        super().__init__(title=title)
+        self.action = action
+        self.value_input = discord.ui.InputText(
+            label=label,
+            placeholder=placeholder,
+            style=discord.InputTextStyle.short,
+            required=True,
+            max_length=100,
+        )
+        self.add_item(self.value_input)
+
+    async def callback(self, interaction: discord.Interaction):
+        value = str(self.value_input.value).strip()
+        await handle_voice_button(interaction, self.action, value)
+
+
+async def _get_interaction_room(interaction: discord.Interaction, owner_required: bool = True):
+    if not interaction.user.voice or not interaction.user.voice.channel:
+        await _respond_interaction(interaction, "❌ Bạn phải ở trong phòng voice.")
+        return None, None, None
+    session = get_session()
+    try:
+        ch = interaction.user.voice.channel
+        room = _get_room(session, str(ch.id))
+        if not room:
+            await _respond_interaction(interaction, "❌ Phòng này không phải temp voice.")
+            session.close()
+            return None, None, None
+        if owner_required and room.owner_id != str(interaction.user.id):
+            await _respond_interaction(interaction, "❌ Bạn không phải chủ phòng.")
+            session.close()
+            return None, None, None
+        return session, ch, room
+    except Exception:
+        session.close()
+        return None, None, None
+
+
+async def _log_tempvoice_action(
+    interaction: discord.Interaction,
+    action: str,
+    channel: discord.VoiceChannel,
+    target: discord.Member | None = None,
+    details: dict | None = None,
+):
+    session = get_session()
+    try:
+        cfg = session.execute(
+            select(LoggingConfig).where(LoggingConfig.guild_id == str(interaction.guild_id))
+        ).scalars().first()
+        if not cfg:
+            return
+        action_labels = {
+            "name": "đổi tên phòng", "limit": "đổi giới hạn", "privacy": "đổi riêng tư/công khai",
+            "trust": "tin cậy user", "untrust": "bỏ tin cậy user", "invite": "mời user",
+            "kick": "đuổi user", "region": "đổi region", "block": "chặn user", "unblock": "bỏ chặn user",
+            "transfer": "chuyển chủ phòng", "claim": "nhận chủ phòng", "delete": "xóa phòng",
+            "lock": "khóa phòng", "unlock": "mở khóa phòng", "hide": "ẩn phòng", "unhide": "hiện phòng",
+            "rename": "đổi tên phòng", "private": "chuyển riêng tư", "public": "mở công khai",
+            "permit": "cho phép user", "reject": "chặn user", "boot": "đuổi user",
+            "mute": "mute user", "unmute": "unmute user",
+        }
+        label = action_labels.get(action, action)
+        embed = build_embed("tempvoice_action", session, vars={
+            "user": interaction.user.display_name,
+            "user.mention": interaction.user.mention,
+            "user.id": str(interaction.user.id),
+            "target": target.display_name if target else "—",
+            "target.mention": target.mention if target else "—",
+            "target.id": str(target.id) if target else "—",
+            "channel.name": channel.name,
+            "channel.mention": channel.mention,
+            "channel.id": str(channel.id),
+            "action": label,
+            "details": ", ".join(f"{k}: {v}" for k, v in (details or {}).items()) or "—",
+        })
+        entry = LogEntry(
+            guild_id=str(interaction.guild_id),
+            event_type="tempvoice_action",
+            category="voice",
+            actor_id=str(interaction.user.id),
+            actor_name=str(interaction.user),
+            actor_avatar=interaction.user.display_avatar.url,
+            target_id=str(target.id) if target else str(channel.id),
+            target_name=str(target) if target else channel.name,
+            description=f"{interaction.user} {label} {channel.name}",
+            details={"action": action, "channel_id": str(channel.id), **(details or {})},
+        )
+        session.add(entry)
+        session.commit()
+        if cfg.voice_log_channel_id:
+            log_channel = interaction.guild.get_channel(int(cfg.voice_log_channel_id))
+            if log_channel:
+                await log_channel.send(embed=embed)
+    except Exception as e:
+        logger.error(f"_log_tempvoice_action error: {e}")
+    finally:
+        session.close()
+
+
+async def _apply_member_action(interaction: discord.Interaction, action: str, user: discord.Member):
+    session, ch, room = await _get_interaction_room(interaction, owner_required=True)
+    if not ch:
+        return
+    try:
+        if action == "trust":
+            await ch.set_permissions(user, connect=True, view_channel=True)
+            await _respond_interaction(interaction, f"✅ Đã trust {user.mention} vào phòng.")
+        elif action == "untrust":
+            await ch.set_permissions(user, overwrite=None)
+            await _respond_interaction(interaction, f"➖ Đã gỡ trust/untrust của {user.mention}.")
+        elif action == "invite":
+            await ch.set_permissions(user, connect=True, view_channel=True)
+            await _respond_interaction(interaction, f"📨 Đã mời {user.mention} vào phòng {ch.mention}.")
+            try:
+                await user.send(f"📨 {interaction.user.mention} mời bạn vào phòng voice **{ch.name}** trong **{interaction.guild.name}**.")
+            except Exception:
+                pass
+        elif action == "block":
+            await ch.set_permissions(user, connect=False, view_channel=False)
+            if user in ch.members:
+                await user.move_to(None)
+            await _respond_interaction(interaction, f"🚫 Đã block {user.mention}.")
+        elif action == "unblock":
+            await ch.set_permissions(user, overwrite=None)
+            await _respond_interaction(interaction, f"🔓 Đã unblock {user.mention}.")
+        elif action == "kick":
+            if user in ch.members:
+                await user.move_to(None)
+            await _respond_interaction(interaction, f"👢 Đã kick {user.mention} ra khỏi phòng.")
+        elif action == "transfer":
+            room.owner_id = str(user.id)
+            session.commit()
+            await _respond_interaction(interaction, f"👑 Đã chuyển quyền chủ phòng cho {user.mention}.")
+        await _log_tempvoice_action(interaction, action, ch, target=user)
+    except Exception as e:
+        logger.error(f"_apply_member_action error: {e}")
+        await _respond_interaction(interaction, "❌ Lỗi khi xử lý user.")
+    finally:
+        session.close()
+
+
+class _VoiceUserSelectView(discord.ui.View):
+    def __init__(self, action: str):
+        super().__init__(timeout=60)
+        self.add_item(_VoiceUserSelect(action))
+
+
+class _VoiceUserSelect(discord.ui.Select):
+    def __init__(self, action: str):
+        labels = {
+            "trust": "Chọn user để trust",
+            "untrust": "Chọn user để gỡ trust",
+            "invite": "Chọn user để invite",
+            "kick": "Chọn user cần kick",
+            "block": "Chọn user cần block",
+            "unblock": "Chọn user cần unblock",
+            "transfer": "Chọn chủ phòng mới",
+        }
+        super().__init__(
+            discord.ComponentType.user_select,
+            placeholder=labels.get(action, "Chọn user"),
+            min_values=1,
+            max_values=1,
+            custom_id=f"tempvoice_user:{action}",
+        )
+        self.action = action
+
+    async def callback(self, interaction: discord.Interaction):
+        user = self.values[0] if self.values else None
+        if not isinstance(user, discord.Member):
+            await _respond_interaction(interaction, "❌ Vui lòng chọn thành viên trong server.")
+            return
+        await _apply_member_action(interaction, self.action, user)
+
+
+async def handle_voice_button(interaction: discord.Interaction, action: str, value: str | None = None):
+    action = TEMPVOICE_ACTION_ALIASES.get(action, action)
+    owner_required = action != "claim"
+    session, ch, room = await _get_interaction_room(interaction, owner_required=owner_required)
+    if not ch:
+        return
+    try:
+        if action == "name":
+            if value is None:
+                await interaction.response.send_modal(_VoiceTextModal("name", "Đổi tên phòng", "Tên mới", "Phòng của bạn"))
+                return
+            await ch.edit(name=value[:100])
+            await _respond_interaction(interaction, f"✏️ Đổi tên thành **{value}**.")
+            await _log_tempvoice_action(interaction, action, ch, details={"name": value[:100]})
+        elif action == "limit":
+            if value is None:
+                await interaction.response.send_modal(_VoiceTextModal("limit", "Giới hạn người", "Số người (0-99)", "5"))
+                return
+            limit = max(0, min(99, int(value)))
+            await ch.edit(user_limit=limit)
+            await _respond_interaction(interaction, f"👥 Giới hạn: **{limit if limit > 0 else 'Không giới hạn'}**.")
+            await _log_tempvoice_action(interaction, action, ch, details={"limit": limit})
+        elif action == "privacy":
+            current = ch.overwrites_for(interaction.guild.default_role)
+            is_private = current.connect is False or current.view_channel is False
+            if is_private:
+                await ch.set_permissions(interaction.guild.default_role, connect=True, view_channel=True)
+                await _respond_interaction(interaction, "🌐 Phòng đã mở công khai.")
+            else:
+                await ch.set_permissions(interaction.guild.default_role, connect=False, view_channel=False)
+                await _respond_interaction(interaction, "🔐 Phòng đã chuyển sang riêng tư.")
+            await _log_tempvoice_action(interaction, action, ch)
+        elif action == "region":
+            await ch.edit(rtc_region=None)
+            await _respond_interaction(interaction, "🌍 Region đã đặt về Automatic.")
+            await _log_tempvoice_action(interaction, action, ch, details={"region": "automatic"})
+        elif action in {"trust", "untrust", "invite", "kick", "block", "unblock", "transfer"}:
+            labels = {
+                "trust": "Trust user", "untrust": "Untrust user", "invite": "Invite user",
+                "kick": "Kick user", "block": "Block user", "unblock": "Unblock user", "transfer": "Transfer owner",
+            }
+            await interaction.response.send_message(
+                f"{TEMPVOICE_BUTTONS[action]['emoji']} **{labels[action]}** — chọn thành viên bên dưới.",
+                view=_VoiceUserSelectView(action),
+                ephemeral=True,
+            )
+        elif action == "claim":
+            owner = ch.guild.get_member(int(room.owner_id)) if room.owner_id else None
+            if owner and owner in ch.members:
+                await _respond_interaction(interaction, "❌ Chủ phòng hiện tại vẫn trong phòng.")
+                return
+            room.owner_id = str(interaction.user.id)
+            session.commit()
+            await _respond_interaction(interaction, "👑 Bạn đã trở thành chủ phòng.")
+            await _log_tempvoice_action(interaction, action, ch)
+        elif action == "delete":
+            await _respond_interaction(interaction, "🗑️ Đã xóa phòng voice.")
+            await _log_tempvoice_action(interaction, action, ch)
+            if room:
+                session.delete(room)
+                session.commit()
+            await ch.delete()
+    except ValueError:
+        await _respond_interaction(interaction, "❌ Giá trị không hợp lệ.")
+    except Exception as e:
+        logger.error(f"handle_voice_button error: {e}")
+        await _respond_interaction(interaction, "❌ Lỗi khi xử lý nút.")
+    finally:
+        session.close()
+
+
+class TempVoicePanelView(discord.ui.View):
+    def __init__(self, buttons: list[str] | None = None):
+        super().__init__(timeout=None)
+        # Panel theo yêu cầu cố định đủ 13 nút; không để config cũ/rút gọn làm thiếu nút.
+        for index, action in enumerate(TEMPVOICE_DEFAULT_BUTTONS):
+            meta = TEMPVOICE_BUTTONS.get(action)
+            if not meta:
+                continue
+            self.add_item(_TempVoiceButton(action, meta, row=index // 5))
+
+
+class _TempVoiceButton(discord.ui.Button):
+    def __init__(self, action: str, meta: dict, row: int | None = None):
+        super().__init__(
+            label=meta["label"],
+            emoji=meta["emoji"],
+            style=meta["style"],
+            custom_id=f"tempvoice:{action}",
+            row=row,
+        )
+        self.action = action
+
+    async def callback(self, interaction: discord.Interaction):
+        await handle_voice_button(interaction, self.action)
+
 
 
 def _get_room(session, channel_id: str):
@@ -22,6 +342,13 @@ def _get_room(session, channel_id: str):
 class TempVoiceCog(discord.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @discord.Cog.listener()
+    async def on_ready(self):
+        try:
+            self.bot.add_view(TempVoicePanelView(TEMPVOICE_DEFAULT_BUTTONS))
+        except Exception as e:
+            logger.error(f"temp voice persistent view error: {e}")
 
     # ── Events ──────────────────────────────────────────────
 
@@ -65,12 +392,40 @@ class TempVoiceCog(discord.Cog):
                 session.add(room)
                 session.commit()
 
+                if config.interface_channel_id:
+                    text_ch = member.guild.get_channel(int(config.interface_channel_id))
+                    if text_ch:
+                        buttons = normalize_tempvoice_buttons(config.voice_buttons)
+                        button_labels = []
+                        for action in buttons:
+                            meta = TEMPVOICE_BUTTONS.get(action)
+                            if meta:
+                                button_labels.append(f"{meta['emoji']} {meta['label']}")
+                        embed = build_embed("tempvoice_panel", session, vars={
+                            "server": member.guild.name,
+                            "panel.channel": text_ch.mention,
+                            "buttons": ", ".join(button_labels) or "—",
+                            "button.count": str(len(button_labels)),
+                        })
+                        msg = await text_ch.send(embed=embed, view=TempVoicePanelView(buttons))
+                        room.panel_channel_id = str(text_ch.id)
+                        room.panel_message_id = str(msg.id)
+                        session.commit()
+
             # User rời → xóa room nếu trống
             if before.channel and before.channel != after.channel:
                 room = _get_room(session, str(before.channel.id))
                 if room:
                     ch = member.guild.get_channel(int(room.channel_id))
                     if ch and len(ch.members) == 0:
+                        if room.panel_channel_id and room.panel_message_id:
+                            try:
+                                panel_ch = member.guild.get_channel(int(room.panel_channel_id))
+                                if panel_ch:
+                                    msg = await panel_ch.fetch_message(int(room.panel_message_id))
+                                    await msg.delete()
+                            except Exception as e:
+                                logger.warning(f"delete temp voice panel message failed: {e}")
                         await ch.delete()
                         session.delete(room)
                         session.commit()
@@ -103,6 +458,58 @@ class TempVoiceCog(discord.Cog):
         except Exception:
             session.close()
             return None, None
+
+    tempvoice = discord.SlashCommandGroup(
+        "tempvoice",
+        "Quản lý temp voice",
+        default_member_permissions=discord.Permissions(administrator=True),
+    )
+
+    @tempvoice.command(name="panel", description="[Admin] Gửi panel điều khiển temp voice vào kênh")
+    @discord.default_permissions(administrator=True)
+    async def send_tempvoice_panel(
+        self,
+        ctx: discord.ApplicationContext,
+        channel: discord.Option(discord.TextChannel, "Kênh gửi panel", required=False) = None,
+    ):
+        await ctx.defer(ephemeral=True)
+        session = get_session()
+        try:
+            target_channel = channel or ctx.channel
+            config = session.execute(
+                select(TempVoiceConfig).where(TempVoiceConfig.guild_id == str(ctx.guild.id))
+            ).scalars().first()
+            if not config:
+                config = TempVoiceConfig(guild_id=str(ctx.guild.id), enabled=True)
+                session.add(config)
+                session.flush()
+            config.interface_channel_id = str(target_channel.id)
+            buttons = normalize_tempvoice_buttons(config.voice_buttons)
+            if config.voice_buttons != buttons:
+                config.voice_buttons = buttons
+            button_names = [TEMPVOICE_BUTTONS[b]["label"] for b in buttons if b in TEMPVOICE_BUTTONS]
+            embed = build_embed("tempvoice_panel", session, vars={
+                "server": ctx.guild.name,
+                "panel.channel": target_channel.mention,
+                "channel.name": target_channel.name,
+                "channel.mention": target_channel.mention,
+                "channel.id": str(target_channel.id),
+                "buttons": ", ".join(button_names) or "Mặc định",
+                "button.count": str(len(button_names)),
+            })
+            msg = await target_channel.send(embed=embed, view=TempVoicePanelView(buttons))
+            session.commit()
+            await ctx.followup.send(
+                f"✅ Đã gửi panel temp voice vào {target_channel.mention}.\n"
+                f"Panel ID: `{msg.id}` • Interface channel đã được cập nhật.",
+                ephemeral=True,
+            )
+        except Exception as e:
+            session.rollback()
+            logger.error(f"send_tempvoice_panel error: {e}")
+            await ctx.followup.send("❌ Không gửi được panel temp voice.", ephemeral=True)
+        finally:
+            session.close()
 
     # ── Room commands ────────────────────────────────────────
 
@@ -257,6 +664,56 @@ class TempVoiceCog(discord.Cog):
                 await ctx.respond("❌ Đây không phải temp room.", ephemeral=True)
                 return
             await ctx.respond(f"👑 Chủ phòng: <@{room.owner_id}>", ephemeral=True)
+        finally:
+            session.close()
+
+    @room.command(name="panel", description="Gửi lại panel điều khiển phòng voice")
+    async def panel(
+        self,
+        ctx,
+        channel: discord.Option(discord.TextChannel, "Kênh gửi panel", required=False) = None,
+    ):
+        ch, _ = await self._get_user_room(ctx)
+        if not ch:
+            return
+        session = get_session()
+        try:
+            room = _get_room(session, str(ch.id))
+            config = session.execute(
+                select(TempVoiceConfig).where(
+                    TempVoiceConfig.guild_id == str(ctx.guild.id),
+                    TempVoiceConfig.enabled == True,
+                )
+            ).scalars().first()
+            target_channel = channel or ctx.channel
+            if room and room.panel_channel_id and room.panel_message_id:
+                try:
+                    old_ch = ctx.guild.get_channel(int(room.panel_channel_id))
+                    if old_ch:
+                        old_msg = await old_ch.fetch_message(int(room.panel_message_id))
+                        await old_msg.delete()
+                except Exception as e:
+                    logger.warning(f"delete old temp voice panel failed: {e}")
+            embed = build_embed("tempvoice_create", session, vars={
+                "user": ctx.author.display_name,
+                "user.mention": ctx.author.mention,
+                "user.id": str(ctx.author.id),
+                "channel.name": ch.name,
+                "channel.mention": ch.mention,
+                "channel.id": str(ch.id),
+            })
+            msg = await target_channel.send(
+                embed=embed,
+                view=TempVoicePanelView(normalize_tempvoice_buttons(config.voice_buttons if config else None)),
+            )
+            if room:
+                room.panel_channel_id = str(target_channel.id)
+                room.panel_message_id = str(msg.id)
+                session.commit()
+            await ctx.respond(f"✅ Đã gửi panel điều khiển vào {target_channel.mention}.", ephemeral=True)
+        except Exception as e:
+            logger.error(f"room panel error: {e}")
+            await ctx.respond("❌ Không gửi được panel.", ephemeral=True)
         finally:
             session.close()
 

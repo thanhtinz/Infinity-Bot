@@ -36,19 +36,20 @@ function MaskedField({
   placeholder,
 }: {
   field: { value: string | undefined; onChange: (v: string) => void; onBlur: () => void; name: string; ref: React.Ref<HTMLInputElement> };
-  savedValue?: string | null;
+  savedValue?: string | boolean | null;
   placeholder?: string;
 }) {
+  const isConfigured = typeof savedValue === "boolean" ? savedValue : !!savedValue;
   return (
     <div className="space-y-1">
       <Input
         type="password"
-        placeholder={savedValue ? "••••••••  (đã cấu hình)" : placeholder}
+        placeholder={isConfigured ? "••••••••  (đã cấu hình)" : placeholder}
         {...field}
         value={field.value || ""}
         autoComplete="new-password"
       />
-      {savedValue && !field.value && (
+      {isConfigured && !field.value && (
         <p className="text-xs text-green-600 dark:text-green-400">✓ Đã cấu hình</p>
       )}
     </div>
@@ -75,8 +76,8 @@ export function ConfigPayOS() {
     if (config)
       form.reset({
         payos_client_id: config.payos_client_id || "",
-        payos_api_key: config.payos_api_key || "",
-        payos_checksum_key: config.payos_checksum_key || "",
+        payos_api_key: "",
+        payos_checksum_key: "",
       });
   }, [config]);
 
@@ -89,7 +90,7 @@ export function ConfigPayOS() {
     onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }),
   });
 
-  const isConfigured = !!config?.payos_api_key;
+  const isConfigured = !!config?.has_payos_api_key;
 
   const handleTest = async () => {
     setTesting(true);
@@ -171,7 +172,7 @@ export function ConfigPayOS() {
                     <FormItem>
                       <FormLabel>API Key</FormLabel>
                       <FormControl>
-                        <MaskedField field={field} savedValue={config?.payos_api_key} />
+                        <MaskedField field={field} savedValue={config?.has_payos_api_key} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -184,7 +185,7 @@ export function ConfigPayOS() {
                     <FormItem>
                       <FormLabel>Checksum Key</FormLabel>
                       <FormControl>
-                        <MaskedField field={field} savedValue={config?.payos_checksum_key} />
+                        <MaskedField field={field} savedValue={config?.has_payos_checksum_key} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

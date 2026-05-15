@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -23,16 +22,19 @@ import { useToast } from "@/hooks/use-toast";
 import {
   ShoppingCart, Timer, Star, Gift,
   Trophy, Plus, Trash2,
-  ChevronDown, ChevronRight, Image, Variable,
+  ChevronDown,
   Ticket, TicketX, UserCheck, UserMinus, Ban,
   UserPlus2, QrCode,
   ShieldOff, LayoutGrid, ShieldAlert,
   LogOut, Pencil, Volume2, VolumeX, ArrowRightLeft,
   LogIn, Hash, Shield, Moon, Zap, AlertTriangle,
-  Type, Layout, RotateCcw, Heart,
+  Type, Layout, RotateCcw, Heart, Mic, HelpCircle,
+  Send, Link2, Copy, Check, MessageSquare, ExternalLink, Loader2,
+  Mail, TrendingUp, Tag, Clock, UserPlus, Edit, MicOff, ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmojiPicker } from "@/components/EmojiPicker";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -56,8 +58,8 @@ interface EmbedTemplate {
   image_url: string;
   fields: EmbedField[];
   enabled: boolean;
-  response_mode: "embed" | "text";
-  text_template: string;
+  response_mode?: "embed" | "text";
+  text_template?: string;
 }
 
 type FormState = Omit<EmbedTemplate, "id"> & { existingId?: number };
@@ -76,14 +78,17 @@ const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "don_hang_moi",      label: "Đơn hàng mới",           icon: ShoppingCart, desc: "Khi admin tạo đơn /tao_don" },
   { key: "qr_thanh_toan",     label: "QR Thanh toán",          icon: QrCode,       desc: "Gửi ảnh QR PayOS cho khách" },
   { key: "don_hang_het_han",  label: "Đơn hàng hết hạn",      icon: Timer,        desc: "Khi đơn quá 15 phút chưa thanh toán" },
+  { key: "bang_gia",          label: "Bảng giá sản phẩm",     icon: ShoppingCart, desc: "Embed tổng quan khi dùng /bang_gia hoặc /san_pham" },
+  { key: "san_pham_detail",   label: "Chi tiết sản phẩm",      icon: ShoppingCart, desc: "Embed chi tiết gói giá khi chọn sản phẩm (/san_pham)" },
   { key: "bxh_chi_tieu",      label: "BXH Chi tiêu",           icon: Trophy,       desc: "Embed bảng xếp hạng chi tiêu" },
   { key: "bxh_don_hang",      label: "BXH Đơn hàng",           icon: Trophy,       desc: "Embed bảng xếp hạng đơn hàng" },
   { key: "feedback",          label: "Feedback khách hàng",    icon: Star,         desc: "Khi user dùng /feedback" },
   // ── Cộng đồng ──
   { key: "giveaway",          label: "Giveaway bắt đầu",       icon: Gift,         desc: "Khi tạo /giveaway" },
   { key: "ket_qua_giveaway",  label: "Kết quả Giveaway",       icon: Trophy,       desc: "Khi giveaway kết thúc, công bố winner" },
-  { key: "welcome",           label: "Chào mừng",             icon: UserPlus2,    desc: "Embed chào mừng thành viên mới vào kênh" },
-  { key: "goodbye",           label: "Tạm biệt",             icon: LogOut,       desc: "Embed khi thành viên rời server" },
+  { key: "dm_welcome",        label: "DM chào mừng riêng tư",  icon: Mail,         desc: "Gửi tin nhắn chào mừng riêng cho thành viên mới" },
+  { key: "reaction_role_panel",label: "Panel Reaction Role",   icon: Heart,        desc: "Panel chọn role bằng reaction" },
+  { key: "starboard_post",    label: "Bài đăng Starboard",     icon: Star,         desc: "Khi tin nhắn được thêm vào starboard" },
   // ── Ticket ──
   { key: "ticket_mo",         label: "Mở Ticket",              icon: Ticket,       desc: "Khi user tạo ticket mới" },
   { key: "ticket_dong",       label: "Đóng Ticket",            icon: TicketX,      desc: "Khi ticket bị đóng" },
@@ -102,6 +107,17 @@ const EMBED_EVENTS: EmbedEventDef[] = [
   // ── Tiện ích ──
   { key: "afk_set",           label: "Đặt AFK",               icon: Moon,          desc: "Khi user đặt trạng thái AFK" },
   { key: "afk_return",        label: "Trở lại từ AFK",        icon: Zap,           desc: "Khi user AFK quay lại" },
+  { key: "tempvoice_create",  label: "Tạo phòng voice",       icon: Mic,           desc: "Khi bot tạo phòng voice tạm và gửi panel nút" },
+  { key: "tempvoice_panel",   label: "Panel Voice",           icon: Mic,           desc: "Panel điều khiển/temp voice do admin gửi" },
+  { key: "tempvoice_action",  label: "Log hành động voice",   icon: Mic,           desc: "Khi user dùng nút điều khiển phòng voice" },
+  // ── Leveling ──
+  { key: "level_up",          label: "Lên level",              icon: TrendingUp,   desc: "Khi user lên level mới" },
+  { key: "level_reward",      label: "Level Reward",          icon: Gift,          desc: "Khi user nhận role reward theo level" },
+  { key: "leaderboard",       label: "Bảng xếp hạng XP",      icon: Trophy,        desc: "Embed bảng xếp hạng XP" },
+  // ── Help ──
+  { key: "help_menu",         label: "Help — Menu chính",     icon: HelpCircle,    desc: "Embed chào mừng khi dùng /help" },
+  { key: "help_category",     label: "Help — Danh mục",       icon: HelpCircle,    desc: "Embed hiển thị lệnh trong một danh mục" },
+  { key: "help_command",      label: "Help — Chi tiết lệnh",  icon: HelpCircle,    desc: "Embed chi tiết một lệnh cụ thể" },
   // ── Logging ──
   { key: "log_message_delete",     label: "Log: Xóa tin nhắn",       icon: Trash2,          desc: "Khi tin nhắn bị xóa" },
   { key: "log_message_edit",       label: "Log: Sửa tin nhắn",       icon: Pencil,          desc: "Khi tin nhắn được sửa" },
@@ -191,11 +207,13 @@ const EMBED_EVENTS: EmbedEventDef[] = [
 // ─── Event groups ────────────────────────────────────────────────────────────
 
 const EVENT_GROUPS: { label: string; keys: string[] }[] = [
-  { label: "Đơn hàng",    keys: ["don_hang_moi", "qr_thanh_toan", "don_hang_het_han", "bxh_chi_tieu", "bxh_don_hang", "feedback"] },
-  { label: "Cộng đồng",   keys: ["welcome", "goodbye", "giveaway", "ket_qua_giveaway"] },
+  { label: "Đơn hàng",    keys: ["don_hang_moi", "qr_thanh_toan", "don_hang_het_han", "bang_gia", "san_pham_detail", "bxh_chi_tieu", "bxh_don_hang", "feedback"] },
+  { label: "Cộng đồng",   keys: ["giveaway", "ket_qua_giveaway", "dm_welcome", "reaction_role_panel", "starboard_post"] },
   { label: "Ticket",      keys: ["ticket_mo", "ticket_dong", "ticket_nhan", "ticket_unclaim", "ticket_panel"] },
   { label: "Kiểm duyệt", keys: ["canh_bao", "kick", "ban", "unban", "automod_warn", "automod_mute", "automod_kick", "automod_delete"] },
-  { label: "Tiện ích",    keys: ["afk_set", "afk_return"] },
+  { label: "Tiện ích",    keys: ["afk_set", "afk_return", "tempvoice_create", "tempvoice_panel", "tempvoice_action"] },
+  { label: "Leveling",    keys: ["level_up", "level_reward", "leaderboard"] },
+  { label: "Help",        keys: ["help_menu", "help_category", "help_command"] },
   { label: "Logging",     keys: ["log_message_delete", "log_message_edit", "log_message_bulk_delete", "log_voice_join", "log_voice_leave", "log_voice_move", "log_member_join", "log_member_leave", "log_nickname_change", "log_role_update", "log_channel_create", "log_channel_delete"] },
   { label: "Tương tác — Có mục tiêu", keys: ["interact_airkiss", "interact_angrystare", "interact_bite", "interact_brofist", "interact_cuddle", "interact_handhold", "interact_hug", "interact_kiss", "interact_lick", "interact_nom", "interact_nuzzle", "interact_pat", "interact_pinch", "interact_poke", "interact_punch", "interact_slap", "interact_smack", "interact_tickle", "interact_wave", "interact_wink", "interact_stare", "interact_peek"] },
   { label: "Tương tác — Biểu cảm", keys: ["interact_bleh", "interact_blush", "interact_celebrate", "interact_cheers", "interact_clap", "interact_confused", "interact_cool", "interact_cry", "interact_dance", "interact_drool", "interact_evillaugh", "interact_facepalm", "interact_happy", "interact_headbang", "interact_huh", "interact_laugh", "interact_love", "interact_mad", "interact_nervous", "interact_no", "interact_nosebleed", "interact_nyah", "interact_pout", "interact_roll", "interact_run", "interact_sad", "interact_scared", "interact_shout", "interact_shrug", "interact_shy", "interact_sigh", "interact_sip", "interact_sleep", "interact_slowclap", "interact_smile", "interact_smug", "interact_sneeze", "interact_sorry", "interact_stop", "interact_surprised", "interact_sweat", "interact_thumbsup", "interact_tired", "interact_woah", "interact_yawn", "interact_yay", "interact_yes"] },
@@ -232,6 +250,32 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     image_url: "",
     fields: [
       { name: "Sản phẩm", value: "{product.name}", inline: true },
+    ],
+    enabled: true,
+  },
+  bang_gia: {
+    title: "🛒 Bảng Giá Sản Phẩm",
+    description: "Chọn sản phẩm từ menu bên dưới để xem chi tiết và giá các gói.",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "Bấm vào tên sản phẩm bên dưới để xem chi tiết",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  san_pham_detail: {
+    title: "📦 {product.name}",
+    description: "{product.description}",
+    color: "#57F287",
+    author: "",
+    author_icon_url: "",
+    footer: "Liên hệ admin để đặt hàng",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "🔹 {package.name}", value: "💰 **{package.price}đ**\n{package.description}", inline: false },
     ],
     enabled: true,
   },
@@ -275,6 +319,44 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     image_url: "",
     fields: [
       { name: "Người thắng", value: "{winners}", inline: false },
+    ],
+    enabled: true,
+  },
+  dm_welcome: {
+    title: "👋 Chào mừng {user.name}!",
+    description: "Chào mừng {user.mention} đến với **{server.name}**!\nHãy đọc kênh {rules_channel} và tận hưởng!",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "{server.name}",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  reaction_role_panel: {
+    title: "🎭 Reaction Role",
+    description: "Chọn role bạn muốn bằng cách react bên dưới!",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "React để nhận role • Bỏ react để gỡ role",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  starboard_post: {
+    title: "⭐ Starboard",
+    description: "{user.mention} nhận ⭐ **{star_count}** sao trong {channel}",
+    color: "#FEE75C",
+    author: "",
+    author_icon_url: "",
+    footer: "Starboard",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "Nội dung", value: "{content}", inline: false },
     ],
     enabled: true,
   },
@@ -440,22 +522,6 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     fields: [],
     enabled: true,
   },
-  welcome: {
-    title: "👋 Chào mừng đến với {server}!",
-    description: "Xin chào {user.mention}! Chúc bạn có thời gian vui vẻ tại server.\n\nDùng `/help` để xem danh sách lệnh bot.",
-    color: "#5865F2",
-    author: "", author_icon_url: "", footer: "Infinity Mall", thumbnail_url: "", image_url: "",
-    fields: [{ name: "Thành viên thứ", value: "{member_count}", inline: true }],
-    enabled: true,
-  },
-  goodbye: {
-    title: "👋 Tạm biệt",
-    description: "**{user}** đã rời khỏi server.",
-    color: "#95A5A6",
-    author: "", author_icon_url: "", footer: "Còn lại {member_count} thành viên", thumbnail_url: "", image_url: "",
-    fields: [],
-    enabled: true,
-  },
   log_message_delete: {
     title: "🗑️ Tin nhắn bị xóa",
     description: "Tin nhắn của {user.mention} trong {channel} đã bị xóa.",
@@ -612,6 +678,90 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     color: "#57F287",
     author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
     fields: [],
+    enabled: true,
+  },
+  tempvoice_create: {
+    title: "🔊 Voice tạm đã tạo",
+    description: "{user.mention} đã tạo kênh voice **{channel.name}**.",
+    color: "#5865F2",
+    author: "", author_icon_url: "", footer: "Dùng nút bên dưới để quản lý phòng", thumbnail_url: "", image_url: "",
+    fields: [
+      { name: "Kênh", value: "{channel.mention}", inline: true },
+      { name: "Chủ phòng", value: "{user.mention}", inline: true },
+    ],
+    enabled: true,
+  },
+  tempvoice_panel: {
+    title: "🎙️ Điều khiển phòng voice",
+    description: "Panel quản lý phòng voice tạm cho **{server}**.\n\nVào phòng voice của bạn rồi dùng các nút bên dưới để khóa, đổi tên, giới hạn, cấp quyền hoặc chuyển chủ phòng.",
+    color: "#5865F2",
+    author: "", author_icon_url: "", footer: "Temp Voice Control Panel", thumbnail_url: "", image_url: "",
+    fields: [
+      { name: "Kênh gửi", value: "{panel.channel}", inline: true },
+      { name: "Nút bật", value: "{button.count}", inline: true },
+    ],
+    enabled: true,
+  },
+  tempvoice_action: {
+    title: "🎙️ Temp Voice Action",
+    description: "{user.mention} đã **{action}** trong {channel.mention}.",
+    color: "#5865F2",
+    author: "", author_icon_url: "", footer: "Temp Voice Logs", thumbnail_url: "", image_url: "",
+    fields: [
+      { name: "Mục tiêu", value: "{target.mention}", inline: true },
+      { name: "Chi tiết", value: "{details}", inline: true },
+    ],
+    enabled: true,
+  },
+  level_up: {
+    title: "🎉 Lên Level {level}!",
+    description: "Chúc mừng {user.mention} đã lên **Level {level}**!",
+    color: "#57F287",
+    author: "", author_icon_url: "", footer: "Tiếp tục chat để lên level nhé!", thumbnail_url: "", image_url: "",
+    fields: [
+      { name: "XP hiện tại", value: "{current_xp}", inline: true },
+      { name: "XP tiếp theo", value: "{next_level_xp}", inline: true },
+    ],
+    enabled: true,
+  },
+  level_reward: {
+    title: "🎁 Level Reward",
+    description: "{user.mention} đã nhận reward **{reward.role}** ở Level {level}.",
+    color: "#57F287",
+    author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  leaderboard: {
+    title: "🏆 Bảng xếp hạng XP",
+    description: "{leaderboard_lines}",
+    color: "#F0B232",
+    author: "", author_icon_url: "", footer: "Cập nhật: {updated_at}", thumbnail_url: "", image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  help_menu: {
+    title: "📋 Trợ giúp — {bot_name}",
+    description: "Xin chào {user.mention}!\nChọn **danh mục** bên dưới để xem danh sách lệnh.",
+    color: "#5865F2",
+    author: "", author_icon_url: "", footer: "{bot_name} • Chọn danh mục để tiếp tục", thumbnail_url: "", image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  help_category: {
+    title: "{category_emoji} {category_name}",
+    description: "Danh sách lệnh trong **{category_name}**:\n{commands_list}",
+    color: "#5865F2",
+    author: "", author_icon_url: "", footer: "{bot_name} • Chọn lệnh để xem chi tiết", thumbnail_url: "", image_url: "",
+    fields: [],
+    enabled: true,
+  },
+  help_command: {
+    title: "{command_emoji} `/{command_name}`",
+    description: "{command_desc}",
+    color: "#57F287",
+    author: "", author_icon_url: "", footer: "{bot_name}", thumbnail_url: "", image_url: "",
+    fields: [{ name: "📌 Cách dùng", value: "{command_usage}", inline: false }],
     enabled: true,
   },
   // ── Tương tác — Có mục tiêu ──
@@ -1251,6 +1401,9 @@ const VARIABLES: { token: string; desc: string }[] = [
   { token: "{order.created_at}",  desc: "Ngày tạo đơn" },
   { token: "{product.name}",      desc: "Tên sản phẩm" },
   { token: "{product.description}", desc: "Mô tả sản phẩm" },
+  { token: "{package.name}",      desc: "Tên gói sản phẩm (san_pham_detail)" },
+  { token: "{package.price}",     desc: "Giá gói sản phẩm (san_pham_detail)" },
+  { token: "{package.description}", desc: "Mô tả gói sản phẩm (san_pham_detail)" },
   { token: "{product.price}",     desc: "Giá sản phẩm" },
   { token: "{product.stock}",     desc: "Số lượng tồn kho" },
   { token: "{product.image_url}", desc: "Ảnh sản phẩm" },
@@ -1273,6 +1426,27 @@ const VARIABLES: { token: string; desc: string }[] = [
   { token: "{moderator}",         desc: "Người thực hiện (mod)" },
   { token: "{stars}",             desc: "Số sao (feedback)" },
   { token: "{content}",           desc: "Nội dung feedback" },
+  { token: "{channel.name}",     desc: "Tên kênh Discord" },
+  { token: "{panel.channel}",    desc: "Kênh được gửi panel" },
+  { token: "{button.count}",     desc: "Số nút temp voice đang bật" },
+  { token: "{buttons}",          desc: "Danh sách nút temp voice đang bật" },
+
+  { token: "{channel.mention}",  desc: "Mention kênh Discord" },
+  { token: "{channel.id}",       desc: "ID kênh Discord" },
+  { token: "{target}",           desc: "Tên user mục tiêu" },
+  { token: "{target.mention}",   desc: "Mention user mục tiêu" },
+  { token: "{target.id}",        desc: "ID user mục tiêu" },
+  { token: "{action}",           desc: "Hành động được thực hiện" },
+  { token: "{details}",          desc: "Chi tiết hành động" },
+  { token: "{level}",            desc: "Level hiện tại" },
+  { token: "{old_level}",        desc: "Level trước đó" },
+  { token: "{xp}",               desc: "Tổng XP" },
+  { token: "{rank}",             desc: "Thứ hạng leveling" },
+  { token: "{progress}",         desc: "Tiến độ level hiện tại" },
+  { token: "{progress_percent}", desc: "Phần trăm tiến độ level" },
+  { token: "{next_level_xp}",    desc: "XP cần cho level tiếp theo" },
+  { token: "{leaderboard}",      desc: "Nội dung leaderboard" },
+  { token: "{reward.role}",      desc: "Role reward theo level" },
   { token: "{ticket.id}",         desc: "ID ticket" },
   { token: "{close_reason}",      desc: "Lý do đóng ticket" },
   { token: "{staff.mention}",     desc: "Staff nhận ticket" },
@@ -1528,17 +1702,845 @@ function DiscordPreview({ form }: { form: FormState }) {
   );
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
+// ─── Custom Messages Tab ─────────────────────────────────────────────────────
 
-export function EmbedsManager() {
+interface CustomEmbed {
+  id: number;
+  name: string;
+  channel_id: string;
+  message_id: string;
+  guild_id: string;
+  title: string;
+  description: string;
+  color: string;
+  author: string;
+  author_icon_url: string;
+  footer: string;
+  thumbnail_url: string;
+  image_url: string;
+  fields: EmbedField[];
+  created_at: string;
+  updated_at: string;
+}
+
+interface CustomFormState {
+  name: string;
+  title: string;
+  description: string;
+  color: string;
+  author: string;
+  author_icon_url: string;
+  footer: string;
+  thumbnail_url: string;
+  image_url: string;
+  fields: EmbedField[];
+}
+
+const emptyCustomForm: CustomFormState = {
+  name: "",
+  title: "",
+  description: "",
+  color: "#5865F2",
+  author: "",
+  author_icon_url: "",
+  footer: "",
+  thumbnail_url: "",
+  image_url: "",
+  fields: [],
+};
+
+function CustomMessagesTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // ── State ──
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [form, setForm] = useState<CustomFormState>(emptyCustomForm);
+  const [editingExistingId, setEditingExistingId] = useState<number | null>(null);
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [linkInput, setLinkInput] = useState("");
+  const [selectedChannelId, setSelectedChannelId] = useState<string>("");
+  const [copiedUrl, setCopiedUrl] = useState(false);
+
+  // Collapsible sections
+  const [embedOpen, setEmbedOpen] = useState(true);
+  const [imagesOpen, setImagesOpen] = useState(false);
+  const [fieldsOpen, setFieldsOpen] = useState(true);
+  const [authorOpen, setAuthorOpen] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+
+  // ── Queries ──
+  const { data: customEmbeds = [], isLoading: listLoading } = useQuery<CustomEmbed[]>({
+    queryKey: ["custom-embeds"],
+    queryFn: () => fetch("/api/embeds/custom", { credentials: "include" }).then((r) => r.json()),
+    staleTime: 30_000,
+  });
+
+  const { data: channels = [] } = useQuery<{ id: string; name: string; type: number }[]>({
+    queryKey: ["discord-channels"],
+    queryFn: () => fetch("/api/discord/channels/all", { credentials: "include" }).then((r) => r.json()),
+    staleTime: 300_000,
+  });
+
+  const selectedEmbed = useMemo(
+    () => customEmbeds.find((e) => e.id === selectedId) ?? null,
+    [customEmbeds, selectedId]
+  );
+
+  // ── Mutations ──
+  const createMutation = useMutation({
+    mutationFn: async (body: CustomFormState) => {
+      const res = await fetch("/api/embeds/custom", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error("Tạo thất bại");
+      return res.json() as Promise<CustomEmbed>;
+    },
+    onSuccess: (data) => {
+      toast({ title: "Đã tạo", description: "Embed mới đã được tạo." });
+      queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
+      setEditingExistingId(data.id);
+      setSelectedId(data.id);
+      setIsCreatingNew(false);
+      setSelectedChannelId(data.channel_id || "");
+    },
+    onError: () => {
+      toast({ title: "Lỗi", description: "Không thể tạo embed.", variant: "destructive" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, body }: { id: number; body: CustomFormState }) => {
+      const res = await fetch(`/api/embeds/custom/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error("Cập nhật thất bại");
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Đã lưu", description: "Embed đã được cập nhật." });
+      queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
+    },
+    onError: () => {
+      toast({ title: "Lỗi", description: "Không thể lưu embed.", variant: "destructive" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/embeds/custom/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Xóa thất bại");
+    },
+    onSuccess: () => {
+      toast({ title: "Đã xóa", description: "Embed đã được xóa." });
+      queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
+      if (selectedId === editingExistingId) {
+        setSelectedId(null);
+        setEditingExistingId(null);
+        setForm(emptyCustomForm);
+      }
+    },
+    onError: () => {
+      toast({ title: "Lỗi", description: "Không thể xóa embed.", variant: "destructive" });
+    },
+  });
+
+  const sendMutation = useMutation({
+    mutationFn: async ({ id, channel_id }: { id: number; channel_id: string }) => {
+      const res = await fetch(`/api/embeds/custom/${id}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ channel_id }),
+      });
+      if (!res.ok) throw new Error("Gửi thất bại");
+      return res.json() as Promise<CustomEmbed & { message_url?: string }>;
+    },
+    onSuccess: (data) => {
+      toast({ title: "Đã gửi", description: "Embed đã được gửi lên Discord." });
+      queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
+      if (data.message_url) {
+        setCopiedUrl(false);
+      }
+    },
+    onError: () => {
+      toast({ title: "Lỗi", description: "Không thể gửi embed lên Discord.", variant: "destructive" });
+    },
+  });
+
+  const updateMessageMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/embeds/custom/${id}/update-message`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Cập nhật tin nhắn thất bại");
+      return res.json() as Promise<{ ok: boolean; message_url?: string }>;
+    },
+    onSuccess: (data) => {
+      toast({ title: "Đã cập nhật", description: "Tin nhắn Discord đã được cập nhật." });
+      queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
+      setCopiedUrl(false);
+    },
+    onError: () => {
+      toast({ title: "Lỗi", description: "Không thể cập nhật tin nhắn Discord.", variant: "destructive" });
+    },
+  });
+
+  const loadLinkMutation = useMutation({
+    mutationFn: async (link: string) => {
+      const res = await fetch("/api/embeds/custom/load-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ link }),
+      });
+      if (!res.ok) throw new Error("Tải link thất bại");
+      return res.json() as Promise<CustomEmbed & { is_new?: boolean }>;
+    },
+    onSuccess: (data) => {
+      toast({ title: "Đã tải", description: "Embed từ link đã được tải thành công." });
+      queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
+      setSelectedId(data.id);
+      setEditingExistingId(data.id);
+      setForm({
+        name: data.name,
+        title: data.title,
+        description: data.description,
+        color: data.color,
+        author: data.author,
+        author_icon_url: data.author_icon_url,
+        footer: data.footer,
+        thumbnail_url: data.thumbnail_url,
+        image_url: data.image_url,
+        fields: data.fields?.map((f) => ({ ...f })) ?? [],
+      });
+      setLinkInput("");
+    },
+    onError: () => {
+      toast({ title: "Lỗi", description: "Không thể tải embed từ link. Kiểm tra lại link Discord.", variant: "destructive" });
+    },
+  });
+
+  // ── Handlers ──
+  const handleCreateNew = () => {
+    setSelectedId(null);
+    setEditingExistingId(null);
+    setIsCreatingNew(true);
+    setSelectedChannelId("");
+    setForm(emptyCustomForm);
+    setEmbedOpen(true);
+    setImagesOpen(false);
+    setFieldsOpen(true);
+    setAuthorOpen(false);
+    setShowPreview(false);
+  };
+
+  const handleSelectEmbed = (embed: CustomEmbed) => {
+    setSelectedId(embed.id);
+    setEditingExistingId(embed.id);
+    setIsCreatingNew(false);
+    setSelectedChannelId(embed.channel_id || "");
+    setForm({
+      name: embed.name,
+      title: embed.title,
+      description: embed.description,
+      color: embed.color,
+      author: embed.author,
+      author_icon_url: embed.author_icon_url,
+      footer: embed.footer,
+      thumbnail_url: embed.thumbnail_url,
+      image_url: embed.image_url,
+      fields: embed.fields?.map((f) => ({ ...f })) ?? [],
+    });
+    setEmbedOpen(true);
+    setImagesOpen(false);
+    setFieldsOpen(true);
+    setAuthorOpen(false);
+    setShowPreview(false);
+  };
+
+  const handleSave = () => {
+    if (editingExistingId) {
+      updateMutation.mutate({ id: editingExistingId, body: form });
+    } else {
+      createMutation.mutate(form);
+    }
+  };
+
+  const handleSend = (channelId: string) => {
+    if (!editingExistingId) return;
+    sendMutation.mutate({ id: editingExistingId, channel_id: channelId });
+  };
+
+  const handleUpdateMessage = () => {
+    if (!editingExistingId) return;
+    updateMessageMutation.mutate(editingExistingId);
+  };
+
+  const handleLoadLink = () => {
+    if (!linkInput.trim()) return;
+    loadLinkMutation.mutate(linkInput.trim());
+  };
+
+  // ── Field helpers ──
+  const addField = () => {
+    if (form.fields.length >= 25) return;
+    setForm((f) => ({ ...f, fields: [...f.fields, { name: "", value: "", inline: false }] }));
+  };
+  const removeField = (idx: number) => {
+    setForm((f) => ({ ...f, fields: f.fields.filter((_, i) => i !== idx) }));
+  };
+  const updateField = (idx: number, key: keyof EmbedField, val: string | boolean) => {
+    setForm((f) => ({
+      ...f,
+      fields: f.fields.map((field, i) => (i === idx ? { ...field, [key]: val } : field)),
+    }));
+  };
+
+  // Build a FormState-like object for DiscordPreview
+  const previewForm: FormState = useMemo(() => ({
+    ...form,
+    event_type: "",
+    enabled: true,
+    response_mode: "embed" as const,
+    text_template: "",
+    existingId: undefined,
+  }), [form]);
+
+  const isEditing = editingExistingId !== null || isCreatingNew;
+  const hasMessageId = selectedEmbed?.message_id ? true : false;
+
+  // ── Sidebar list ──
+  const sidebar = (
+    <div className="flex flex-col h-full">
+      {/* Create new + Load link */}
+      <div className="p-3 space-y-2 border-b">
+        <Button size="sm" className="w-full" onClick={handleCreateNew}>
+          <Plus className="h-3.5 w-3.5 mr-1.5" />
+          Tạo mới
+        </Button>
+        <div className="flex gap-1.5">
+          <Input
+            placeholder="Paste Discord message link..."
+            value={linkInput}
+            onChange={(e) => setLinkInput(e.target.value)}
+            className="text-xs h-8"
+            onKeyDown={(e) => { if (e.key === "Enter") handleLoadLink(); }}
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            className="shrink-0 h-8 px-2.5"
+            onClick={handleLoadLink}
+            disabled={loadLinkMutation.isPending || !linkInput.trim()}
+          >
+            {loadLinkMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+            Tải
+          </Button>
+        </div>
+      </div>
+
+      {/* List */}
+      <div className="flex-1 overflow-y-auto">
+        {listLoading ? (
+          <div className="p-4 text-center text-sm text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
+            Đang tải...
+          </div>
+        ) : customEmbeds.length === 0 ? (
+          <div className="p-4 text-center text-sm text-muted-foreground">
+            Chưa có tin nhắn nào
+          </div>
+        ) : (
+          <div className="p-2 space-y-1">
+            {customEmbeds.map((embed) => (
+              <div
+                key={embed.id}
+                role="button"
+                tabIndex={0}
+                className={cn(
+                  "w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted/50 cursor-pointer",
+                  selectedId === embed.id && "bg-muted"
+                )}
+                onClick={() => handleSelectEmbed(embed)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelectEmbed(embed); } }}
+              >
+                <div className="font-medium truncate">{embed.name || "Không tên"}</div>
+                <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
+                  <Hash className="h-3 w-3" />
+                  {channels.find((c) => c.id === embed.channel_id)?.name || embed.channel_id || "—"}
+                  {embed.message_id && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1">Đã gửi</Badge>}
+                </div>
+                <div className="flex items-center gap-1 mt-1.5">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={(e) => { e.stopPropagation(); handleSelectEmbed(embed); }}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6 text-destructive hover:text-destructive"
+                    onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(embed.id); }}
+                    disabled={deleteMutation.isPending}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // ── Editor ──
+  const editor = (
+    <div className="flex-1 overflow-y-auto">
+      <div className="max-w-2xl mx-auto p-4 space-y-3">
+
+        {/* ── Embed Section — collapsible card with colored left border ── */}
+        <div className="rounded-lg border overflow-hidden" style={{ borderLeftWidth: 4, borderLeftColor: form.color || "#5865F2" }}>
+          <div
+            role="button"
+            tabIndex={0}
+            className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors cursor-pointer select-none"
+            onClick={() => setEmbedOpen(!embedOpen)}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setEmbedOpen(!embedOpen); } }}
+          >
+            <span className="flex items-center gap-2">
+              <ChevronDown className={cn("h-4 w-4 transition-transform", embedOpen && "rotate-180")} />
+              Embed — {form.title || "Không có tiêu đề"}
+            </span>
+          </div>
+          {embedOpen && (
+            <div className="px-4 pb-4 space-y-4">
+              {/* Title */}
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Tiêu đề</Label>
+                <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                  <Input
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    placeholder="Nhập tiêu đề embed..."
+                    value={form.title}
+                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  />
+                  <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, title: f.title + em }))} />
+                </div>
+              </div>
+              {/* Description */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs text-muted-foreground">Mô tả</Label>
+                  <span className="text-[11px] text-muted-foreground">{form.description.length}/4096</span>
+                </div>
+                <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                  <Textarea
+                    placeholder="Nhập mô tả embed..."
+                    value={form.description}
+                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    rows={5}
+                    className="resize-y flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                  <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, description: f.description + em }))} />
+                </div>
+              </div>
+              {/* Color */}
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Màu sắc</Label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={form.color}
+                    onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                    className="h-8 w-8 rounded cursor-pointer border-0 p-0"
+                  />
+                  <Input
+                    value={form.color}
+                    onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                    className="w-28 font-mono text-xs"
+                    maxLength={7}
+                  />
+                </div>
+              </div>
+              {/* Footer */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs text-muted-foreground">Chân trang</Label>
+                  <span className="text-[11px] text-muted-foreground">{form.footer.length}/2048</span>
+                </div>
+                <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                  <Input
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    placeholder="Nội dung chân trang"
+                    value={form.footer}
+                    onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
+                  />
+                  <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, footer: f.footer + em }))} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Author — collapsible ── */}
+        <div className="rounded-lg border">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
+            onClick={() => setAuthorOpen(!authorOpen)}
+          >
+            <span className="flex items-center gap-2">
+              <ChevronDown className={cn("h-4 w-4 transition-transform", authorOpen && "rotate-180")} />
+              Tác giả
+            </span>
+          </button>
+          {authorOpen && (
+            <div className="px-4 pb-4 space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Tên tác giả</Label>
+                <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                  <Input
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
+                    value={form.author}
+                    onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
+                  />
+                  <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, author: f.author + em }))} />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Icon URL</Label>
+                <Input
+                  placeholder="https://example.com/icon.png"
+                  value={form.author_icon_url}
+                  onChange={(e) => setForm((f) => ({ ...f, author_icon_url: e.target.value }))}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Images — collapsible ── */}
+        <div className="rounded-lg border">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
+            onClick={() => setImagesOpen(!imagesOpen)}
+          >
+            <span className="flex items-center gap-2">
+              <ChevronDown className={cn("h-4 w-4 transition-transform", imagesOpen && "rotate-180")} />
+              Hình ảnh
+            </span>
+          </button>
+          {imagesOpen && (
+            <div className="px-4 pb-4 space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Thumbnail URL</Label>
+                <Input
+                  placeholder="https://example.com/thumb.png"
+                  value={form.thumbnail_url}
+                  onChange={(e) => setForm((f) => ({ ...f, thumbnail_url: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Image URL</Label>
+                <Input
+                  placeholder="https://example.com/image.png"
+                  value={form.image_url}
+                  onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Fields — collapsible ── */}
+        <div className="rounded-lg border">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
+            onClick={() => setFieldsOpen(!fieldsOpen)}
+          >
+            <span className="flex items-center gap-2">
+              <ChevronDown className={cn("h-4 w-4 transition-transform", fieldsOpen && "rotate-180")} />
+              Fields ({form.fields.length}/25)
+            </span>
+          </button>
+          {fieldsOpen && (
+            <div className="px-4 pb-4 space-y-3">
+              {form.fields.map((field, i) => (
+                <div key={i} className="rounded-md border bg-muted/30 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">Field {i + 1}</span>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6 text-destructive hover:text-destructive"
+                      onClick={() => removeField(i)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                      <Input
+                        placeholder="Tên field"
+                        value={field.name}
+                        onChange={(e) => updateField(i, "name", e.target.value)}
+                        className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      />
+                      <EmojiPicker onSelect={(em) => updateField(i, "name", field.name + em)} />
+                    </div>
+                    <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+                      <Input
+                        placeholder="Giá trị"
+                        value={field.value}
+                        onChange={(e) => updateField(i, "value", e.target.value)}
+                        className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      />
+                      <EmojiPicker onSelect={(em) => updateField(i, "value", field.value + em)} />
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={field.inline}
+                      onChange={(e) => updateField(i, "inline", e.target.checked)}
+                      className="rounded border-input"
+                    />
+                    Inline (hiển thị cùng dòng)
+                  </label>
+                </div>
+              ))}
+              {form.fields.length < 25 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={addField}
+                  className="w-full border-dashed"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />
+                  Thêm field
+                </Button>
+              )}
+              {form.fields.length >= 25 && (
+                <p className="text-xs text-muted-foreground text-center">Đã đạt giới hạn 25 fields</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Name + Channel + Actions ── */}
+        <div className="rounded-lg border p-4 space-y-3">
+          {/* Name */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Đặt tên cho embed này</Label>
+            <Input
+              placeholder="VD: Thông báo bảo trì"
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            />
+          </div>
+
+          {/* Channel select */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Kênh Discord</Label>
+            <Select
+              value={selectedChannelId}
+              onValueChange={setSelectedChannelId}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Chọn kênh để gửi..." />
+              </SelectTrigger>
+              <SelectContent>
+                {channels.map((ch) => (
+                  <SelectItem key={ch.id} value={ch.id}>
+                    <span className="flex items-center gap-2">
+                      <Hash className="h-3.5 w-3.5" />
+                      {ch.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={updateMutation.isPending || createMutation.isPending}
+            >
+              {(updateMutation.isPending || createMutation.isPending) ? (
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              ) : null}
+              Lưu
+            </Button>
+
+            {isEditing && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  if (selectedChannelId) handleSend(selectedChannelId);
+                  else toast({ title: "Chưa chọn kênh", description: "Hãy chọn kênh Discord trước.", variant: "destructive" });
+                }}
+                disabled={sendMutation.isPending || !selectedChannelId || isCreatingNew}
+              >
+                {sendMutation.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                ) : (
+                  <Send className="h-3.5 w-3.5 mr-1.5" />
+                )}
+                {isCreatingNew ? "Lưu trước để gửi" : "Gửi lên Discord"}
+              </Button>
+            )}
+
+            {isEditing && hasMessageId && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleUpdateMessage}
+                disabled={updateMessageMutation.isPending}
+              >
+                {updateMessageMutation.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                ) : (
+                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                )}
+                Cập nhật tin nhắn
+              </Button>
+            )}
+          </div>
+
+          {/* Message link */}
+          {isEditing && hasMessageId && selectedEmbed?.message_id && (
+            <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2">
+              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <a
+                href={`https://discord.com/channels/${selectedEmbed.guild_id}/${selectedEmbed.channel_id}/${selectedEmbed.message_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-primary underline truncate"
+              >
+                Link tin nhắn
+              </a>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 shrink-0 ml-auto"
+                onClick={() => {
+                  const url = `https://discord.com/channels/${selectedEmbed.guild_id}/${selectedEmbed.channel_id}/${selectedEmbed.message_id}`;
+                  navigator.clipboard.writeText(url);
+                  setCopiedUrl(true);
+                  setTimeout(() => setCopiedUrl(false), 2000);
+                }}
+              >
+                {copiedUrl ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Discord Preview — collapsible ── */}
+        <div className="rounded-lg border">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between p-3 text-sm font-semibold hover:bg-muted/50 transition-colors"
+            onClick={() => setShowPreview(!showPreview)}
+          >
+            <span className="flex items-center gap-2">
+              <ChevronDown className={cn("h-4 w-4 transition-transform", showPreview && "rotate-180")} />
+              Xem trước Discord
+            </span>
+          </button>
+          {showPreview && (
+            <div className="p-4">
+              <DiscordPreview form={previewForm} />
+              <p className="text-[11px] text-muted-foreground italic mt-3">* Preview sử dụng dữ liệu giả</p>
+            </div>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col md:flex-row gap-0 h-full">
+      {/* Sidebar — hidden on mobile when editing, shown otherwise */}
+      <div className={cn(
+        "w-full md:w-72 shrink-0 border-b md:border-b-0 md:border-r bg-card",
+        isEditing && "hidden md:block"
+      )}>
+        {sidebar}
+      </div>
+
+      {/* Editor — full width on mobile when editing */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {isEditing ? (
+          editor
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground p-8">
+            <div className="text-center space-y-2">
+              <MessageSquare className="h-10 w-10 mx-auto text-muted-foreground/50" />
+              <p>Chọn tin nhắn từ danh sách hoặc tạo mới</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function LevelEmbedsManager() {
+  return <EmbedsManager eventKeys={["level_up", "rank_card", "level_leaderboard", "level_reward"]} />;
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
+
+interface EmbedsManagerProps {
+  eventKeys?: string[];
+  pageTitle?: string;
+  pageDescription?: string;
+}
+
+export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsManagerProps = {}) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<"events" | "custom">("events");
+  const allowedKeys = useMemo(() => eventKeys ? new Set(eventKeys) : null, [eventKeys]);
+  const visibleEvents = useMemo(() => allowedKeys ? EMBED_EVENTS.filter((event) => allowedKeys.has(event.key)) : EMBED_EVENTS, [allowedKeys]);
+  const visibleGroups = useMemo(() => EVENT_GROUPS
+    .map((group) => ({ ...group, keys: group.keys.filter((key) => !allowedKeys || allowedKeys.has(key)) }))
+    .filter((group) => group.keys.length > 0), [allowedKeys]);
+
   // Selected event
-  const [selectedKey, setSelectedKey] = useState<string>(EMBED_EVENTS[0].key);
+  const initialEventKey = (() => {
+    const event = new URLSearchParams(window.location.search).get("event");
+    return event && visibleEvents.some((e) => e.key === event) ? event : visibleEvents[0]?.key || EMBED_EVENTS[0].key;
+  })();
+  const [selectedKey, setSelectedKey] = useState<string>(initialEventKey);
 
   // Form state
-  const [form, setForm] = useState<FormState>(defaultForm(EMBED_EVENTS[0].key));
+  const [form, setForm] = useState<FormState>(defaultForm(initialEventKey));
 
   // Collapsible sections
   const [embedOpen, setEmbedOpen] = useState(true);
@@ -1552,7 +2554,7 @@ export function EmbedsManager() {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
   // ── Fetch embeds ──
-  const { data: embeds = [], isLoading } = useQuery<EmbedTemplate[]>({
+  const { data: embeds = [] } = useQuery<EmbedTemplate[]>({
     queryKey: ["embeds"],
     queryFn: () => fetch("/api/embeds", { credentials: "include" }).then((r) => r.json()),
     staleTime: 300_000,
@@ -1670,6 +2672,55 @@ export function EmbedsManager() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
+      {pageTitle && (
+        <div className="relative mb-4 overflow-hidden rounded-3xl border bg-card px-5 py-4 shadow-sm">
+          <div className="absolute -right-16 -top-20 h-48 w-48 rounded-full bg-primary/20 blur-3xl" />
+          <div className="relative flex items-start gap-3">
+            <div className="rounded-2xl bg-primary/10 p-3 ring-1 ring-primary/20"><Trophy className="h-5 w-5 text-primary" /></div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight">{pageTitle}</h1>
+              {pageDescription && <p className="mt-1 text-sm text-muted-foreground">{pageDescription}</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Tab Switcher ── */}
+      <div className="sticky top-0 z-10 flex items-center gap-2 px-4 py-2 border-b bg-card">
+        <button
+          type="button"
+          onClick={() => setActiveTab("events")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all",
+            activeTab === "events"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          )}
+        >
+          <Layout className="h-3.5 w-3.5" />
+          Event Templates
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("custom")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all",
+            activeTab === "custom"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          )}
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+          Tin nhắn
+        </button>
+      </div>
+
+      {activeTab === "custom" ? (
+        <div className="flex-1 min-h-0">
+          <CustomMessagesTab />
+        </div>
+      ) : (
+      <>
       {/* ── Top Bar: Event selector + controls ── */}
       <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 px-4 py-2.5 border-b bg-card">
         <div className="w-full sm:w-64 shrink-0">
@@ -1693,7 +2744,7 @@ export function EmbedsManager() {
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {EVENT_GROUPS.map((group) => (
+              {visibleGroups.map((group) => (
                 <SelectGroup key={group.label}>
                   <SelectLabel className="text-xs uppercase tracking-wide">{group.label}</SelectLabel>
                   {group.keys.map((key) => {
@@ -2134,6 +3185,8 @@ export function EmbedsManager() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </>
+      )}
     </div>
   );
 }

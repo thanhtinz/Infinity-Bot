@@ -117,43 +117,6 @@ class ShopCog(discord.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @discord.slash_command(name="help", description="Xem danh sách lệnh hỗ trợ")
-    async def help_cmd(self, ctx: discord.ApplicationContext):
-        embed = discord.Embed(title="📋 Danh sách lệnh", color=discord.Color.blurple())
-        embed.add_field(
-            name="🛒 Mua hàng",
-            value=(
-                "`/san_pham` — Xem sản phẩm đang bán\n"
-                "`/account` — Tài khoản & chi tiêu\n"
-                "`/orders` — Đơn hàng gần đây\n"
-                "`/orders id:<id>` — Chi tiết đơn hàng"
-            ),
-            inline=False,
-        )
-        embed.add_field(
-            name="📝 Đánh giá & Hỗ trợ",
-            value=(
-                "`/feedback` — Đánh giá sản phẩm đã mua\n"
-                "`/support` — Liên hệ hỗ trợ"
-            ),
-            inline=False,
-        )
-        embed.add_field(
-            name="🏆 Bảng xếp hạng",
-            value="`/bxh` — Bảng xếp hạng mua hàng",
-            inline=False,
-        )
-        embed.add_field(
-            name="🎉 Giveaway",
-            value=(
-                "`/giveaway` — Tạo giveaway (Admin)\n"
-                "`/giveaway_list` — Xem giveaway đang chạy"
-            ),
-            inline=False,
-        )
-        embed.set_footer(text="Nhập lệnh để xem chi tiết.")
-        await ctx.respond(embed=embed, ephemeral=True)
-
     @discord.slash_command(name="support", description="Hướng dẫn liên hệ hỗ trợ")
     async def support_cmd(self, ctx: discord.ApplicationContext):
         session = get_session()
@@ -216,7 +179,7 @@ class ShopCog(discord.Cog):
                     title=f"📦 Đơn hàng #{order.id}",
                     color=discord.Color.green() if order.status == "DELIVERED" else discord.Color.gold(),
                 )
-                embed.add_field(name="Sản phẩm", value=order.product.name if order.product else f"#{order.product_id}", inline=True)
+                embed.add_field(name="Sản phẩm", value=(order.product.name or f"#{order.product_id}") if order.product else f"#{order.product_id}", inline=True)
                 if order.package_name:
                     embed.add_field(name="Gói", value=order.package_name, inline=True)
                 embed.add_field(name="Số tiền", value=f"{order.total_price:,.0f} VNĐ", inline=True)
@@ -244,7 +207,7 @@ class ShopCog(discord.Cog):
                 embed = discord.Embed(title="📦 Đơn hàng của bạn", color=discord.Color.blue())
                 for o in orders:
                     icon = STATUS_ICON.get(o.status, "❓")
-                    pname = o.product.name if o.product else f"#{o.product_id}"
+                    pname = (o.product.name or f"#{o.product_id}") if o.product else f"#{o.product_id}"
                     pkg = f" ({o.package_name})" if o.package_name else ""
                     embed.add_field(
                         name=f"#{o.id} — {pname}{pkg}",

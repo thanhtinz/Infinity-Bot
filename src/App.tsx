@@ -1,12 +1,12 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, FileQuestion, UserCheck, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply } from "lucide-react";
+import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ListOrdered, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply, Image as ImageIcon, Filter, Zap } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 
 // ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
 const DashboardHome = lazy(() => import("./pages/DashboardHome").then(m => ({ default: m.DashboardHome })));
-const BotConfig = lazy(() => import("./pages/BotConfig").then(m => ({ default: m.BotConfig })));
+const ConfigPrefix = lazy(() => import("./pages/ConfigPrefix").then(m => ({ default: m.ConfigPrefix })));
 const ConfigDiscord = lazy(() => import("./pages/ConfigDiscord").then(m => ({ default: m.ConfigDiscord })));
 const ConfigPayOS = lazy(() => import("./pages/ConfigPayOS").then(m => ({ default: m.ConfigPayOS })));
 const ConfigChannels = lazy(() => import("./pages/ConfigChannels").then(m => ({ default: m.ConfigChannels })));
@@ -15,11 +15,16 @@ const ProductsManager = lazy(() => import("./pages/ProductsManager").then(m => (
 const OrdersManager = lazy(() => import("./pages/OrdersManager").then(m => ({ default: m.OrdersManager })));
 const CouponsManager = lazy(() => import("./pages/CouponsManager").then(m => ({ default: m.CouponsManager })));
 const EmbedsManager = lazy(() => import("./pages/EmbedsManager").then(m => ({ default: m.EmbedsManager })));
+const LevelEmbedsManager = lazy(() => import("./pages/EmbedsManager").then(m => ({ default: m.LevelEmbedsManager })));
 const EmojiManager = lazy(() => import("./pages/EmojiManager").then(m => ({ default: m.EmojiManager })));
 const FeedbackManager = lazy(() => import("./pages/FeedbackManager").then(m => ({ default: m.FeedbackManager })));
 const UsersManager = lazy(() => import("./pages/UsersManager").then(m => ({ default: m.UsersManager })));
 const GiveawaysManager = lazy(() => import("./pages/GiveawaysManager").then(m => ({ default: m.GiveawaysManager })));
 const InviteTracking = lazy(() => import("./pages/InviteTracking").then(m => ({ default: m.InviteTracking })));
+const RankCardEditor = lazy(() => import("./pages/LevelingManager").then(m => ({ default: m.RankCardEditor })));
+
+const LevelingManager = lazy(() => import("./pages/LevelingManager").then(m => ({ default: m.LevelingManager })));
+
 const Leaderboard = lazy(() => import("./pages/Leaderboard").then(m => ({ default: m.Leaderboard })));
 const WarningsManager = lazy(() => import("./pages/WarningsManager").then(m => ({ default: m.WarningsManager })));
 const StickyManager = lazy(() => import("./pages/StickyManager").then(m => ({ default: m.StickyManager })));
@@ -113,6 +118,21 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    key: "leveling",
+    icon: Trophy,
+    label: "Level",
+    feature: "leveling",
+    items: [
+      { to: "/leveling/rank-card", icon: ImageIcon, label: "Rank Card" },
+      { to: "/leveling/embeds", icon: Palette, label: "Embed Builder" },
+      { to: "/leveling/config", icon: Settings, label: "Cấu hình XP" },
+      { to: "/leveling/filters", icon: Filter, label: "Filters" },
+      { to: "/leveling/leaderboard", icon: ListOrdered, label: "Leaderboard" },
+      { to: "/leveling/rewards", icon: Gift, label: "Rewards" },
+      { to: "/leveling/multipliers", icon: Zap, label: "Multipliers" },
+    ],
+  },
+  {
     key: "welcome",
     icon: Hand,
     label: "Chào mừng",
@@ -154,6 +174,7 @@ const navGroups: NavGroup[] = [
     icon: Settings,
     label: "Cấu hình",
     items: [
+      { to: "/config/prefix", icon: Terminal, label: "Prefix lệnh" },
       { to: "/config/discord", icon: Bot, label: "Discord Bot" },
       { to: "/config/payos", icon: CreditCard, label: "PayOS", feature: "shop" },
       { to: "/config/channels", icon: Hash, label: "Kênh & Quyền" },
@@ -397,6 +418,7 @@ function MobileNav() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
   const { isLoading, isError } = useQuery({
     queryKey: ["auth_me"],
     queryFn: () => fetch("/api/auth/me", { credentials: "include" }).then(res => {
@@ -408,6 +430,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (isLoading) return <div className="h-screen flex items-center justify-center">Đang tải...</div>;
   if (isError) return <Navigate to="/login" replace />;
+  const isFullscreenEditor = location.pathname === "/leveling/rank-card-editor";
+  if (isFullscreenEditor) {
+    return <div className="min-h-screen bg-background text-foreground">{children}</div>;
+  }
 
   return (
     <div className="flex min-h-screen bg-background text-foreground flex-col md:flex-row overflow-x-hidden">
@@ -431,7 +457,7 @@ function SetupGate() {
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
   });
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return <div className="h-screen flex items-center justify-center">Đang tải...</div>;
   }
 
@@ -487,8 +513,10 @@ function ProtectedAppRoutes() {
         <Routes>
         <Route path="/" element={<DashboardHome />} />
         <Route path="/bot-status" element={<BotStatus />} />
+        <Route path="/leveling/rank-card" element={<LevelingManager section="rank-card" />} />
         <Route path="/features" element={<Features />} />
-        <Route path="/config" element={<BotConfig />} />
+        <Route path="/config" element={<Navigate to="/config/discord" replace />} />
+        <Route path="/config/prefix" element={<ConfigPrefix />} />
         <Route path="/config/discord" element={<ConfigDiscord />} />
         <Route path="/config/payos" element={<ConfigPayOS />} />
         <Route path="/config/channels" element={<ConfigChannels />} />
@@ -501,6 +529,15 @@ function ProtectedAppRoutes() {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/warnings" element={<WarningsManager />} />
         <Route path="/sticky" element={<StickyManager />} />
+        <Route path="/leveling" element={<Navigate to="/leveling/rank-card" replace />} />
+        <Route path="/leveling/rank-card-editor" element={<RankCardEditor />} />
+        <Route path="/leveling/embeds" element={<LevelEmbedsManager />} />
+        <Route path="/leveling/config" element={<LevelingManager section="config" />} />
+        <Route path="/leveling/filters" element={<LevelingManager section="filters" />} />
+        <Route path="/leveling/leaderboard" element={<LevelingManager section="leaderboard" />} />
+        <Route path="/leveling/rewards" element={<LevelingManager section="rewards" />} />
+        <Route path="/leveling/multipliers" element={<LevelingManager section="multipliers" />} />
+
         <Route path="/giveaways" element={<GiveawaysManager />} />
         <Route path="/invites" element={<InviteTracking />} />
         <Route path="/embeds" element={<EmbedsManager />} />

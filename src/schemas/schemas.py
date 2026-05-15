@@ -17,18 +17,45 @@ class SystemConfigBase(BaseModel):
     coupon_channel_id: Optional[str] = None
     bang_gia_channel_id: Optional[str] = None
     welcome_channel_id: Optional[str] = None
-    command_prefix: Optional[str] = None
     command_prefix: Optional[str] = "!"
     
 class SystemConfigResponse(SystemConfigBase):
+    """Full response — dùng nội bộ (không expose qua API public)."""
     id: int
     bot_status: str
+    class Config:
+        from_attributes = True
+
+
+class SystemConfigSafe(BaseModel):
+    """Safe response — không trả về secrets, dùng cho GET /api/config."""
+    id: int
+    bot_status: str
+    # Non-secret fields
+    discord_client_id: Optional[str] = None
+    public_app_url: Optional[str] = None
+    payos_client_id: Optional[str] = None
+    guild_id: Optional[str] = None
+    admin_role_id: Optional[str] = None
+    don_hang_channel_id: Optional[str] = None
+    feedback_channel_id: Optional[str] = None
+    coupon_channel_id: Optional[str] = None
+    bang_gia_channel_id: Optional[str] = None
+    welcome_channel_id: Optional[str] = None
+    command_prefix: Optional[str] = "!"
+    # Booleans thay cho secrets thực
+    has_discord_token: bool = False
+    has_discord_client_secret: bool = False
+    has_payos_api_key: bool = False
+    has_payos_checksum_key: bool = False
+
     class Config:
         from_attributes = True
 
 class ProductBase(BaseModel):
     name: str
     description: Optional[str] = None
+    note: Optional[str] = None
     image_url: Optional[str] = None
     packages: Optional[List[dict]] = []  # [{"name": str, "price": float, "active": bool}]
     active: bool = True

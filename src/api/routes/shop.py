@@ -1,4 +1,4 @@
-"""Shop routes: Products, Orders, Coupons, Users, Stats, Leaderboard, PayOS, TempVoice."""
+"""Shop routes: Products, Orders, Coupons, Users, Stats, Leaderboard, PayOS."""
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
@@ -7,11 +7,38 @@ import os, uuid, shutil, logging, datetime
 from src.database.config import get_db
 from src.models.models import SystemConfig, Product, Order, User, Coupon
 from src.schemas.schemas import ProductBase, ProductResponse, OrderResponse
+
 from payos import PayOS
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+async def _refresh_bang_gia(db):
+    """Tự động cập nhật message bảng giá sau khi sản phẩm thay đổi."""
+    try:
+        from src.bot.manager import get_bot_client
+        from src.bot.cogs.admin_shop import BangGiaView
+        from src.bot.embed_utils import build_embed
+        bot = get_bot_client()
+        if not bot or not bot.is_ready():
+            return
+        config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+        if not config or not config.bang_gia_message_id or not config.bang_gia_channel_id:
+            return
+        channel = bot.get_channel(int(config.bang_gia_channel_id))
+        if not channel:
+            return
+        products = db.execute(
+            select(Product).where(Product.active == True).order_by(Product.id)
+        ).scalars().all()
+        embed = build_embed("bang_gia", db)
+        view = BangGiaView(products)
+        msg = await channel.fetch_message(int(config.bang_gia_message_id))
+        await msg.edit(embed=embed, view=view)
+    except Exception as e:
+        logger.warning(f"_refresh_bang_gia failed: {e}")
 
 
 # ── Products ──────────────────────────────────────────────────────────────────
@@ -35,18 +62,19 @@ async def upload_product_image(file: UploadFile = File(...)):
 
 
 @router.post("/products", response_model=ProductResponse)
-def create_product(product_in: ProductBase, db=Depends(get_db)):
+async def create_product(product_in: ProductBase, db=Depends(get_db)):
     data = product_in.model_dump()
     data.setdefault("price", 0)
     product = Product(**data)
     db.add(product)
     db.commit()
     db.refresh(product)
+    await _refresh_bang_gia(db)
     return product
 
 
 @router.put("/products/{product_id}", response_model=ProductResponse)
-def update_product(product_id: int, product_in: ProductBase, db=Depends(get_db)):
+async def update_product(product_id: int, product_in: ProductBase, db=Depends(get_db)):
     result = db.execute(select(Product).where(Product.id == product_id))
     product = result.scalars().first()
     if not product:
@@ -55,17 +83,19 @@ def update_product(product_id: int, product_in: ProductBase, db=Depends(get_db))
         setattr(product, key, value)
     db.commit()
     db.refresh(product)
+    await _refresh_bang_gia(db)
     return product
 
 
 @router.delete("/products/{product_id}")
-def delete_product(product_id: int, db=Depends(get_db)):
+async def delete_product(product_id: int, db=Depends(get_db)):
     result = db.execute(select(Product).where(Product.id == product_id))
     product = result.scalars().first()
     if not product:
         raise HTTPException(status_code=404, detail="Sản phẩm không tồn tại")
     db.delete(product)
     db.commit()
+    await _refresh_bang_gia(db)
     return {"ok": True}
 
 
@@ -530,64 +560,18 @@ async def payos_webhook(request: Request, db=Depends(get_db)):
                             "order.total": f"{order.total_price:,.0f}",
                         })
                         await discord_user.send(embed=dm_embed)
+                        # Gửi ghi chú sản phẩm nếu có
+                        product_note = order.product.note if order.product else None
+                        if product_note and product_note.strip():
+                            note_embed = discord.Embed(
+                                title="📋 Hướng dẫn / Thông tin nhận hàng",
+                                description=product_note.strip(),
+                                color=discord.Color.blue(),
+                            )
+                            if order.product and order.product.name:
+                                note_embed.set_footer(text=f"Sản phẩm: {order.product.name}")
+                            await discord_user.send(embed=note_embed)
                 except Exception as e:
                     logger.error(f"PayOS webhook DM error: {e}")
 
     return {"code": "00", "desc": "success"}
-
-
-# ── Temp Voice ────────────────────────────────────────────────────────────────
-
-@router.get("/tempvoice/config")
-def get_tempvoice(db=Depends(get_db)):
-    from src.models.models import TempVoiceConfig
-    cfg = db.execute(select(TempVoiceConfig).limit(1)).scalars().first()
-    if not cfg:
-        return {
-            "enabled": False, "join_channel_id": None, "category_id": None,
-            "default_user_limit": 0, "default_bitrate": 64000,
-            "naming_format": "{user}'s Channel", "auto_delete_seconds": 0,
-            "allow_rename": True, "allow_limit": True, "allow_lock": True, "allow_hide": True,
-            "interface_channel_id": None,
-        }
-    return {
-        "enabled": cfg.enabled,
-        "join_channel_id": cfg.join_channel_id,
-        "category_id": cfg.category_id,
-        "default_user_limit": cfg.default_user_limit or 0,
-        "default_bitrate": cfg.default_bitrate or 64000,
-        "naming_format": cfg.naming_format or "{user}'s Channel",
-        "auto_delete_seconds": cfg.auto_delete_seconds or 0,
-        "allow_rename": cfg.allow_rename if cfg.allow_rename is not None else True,
-        "allow_limit": cfg.allow_limit if cfg.allow_limit is not None else True,
-        "allow_lock": cfg.allow_lock if cfg.allow_lock is not None else True,
-        "allow_hide": cfg.allow_hide if cfg.allow_hide is not None else True,
-        "interface_channel_id": cfg.interface_channel_id,
-    }
-
-
-@router.post("/tempvoice/config")
-def save_tempvoice(body: dict, db=Depends(get_db)):
-    from src.models.models import TempVoiceConfig, SystemConfig as SC
-    system = db.execute(select(SC).limit(1)).scalars().first()
-    guild_id = system.guild_id if system else None
-    cfg = db.execute(select(TempVoiceConfig).limit(1)).scalars().first()
-    if not cfg:
-        cfg = TempVoiceConfig(guild_id=guild_id)
-        db.add(cfg)
-    cfg.enabled = body.get("enabled", True)
-    cfg.join_channel_id = body.get("join_channel_id") or None
-    cfg.category_id = body.get("category_id") or None
-    cfg.default_user_limit = body.get("default_user_limit", 0)
-    cfg.default_bitrate = body.get("default_bitrate", 64000)
-    cfg.naming_format = body.get("naming_format", "{user}'s Channel")
-    cfg.auto_delete_seconds = body.get("auto_delete_seconds", 0)
-    cfg.allow_rename = body.get("allow_rename", True)
-    cfg.allow_limit = body.get("allow_limit", True)
-    cfg.allow_lock = body.get("allow_lock", True)
-    cfg.allow_hide = body.get("allow_hide", True)
-    cfg.interface_channel_id = body.get("interface_channel_id") or None
-    if guild_id:
-        cfg.guild_id = guild_id
-    db.commit()
-    return {"ok": True}

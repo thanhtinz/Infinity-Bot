@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, JSON
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, JSON, UniqueConstraint
 from sqlalchemy.orm import relationship
 import datetime
 from src.database.config import Base
@@ -19,10 +19,10 @@ class SystemConfig(Base):
     feedback_channel_id = Column(String, nullable=True)
     coupon_channel_id = Column(String, nullable=True)
     bang_gia_channel_id = Column(String, nullable=True)
+    bang_gia_message_id = Column(String, nullable=True)
     welcome_channel_id = Column(String, nullable=True)
-    bot_status = Column(String, default="offline") # offline, running
+    bot_status = Column(String, default="offline")
     command_prefix = Column(String, default="!")
-    command_prefix = Column(String, default="!") # prefix cho text commands
 
 class User(Base):
     __tablename__ = "users"
@@ -39,6 +39,7 @@ class Product(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     description = Column(Text, nullable=True)
+    note = Column(Text, nullable=True)          # ghi chú nội bộ / hướng dẫn sau khi mua
     image_url = Column(String, nullable=True)
     price = Column(Float, default=0)  # kept for compat, use packages instead
     packages = Column(JSON, default=list)  # [{"name": str, "price": float, "active": bool}]
@@ -141,13 +142,74 @@ class TempVoiceConfig(Base):
     allow_hide = Column(Boolean, default=True)
     # Interface channel for control panel buttons
     interface_channel_id = Column(String, nullable=True)
+    voice_buttons = Column(JSON, default=list)  # enabled panel buttons
 
 class TempVoiceRoom(Base):
     __tablename__ = "temp_voice_rooms"
     id = Column(Integer, primary_key=True, index=True)
     channel_id = Column(String, unique=True)
     owner_id = Column(String, nullable=True)
-    guild_id = Column(String, nullable=True)
+    panel_channel_id = Column(String, nullable=True)
+    panel_message_id = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class LevelingConfig(Base):
+    __tablename__ = "leveling_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, unique=True, index=True)
+    enabled = Column(Boolean, default=True)
+    xp_min = Column(Integer, default=15)
+    xp_max = Column(Integer, default=25)
+    cooldown_seconds = Column(Integer, default=60)
+    level_formula = Column(String, default="quadratic")
+    level_up_channel_id = Column(String, nullable=True)
+    level_up_mode = Column(String, default="current")  # current | fixed | dm | off
+    ignored_channels = Column(JSON, default=list)
+    ignored_roles = Column(JSON, default=list)
+    ignored_users = Column(JSON, default=list)
+    whitelist_channels = Column(JSON, default=list)
+    use_channel_whitelist = Column(Boolean, default=False)
+    gain_xp_from_commands = Column(Boolean, default=False)
+    remove_old_reward_roles = Column(Boolean, default=False)
+    stack_reward_roles = Column(Boolean, default=True)
+    rank_card_config = Column(JSON, default=dict)
+
+class MemberXP(Base):
+    __tablename__ = "member_xp"
+    __table_args__ = (UniqueConstraint("guild_id", "discord_id", name="uq_member_xp_guild_user"),)
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, index=True)
+    discord_id = Column(String, index=True)
+    username = Column(String, nullable=True)
+    xp = Column(Integer, default=0)
+    level = Column(Integer, default=0)
+    message_count = Column(Integer, default=0)
+    last_xp_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow)
+    rank_card_bg = Column(String, nullable=True)   # slug of selected background e.g. "rank_bg_{guild}_1"
+
+class LevelReward(Base):
+    __tablename__ = "level_rewards"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, index=True)
+    level = Column(Integer, nullable=False)
+    role_id = Column(String, nullable=False)
+    role_name = Column(String, nullable=True)
+    remove_on_higher = Column(Boolean, default=False)
+    dm_user = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class LevelMultiplier(Base):
+    __tablename__ = "level_multipliers"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, index=True)
+    type = Column(String, nullable=False)  # global | channel | role
+    target_id = Column(String, nullable=True)
+    target_name = Column(String, nullable=True)
+    multiplier = Column(Float, default=1.0)
+    priority = Column(Integer, default=0)
+    enabled = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class EmbedTemplate(Base):
@@ -166,6 +228,27 @@ class EmbedTemplate(Base):
     enabled = Column(Boolean, default=True)
     response_mode = Column(String, default="embed") # "embed" or "text"
     text_template = Column(Text, nullable=True)     # Custom text template with {variables}
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+class CustomEmbedMessage(Base):
+    """Tin nhắn embed tùy chỉnh — tạo từ dashboard, gửi/cập nhật lên Discord."""
+    __tablename__ = "custom_embed_messages"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)           # Tên hiển thị trong dashboard
+    channel_id = Column(String, nullable=True)      # Discord channel ID đã gửi
+    message_id = Column(String, nullable=True)      # Discord message ID
+    guild_id = Column(String, nullable=True)
+    # Embed data
+    title = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+    color = Column(String, default="#5865F2")
+    author = Column(String, nullable=True)
+    author_icon_url = Column(String, nullable=True)
+    footer = Column(String, nullable=True)
+    thumbnail_url = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
+    fields = Column(JSON, default=list)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 

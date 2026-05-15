@@ -357,14 +357,16 @@ export function EmbedBuilder({
         {titleSection}
         {descriptionSection}
 
-        <button
-          type="button"
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        <div
+          role="button"
+          tabIndex={0}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none"
           onClick={() => setShowAdvanced(!showAdvanced)}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setShowAdvanced(!showAdvanced); } }}
         >
           {showAdvanced ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           Nâng cao (footer, ảnh, fields)
-        </button>
+        </div>
 
         {showAdvanced && (
           <div className="space-y-4 pl-2 border-l-2 border-muted">

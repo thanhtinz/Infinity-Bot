@@ -13,6 +13,23 @@ import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { Mic, Server, Settings, Shield, Wrench } from "lucide-react";
 
+const VOICE_BUTTON_OPTIONS = [
+  { key: "name", label: "Name", desc: "Đổi tên phòng", emoji: "✏️" },
+  { key: "limit", label: "Limit", desc: "Giới hạn người", emoji: "👥" },
+  { key: "privacy", label: "Privacy", desc: "Bật/tắt riêng tư", emoji: "🔐" },
+  { key: "trust", label: "Trust", desc: "Cho phép user", emoji: "✅" },
+  { key: "untrust", label: "Untrust", desc: "Gỡ quyền user", emoji: "➖" },
+  { key: "invite", label: "Invite", desc: "Mời user", emoji: "📨" },
+  { key: "kick", label: "Kick", desc: "Đuổi user", emoji: "👢" },
+  { key: "region", label: "Region", desc: "Đặt region tự động", emoji: "🌍" },
+  { key: "block", label: "Block", desc: "Chặn user", emoji: "🚫" },
+  { key: "unblock", label: "Unblock", desc: "Bỏ chặn user", emoji: "🔓" },
+  { key: "claim", label: "Claim", desc: "Nhận phòng vô chủ", emoji: "🙋" },
+  { key: "transfer", label: "Transfer", desc: "Chuyển chủ phòng", emoji: "👑" },
+  { key: "delete", label: "Delete", desc: "Xóa phòng", emoji: "🗑️" },
+];
+const DEFAULT_VOICE_BUTTONS = VOICE_BUTTON_OPTIONS.map((button) => button.key);
+
 const BITRATE_OPTIONS = [
   { value: 8000, label: "8 kbps" },
   { value: 32000, label: "32 kbps" },
@@ -51,6 +68,7 @@ export function ConfigVoice() {
   const [allowLock, setAllowLock] = useState(true);
   const [allowHide, setAllowHide] = useState(true);
   const [interfaceChannel, setInterfaceChannel] = useState("");
+  const [voiceButtons, setVoiceButtons] = useState<string[]>(DEFAULT_VOICE_BUTTONS);
   const [autoDeleteSeconds, setAutoDeleteSeconds] = useState(0);
 
   useEffect(() => {
@@ -70,11 +88,15 @@ export function ConfigVoice() {
       setAllowLock(tvConfig.allow_lock ?? true);
       setAllowHide(tvConfig.allow_hide ?? true);
       setInterfaceChannel(tvConfig.interface_channel_id || "");
+      setVoiceButtons(tvConfig.voice_buttons?.length ? tvConfig.voice_buttons : DEFAULT_VOICE_BUTTONS);
       setAutoDeleteSeconds(tvConfig.auto_delete_seconds ?? 0);
     }
   }, [tvConfig]);
 
   const activeGuildId = guildId || config?.guild_id;
+  const toggleVoiceButton = (key: string, checked: boolean) => {
+    setVoiceButtons((current) => checked ? [...new Set([...current, key])] : current.filter((item) => item !== key));
+  };
 
   const { data: guilds = [] } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["discord_guilds"],
@@ -102,6 +124,7 @@ export function ConfigVoice() {
           allow_lock: allowLock,
           allow_hide: allowHide,
           interface_channel_id: interfaceChannel,
+          voice_buttons: voiceButtons,
           auto_delete_seconds: autoDeleteSeconds,
         }),
       }).then((r) => {
@@ -342,6 +365,40 @@ export function ConfigVoice() {
               guildId={activeGuildId}
             />
             <p className="text-xs text-muted-foreground">Kênh chứa nút điều khiển voice room.</p>
+          </div>
+
+          <Separator />
+
+          {/* Panel Buttons */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Label>Nút panel tuỳ chỉnh</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Chọn các nút sẽ hiển thị trong embed điều khiển phòng voice.
+                </p>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => setVoiceButtons(DEFAULT_VOICE_BUTTONS)}>
+                Chọn đủ
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {VOICE_BUTTON_OPTIONS.map((button) => (
+                <div key={button.key} className="flex items-center justify-between rounded-lg border p-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm">{button.emoji} {button.label}</p>
+                    <p className="text-xs text-muted-foreground">{button.desc}</p>
+                  </div>
+                  <Switch
+                    checked={voiceButtons.includes(button.key)}
+                    onCheckedChange={(checked) => toggleVoiceButton(button.key, checked)}
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Đang bật {voiceButtons.length}/{VOICE_BUTTON_OPTIONS.length} nút: {voiceButtons.join(", ")}
+            </p>
           </div>
 
           <Separator />

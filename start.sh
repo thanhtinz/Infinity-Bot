@@ -55,7 +55,7 @@ BUN_PID=$!
 # Start FastAPI as soon as Python deps are ready (background)
 wait $UV_PID
 echo "[+$(elapsed)ms] Starting FastAPI on port $BACKEND_PORT"
-uv run uvicorn app:asgi --host 0.0.0.0 --port $BACKEND_PORT &
+uv run uvicorn app:asgi --host 0.0.0.0 --port $BACKEND_PORT --reload --reload-dir src &
 BACKEND_PID=$!
 
 # Start Vite as soon as JS deps are ready (foreground)

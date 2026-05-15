@@ -17,6 +17,7 @@ FEATURE_DEFS: list[dict] = [
     {"key": "ticket",          "label": "Ticket",              "desc": "Hệ thống ticket hỗ trợ",                    "icon": "Ticket",        "cogs": ["TicketCog"]},
     {"key": "giveaway",        "label": "Giveaway",            "desc": "Tạo và quản lý giveaway",                   "icon": "Gift",          "cogs": ["GiveawayCog"]},
     {"key": "invite_tracking", "label": "Invite Tracking",     "desc": "Theo dõi invite, BXH mời",                  "icon": "Link2",         "cogs": ["InviteTrackingCog"]},
+    {"key": "leveling",        "label": "Leveling",            "desc": "XP, rank, leaderboard, role rewards",        "icon": "Trophy",        "cogs": ["LevelingCog"]},
     {"key": "moderation",      "label": "Kiểm duyệt",         "desc": "Ban, kick, warn, automod, logging",          "icon": "Shield",        "cogs": ["ModerationCog", "AutoModCog", "LoggingCog"]},
     {"key": "welcome",         "label": "Chào mừng & Roles",   "desc": "Welcome/goodbye, auto role, button/select/reaction roles", "icon": "Hand", "cogs": ["WelcomeCog", "RolesCog", "ReactionRolesCog"]},
     {"key": "starboard",       "label": "Starboard",           "desc": "Ghim tin nhắn nhiều reaction",               "icon": "Star",          "cogs": ["StarboardCog"]},
@@ -26,7 +27,6 @@ FEATURE_DEFS: list[dict] = [
     {"key": "custom_commands", "label": "Custom Commands",     "desc": "Tạo lệnh tùy chỉnh",                        "icon": "Terminal",      "cogs": ["CustomCommandsCog"]},
     {"key": "autoresponder",  "label": "Auto Responder",      "desc": "Tự động trả lời theo keyword",               "icon": "MessageCircleReply", "cogs": ["AutoResponderCog"]},
     {"key": "scheduler",       "label": "Tin nhắn hẹn giờ",   "desc": "Gửi tin nhắn theo lịch",                     "icon": "Clock",         "cogs": ["SchedulerCog"]},
-    {"key": "autoresponder",   "label": "Auto Responder",     "desc": "Tự động trả lời theo keyword",                "icon": "MessageCircleReply", "cogs": ["AutoResponderCog"]},
     {"key": "interactions",    "label": "Tương tác",          "desc": "Lệnh tương tác anime GIF (hug, kiss, slap…)",  "icon": "Heart",             "cogs": ["InteractionCog"]},
 ]
 

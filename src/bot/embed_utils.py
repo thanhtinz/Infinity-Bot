@@ -337,6 +337,47 @@ DEFAULTS: dict[str, dict] = {
         "title": "🔊 Voice tạm đã tạo",
         "description": "{user.mention} đã tạo kênh voice **{channel.name}**.",
         "color": "#5865F2",
+        "footer": "Dùng nút bên dưới để quản lý phòng",
+        "fields": [
+            {"name": "Kênh", "value": "{channel.mention}", "inline": True},
+            {"name": "Chủ phòng", "value": "{user.mention}", "inline": True},
+        ],
+    },
+    "tempvoice_panel": {
+        "title": "🎙️ Điều khiển phòng voice",
+        "description": "Panel quản lý phòng voice tạm cho **{server}**.\n\nVào phòng voice của bạn rồi dùng các nút bên dưới để khóa, đổi tên, giới hạn, cấp quyền hoặc chuyển chủ phòng.",
+        "color": "#5865F2",
+        "footer": "Temp Voice Control Panel",
+        "fields": [
+            {"name": "Kênh gửi", "value": "{panel.channel}", "inline": True},
+            {"name": "Nút bật", "value": "{button.count}", "inline": True},
+        ],
+    },
+    "tempvoice_action": {
+        "title": "🎙️ Temp Voice Action",
+        "description": "{user.mention} đã **{action}** trong {channel.mention}.",
+        "color": "#5865F2",
+        "footer": "Temp Voice Logs",
+        "fields": [
+            {"name": "Mục tiêu", "value": "{target.mention}", "inline": True},
+            {"name": "Chi tiết", "value": "{details}", "inline": True},
+        ],
+    },
+    "level_up": {
+        "title": "🎉 Level Up!",
+        "description": "Chúc mừng {user.mention}, bạn đã lên **Level {level}**!",
+        "color": "#57F287",
+        "footer": "{server} • Rank #{rank}",
+        "fields": [
+            {"name": "XP", "value": "{xp}", "inline": True},
+            {"name": "Tiến độ", "value": "{progress} ({progress_percent}%)", "inline": True},
+            {"name": "Reward", "value": "{reward.role}", "inline": True},
+        ],
+    },
+    "level_reward": {
+        "title": "🎁 Level Reward",
+        "description": "{user.mention} đã nhận reward **{reward.role}** ở Level {level}.",
+        "color": "#57F287",
         "fields": [],
     },
     # ── Phase 3: Welcome extras ───────────────────────────────────────────────
@@ -564,6 +605,44 @@ DEFAULTS: dict[str, dict] = {
     "interact_yawn":       {"title": "🥱 Yawn!", "description": "{user.mention} ngáp", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
     "interact_yay":        {"title": "🥳 Yay!", "description": "{user.mention} yay!", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
     "interact_yes":        {"title": "✅ Yes!", "description": "{user.mention} gật đầu", "color": "#2ECC71", "image_url": "{gif_url}", "fields": []},
+    # ── Help ──
+    "help_menu": {
+        "title": "📋 Trợ giúp — {bot_name}",
+        "description": "Xin chào {user.mention}!\nChọn **danh mục** bên dưới để xem danh sách lệnh.",
+        "color": "#5865F2",
+        "footer": "{bot_name} • Chọn danh mục để tiếp tục",
+        "fields": [],
+    },
+    "help_category": {
+        "title": "{category_emoji} {category_name}",
+        "description": "Danh sách lệnh trong **{category_name}**:\n{commands_list}",
+        "color": "#5865F2",
+        "footer": "{bot_name} • Chọn lệnh để xem chi tiết",
+        "fields": [],
+    },
+    "help_command": {
+        "title": "{command_emoji} `/{command_name}`",
+        "description": "{command_desc}",
+        "color": "#57F287",
+        "footer": "{bot_name}",
+        "fields": [
+            {"name": "📌 Cách dùng", "value": "{command_usage}", "inline": False},
+        ],
+    },
+    "bang_gia": {
+        "title": "🛒 Bảng Giá Sản Phẩm",
+        "description": "Chọn sản phẩm từ menu bên dưới để xem chi tiết và giá các gói.",
+        "color": "#5865F2",
+        "footer": "Bấm vào tên sản phẩm bên dưới để xem chi tiết",
+        "fields": [],
+    },
+    "san_pham_detail": {
+        "title": "📦 {product.name}",
+        "description": "{product.description}",
+        "color": "#57F287",
+        "footer": "Chỉ bạn mới thấy thông tin này • Liên hệ admin để đặt hàng",
+        "fields": [],
+    },
 }
 
 
@@ -582,6 +661,25 @@ def _hex_to_int(hex_color: str) -> int:
         return int(hex_color.lstrip("#"), 16)
     except Exception:
         return 0x5865F2
+
+
+def resolve_image_url(image_url: str | None, db: Session) -> str | None:
+    """
+    Chuyển relative path (/static/uploads/...) thành full URL dùng được trong Discord.
+    Trả về None nếu không có hoặc không hợp lệ.
+    """
+    if not image_url:
+        return None
+    if image_url.startswith("http://") or image_url.startswith("https://"):
+        return image_url
+    if image_url.startswith("/"):
+        # Relative path — cần ghép với public_app_url
+        from src.models.models import SystemConfig
+        config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+        base = (config.public_app_url or "").rstrip("/") if config else ""
+        if base:
+            return base + image_url
+    return None
 
 
 def build_embed(

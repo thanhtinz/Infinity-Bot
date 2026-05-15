@@ -17,7 +17,7 @@ from src.api.routes.autoresponder import router as autoresponder_router
 from src.api.routes.scheduler import router as scheduler_router
 from src.api.routes.backup import router as backup_router
 from src.api.routes.features import router as features_router
-from src.api.routes.autoresponder import router as autoresponder_router
+from src.api.routes.leveling import router as leveling_router
 
 router = APIRouter()
 
@@ -37,4 +37,4 @@ router.include_router(autoresponder_router, tags=["auto-responders"])
 router.include_router(scheduler_router, tags=["scheduler"])
 router.include_router(backup_router, tags=["backup"])
 router.include_router(features_router, tags=["features"])
-router.include_router(autoresponder_router, tags=["auto-responders"])
+router.include_router(leveling_router, tags=["leveling"])

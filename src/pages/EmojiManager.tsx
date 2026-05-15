@@ -455,15 +455,34 @@ function EmojiUploadDialog({
   const [preview, setPreview] = useState<string | null>(null);
   const [sizeError, setSizeError] = useState(false);
 
+  // GIF giữ nguyên; còn lại resize về 128×128 qua Canvas
+  const prepareImageData = (f: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        const dataUri = reader.result as string;
+        if (f.type === "image/gif") { resolve(dataUri); return; }
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const SIZE = 128;
+          const canvas = document.createElement("canvas");
+          canvas.width = SIZE; canvas.height = SIZE;
+          const ctx = canvas.getContext("2d")!;
+          ctx.drawImage(img, 0, 0, SIZE, SIZE);
+          resolve(canvas.toDataURL("image/png"));
+        };
+        img.src = dataUri;
+      };
+      reader.readAsDataURL(f);
+    });
+  };
+
   const uploadMutation = useMutation({
     mutationFn: async () => {
       if (!file) throw new Error("No file selected");
-      const reader = new FileReader();
-      const dataUri = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      const dataUri = await prepareImageData(file);
       const res = await fetch("/api/discord/emojis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

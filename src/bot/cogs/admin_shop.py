@@ -238,6 +238,116 @@ class OrderPayView(discord.ui.View):
                 pass
 
 
+# ── Bang gia UI ───────────────────────────────────────────────────────────────
+
+class BangGiaSelect(discord.ui.Select):
+    def __init__(self, products: list):
+        options = [
+            discord.SelectOption(
+                label=(p.name or f"Sản phẩm #{p.id}")[:100],
+                value=str(p.id),
+                description=(p.description[:100] if p.description else "Xem chi tiết gói"),
+            )
+            for p in products[:25]
+        ]
+        super().__init__(
+            placeholder="🔍 Chọn sản phẩm để xem chi tiết...",
+            options=options,
+            min_values=1,
+            max_values=1,
+            custom_id="bang_gia_select_persistent",
+        )
+        # Lưu plain data (không giữ SQLAlchemy objects vì session đã đóng)
+        self.product_ids = [str(p.id) for p in products[:25]]
+
+    async def callback(self, interaction: discord.Interaction):
+        product_id = self.values[0]
+
+        from src.database.config import SessionLocal
+        from src.bot.embed_utils import build_embed, resolve_image_url
+        from src.models.models import EmbedTemplate
+        session = SessionLocal()
+        try:
+            product = session.execute(
+                select(Product).where(Product.id == int(product_id))
+            ).scalars().first()
+
+            if not product:
+                await interaction.response.send_message("❌ Không tìm thấy sản phẩm.", ephemeral=True)
+                return
+
+            pkgs = [pk for pk in (product.packages or []) if pk.get("active", True)]
+            img = resolve_image_url(product.image_url, session)
+
+            tmpl = session.execute(
+                select(EmbedTemplate).where(EmbedTemplate.event_type == "san_pham_detail")
+            ).scalars().first()
+            db_has_fields = bool(tmpl and tmpl.enabled and tmpl.fields)
+
+            first_pkg = pkgs[0] if pkgs else {}
+            embed = build_embed("san_pham_detail", session, vars={
+                "product.name": product.name or f"Sản phẩm #{product.id}",
+                "product.description": product.description or "Không có mô tả.",
+                "product.image_url": img or "",
+                "package.name": first_pkg.get("name", ""),
+                "package.price": f"{first_pkg.get('price', 0):,.0f}" if first_pkg else "",
+                "package.description": first_pkg.get("description", "") if first_pkg else "Liên hệ admin để biết giá.",
+            })
+
+            if pkgs and not db_has_fields:
+                for pk in pkgs:
+                    price = pk.get("price", 0)
+                    val = f"💰 **{price:,.0f}đ**"
+                    if pk.get("description"):
+                        val += f"\n{pk['description']}"
+                    embed.add_field(name=f"🔹 {pk.get('name', 'Gói')}", value=val, inline=False)
+
+            if img and not embed.image:
+                embed.set_image(url=img)
+            elif img and not embed.thumbnail:
+                embed.set_thumbnail(url=img)
+
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        except Exception as e:
+            logger.error(f"BangGiaSelect callback error: {e}")
+            await interaction.response.send_message("❌ Lỗi hệ thống.", ephemeral=True)
+        finally:
+            session.close()
+
+
+class BangGiaView(discord.ui.View):
+    def __init__(self, products: list | None = None):
+        super().__init__(timeout=None)
+        if products is not None:
+            self.add_item(BangGiaSelect(products))
+        else:
+            # Persistent re-register: load products từ DB
+            session = SessionLocal()
+            try:
+                prods = session.execute(
+                    select(Product).where(Product.active == True).order_by(Product.id)
+                ).scalars().all()
+                self.add_item(BangGiaSelect(prods))
+            except Exception:
+                self.add_item(BangGiaSelect([]))
+            finally:
+                session.close()
+
+
+async def _autocomplete_product_names(ctx: discord.AutocompleteContext):
+    session = SessionLocal()
+    try:
+        products = session.execute(
+            select(Product).where(Product.active == True).order_by(Product.id)
+        ).scalars().all()
+        query = (ctx.value or "").lower()
+        return [p.name for p in products if p.name and query in p.name.lower()][:25]
+    except Exception:
+        return []
+    finally:
+        session.close()
+
+
 class AdminShopCog(discord.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -324,7 +434,7 @@ class AdminShopCog(discord.Cog):
                 api_key=config.payos_api_key,
                 checksum_key=config.payos_checksum_key,
             )
-            product_display = product.name + (f" ({matched_pkg_name})" if matched_pkg_name else "")
+            product_display = (product.name or f"Sản phẩm #{product.id}") + (f" ({matched_pkg_name})" if matched_pkg_name else "")
             if quantity > 1:
                 product_display += f" x{quantity}"
 
@@ -405,6 +515,140 @@ class AdminShopCog(discord.Cog):
         finally:
             session.close()
 
+    @discord.slash_command(name="san_pham", description="Xem chi tiết sản phẩm")
+    async def san_pham_cmd(
+        self,
+        ctx: discord.ApplicationContext,
+        ten: discord.Option(
+            str,
+            "Tên sản phẩm",
+            required=True,
+            autocomplete=_autocomplete_product_names,
+        ),
+    ):
+        session = get_session()
+        try:
+            from src.bot.embed_utils import build_embed, resolve_image_url
+            from src.models.models import EmbedTemplate
+
+            products = session.execute(
+                select(Product).where(Product.active == True).order_by(Product.id)
+            ).scalars().all()
+
+            ten_lower = ten.lower()
+            product = next(
+                (p for p in products if p.name and p.name.lower() == ten_lower), None
+            ) or next(
+                (p for p in products if p.name and ten_lower in p.name.lower()), None
+            )
+
+            if not product:
+                await ctx.respond(f"❌ Không tìm thấy sản phẩm **{ten}**.", ephemeral=True)
+                return
+
+            pkgs = [pk for pk in (product.packages or []) if pk.get("active", True)]
+            img = resolve_image_url(product.image_url, session)
+
+            tmpl = session.execute(
+                select(EmbedTemplate).where(EmbedTemplate.event_type == "san_pham_detail")
+            ).scalars().first()
+            db_has_fields = bool(tmpl and tmpl.enabled and tmpl.fields)
+
+            first_pkg = pkgs[0] if pkgs else {}
+            embed = build_embed("san_pham_detail", session, vars={
+                "product.name": product.name or f"Sản phẩm #{product.id}",
+                "product.description": product.description or "Không có mô tả.",
+                "product.image_url": img or "",
+                "package.name": first_pkg.get("name", ""),
+                "package.price": f"{first_pkg.get('price', 0):,.0f}" if first_pkg else "",
+                "package.description": first_pkg.get("description", "") if first_pkg else "Liên hệ admin để biết giá.",
+            })
+
+            if pkgs and not db_has_fields:
+                for pk in pkgs:
+                    price = pk.get("price", 0)
+                    val = f"💰 **{price:,.0f}đ**"
+                    if pk.get("description"):
+                        val += f"\n{pk['description']}"
+                    embed.add_field(name=f"🔹 {pk.get('name', 'Gói')}", value=val, inline=False)
+
+            if img and not embed.image:
+                embed.set_image(url=img)
+            elif img and not embed.thumbnail:
+                embed.set_thumbnail(url=img)
+
+            await ctx.respond(embed=embed, ephemeral=True)
+        except Exception as e:
+            logger.error(f"san_pham_cmd error: {e}")
+            await ctx.respond("❌ Lỗi hệ thống.", ephemeral=True)
+        finally:
+            session.close()
+
+    @discord.slash_command(name="bang_gia", description="[Admin] Gửi/cập nhật bảng giá sản phẩm vào kênh")
+    @discord.default_permissions(administrator=True)
+    async def bang_gia_cmd(
+        self,
+        ctx: discord.ApplicationContext,
+        channel: discord.Option(discord.TextChannel, "Kênh gửi bảng giá (để trống = kênh hiện tại)", required=False, default=None),
+    ):
+        session = get_session()
+        try:
+            products = session.execute(
+                select(Product).where(Product.active == True).order_by(Product.id)
+            ).scalars().all()
+
+            if not products:
+                await ctx.respond("⚠️ Chưa có sản phẩm nào đang bán.", ephemeral=True)
+                return
+
+            from src.bot.embed_utils import build_embed
+            embed = build_embed("bang_gia", session)
+            if not embed.footer:
+                embed.set_footer(text="Bấm vào tên sản phẩm bên dưới để xem chi tiết gói")
+
+            view = BangGiaView(products)
+            target = channel or ctx.channel
+
+            # Thử edit message cũ nếu có
+            config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+            old_msg_id = config.bang_gia_message_id if config else None
+            old_channel_id = config.bang_gia_channel_id if config else None
+            edited = False
+
+            if old_msg_id and old_channel_id:
+                try:
+                    old_ch = ctx.guild.get_channel(int(old_channel_id))
+                    if old_ch:
+                        old_msg = await old_ch.fetch_message(int(old_msg_id))
+                        await old_msg.edit(embed=embed, view=view)
+                        edited = True
+                        # Cập nhật channel nếu đổi kênh
+                        if str(target.id) != old_channel_id:
+                            await old_msg.delete()
+                            edited = False
+                except Exception:
+                    edited = False
+
+            if not edited:
+                msg = await target.send(embed=embed, view=view)
+                # Lưu message_id + channel_id vào DB
+                if config:
+                    config.bang_gia_channel_id = str(target.id)
+                    config.bang_gia_message_id = str(msg.id)
+                    session.commit()
+
+            if edited:
+                await ctx.respond(f"✅ Đã cập nhật bảng giá.", ephemeral=True)
+            else:
+                await ctx.respond(f"✅ Đã gửi bảng giá vào {target.mention}", ephemeral=True)
+
+        except Exception as e:
+            logger.error(f"bang_gia_cmd error: {e}")
+            await ctx.respond("❌ Lỗi hệ thống.", ephemeral=True)
+        finally:
+            session.close()
+
+
     @discord.slash_command(name="tao_don_custom", description="[Admin] Tạo đơn custom (tên SP tự nhập, không cần SP trong hệ thống)")
     @discord.default_permissions(administrator=True)
     async def tao_don_custom_cmd(
@@ -427,7 +671,6 @@ class AdminShopCog(discord.Cog):
 
             total = float(gia) * so_luong
 
-            # Tìm/tạo user DB
             db_user = session.execute(
                 select(User).where(User.discord_id == str(user.id))
             ).scalars().first()
@@ -438,16 +681,15 @@ class AdminShopCog(discord.Cog):
 
             order = Order(
                 user_id=db_user.id,
-                product_id=None,            # Không gắn với product hệ thống
+                product_id=None,
                 quantity=so_luong,
                 total_price=total,
-                package_name=san_pham,       # Dùng package_name để lưu tên SP custom
+                package_name=san_pham,
                 status="PENDING",
             )
             session.add(order)
             session.commit()
 
-            # Tạo PayOS link
             domain = config.public_app_url or "http://localhost:3034"
             if not domain.startswith("http"):
                 domain = f"https://{domain}"
@@ -476,7 +718,6 @@ class AdminShopCog(discord.Cog):
             order.checkout_url = checkout_url
             session.commit()
 
-            # Build embeds
             from src.bot.embed_utils import build_embed
             order_vars = {
                 "order.id": order.id,
@@ -488,7 +729,6 @@ class AdminShopCog(discord.Cog):
                 "order.total": f"{total:,.0f}",
             }
 
-            # 1) Gửi thông báo đơn hàng → don_hang_channel (nếu có)
             if config.don_hang_channel_id:
                 don_hang_ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
                 if don_hang_ch:
@@ -500,7 +740,6 @@ class AdminShopCog(discord.Cog):
                         embed=order_embed,
                     )
 
-            # 2) Gửi mã QR thanh toán → kênh chỉ định hoặc kênh hiện tại
             qr_embed = build_embed("qr_thanh_toan", session, vars={
                 **order_vars,
                 "qr_url": checkout_url,
@@ -538,3 +777,7 @@ class AdminShopCog(discord.Cog):
             await ctx.respond("❌ Lỗi hệ thống khi tạo đơn.", ephemeral=True)
         finally:
             session.close()
+
+
+def setup(bot):
+    bot.add_cog(AdminShopCog(bot))

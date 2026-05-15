@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 bot_task = None
 bot = None
 bot_start_time: datetime.datetime | None = None
+bot_ready_event: asyncio.Event | None = None
 
 
 def get_session():
@@ -22,12 +23,14 @@ def get_session():
 def update_bot_status(status: str):
     try:
         session = get_session()
-        config = session.execute(select(SystemConfig).limit(1)).scalars().first()
-        if config:
-            config.bot_status = status
-            session.commit()
-            logger.info(f"bot_status updated to: {status}")
-        session.close()
+        try:
+            config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+            if config:
+                config.bot_status = status
+                session.commit()
+                logger.info(f"bot_status updated to: {status}")
+        finally:
+            session.close()
     except Exception as e:
         logger.error(f"Failed to update bot_status: {e}")
 
@@ -86,14 +89,53 @@ async def _check_expired_orders(bot_client: discord.Bot):
         await asyncio.sleep(120)  # check mỗi 2 phút
 
 
+def get_bot_client():
+    """Trả về bot instance hiện tại (hoặc None nếu chưa chạy)."""
+    return bot
+
+
 def create_bot():
     intents = discord.Intents.default()
     intents.message_content = True
     intents.members = True
 
-    bot_client = discord.Bot(intents=intents)
+    debug_guilds = None
+    session = get_session()
+    try:
+        config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+        if config and config.guild_id:
+            try:
+                debug_guilds = [int(config.guild_id)]
+            except ValueError:
+                logger.warning(f"Invalid guild_id for command sync: {config.guild_id}")
+    finally:
+        session.close()
 
-    # ── Load cogs ────────────────────────────────────────────
+    bot_client = discord.Bot(intents=intents, debug_guilds=debug_guilds)
+
+    # ── Load cogs (reload modules to pick up code changes on restart) ─────────
+    import importlib
+    import sys
+
+    _cog_modules = [
+        "src.bot.cogs.shop", "src.bot.cogs.admin_shop", "src.bot.cogs.giveaway",
+        "src.bot.cogs.moderation", "src.bot.cogs.temp_voice", "src.bot.cogs.invite_tracking",
+        "src.bot.cogs.sticky", "src.bot.cogs.ticket", "src.bot.cogs.utility",
+        "src.bot.cogs.welcome", "src.bot.cogs.roles", "src.bot.cogs.logging_cog",
+        "src.bot.cogs.afk", "src.bot.cogs.starboard", "src.bot.cogs.automod",
+        "src.bot.cogs.custom_commands", "src.bot.cogs.reaction_roles",
+        "src.bot.cogs.scheduler", "src.bot.cogs.autoresponder",
+        "src.bot.cogs.interactions", "src.bot.cogs.leveling", "src.bot.cogs.help_cog",
+        "src.bot.cogs.channel_admin",
+        "src.bot.prefix_commands", "src.bot.embed_utils",
+    ]
+    for _mod_name in _cog_modules:
+        if _mod_name in sys.modules:
+            try:
+                importlib.reload(sys.modules[_mod_name])
+            except Exception as _reload_err:
+                logger.warning(f"Failed to reload {_mod_name}: {_reload_err}")
+
     from src.bot.cogs.shop import ShopCog
     from src.bot.cogs.admin_shop import AdminShopCog
     from src.bot.cogs.giveaway import GiveawayCog
@@ -114,6 +156,10 @@ def create_bot():
     from src.bot.cogs.scheduler import SchedulerCog
     from src.bot.cogs.autoresponder import AutoResponderCog
     from src.bot.cogs.interactions import InteractionCog
+    from src.bot.cogs.leveling import LevelingCog
+    from src.bot.cogs.help_cog import HelpCog
+    from src.bot.cogs.channel_admin import ChannelAdminCog
+    from src.bot.prefix_commands import PrefixCommandsCog
 
     # Tag cogs with feature keys for runtime check
     _COG_FEATURE_MAP = {
@@ -131,6 +177,9 @@ def create_bot():
         "SchedulerCog": "scheduler",
         "AutoResponderCog": "autoresponder",
         "InteractionCog": "interactions",
+        "LevelingCog": "leveling",
+        "ChannelAdminCog": "moderation",
+        "PrefixCommandsCog": None,
     }
 
     cogs = [
@@ -145,6 +194,10 @@ def create_bot():
         ReactionRolesCog(bot_client), SchedulerCog(bot_client),
         AutoResponderCog(bot_client),
         InteractionCog(bot_client),
+        LevelingCog(bot_client),
+        ChannelAdminCog(bot_client),
+        HelpCog(bot_client),
+        PrefixCommandsCog(bot_client),
     ]
     for cog in cogs:
         cog.feature_key = _COG_FEATURE_MAP.get(type(cog).__name__)
@@ -176,36 +229,6 @@ def create_bot():
                 if guild:
                     embed.add_field(name="Server", value=guild.name, inline=True)
                     embed.add_field(name="Thành viên", value=str(guild.member_count), inline=True)
-            await ctx.respond(embed=embed)
-        finally:
-            session.close()
-
-    @bot_client.slash_command(name="san_pham", description="Xem danh sách sản phẩm đang bán")
-    async def san_pham_cmd(ctx: discord.ApplicationContext):
-        session = get_session()
-        try:
-            products = session.execute(
-                select(Product).where(Product.active == True).order_by(Product.id)
-            ).scalars().all()
-            if not products:
-                await ctx.respond("Hiện chưa có sản phẩm nào.", ephemeral=True)
-                return
-            embed = discord.Embed(title="🛒 Danh sách sản phẩm", color=discord.Color.green())
-            for p in products:
-                pkgs = p.packages or []
-                active_pkgs = [pk for pk in pkgs if pk.get("active", True)]
-                if active_pkgs:
-                    pkg_lines = "\n".join(
-                        f"  • **{pk['name']}** — {pk['price']:,.0f}đ" for pk in active_pkgs
-                    )
-                    embed.add_field(name=f"📦 {p.name}", value=pkg_lines, inline=False)
-                else:
-                    embed.add_field(
-                        name=f"📦 {p.name}",
-                        value=p.description or "Liên hệ admin để biết giá.",
-                        inline=False,
-                    )
-            embed.set_footer(text="Liên hệ admin để đặt hàng hoặc dùng /help")
             await ctx.respond(embed=embed)
         finally:
             session.close()
@@ -276,11 +299,25 @@ def create_bot():
     # ── Events ───────────────────────────────────────────────
     @bot_client.event
     async def on_ready():
-        global bot_start_time
+        global bot_start_time, bot_ready_event
         logger.info(f"Bot on_ready: Logged in as {bot_client.user} (ID: {bot_client.user.id})")
         bot_start_time = datetime.datetime.utcnow()
         await asyncio.to_thread(update_bot_status, "running")
+        if bot_ready_event and not bot_ready_event.is_set():
+            bot_ready_event.set()
         bot_client.loop.create_task(_check_expired_orders(bot_client))
+        # Re-register persistent views (bảng giá) để hoạt động sau restart
+        try:
+            from src.bot.cogs.admin_shop import BangGiaView
+            bot_client.add_view(BangGiaView())
+        except Exception as _pv_err:
+            logger.warning(f"Persistent view register failed: {_pv_err}")
+        # Sync slash commands so new/updated commands register with Discord
+        try:
+            await bot_client.sync_commands()
+            logger.info("Slash commands synced successfully")
+        except Exception as _sync_err:
+            logger.warning(f"sync_commands failed: {_sync_err}")
 
     @bot_client.event
     async def on_disconnect():
@@ -290,17 +327,42 @@ def create_bot():
     return bot_client
 
 
+async def _close_bot_client(bot_client: discord.Bot | None):
+    if bot_client is None:
+        return
+    try:
+        if bot_client.is_closed():
+            return
+    except Exception:
+        pass
+    try:
+        await bot_client.close()
+    except RuntimeError as e:
+        if "Session is closed" not in str(e):
+            raise
+        logger.warning("Bot client session was already closed during shutdown")
+
+
+def _log_bot_task_done(task: asyncio.Task):
+    global bot, bot_task
+    try:
+        task.result()
+    except asyncio.CancelledError:
+        return
+    except Exception as e:
+        logger.exception(f"Bot task crashed: {e}")
+    if bot_task is task:
+        bot_task = None
+        bot = None
+        update_bot_status("offline")
+
+
 async def start_bot():
-    global bot_task, bot
+    global bot_task, bot, bot_ready_event
 
     # Clean up stale
-    if bot is not None:
-        try:
-            await bot.close()
-        except Exception:
-            pass
-        bot = None
-        bot_task = None
+    if bot is not None or bot_task is not None:
+        await stop_bot()
 
     session = get_session()
     try:
@@ -312,29 +374,45 @@ async def start_bot():
     finally:
         session.close()
 
+    bot_ready_event = asyncio.Event()
     bot = create_bot()
     loop = asyncio.get_event_loop()
     bot_task = loop.create_task(bot.start(token))
-    return True
+    bot_task.add_done_callback(_log_bot_task_done)
+
+    try:
+        await asyncio.wait_for(bot_ready_event.wait(), timeout=12)
+        return True
+    except asyncio.TimeoutError:
+        if bot_task.done():
+            return False
+        logger.info("Bot start still connecting; leaving task running")
+        return True
 
 
 async def stop_bot():
-    global bot_task, bot
+    global bot_task, bot, bot_ready_event
 
-    if bot:
-        try:
-            await bot.close()
-        except Exception as e:
-            logger.error(f"Error closing bot: {e}")
+    current_bot = bot
+    current_task = bot_task
+    bot = None
+    bot_task = None
+    bot_ready_event = None
 
-    if bot_task:
-        bot_task.cancel()
+    await _close_bot_client(current_bot)
+
+    if current_task:
+        current_task.cancel()
         try:
-            await bot_task
+            await current_task
         except asyncio.CancelledError:
             pass
+        except RuntimeError as e:
+            if "Session is closed" not in str(e):
+                raise
+            logger.warning("Bot task ended with already-closed session during shutdown")
+        except Exception as e:
+            logger.error(f"Error waiting for bot task shutdown: {e}")
 
-    bot_task = None
-    bot = None
     update_bot_status("offline")
     return True

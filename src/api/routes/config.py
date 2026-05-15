@@ -8,7 +8,7 @@ import logging
 
 from src.database.config import get_db
 from src.models.models import SystemConfig, ManagedEmoji
-from src.schemas.schemas import SystemConfigBase, SystemConfigResponse
+from src.schemas.schemas import SystemConfigBase, SystemConfigResponse, SystemConfigSafe
 from src.bot.manager import start_bot, stop_bot
 
 logger = logging.getLogger(__name__)
@@ -429,12 +429,31 @@ async def delete_discord_sticker(sticker_id: str, db=Depends(get_db)):
 
 # ── System Config CRUD ────────────────────────────────────────────────────────
 
-@router.get("/config", response_model=SystemConfigResponse)
+@router.get("/config", response_model=SystemConfigSafe)
 def read_config(config: SystemConfig = Depends(get_config)):
-    return config
+    """Trả về config — secrets được ẩn, chỉ expose boolean has_*."""
+    return SystemConfigSafe(
+        id=config.id,
+        bot_status=config.bot_status or "offline",
+        discord_client_id=config.discord_client_id,
+        public_app_url=config.public_app_url,
+        payos_client_id=config.payos_client_id,
+        guild_id=config.guild_id,
+        admin_role_id=config.admin_role_id,
+        don_hang_channel_id=config.don_hang_channel_id,
+        feedback_channel_id=config.feedback_channel_id,
+        coupon_channel_id=config.coupon_channel_id,
+        bang_gia_channel_id=config.bang_gia_channel_id,
+        welcome_channel_id=config.welcome_channel_id,
+        command_prefix=config.command_prefix or "!",
+        has_discord_token=bool(config.discord_token),
+        has_discord_client_secret=bool(config.discord_client_secret),
+        has_payos_api_key=bool(config.payos_api_key),
+        has_payos_checksum_key=bool(config.payos_checksum_key),
+    )
 
 
-@router.post("/config", response_model=SystemConfigResponse)
+@router.post("/config", response_model=SystemConfigSafe)
 def update_config(config_in: SystemConfigBase, db=Depends(get_db)):
     result = db.execute(select(SystemConfig).limit(1))
     config = result.scalars().first()
@@ -447,7 +466,25 @@ def update_config(config_in: SystemConfigBase, db=Depends(get_db)):
                 setattr(config, key, value)
     db.commit()
     db.refresh(config)
-    return config
+    return SystemConfigSafe(
+        id=config.id,
+        bot_status=config.bot_status or "offline",
+        discord_client_id=config.discord_client_id,
+        public_app_url=config.public_app_url,
+        payos_client_id=config.payos_client_id,
+        guild_id=config.guild_id,
+        admin_role_id=config.admin_role_id,
+        don_hang_channel_id=config.don_hang_channel_id,
+        feedback_channel_id=config.feedback_channel_id,
+        coupon_channel_id=config.coupon_channel_id,
+        bang_gia_channel_id=config.bang_gia_channel_id,
+        welcome_channel_id=config.welcome_channel_id,
+        command_prefix=config.command_prefix or "!",
+        has_discord_token=bool(config.discord_token),
+        has_discord_client_secret=bool(config.discord_client_secret),
+        has_payos_api_key=bool(config.payos_api_key),
+        has_payos_checksum_key=bool(config.payos_checksum_key),
+    )
 
 
 # ── Bot management ────────────────────────────────────────────────────────────
@@ -640,3 +677,90 @@ async def api_delete_emoji(emoji_id: str, db=Depends(get_db)):
         if r2.status_code not in (200, 204):
             raise HTTPException(status_code=400, detail="Xóa thất bại")
         return {"ok": True}
+
+
+# ── Temp Voice Config ─────────────────────────────────────────────────────────
+
+_TEMPVOICE_DEFAULT_BUTTONS = [
+    "name", "limit", "privacy", "trust", "untrust", "invite", "kick",
+    "region", "block", "unblock", "claim", "transfer", "delete",
+]
+_TEMPVOICE_ACTION_ALIASES = {
+    "rename": "name", "private": "privacy", "public": "privacy",
+    "permit": "trust", "reject": "block", "boot": "kick",
+}
+
+
+def _normalize_tempvoice_buttons(buttons: list[str] | None) -> list[str]:
+    if not buttons:
+        return _TEMPVOICE_DEFAULT_BUTTONS.copy()
+    legacy = {"lock", "unlock", "hide", "unhide", "rename", "bitrate",
+              "private", "public", "permit", "reject", "boot", "mute", "unmute"}
+    if any(b in legacy for b in buttons):
+        return _TEMPVOICE_DEFAULT_BUTTONS.copy()
+    normalized: list[str] = []
+    for b in buttons:
+        action = _TEMPVOICE_ACTION_ALIASES.get(b, b)
+        if action in _TEMPVOICE_DEFAULT_BUTTONS and action not in normalized:
+            normalized.append(action)
+    if len(normalized) < len(_TEMPVOICE_DEFAULT_BUTTONS):
+        return _TEMPVOICE_DEFAULT_BUTTONS.copy()
+    return normalized
+
+
+@router.get("/tempvoice/config")
+def get_tempvoice(db=Depends(get_db)):
+    from src.models.models import TempVoiceConfig
+    cfg = db.execute(select(TempVoiceConfig).limit(1)).scalars().first()
+    if not cfg:
+        return {
+            "enabled": False, "join_channel_id": None, "category_id": None,
+            "default_user_limit": 0, "default_bitrate": 64000,
+            "naming_format": "{user}'s Channel", "auto_delete_seconds": 0,
+            "allow_rename": True, "allow_limit": True, "allow_lock": True, "allow_hide": True,
+            "interface_channel_id": None,
+            "voice_buttons": _TEMPVOICE_DEFAULT_BUTTONS,
+        }
+    return {
+        "enabled": cfg.enabled,
+        "join_channel_id": cfg.join_channel_id,
+        "category_id": cfg.category_id,
+        "default_user_limit": cfg.default_user_limit or 0,
+        "default_bitrate": cfg.default_bitrate or 64000,
+        "naming_format": cfg.naming_format or "{user}'s Channel",
+        "auto_delete_seconds": cfg.auto_delete_seconds or 0,
+        "allow_rename": cfg.allow_rename if cfg.allow_rename is not None else True,
+        "allow_limit": cfg.allow_limit if cfg.allow_limit is not None else True,
+        "allow_lock": cfg.allow_lock if cfg.allow_lock is not None else True,
+        "allow_hide": cfg.allow_hide if cfg.allow_hide is not None else True,
+        "interface_channel_id": cfg.interface_channel_id,
+        "voice_buttons": _normalize_tempvoice_buttons(cfg.voice_buttons),
+    }
+
+
+@router.post("/tempvoice/config")
+def save_tempvoice(body: dict, db=Depends(get_db)):
+    from src.models.models import TempVoiceConfig
+    system = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    guild_id = system.guild_id if system else None
+    cfg = db.execute(select(TempVoiceConfig).limit(1)).scalars().first()
+    if not cfg:
+        cfg = TempVoiceConfig(guild_id=guild_id)
+        db.add(cfg)
+    cfg.enabled = body.get("enabled", True)
+    cfg.join_channel_id = body.get("join_channel_id") or None
+    cfg.category_id = body.get("category_id") or None
+    cfg.default_user_limit = body.get("default_user_limit", 0)
+    cfg.default_bitrate = body.get("default_bitrate", 64000)
+    cfg.naming_format = body.get("naming_format", "{user}'s Channel")
+    cfg.auto_delete_seconds = body.get("auto_delete_seconds", 0)
+    cfg.allow_rename = body.get("allow_rename", True)
+    cfg.allow_limit = body.get("allow_limit", True)
+    cfg.allow_lock = body.get("allow_lock", True)
+    cfg.allow_hide = body.get("allow_hide", True)
+    cfg.interface_channel_id = body.get("interface_channel_id") or None
+    cfg.voice_buttons = _normalize_tempvoice_buttons(body.get("voice_buttons", cfg.voice_buttons))
+    if guild_id:
+        cfg.guild_id = guild_id
+    db.commit()
+    return {"ok": True}

@@ -16,6 +16,7 @@ dependencies = [
     "psycopg2-binary>=2.9.12",
     "payos>=1.1.0",
     "pyjwt>=2.12.1",
+    "pillow>=12.2.0",
 ]
 
 [tool.uv]

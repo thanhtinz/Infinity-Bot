@@ -76,7 +76,95 @@ async def init_db():
                     for stmt in alter_stmts:
                         connection.execute(text(stmt))
 
-        # Add new columns to custom_commands if missing
+        # Add voice_buttons to temp_voice_config if missing
+        if inspector.has_table("temp_voice_config"):
+            tv_cols = {c["name"] for c in inspector.get_columns("temp_voice_config")}
+            tv_stmts = []
+            if "voice_buttons" not in tv_cols:
+                tv_stmts.append("ALTER TABLE temp_voice_config ADD COLUMN voice_buttons JSON DEFAULT '[]'")
+            if tv_stmts:
+                with engine.begin() as connection:
+                    for stmt in tv_stmts:
+                        connection.execute(text(stmt))
+
+
+        # Add panel refs to temp_voice_rooms if missing
+
+        # Add newer ticket message columns if existing installs are missing them
+        if inspector.has_table("ticket_configs"):
+            tc_cols = {c["name"] for c in inspector.get_columns("ticket_configs")}
+            tc_stmts = []
+            for col, stmt in {
+                "open_message_title": "ALTER TABLE ticket_configs ADD COLUMN open_message_title VARCHAR",
+                "open_message_body": "ALTER TABLE ticket_configs ADD COLUMN open_message_body TEXT",
+                "close_message_title": "ALTER TABLE ticket_configs ADD COLUMN close_message_title VARCHAR",
+                "close_message_body": "ALTER TABLE ticket_configs ADD COLUMN close_message_body TEXT",
+                "claim_message_title": "ALTER TABLE ticket_configs ADD COLUMN claim_message_title VARCHAR",
+                "claim_message_body": "ALTER TABLE ticket_configs ADD COLUMN claim_message_body TEXT",
+            }.items():
+                if col not in tc_cols:
+                    tc_stmts.append(stmt)
+            if tc_stmts:
+                with engine.begin() as connection:
+                    for stmt in tc_stmts:
+                        connection.execute(text(stmt))
+
+        if inspector.has_table("ticket_panels"):
+            tp_cols = {c["name"] for c in inspector.get_columns("ticket_panels")}
+            tp_stmts = []
+            for col, stmt in {
+                "group_id": "ALTER TABLE ticket_panels ADD COLUMN group_id INTEGER",
+                "naming_format": "ALTER TABLE ticket_panels ADD COLUMN naming_format VARCHAR",
+                "open_message_title": "ALTER TABLE ticket_panels ADD COLUMN open_message_title VARCHAR",
+                "open_message_body": "ALTER TABLE ticket_panels ADD COLUMN open_message_body TEXT",
+                "close_message_title": "ALTER TABLE ticket_panels ADD COLUMN close_message_title VARCHAR",
+                "close_message_body": "ALTER TABLE ticket_panels ADD COLUMN close_message_body TEXT",
+                "claim_message_title": "ALTER TABLE ticket_panels ADD COLUMN claim_message_title VARCHAR",
+                "claim_message_body": "ALTER TABLE ticket_panels ADD COLUMN claim_message_body TEXT",
+            }.items():
+                if col not in tp_cols:
+                    tp_stmts.append(stmt)
+            if tp_stmts:
+                with engine.begin() as connection:
+                    for stmt in tp_stmts:
+                        connection.execute(text(stmt))
+
+        if inspector.has_table("temp_voice_rooms"):
+            tvr_cols = {c["name"] for c in inspector.get_columns("temp_voice_rooms")}
+            tvr_stmts = []
+            if "panel_channel_id" not in tvr_cols:
+                tvr_stmts.append("ALTER TABLE temp_voice_rooms ADD COLUMN panel_channel_id VARCHAR")
+            if "panel_message_id" not in tvr_cols:
+                tvr_stmts.append("ALTER TABLE temp_voice_rooms ADD COLUMN panel_message_id VARCHAR")
+            if tvr_stmts:
+                with engine.begin() as connection:
+                    for stmt in tvr_stmts:
+                        connection.execute(text(stmt))
+
+        # Add newer leveling columns if existing installs are missing them
+        if inspector.has_table("leveling_configs"):
+            lvl_cols = {c["name"] for c in inspector.get_columns("leveling_configs")}
+            lvl_stmts = []
+            for col, stmt in {
+                "gain_xp_from_commands": "ALTER TABLE leveling_configs ADD COLUMN gain_xp_from_commands BOOLEAN DEFAULT FALSE",
+                "remove_old_reward_roles": "ALTER TABLE leveling_configs ADD COLUMN remove_old_reward_roles BOOLEAN DEFAULT FALSE",
+                "stack_reward_roles": "ALTER TABLE leveling_configs ADD COLUMN stack_reward_roles BOOLEAN DEFAULT TRUE",
+                "rank_card_config": "ALTER TABLE leveling_configs ADD COLUMN rank_card_config JSON DEFAULT '{}'",
+            }.items():
+                if col not in lvl_cols:
+                    lvl_stmts.append(stmt)
+            if lvl_stmts:
+                with engine.begin() as connection:
+                    for stmt in lvl_stmts:
+                        connection.execute(text(stmt))
+
+        # Add rank_card_bg to member_xp if missing
+        if inspector.has_table("member_xp"):
+            mxp_cols = {c["name"] for c in inspector.get_columns("member_xp")}
+            if "rank_card_bg" not in mxp_cols:
+                with engine.begin() as connection:
+                    connection.execute(text("ALTER TABLE member_xp ADD COLUMN rank_card_bg VARCHAR"))
+
         if inspector.has_table("custom_commands"):
             cc_cols = {c["name"] for c in inspector.get_columns("custom_commands")}
             cc_stmts = []

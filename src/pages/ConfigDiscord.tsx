@@ -36,18 +36,19 @@ function MaskedField({
 }: {
   field: { value: string | undefined; onChange: (v: string) => void; onBlur: () => void; name: string; ref: React.Ref<HTMLInputElement> };
   placeholder?: string;
-  savedValue?: string | null;
+  savedValue?: string | boolean | null;
 }) {
+  const isConfigured = typeof savedValue === "boolean" ? savedValue : !!savedValue;
   return (
     <div className="space-y-1">
       <Input
         type="password"
-        placeholder={savedValue ? "••••••••  (đã cấu hình)" : placeholder}
+        placeholder={isConfigured ? "••••••••  (đã cấu hình)" : placeholder}
         {...field}
         value={field.value || ""}
         autoComplete="new-password"
       />
-      {savedValue && !field.value && (
+      {isConfigured && !field.value && (
         <p className="text-xs text-green-600 dark:text-green-400">✓ Đã cấu hình — để trống nếu không muốn thay đổi</p>
       )}
     </div>
@@ -72,9 +73,9 @@ export function ConfigDiscord() {
   useEffect(() => {
     if (config)
       form.reset({
-        discord_token: config.discord_token || "",
+        discord_token: "",
         discord_client_id: config.discord_client_id || "",
-        discord_client_secret: config.discord_client_secret || "",
+        discord_client_secret: "",
       });
   }, [config]);
 
@@ -87,7 +88,7 @@ export function ConfigDiscord() {
     onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }),
   });
 
-  const isConfigured = !!config?.discord_token;
+  const isConfigured = !!config?.has_discord_token;
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -135,7 +136,7 @@ export function ConfigDiscord() {
                     <FormItem>
                       <FormLabel>Bot Token</FormLabel>
                       <FormControl>
-                        <MaskedField field={field} placeholder="MTc..." savedValue={config?.discord_token} />
+                        <MaskedField field={field} placeholder="MTc..." savedValue={config?.has_discord_token} />
                       </FormControl>
                       <FormDescription>
                         Bot → Token → Reset Token. Không chia sẻ token này với ai.
@@ -178,7 +179,7 @@ export function ConfigDiscord() {
                           <MaskedField
                             field={field}
                             placeholder="Client secret..."
-                            savedValue={config?.discord_client_secret}
+                            savedValue={config?.has_discord_client_secret}
                           />
                         </FormControl>
                         <FormDescription>OAuth2 → Client Secret</FormDescription>
