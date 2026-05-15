@@ -239,7 +239,16 @@ class CustomEmbedMessage(Base):
     channel_id = Column(String, nullable=True)      # Discord channel ID đã gửi
     message_id = Column(String, nullable=True)      # Discord message ID
     guild_id = Column(String, nullable=True)
-    # Embed data
+    # Message-level data (Discohook style)
+    content = Column(Text, nullable=True)           # Plain text trước embed
+    webhook_username = Column(String, nullable=True)
+    webhook_avatar_url = Column(String, nullable=True)
+    thread_name = Column(String, nullable=True)
+    embeds = Column(JSON, default=list)             # Array of embed objects
+    components = Column(JSON, default=list)         # List of ActionRow objects (buttons)
+    flags = Column(JSON, default=dict)              # { suppress_embeds: bool }
+    allowed_mentions = Column(JSON, default=dict)   # { parse, roles, users, replied_user }
+    # Legacy flat embed data (backward compat)
     title = Column(String, nullable=True)
     description = Column(Text, nullable=True)
     color = Column(String, default="#5865F2")

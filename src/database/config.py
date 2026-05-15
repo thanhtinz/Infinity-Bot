@@ -182,3 +182,28 @@ async def init_db():
                 with engine.begin() as connection:
                     for stmt in cc_stmts:
                         connection.execute(text(stmt))
+
+        # custom_embed_messages: thêm các cột Discohook-style
+        if inspector.has_table("custom_embed_messages"):
+            cem_cols = {c["name"] for c in inspector.get_columns("custom_embed_messages")}
+            cem_stmts = []
+            if "content" not in cem_cols:
+                cem_stmts.append("ALTER TABLE custom_embed_messages ADD COLUMN content TEXT")
+            if "webhook_username" not in cem_cols:
+                cem_stmts.append("ALTER TABLE custom_embed_messages ADD COLUMN webhook_username VARCHAR")
+            if "webhook_avatar_url" not in cem_cols:
+                cem_stmts.append("ALTER TABLE custom_embed_messages ADD COLUMN webhook_avatar_url VARCHAR")
+            if "thread_name" not in cem_cols:
+                cem_stmts.append("ALTER TABLE custom_embed_messages ADD COLUMN thread_name VARCHAR")
+            if "embeds" not in cem_cols:
+                cem_stmts.append("ALTER TABLE custom_embed_messages ADD COLUMN embeds JSON DEFAULT '[]'")
+            if "components" not in cem_cols:
+                cem_stmts.append("ALTER TABLE custom_embed_messages ADD COLUMN components JSON DEFAULT '[]'")
+            if "flags" not in cem_cols:
+                cem_stmts.append("ALTER TABLE custom_embed_messages ADD COLUMN flags JSON DEFAULT '{}'")
+            if "allowed_mentions" not in cem_cols:
+                cem_stmts.append("ALTER TABLE custom_embed_messages ADD COLUMN allowed_mentions JSON DEFAULT '{}'")
+            if cem_stmts:
+                with engine.begin() as connection:
+                    for stmt in cem_stmts:
+                        connection.execute(text(stmt))

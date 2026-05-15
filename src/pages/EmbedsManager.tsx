@@ -46,7 +46,8 @@ import {
   Type, Layout, RotateCcw, Heart, Mic, HelpCircle,
   Send, Link2, Copy, Check, MessageSquare, ExternalLink, Loader2,
   Mail, TrendingUp, Tag, Clock, UserPlus, Edit, MicOff, ArrowRight,
-  ArrowUp, ArrowDown, FileJson,
+  ArrowUp, ArrowDown, FileJson, Download, Upload, Save, Share2, Database,
+  Code2, RefreshCw, Eye, EyeOff, Bell, BellOff, AtSign, Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmojiPicker } from "@/components/EmojiPicker";
@@ -1720,6 +1721,35 @@ function DiscordPreview({ form }: { form: FormState }) {
 
 // ─── Custom Messages Tab ─────────────────────────────────────────────────────
 
+// Helper: Backup list component
+function BackupList({ getBackups, loadBackup, deleteBackup }: {
+  getBackups: () => { id: string; name: string; timestamp: string; data: object }[];
+  loadBackup: (data: Record<string, unknown>) => void;
+  deleteBackup: (id: string) => void;
+}) {
+  const [list, setList] = useState(() => getBackups());
+  const refresh = () => setList(getBackups());
+  if (!list.length) return <p className="text-sm text-muted-foreground text-center py-6">Chưa có backup nào. Nhấn "Lưu backup hiện tại".</p>;
+  return (
+    <div className="space-y-1.5 max-h-72 overflow-y-auto">
+      {list.map(b => (
+        <div key={b.id} className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
+          <div className="flex-1 min-w-0">
+            <div className="font-medium truncate">{b.name}</div>
+            <div className="text-xs text-muted-foreground">{new Date(b.timestamp).toLocaleString("vi-VN")}</div>
+          </div>
+          <Button size="sm" variant="outline" className="h-7 text-xs"
+            onClick={() => loadBackup(b.data as Record<string, unknown>)}>Tải</Button>
+          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive"
+            onClick={() => { deleteBackup(b.id); refresh(); }}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 interface CustomEmbed {
   id: number;
   name: string;
@@ -1740,6 +1770,9 @@ interface CustomEmbed {
   image_url: string;
   fields: EmbedField[];
   embeds: EmbedData[];
+  components: ActionRow[];
+  flags: MessageFlags;
+  allowed_mentions: AllowedMentions;
   created_at: string;
   updated_at: string;
 }
@@ -1763,7 +1796,39 @@ interface CustomFormState {
   webhook_avatar_url: string;
   thread_name: string;
   embeds: EmbedData[];
+  components: ActionRow[];
+  flags: MessageFlags;
+  allowed_mentions: AllowedMentions;
 }
+
+// ── Component (Button/Row) types ─────────────────────────────────────────────
+interface ComponentButton {
+  type: 2;
+  style: 1 | 2 | 3 | 4 | 5;   // Primary/Secondary/Success/Danger/Link
+  label: string;
+  emoji?: string;
+  url?: string;                 // style=5 only
+  custom_id?: string;           // style 1-4
+  disabled?: boolean;
+}
+interface ActionRow {
+  type: 1;
+  components: ComponentButton[];
+}
+
+// ── Message flags / mentions ──────────────────────────────────────────────────
+interface MessageFlags {
+  suppress_embeds?: boolean;
+}
+interface AllowedMentions {
+  parse?: ("roles" | "users" | "everyone")[];
+  roles?: string[];
+  users?: string[];
+  replied_user?: boolean;
+}
+
+const emptyButton = (): ComponentButton => ({ type: 2, style: 2, label: "Button" });
+const emptyRow = (): ActionRow => ({ type: 1, components: [emptyButton()] });
 
 const emptyEmbed = (): EmbedData => ({
   title: "",
@@ -1784,6 +1849,9 @@ const emptyCustomForm: CustomFormState = {
   webhook_avatar_url: "",
   thread_name: "",
   embeds: [emptyEmbed()],
+  components: [],
+  flags: {},
+  allowed_mentions: {},
 };
 
 /** Migrate from flat fields (old DB) to embeds array */
@@ -1817,11 +1885,21 @@ function CustomMessagesTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // ── Load share param from URL ──
+  const shareInit = useMemo<Partial<CustomFormState>>(() => {
+    try {
+      const param = new URLSearchParams(window.location.search).get("share");
+      if (!param) return {};
+      const parsed = JSON.parse(decodeURIComponent(atob(param)));
+      return parsed as Partial<CustomFormState>;
+    } catch { return {}; }
+  }, []);
+
   // ── State ──
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [form, setForm] = useState<CustomFormState>(emptyCustomForm);
+  const [form, setForm] = useState<CustomFormState>({ ...emptyCustomForm, ...shareInit, embeds: shareInit.embeds ?? [emptyEmbed()] });
   const [editingExistingId, setEditingExistingId] = useState<number | null>(null);
-  const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [isCreatingNew, setIsCreatingNew] = useState(!!shareInit.content || !!(shareInit.embeds?.length));
   const [linkInput, setLinkInput] = useState("");
   const [selectedChannelId, setSelectedChannelId] = useState<string>("");
   const [copiedUrl, setCopiedUrl] = useState(false);
@@ -1829,6 +1907,7 @@ function CustomMessagesTab() {
   // Section collapsibles (message-level)
   const [threadOpen, setThreadOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [flagsOpen, setFlagsOpen] = useState(false);
 
   // Per-embed open states
   const [embedOpenStates, setEmbedOpenStates] = useState<EmbedOpenState[]>([defaultEmbedOpen()]);
@@ -1837,6 +1916,9 @@ function CustomMessagesTab() {
   const [showPreview, setShowPreview] = useState(false);
   const [jsonEditorOpen, setJsonEditorOpen] = useState(false);
   const [jsonText, setJsonText] = useState("");
+  const [codeGenOpen, setCodeGenOpen] = useState(false);
+  const [codeGenTab, setCodeGenTab] = useState<"python" | "js">("python");
+  const [backupsOpen, setBackupsOpen] = useState(false);
 
   // ── Queries ──
   const { data: customEmbeds = [], isLoading: listLoading } = useQuery<CustomEmbed[]>({
@@ -1990,6 +2072,9 @@ function CustomMessagesTab() {
         webhook_avatar_url: data.webhook_avatar_url ?? "",
         thread_name: data.thread_name ?? "",
         embeds: loadedEmbeds,
+        components: data.components ?? [],
+        flags: data.flags ?? {},
+        allowed_mentions: data.allowed_mentions ?? {},
       });
       setEmbedOpenStates(loadedEmbeds.map(() => defaultEmbedOpen()));
       setLinkInput("");
@@ -2042,6 +2127,9 @@ function CustomMessagesTab() {
       webhook_avatar_url: embed.webhook_avatar_url ?? "",
       thread_name: embed.thread_name ?? "",
       embeds: loadedEmbeds,
+      components: embed.components ?? [],
+      flags: embed.flags ?? {},
+      allowed_mentions: embed.allowed_mentions ?? {},
     });
     setEmbedOpenStates(loadedEmbeds.map(() => defaultEmbedOpen()));
     setThreadOpen(false);
@@ -2171,6 +2259,198 @@ function CustomMessagesTab() {
     const data = JSON.stringify({ content: form.content, embeds: form.embeds }, null, 2);
     navigator.clipboard.writeText(data);
     toast({ title: "Đã copy JSON!" });
+  };
+
+  // ── Import mutation ──
+  const importMutation = useMutation({
+    mutationFn: async (body: object) => {
+      const res = await fetch("/api/embeds/custom/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error("Import thất bại");
+      return res.json() as Promise<CustomEmbed>;
+    },
+    onSuccess: (data) => {
+      toast({ title: "Đã import", description: "Tin nhắn đã được tạo từ JSON." });
+      queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
+      handleSelectEmbed(data);
+    },
+    onError: () => {
+      toast({ title: "Lỗi", description: "Không thể import JSON.", variant: "destructive" });
+    },
+  });
+
+  // ── Code Generator ──
+  const generatePythonCode = (): string => {
+    const lines: string[] = ["import discord", ""];
+    form.embeds.forEach((emb, i) => {
+      const varName = form.embeds.length === 1 ? "embed" : `embed${i + 1}`;
+      const colorHex = (emb.color || "#5865F2").replace("#", "");
+      lines.push(`${varName} = discord.Embed(`);
+      if (emb.title) lines.push(`    title=${JSON.stringify(emb.title)},`);
+      if (emb.description) lines.push(`    description=${JSON.stringify(emb.description)},`);
+      lines.push(`    color=0x${colorHex},`);
+      lines.push(")");
+      if (emb.author) lines.push(`${varName}.set_author(name=${JSON.stringify(emb.author)}${emb.author_icon_url ? `, icon_url=${JSON.stringify(emb.author_icon_url)}` : ""})`);
+      if (emb.footer) lines.push(`${varName}.set_footer(text=${JSON.stringify(emb.footer)})`);
+      if (emb.thumbnail_url) lines.push(`${varName}.set_thumbnail(url=${JSON.stringify(emb.thumbnail_url)})`);
+      if (emb.image_url) lines.push(`${varName}.set_image(url=${JSON.stringify(emb.image_url)})`);
+      emb.fields.forEach(f => {
+        lines.push(`${varName}.add_field(name=${JSON.stringify(f.name)}, value=${JSON.stringify(f.value)}, inline=${f.inline ? "True" : "False"})`);
+      });
+      lines.push("");
+    });
+    // Components (link buttons only)
+    if (form.components.length > 0) {
+      lines.push("view = discord.ui.View(timeout=None)");
+      form.components.forEach((row, ri) => {
+        row.components.forEach(btn => {
+          const style = { 1: "primary", 2: "secondary", 3: "success", 4: "danger", 5: "link" }[btn.style] ?? "secondary";
+          if (btn.style === 5) {
+            lines.push(`view.add_item(discord.ui.Button(style=discord.ButtonStyle.link, label=${JSON.stringify(btn.label)}, url=${JSON.stringify(btn.url || "")}, row=${ri}))`);
+          } else {
+            lines.push(`view.add_item(discord.ui.Button(style=discord.ButtonStyle.${style}, label=${JSON.stringify(btn.label)}, custom_id=${JSON.stringify(btn.custom_id || btn.label)}, row=${ri}))`);
+          }
+        });
+      });
+      lines.push("");
+    }
+    const embedVars = form.embeds.length === 1 ? "embed" : form.embeds.map((_, i) => `embed${i + 1}`).join(", ");
+    const sendArgs = [`embeds=[${embedVars}]`];
+    if (form.content) sendArgs.unshift(`content=${JSON.stringify(form.content)}`);
+    if (form.components.length > 0) sendArgs.push("view=view");
+    lines.push(`await channel.send(${sendArgs.join(", ")})`);
+    return lines.join("\n");
+  };
+
+  const generateJSCode = (): string => {
+    const lines: string[] = [
+      'const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require("discord.js");',
+      "",
+    ];
+    form.embeds.forEach((emb, i) => {
+      const varName = form.embeds.length === 1 ? "embed" : `embed${i + 1}`;
+      const colorHex = (emb.color || "#5865F2").replace("#", "0x");
+      lines.push(`const ${varName} = new EmbedBuilder()`);
+      if (emb.title) lines.push(`  .setTitle(${JSON.stringify(emb.title)})`);
+      if (emb.description) lines.push(`  .setDescription(${JSON.stringify(emb.description)})`);
+      lines.push(`  .setColor(${colorHex})`);
+      if (emb.author) lines.push(`  .setAuthor({ name: ${JSON.stringify(emb.author)}${emb.author_icon_url ? `, iconURL: ${JSON.stringify(emb.author_icon_url)}` : ""} })`);
+      if (emb.footer) lines.push(`  .setFooter({ text: ${JSON.stringify(emb.footer)} })`);
+      if (emb.thumbnail_url) lines.push(`  .setThumbnail(${JSON.stringify(emb.thumbnail_url)})`);
+      if (emb.image_url) lines.push(`  .setImage(${JSON.stringify(emb.image_url)})`);
+      if (emb.fields.length > 0) {
+        const fieldsStr = emb.fields.map(f => `{ name: ${JSON.stringify(f.name)}, value: ${JSON.stringify(f.value)}, inline: ${f.inline} }`).join(", ");
+        lines.push(`  .addFields(${fieldsStr})`);
+      }
+      lines.push(";");
+      lines.push("");
+    });
+    if (form.components.length > 0) {
+      form.components.forEach((row, ri) => {
+        lines.push(`const row${ri + 1} = new ActionRowBuilder().addComponents(`);
+        row.components.forEach((btn, bi) => {
+          const styleMap: Record<number, string> = { 1: "Primary", 2: "Secondary", 3: "Success", 4: "Danger", 5: "Link" };
+          const style = styleMap[btn.style] ?? "Secondary";
+          lines.push(`  new ButtonBuilder().setLabel(${JSON.stringify(btn.label)}).setStyle(ButtonStyle.${style})${btn.style === 5 ? `.setURL(${JSON.stringify(btn.url || "")})` : `.setCustomId(${JSON.stringify(btn.custom_id || btn.label)})`}${bi < row.components.length - 1 ? "," : ""}`);
+        });
+        lines.push(");");
+      });
+      lines.push("");
+    }
+    const embedVars = form.embeds.length === 1 ? "embed" : form.embeds.map((_, i) => `embed${i + 1}`).join(", ");
+    const rowVars = form.components.map((_, i) => `row${i + 1}`).join(", ");
+    lines.push("await channel.send({");
+    if (form.content) lines.push(`  content: ${JSON.stringify(form.content)},`);
+    lines.push(`  embeds: [${embedVars}],`);
+    if (form.components.length > 0) lines.push(`  components: [${rowVars}],`);
+    lines.push("});");
+    return lines.join("\n");
+  };
+
+  // ── Share via URL ──
+  const handleShare = () => {
+    const payload = { content: form.content, embeds: form.embeds, components: form.components };
+    const b64 = btoa(encodeURIComponent(JSON.stringify(payload)));
+    const url = `${window.location.origin}${window.location.pathname}?tab=custom&share=${b64}`;
+    navigator.clipboard.writeText(url);
+    toast({ title: "Đã copy link share!", description: "Người khác mở link sẽ thấy nội dung này." });
+  };
+
+  // ── Backups (localStorage) ──
+  const BACKUP_KEY = "discord_embed_backups";
+  const getBackups = (): { id: string; name: string; timestamp: string; data: object }[] => {
+    try { return JSON.parse(localStorage.getItem(BACKUP_KEY) || "[]"); } catch { return []; }
+  };
+  const saveBackup = () => {
+    const backups = getBackups();
+    const id = Date.now().toString();
+    const backup = {
+      id,
+      name: form.name || "Untitled",
+      timestamp: new Date().toISOString(),
+      data: { content: form.content, embeds: form.embeds, components: form.components, flags: form.flags, allowed_mentions: form.allowed_mentions, webhook_username: form.webhook_username, webhook_avatar_url: form.webhook_avatar_url, thread_name: form.thread_name },
+    };
+    backups.unshift(backup);
+    if (backups.length > 20) backups.pop();
+    localStorage.setItem(BACKUP_KEY, JSON.stringify(backups));
+    toast({ title: "Đã lưu backup!", description: `Backup "${form.name || "Untitled"}" đã được lưu.` });
+  };
+  const loadBackup = (data: Record<string, unknown>) => {
+    const embeds = (data.embeds as EmbedData[]) || [emptyEmbed()];
+    setForm(f => ({
+      ...f,
+      content: (data.content as string) ?? "",
+      embeds,
+      components: (data.components as ActionRow[]) ?? [],
+      flags: (data.flags as MessageFlags) ?? {},
+      allowed_mentions: (data.allowed_mentions as AllowedMentions) ?? {},
+      webhook_username: (data.webhook_username as string) ?? "",
+      webhook_avatar_url: (data.webhook_avatar_url as string) ?? "",
+      thread_name: (data.thread_name as string) ?? "",
+    }));
+    setEmbedOpenStates(embeds.map(() => defaultEmbedOpen()));
+    setBackupsOpen(false);
+    toast({ title: "Đã tải backup!" });
+  };
+  const deleteBackup = (id: string) => {
+    const backups = getBackups().filter(b => b.id !== id);
+    localStorage.setItem(BACKUP_KEY, JSON.stringify(backups));
+  };
+
+  // ── Export JSON file ──
+  const handleExport = () => {
+    if (!editingExistingId) return;
+    const payload = {
+      name: form.name, content: form.content, embeds: form.embeds,
+      components: form.components, flags: form.flags, allowed_mentions: form.allowed_mentions,
+      webhook_username: form.webhook_username, webhook_avatar_url: form.webhook_avatar_url, thread_name: form.thread_name,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `${form.name || "message"}.json`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ── Import from file ──
+  const handleImportFile = () => {
+    const input = document.createElement("input");
+    input.type = "file"; input.accept = ".json,application/json";
+    input.onchange = async () => {
+      const file = input.files?.[0]; if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        importMutation.mutate(parsed);
+      } catch {
+        toast({ title: "Lỗi", description: "File JSON không hợp lệ.", variant: "destructive" });
+      }
+    };
+    input.click();
   };
 
   // ── Preview form (uses first embed) ──
@@ -2557,6 +2837,9 @@ function CustomMessagesTab() {
                 <DropdownMenuItem onClick={addEmbed} disabled={form.embeds.length >= 10}>
                   <Plus className="h-4 w-4 mr-2" />Add Embed
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setForm(f => ({ ...f, components: [...f.components, emptyRow()] })) } disabled={form.components.length >= 5}>
+                  <LayoutGrid className="h-4 w-4 mr-2" />Add Component Row
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -2574,12 +2857,263 @@ function CustomMessagesTab() {
                 <DropdownMenuItem onClick={copyQueryData}>
                   <Copy className="h-4 w-4 mr-2" />Copy Query Data
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setCodeGenOpen(true)}>
+                  <Code2 className="h-4 w-4 mr-2" />Generate Code
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleShare}>
+                  <Share2 className="h-4 w-4 mr-2" />Share via Link
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExport} disabled={!editingExistingId}>
+                  <Download className="h-4 w-4 mr-2" />Export JSON
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleImportFile}>
+                  <Upload className="h-4 w-4 mr-2" />Import JSON
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={saveBackup}>
+                  <Save className="h-4 w-4 mr-2" />Save Backup
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setBackupsOpen(true)}>
+                  <Database className="h-4 w-4 mr-2" />Load Backup
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
 
+          {/* ── Components Section (rows/buttons) ── */}
+          {form.components.length > 0 && (
+            <div className="space-y-2 pt-1">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                <LayoutGrid className="h-3.5 w-3.5" />Components
+              </div>
+              {form.components.map((row, rowIdx) => (
+                <div key={rowIdx} className="rounded-lg border bg-card overflow-hidden">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-muted/30">
+                    <span className="text-xs font-semibold flex-1">Row {rowIdx + 1}</span>
+                    <Button size="icon" variant="ghost" className="h-6 w-6" title="Thêm button"
+                      disabled={row.components.length >= 5}
+                      onClick={() => {
+                        const rows = form.components.map((r, i) => i === rowIdx ? { ...r, components: [...r.components, emptyButton()] } : r);
+                        setForm(f => ({ ...f, components: rows }));
+                      }}>
+                      <Plus className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive" title="Xóa row"
+                      onClick={() => setForm(f => ({ ...f, components: f.components.filter((_, i) => i !== rowIdx) }))}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                  {/* Button previews + edit */}
+                  <div className="px-3 py-3 space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      {row.components.map((btn, btnIdx) => {
+                        const styleColors: Record<number, string> = {
+                          1: "bg-[#5865F2] hover:bg-[#4752c4] text-white",
+                          2: "bg-[#4E5058] hover:bg-[#6D6F78] text-white",
+                          3: "bg-[#2D7D46] hover:bg-[#256137] text-white",
+                          4: "bg-[#DA373C] hover:bg-[#a12828] text-white",
+                          5: "bg-[#4E5058] hover:bg-[#6D6F78] text-white",
+                        };
+                        return (
+                          <div key={btnIdx} className="flex items-center gap-1">
+                            <div className={`px-3 py-1 rounded text-xs font-medium ${styleColors[btn.style] ?? styleColors[2]} ${btn.disabled ? "opacity-40" : ""}`}>
+                              {btn.emoji && <span className="mr-1">{btn.emoji}</span>}
+                              {btn.label || "Button"}
+                              {btn.style === 5 && <ExternalLink className="h-3 w-3 ml-1 inline" />}
+                            </div>
+                            <Button size="icon" variant="ghost" className="h-5 w-5 text-muted-foreground"
+                              onClick={() => {
+                                const rows = form.components.map((r, ri) => ri === rowIdx ? {
+                                  ...r,
+                                  components: r.components.filter((_, bi) => bi !== btnIdx),
+                                } : r);
+                                setForm(f => ({ ...f, components: rows }));
+                              }}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {/* Button editor */}
+                    {row.components.map((btn, btnIdx) => (
+                      <div key={btnIdx} className="rounded-md border p-2 space-y-2 bg-muted/20">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-muted-foreground font-medium w-12 shrink-0">Btn {btnIdx + 1}</span>
+                          <Select value={String(btn.style)} onValueChange={(v) => {
+                            const rows = form.components.map((r, ri) => ri === rowIdx ? {
+                              ...r, components: r.components.map((b, bi) => bi === btnIdx ? { ...b, style: Number(v) as ComponentButton["style"] } : b),
+                            } : r);
+                            setForm(f => ({ ...f, components: rows }));
+                          }}>
+                            <SelectTrigger className="h-7 text-xs w-32"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">🟣 Primary</SelectItem>
+                              <SelectItem value="2">⬜ Secondary</SelectItem>
+                              <SelectItem value="3">🟢 Success</SelectItem>
+                              <SelectItem value="4">🔴 Danger</SelectItem>
+                              <SelectItem value="5">🔗 Link</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Switch checked={!!btn.disabled}
+                            onCheckedChange={(v) => {
+                              const rows = form.components.map((r, ri) => ri === rowIdx ? {
+                                ...r, components: r.components.map((b, bi) => bi === btnIdx ? { ...b, disabled: v } : b),
+                              } : r);
+                              setForm(f => ({ ...f, components: rows }));
+                            }} />
+                          <span className="text-[10px] text-muted-foreground">Disabled</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <div className="flex-1 space-y-1">
+                            <Label className="text-[10px] text-muted-foreground">Label</Label>
+                            <Input className="h-7 text-xs" placeholder="Button label" value={btn.label}
+                              onChange={(e) => {
+                                const rows = form.components.map((r, ri) => ri === rowIdx ? {
+                                  ...r, components: r.components.map((b, bi) => bi === btnIdx ? { ...b, label: e.target.value } : b),
+                                } : r);
+                                setForm(f => ({ ...f, components: rows }));
+                              }} />
+                          </div>
+                          <div className="w-16 space-y-1">
+                            <Label className="text-[10px] text-muted-foreground">Emoji</Label>
+                            <Input className="h-7 text-xs" placeholder="😀" value={btn.emoji ?? ""}
+                              onChange={(e) => {
+                                const rows = form.components.map((r, ri) => ri === rowIdx ? {
+                                  ...r, components: r.components.map((b, bi) => bi === btnIdx ? { ...b, emoji: e.target.value } : b),
+                                } : r);
+                                setForm(f => ({ ...f, components: rows }));
+                              }} />
+                          </div>
+                        </div>
+                        {btn.style === 5 ? (
+                          <div className="space-y-1">
+                            <Label className="text-[10px] text-muted-foreground">URL</Label>
+                            <Input className="h-7 text-xs" placeholder="https://..." value={btn.url ?? ""}
+                              onChange={(e) => {
+                                const rows = form.components.map((r, ri) => ri === rowIdx ? {
+                                  ...r, components: r.components.map((b, bi) => bi === btnIdx ? { ...b, url: e.target.value } : b),
+                                } : r);
+                                setForm(f => ({ ...f, components: rows }));
+                              }} />
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <Label className="text-[10px] text-muted-foreground">Custom ID</Label>
+                            <Input className="h-7 text-xs font-mono" placeholder="my_button_id" value={btn.custom_id ?? ""}
+                              onChange={(e) => {
+                                const rows = form.components.map((r, ri) => ri === rowIdx ? {
+                                  ...r, components: r.components.map((b, bi) => bi === btnIdx ? { ...b, custom_id: e.target.value } : b),
+                                } : r);
+                                setForm(f => ({ ...f, components: rows }));
+                              }} />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── Flags ── */}
+          <div className="rounded-lg border">
+            <button type="button" className="flex w-full items-center gap-2 px-3 py-2.5 text-xs font-semibold hover:bg-muted/50"
+              onClick={() => setFlagsOpen(v => !v)}>
+              {flagsOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+              <BellOff className="h-3.5 w-3.5 text-muted-foreground" />Flags &amp; Mentions
+            </button>
+            {flagsOpen && (
+              <div className="px-3 pb-3 space-y-3">
+                {/* Flags */}
+                <div className="space-y-2">
+                  <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Message Flags</div>
+                  <div className="flex items-center gap-2">
+                    <Switch id="flag-suppress" checked={!!form.flags.suppress_embeds}
+                      onCheckedChange={(v) => setForm(f => ({ ...f, flags: { ...f.flags, suppress_embeds: v } }))} />
+                    <Label htmlFor="flag-suppress" className="text-xs">Suppress Embeds (ẩn embed)</Label>
+                  </div>
+                </div>
+                {/* Allowed Mentions */}
+                <div className="space-y-2">
+                  <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Allowed Mentions</div>
+                  <div className="flex flex-wrap gap-3">
+                    {(["everyone", "roles", "users"] as const).map((type) => (
+                      <div key={type} className="flex items-center gap-1.5">
+                        <input type="checkbox" id={`am-${type}`} className="h-3.5 w-3.5 accent-indigo-500"
+                          checked={(form.allowed_mentions.parse ?? []).includes(type)}
+                          onChange={(e) => {
+                            const current = form.allowed_mentions.parse ?? [];
+                            const next = e.target.checked ? [...current, type] : current.filter(t => t !== type);
+                            setForm(f => ({ ...f, allowed_mentions: { ...f.allowed_mentions, parse: next } }));
+                          }} />
+                        <Label htmlFor={`am-${type}`} className="text-xs capitalize">{type}</Label>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch id="am-replied"
+                      checked={!!form.allowed_mentions.replied_user}
+                      onCheckedChange={(v) => setForm(f => ({ ...f, allowed_mentions: { ...f.allowed_mentions, replied_user: v } }))} />
+                    <Label htmlFor="am-replied" className="text-xs">Mention replied user</Label>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
+
+      {/* ── Code Generator Dialog ── */}
+      <Dialog open={codeGenOpen} onOpenChange={setCodeGenOpen}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Code2 className="h-5 w-5" />Code Generator</DialogTitle>
+            <DialogDescription>Sinh code từ tin nhắn hiện tại để dùng trong bot.</DialogDescription>
+          </DialogHeader>
+          <Tabs value={codeGenTab} onValueChange={(v) => setCodeGenTab(v as "python" | "js")}>
+            <TabsList className="mb-2">
+              <TabsTrigger value="python">Python (discord.py)</TabsTrigger>
+              <TabsTrigger value="js">JavaScript (discord.js)</TabsTrigger>
+            </TabsList>
+            <TabsContent value="python">
+              <div className="relative">
+                <Textarea value={generatePythonCode()} readOnly rows={20} className="font-mono text-xs resize-y bg-muted" />
+                <Button size="sm" variant="outline" className="absolute top-2 right-2"
+                  onClick={() => { navigator.clipboard.writeText(generatePythonCode()); toast({ title: "Đã copy!" }); }}>
+                  <Copy className="h-3.5 w-3.5 mr-1" />Copy
+                </Button>
+              </div>
+            </TabsContent>
+            <TabsContent value="js">
+              <div className="relative">
+                <Textarea value={generateJSCode()} readOnly rows={20} className="font-mono text-xs resize-y bg-muted" />
+                <Button size="sm" variant="outline" className="absolute top-2 right-2"
+                  onClick={() => { navigator.clipboard.writeText(generateJSCode()); toast({ title: "Đã copy!" }); }}>
+                  <Copy className="h-3.5 w-3.5 mr-1" />Copy
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Backups Dialog ── */}
+      <Dialog open={backupsOpen} onOpenChange={setBackupsOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Backups cục bộ</DialogTitle>
+            <DialogDescription>Backup được lưu trong trình duyệt của bạn (tối đa 20).</DialogDescription>
+          </DialogHeader>
+          <BackupList getBackups={getBackups} loadBackup={loadBackup} deleteBackup={deleteBackup} />
+          <DialogFooter>
+            <Button size="sm" onClick={saveBackup}><Save className="h-3.5 w-3.5 mr-1" />Lưu backup hiện tại</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── JSON Editor Dialog ── */}
       <Dialog open={jsonEditorOpen} onOpenChange={setJsonEditorOpen}>

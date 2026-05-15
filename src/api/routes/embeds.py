@@ -78,9 +78,33 @@ def delete_embed(embed_id: int, db=Depends(get_db)):
 # ── Custom Embed Messages ─────────────────────────────────────────────────────
 
 def _row_to_dict(r: CustomEmbedMessage) -> dict:
+    # Nếu r.embeds có data → dùng luôn
+    # Nếu không có → migrate từ flat fields cũ thành embeds[0]
+    embeds = r.embeds or []
+    if not embeds and (r.title or r.description or r.color or r.fields):
+        embeds = [{
+            "title": r.title or "",
+            "description": r.description or "",
+            "color": r.color or "#5865F2",
+            "author": r.author or "",
+            "author_icon_url": r.author_icon_url or "",
+            "footer": r.footer or "",
+            "thumbnail_url": r.thumbnail_url or "",
+            "image_url": r.image_url or "",
+            "fields": r.fields or [],
+        }]
     return {
         "id": r.id, "name": r.name,
         "channel_id": r.channel_id, "message_id": r.message_id, "guild_id": r.guild_id,
+        "content": r.content or "",
+        "webhook_username": r.webhook_username or "",
+        "webhook_avatar_url": r.webhook_avatar_url or "",
+        "thread_name": r.thread_name or "",
+        "embeds": embeds,
+        "components": r.components or [],
+        "flags": r.flags or {},
+        "allowed_mentions": r.allowed_mentions or {},
+        # Legacy flat (giữ để tương thích ngược)
         "title": r.title, "description": r.description, "color": r.color or "#5865F2",
         "author": r.author, "author_icon_url": r.author_icon_url,
         "footer": r.footer, "thumbnail_url": r.thumbnail_url, "image_url": r.image_url,
@@ -116,6 +140,75 @@ def _build_discord_embed(data: dict):
     return embed
 
 
+def _build_embeds_from_row(r: CustomEmbedMessage):
+    """Trả về list discord.Embed từ row (hỗ trợ multi-embed mới và legacy flat)."""
+    row_dict = _row_to_dict(r)
+    embeds_data = row_dict.get("embeds") or []
+    if not embeds_data:
+        return [_build_discord_embed(row_dict)]
+    return [_build_discord_embed(e) for e in embeds_data]
+
+
+def _build_view_from_components(components: list):
+    """Tạo discord.ui.View từ list action rows. Chỉ hỗ trợ Link Buttons (style=5)."""
+    import discord
+    if not components:
+        return None
+    view = discord.ui.View(timeout=None)
+    for row_idx, row in enumerate(components[:5]):
+        btns = row.get("components") or []
+        for btn_data in btns[:5]:
+            style_int = btn_data.get("style", 2)
+            label = btn_data.get("label") or "Button"
+            disabled = bool(btn_data.get("disabled", False))
+            emoji_str = btn_data.get("emoji") or None
+
+            style_map = {
+                1: discord.ButtonStyle.primary,
+                2: discord.ButtonStyle.secondary,
+                3: discord.ButtonStyle.success,
+                4: discord.ButtonStyle.danger,
+                5: discord.ButtonStyle.link,
+            }
+            style = style_map.get(style_int, discord.ButtonStyle.secondary)
+
+            if style == discord.ButtonStyle.link:
+                url = btn_data.get("url") or "https://discord.com"
+                btn = discord.ui.Button(style=style, label=label, url=url, disabled=disabled, row=row_idx)
+            else:
+                custom_id = btn_data.get("custom_id") or f"btn_{row_idx}_{label[:10]}"
+                btn = discord.ui.Button(style=style, label=label, custom_id=custom_id, disabled=disabled, row=row_idx)
+            if emoji_str:
+                try:
+                    btn.emoji = emoji_str
+                except Exception:
+                    pass
+            view.add_item(btn)
+    return view if view.children else None
+
+
+def _build_allowed_mentions(am_data: dict):
+    """Tạo discord.AllowedMentions từ dict."""
+    import discord
+    if not am_data:
+        return None
+    parse = am_data.get("parse", [])
+    kwargs: dict = {}
+    if "everyone" in parse:
+        kwargs["everyone"] = True
+    if "roles" in parse:
+        kwargs["roles"] = True
+    elif "roles" not in parse and am_data.get("roles"):
+        kwargs["roles"] = [discord.Object(id=int(rid)) for rid in am_data["roles"] if rid.isdigit()]
+    if "users" in parse:
+        kwargs["users"] = True
+    elif "users" not in parse and am_data.get("users"):
+        kwargs["users"] = [discord.Object(id=int(uid)) for uid in am_data["users"] if uid.isdigit()]
+    if "replied_user" in am_data:
+        kwargs["replied_user"] = bool(am_data["replied_user"])
+    return discord.AllowedMentions(**kwargs) if kwargs else None
+
+
 @router.get("/embeds/custom")
 def list_custom_embeds(db=Depends(get_db)):
     rows = db.execute(select(CustomEmbedMessage).order_by(CustomEmbedMessage.updated_at.desc())).scalars().all()
@@ -126,6 +219,15 @@ def list_custom_embeds(db=Depends(get_db)):
 def create_custom_embed(body: dict, db=Depends(get_db)):
     r = CustomEmbedMessage(
         name=body.get("name") or "Embed mới",
+        content=body.get("content"),
+        webhook_username=body.get("webhook_username"),
+        webhook_avatar_url=body.get("webhook_avatar_url"),
+        thread_name=body.get("thread_name"),
+        embeds=body.get("embeds", []),
+        components=body.get("components", []),
+        flags=body.get("flags", {}),
+        allowed_mentions=body.get("allowed_mentions", {}),
+        # legacy flat
         title=body.get("title"), description=body.get("description"),
         color=body.get("color", "#5865F2"),
         author=body.get("author"), author_icon_url=body.get("author_icon_url"),
@@ -141,7 +243,9 @@ def update_custom_embed(msg_id: int, body: dict, db=Depends(get_db)):
     r = db.get(CustomEmbedMessage, msg_id)
     if not r:
         raise HTTPException(status_code=404, detail="Not found")
-    for k in ("name", "title", "description", "color", "author", "author_icon_url",
+    for k in ("name", "content", "webhook_username", "webhook_avatar_url", "thread_name", "embeds",
+              "components", "flags", "allowed_mentions",
+              "title", "description", "color", "author", "author_icon_url",
               "footer", "thumbnail_url", "image_url", "fields"):
         if k in body:
             setattr(r, k, body[k])
@@ -157,6 +261,30 @@ def delete_custom_embed(msg_id: int, db=Depends(get_db)):
         raise HTTPException(status_code=404, detail="Not found")
     db.delete(r); db.commit()
     return {"ok": True}
+
+
+@router.post("/embeds/custom/{msg_id}/duplicate")
+def duplicate_custom_embed(msg_id: int, db=Depends(get_db)):
+    r = db.get(CustomEmbedMessage, msg_id)
+    if not r:
+        raise HTTPException(status_code=404, detail="Not found")
+    clone = CustomEmbedMessage(
+        name=f"{r.name} (copy)",
+        content=r.content,
+        webhook_username=r.webhook_username,
+        webhook_avatar_url=r.webhook_avatar_url,
+        thread_name=r.thread_name,
+        embeds=r.embeds or [],
+        components=r.components or [],
+        flags=r.flags or {},
+        allowed_mentions=r.allowed_mentions or {},
+        title=r.title, description=r.description, color=r.color,
+        author=r.author, author_icon_url=r.author_icon_url,
+        footer=r.footer, thumbnail_url=r.thumbnail_url,
+        image_url=r.image_url, fields=r.fields or [],
+    )
+    db.add(clone); db.commit(); db.refresh(clone)
+    return _row_to_dict(clone)
 
 
 @router.post("/embeds/custom/{msg_id}/send")
@@ -180,8 +308,30 @@ async def send_custom_embed(msg_id: int, body: dict, db=Depends(get_db)):
         if not channel:
             raise HTTPException(status_code=404, detail="Không tìm thấy kênh")
 
-        embed = _build_discord_embed(_row_to_dict(r))
-        msg = await channel.send(embed=embed)
+        embeds = _build_embeds_from_row(r)
+        content = r.content or None
+
+        send_kwargs: dict = {"embeds": embeds}
+        if content:
+            send_kwargs["content"] = content
+
+        # ── Components (Link Buttons only) ──
+        view = _build_view_from_components(r.components or [])
+        if view:
+            send_kwargs["view"] = view
+
+        # ── Flags ──
+        flags_data = r.flags or {}
+        if flags_data.get("suppress_embeds"):
+            import discord as _discord
+            send_kwargs["flags"] = _discord.MessageFlags(suppress_embeds=True)
+
+        # ── Allowed Mentions ──
+        am = _build_allowed_mentions(r.allowed_mentions or {})
+        if am:
+            send_kwargs["allowed_mentions"] = am
+
+        msg = await channel.send(**send_kwargs)
 
         # Lưu message_id + channel_id
         r.channel_id = str(channel_id)
@@ -220,8 +370,15 @@ async def update_discord_message(msg_id: int, db=Depends(get_db)):
             raise HTTPException(status_code=404, detail="Không tìm thấy kênh")
 
         discord_msg = await channel.fetch_message(int(r.message_id))
-        embed = _build_discord_embed(_row_to_dict(r))
-        await discord_msg.edit(embed=embed)
+        embeds = _build_embeds_from_row(r)
+        content = r.content or None
+        edit_kwargs: dict = {"embeds": embeds}
+        if content is not None:
+            edit_kwargs["content"] = content
+        # Components
+        view = _build_view_from_components(r.components or [])
+        edit_kwargs["view"] = view if view else discord.ui.View()
+        await discord_msg.edit(**edit_kwargs)
 
         r.updated_at = datetime.datetime.utcnow()
         db.commit()
@@ -268,44 +425,48 @@ async def load_from_link(body: dict, db=Depends(get_db)):
             select(CustomEmbedMessage).where(CustomEmbedMessage.message_id == message_id)
         ).scalars().first()
 
-        # Parse embed từ message Discord
+        # Parse tất cả embeds từ message Discord
+        parsed_embeds = []
+        for e in discord_msg.embeds:
+            color_str = f"#{e.color.value:06x}" if e.color else "#5865F2"
+            parsed_embeds.append({
+                "title": e.title or "",
+                "description": e.description or "",
+                "color": color_str,
+                "author": e.author.name if e.author else "",
+                "author_icon_url": str(e.author.icon_url) if (e.author and e.author.icon_url) else "",
+                "footer": e.footer.text if e.footer else "",
+                "thumbnail_url": str(e.thumbnail.url) if e.thumbnail else "",
+                "image_url": str(e.image.url) if e.image else "",
+                "fields": [{"name": f.name, "value": f.value, "inline": f.inline} for f in e.fields],
+            })
+
+        content_text = discord_msg.content or ""
+
         embed_data: dict = {
             "channel_id": channel_id, "message_id": message_id, "guild_id": guild_id,
-            "title": None, "description": None, "color": "#5865F2",
-            "author": None, "author_icon_url": None,
-            "footer": None, "thumbnail_url": None, "image_url": None,
-            "fields": [],
+            "content": content_text,
+            "embeds": parsed_embeds,
+            # legacy flat từ embed đầu tiên (nếu có)
+            "title": parsed_embeds[0]["title"] if parsed_embeds else None,
+            "description": parsed_embeds[0]["description"] if parsed_embeds else None,
+            "color": parsed_embeds[0]["color"] if parsed_embeds else "#5865F2",
+            "author": parsed_embeds[0]["author"] if parsed_embeds else None,
+            "author_icon_url": parsed_embeds[0]["author_icon_url"] if parsed_embeds else None,
+            "footer": parsed_embeds[0]["footer"] if parsed_embeds else None,
+            "thumbnail_url": parsed_embeds[0]["thumbnail_url"] if parsed_embeds else None,
+            "image_url": parsed_embeds[0]["image_url"] if parsed_embeds else None,
+            "fields": parsed_embeds[0]["fields"] if parsed_embeds else [],
         }
-        if discord_msg.embeds:
-            e = discord_msg.embeds[0]
-            embed_data["title"] = e.title
-            embed_data["description"] = e.description
-            if e.color:
-                embed_data["color"] = f"#{e.color.value:06x}"
-            if e.author and e.author.name:
-                embed_data["author"] = e.author.name
-                embed_data["author_icon_url"] = str(e.author.icon_url) if e.author.icon_url else None
-            if e.footer and e.footer.text:
-                embed_data["footer"] = e.footer.text
-            if e.thumbnail:
-                embed_data["thumbnail_url"] = str(e.thumbnail.url)
-            if e.image:
-                embed_data["image_url"] = str(e.image.url)
-            embed_data["fields"] = [
-                {"name": f.name, "value": f.value, "inline": f.inline}
-                for f in e.fields
-            ]
 
         if existing:
-            # Cập nhật embed data từ message Discord vào DB record
-            for k in ("title", "description", "color", "author", "author_icon_url",
-                      "footer", "thumbnail_url", "image_url", "fields"):
+            for k in ("content", "embeds", "title", "description", "color", "author",
+                      "author_icon_url", "footer", "thumbnail_url", "image_url", "fields"):
                 setattr(existing, k, embed_data[k])
             existing.updated_at = datetime.datetime.utcnow()
             db.commit()
             return {"loaded": True, "is_new": False, **_row_to_dict(existing)}
         else:
-            # Tạo mới
             r = CustomEmbedMessage(
                 name=f"Tin nhắn #{message_id[-6:]}",
                 **embed_data,
@@ -318,3 +479,50 @@ async def load_from_link(body: dict, db=Depends(get_db)):
     except Exception as e:
         logger.error(f"load_from_link error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Export / Import ───────────────────────────────────────────────────────────
+
+@router.get("/embeds/custom/{msg_id}/export")
+def export_custom_embed(msg_id: int, db=Depends(get_db)):
+    """Trả về JSON export của message (Discohook-compatible format)."""
+    from fastapi.responses import JSONResponse
+    r = db.get(CustomEmbedMessage, msg_id)
+    if not r:
+        raise HTTPException(status_code=404, detail="Not found")
+    data = _row_to_dict(r)
+    export = {
+        "version": "d2",
+        "name": data["name"],
+        "content": data["content"],
+        "embeds": data["embeds"],
+        "components": data["components"],
+        "flags": data["flags"],
+        "allowed_mentions": data["allowed_mentions"],
+        "webhook_username": data["webhook_username"],
+        "webhook_avatar_url": data["webhook_avatar_url"],
+        "thread_name": data["thread_name"],
+    }
+    return JSONResponse(
+        content=export,
+        headers={"Content-Disposition": f'attachment; filename="{r.name or "message"}.json"'},
+    )
+
+
+@router.post("/embeds/custom/import")
+def import_custom_embed(body: dict, db=Depends(get_db)):
+    """Import message từ JSON body (Discohook-compatible). Tạo record mới."""
+    name = body.get("name") or "Imported Message"
+    r = CustomEmbedMessage(
+        name=name,
+        content=body.get("content") or "",
+        webhook_username=body.get("webhook_username") or "",
+        webhook_avatar_url=body.get("webhook_avatar_url") or "",
+        thread_name=body.get("thread_name") or "",
+        embeds=body.get("embeds") or [],
+        components=body.get("components") or [],
+        flags=body.get("flags") or {},
+        allowed_mentions=body.get("allowed_mentions") or {},
+    )
+    db.add(r); db.commit(); db.refresh(r)
+    return _row_to_dict(r)
