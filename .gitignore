@@ -30,3 +30,4 @@ secrets_utils.py
 # Upload tạm
 static/uploads/*
 !static/uploads/.gitkeep
+start.sh
