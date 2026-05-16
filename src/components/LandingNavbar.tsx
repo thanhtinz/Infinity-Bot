@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Zap, ArrowRight, ExternalLink } from "lucide-react";
+import { Zap, ArrowRight, ExternalLink, HeadphonesIcon } from "lucide-react";
 
 export function useLandingFonts() {
   useEffect(() => {
@@ -68,7 +68,7 @@ export function LandingNavbar() {
           {inviteUrl && (
             <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
               className="hover:text-white transition-colors flex items-center gap-1">
-              Hỗ trợ <ExternalLink className="w-3 h-3" />
+              <HeadphonesIcon className="w-3.5 h-3.5" /> Hỗ trợ
             </a>
           )}
         </div>
@@ -108,8 +108,8 @@ export function LandingNavbar() {
           {inviteUrl && (
             <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
               onClick={() => setMenuOpen(false)}
-              className="block text-sm text-white/70 hover:text-white py-2 transition-colors">
-              Hỗ trợ ↗
+              className="flex items-center gap-2 text-sm text-white/70 hover:text-white py-2 transition-colors">
+              <HeadphonesIcon className="w-3.5 h-3.5" /> Hỗ trợ
             </a>
           )}
         </div>
