@@ -1,13 +1,6 @@
 import { useGuild } from "@/contexts/GuildContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronDown, ExternalLink, Server } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ExternalLink, Server } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function GuildSelector() {
@@ -24,8 +17,6 @@ export function GuildSelector() {
     ? `https://discord.com/oauth2/authorize?client_id=${config.discord_client_id}&permissions=8&scope=bot%20applications.commands`
     : null;
 
-  const selectedGuild = guilds.find(g => g.id === selectedGuildId);
-
   const handleSelect = (guildId: string) => {
     setSelectedGuildId(guildId);
     queryClient.clear();
@@ -33,9 +24,9 @@ export function GuildSelector() {
 
   if (isLoading) {
     return (
-      <div className="px-4 py-3 border-b">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Server className="w-4 h-4 animate-pulse" />
+      <div className="px-3 py-3 border-b">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Server className="w-3.5 h-3.5 animate-pulse" />
           Đang tải server...
         </div>
       </div>
@@ -44,79 +35,88 @@ export function GuildSelector() {
 
   if (guilds.length === 0) {
     return (
-      <div className="px-4 py-3 border-b">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Server className="w-4 h-4" />
-          Không có server
-        </div>
+      <div className="px-3 py-3 border-b space-y-2">
+        <p className="text-xs text-muted-foreground">Chưa có server nào</p>
+        {inviteUrl && (
+          <a
+            href={inviteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-xs text-indigo-500 hover:text-indigo-400 transition-colors"
+          >
+            <ExternalLink className="w-3 h-3" />
+            Mời bot vào server
+          </a>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="px-4 py-3 border-b">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            className={cn(
-              "flex items-center justify-between w-full px-3 py-2 rounded-md text-sm transition-colors",
-              "hover:bg-accent hover:text-accent-foreground",
-              !selectedGuild && "text-muted-foreground"
-            )}
-          >
-            <span className="flex items-center gap-2 min-w-0">
-              {selectedGuild?.icon ? (
-                <img
-                  src={`https://cdn.discordapp.com/icons/${selectedGuild.id}/${selectedGuild.icon}.png`}
-                  alt=""
-                  className="w-5 h-5 rounded-full shrink-0"
-                />
-              ) : (
-                <Server className="w-4 h-4 shrink-0" />
-              )}
-              <span className="truncate">
-                {selectedGuild ? selectedGuild.name : "Chọn server..."}
-              </span>
-            </span>
-            <ChevronDown className="w-4 h-4 shrink-0 opacity-60" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56">
-          {guilds.map(guild => (
-            <DropdownMenuItem
+    <div className="px-3 py-3 border-b">
+      {/* Grid: 2 cột cố định */}
+      <div className="grid grid-cols-2 gap-1.5">
+        {guilds.map(guild => {
+          const isSelected = guild.id === selectedGuildId;
+          const iconUrl = guild.icon
+            ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
+            : null;
+
+          return (
+            <button
               key={guild.id}
               onClick={() => handleSelect(guild.id)}
-              className="flex items-center gap-2 cursor-pointer"
+              title={guild.name}
+              className={cn(
+                "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors text-center group",
+                isSelected
+                  ? "bg-primary/10 ring-1 ring-primary/40"
+                  : "hover:bg-accent"
+              )}
             >
-              {guild.icon ? (
+              {/* Avatar vuông */}
+              {iconUrl ? (
                 <img
-                  src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
-                  alt=""
-                  className="w-5 h-5 rounded-full shrink-0"
+                  src={iconUrl}
+                  alt={guild.name}
+                  className="w-10 h-10 rounded-lg shrink-0 object-cover"
                 />
               ) : (
-                <Server className="w-4 h-4 shrink-0" />
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <span className="text-sm font-bold text-muted-foreground">
+                    {guild.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
               )}
-              <span className="truncate flex-1">{guild.name}</span>
-              {guild.id === selectedGuildId && (
-                <Check className="w-4 h-4 shrink-0 text-primary" />
-              )}
-            </DropdownMenuItem>
-          ))}
-          {inviteUrl && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="flex items-center gap-2 cursor-pointer text-indigo-500 focus:text-indigo-500"
-                onClick={() => window.open(inviteUrl, "_blank", "noopener,noreferrer")}
-              >
-                <ExternalLink className="w-4 h-4 shrink-0" />
-                <span>Mời bot vào server</span>
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+              {/* Tên server */}
+              <span className={cn(
+                "text-[10px] leading-tight w-full truncate font-medium",
+                isSelected ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+              )}>
+                {guild.name}
+              </span>
+            </button>
+          );
+        })}
+
+        {/* Nút mời bot */}
+        {inviteUrl && (
+          <a
+            href={inviteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Mời bot vào server"
+            className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-accent transition-colors text-center group"
+          >
+            <div className="w-10 h-10 rounded-lg border-2 border-dashed border-indigo-400/50 flex items-center justify-center shrink-0 group-hover:border-indigo-400">
+              <ExternalLink className="w-4 h-4 text-indigo-400" />
+            </div>
+            <span className="text-[10px] leading-tight w-full truncate font-medium text-indigo-400">
+              Thêm server
+            </span>
+          </a>
+        )}
+      </div>
     </div>
   );
 }
