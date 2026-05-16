@@ -28,11 +28,16 @@ const LevelingManager = lazy(() => import("./pages/LevelingManager").then(m => (
 const Leaderboard = lazy(() => import("./pages/Leaderboard").then(m => ({ default: m.Leaderboard })));
 const WarningsManager = lazy(() => import("./pages/WarningsManager").then(m => ({ default: m.WarningsManager })));
 const StickyManager = lazy(() => import("./pages/StickyManager").then(m => ({ default: m.StickyManager })));
+const StickyEditPage = lazy(() => import("./pages/sticky/StickyEditPage").then(m => ({ default: m.StickyEditPage })));
 const TicketsPage = lazy(() => import("./pages/TicketsPage").then(m => ({ default: m.TicketsPage })));
 const TicketPanels = lazy(() => import("./pages/TicketPanels").then(m => ({ default: m.TicketPanels })));
 const TicketConfig = lazy(() => import("./pages/TicketConfig").then(m => ({ default: m.TicketConfig })));
 const TicketForms = lazy(() => import("./pages/TicketForms").then(m => ({ default: m.TicketForms })));
 const TicketTeams = lazy(() => import("./pages/TicketTeams").then(m => ({ default: m.TicketTeams })));
+const CouponEditPage = lazy(() => import("./pages/coupons/CouponEditPage").then(m => ({ default: m.CouponEditPage })));
+const ProductEditPage = lazy(() => import("./pages/products/ProductEditPage").then(m => ({ default: m.ProductEditPage })));
+const TicketFormEditPage = lazy(() => import("./pages/ticket-forms/TicketFormEditPage").then(m => ({ default: m.TicketFormEditPage })));
+const TicketTeamEditPage = lazy(() => import("./pages/ticket-teams/TicketTeamEditPage").then(m => ({ default: m.TicketTeamEditPage })));
 const TicketFeedback = lazy(() => import("./pages/TicketFeedback").then(m => ({ default: m.TicketFeedback })));
 const TicketTranscripts = lazy(() => import("./pages/TicketTranscripts").then(m => ({ default: m.TicketTranscripts })));
 const TicketClaiming = lazy(() => import("./pages/TicketClaiming").then(m => ({ default: m.TicketClaiming })));
@@ -46,8 +51,14 @@ const StarboardConfig = lazy(() => import("./pages/StarboardConfig").then(m => (
 const AutoModConfig = lazy(() => import("./pages/AutoModConfig").then(m => ({ default: m.AutoModConfig })));
 const ReactionRoles = lazy(() => import("./pages/ReactionRoles").then(m => ({ default: m.ReactionRoles })));
 const CustomCommands = lazy(() => import("./pages/CustomCommands").then(m => ({ default: m.CustomCommands })));
+const CustomCommandEditPage = lazy(() => import("./pages/custom-commands/CustomCommandEditPage").then(m => ({ default: m.CustomCommandEditPage })));
 const ScheduledMessages = lazy(() => import("./pages/ScheduledMessages").then(m => ({ default: m.ScheduledMessages })));
+const ScheduledMessagesEditPage = lazy(() => import("./pages/scheduled-messages/ScheduledMessagesEditPage").then(m => ({ default: m.ScheduledMessagesEditPage })));
+const ButtonRoleEditPage = lazy(() => import("./pages/button-roles/ButtonRoleEditPage").then(m => ({ default: m.ButtonRoleEditPage })));
+const ReactionRoleEditPage = lazy(() => import("./pages/reaction-roles/ReactionRoleEditPage").then(m => ({ default: m.ReactionRoleEditPage })));
+const SelectMenuRoleEditPage = lazy(() => import("./pages/select-roles/SelectMenuRoleEditPage").then(m => ({ default: m.SelectMenuRoleEditPage })));
 const AutoResponder = lazy(() => import("./pages/AutoResponder").then(m => ({ default: m.AutoResponder })));
+const AutoResponderEditPage = lazy(() => import("./pages/auto-responder/AutoResponderEditPage").then(m => ({ default: m.AutoResponderEditPage })));
 const BackupRestore = lazy(() => import("./pages/BackupRestore").then(m => ({ default: m.BackupRestore })));
 const Features = lazy(() => import("./pages/Features"));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
@@ -522,13 +533,19 @@ function ProtectedAppRoutes() {
         <Route path="/config/channels" element={<ConfigChannels />} />
         <Route path="/config/voice" element={<ConfigVoice />} />
         <Route path="/products" element={<ProductsManager />} />
+        <Route path="/products/new" element={<ProductEditPage />} />
+        <Route path="/products/:id/edit" element={<ProductEditPage />} />
         <Route path="/orders" element={<OrdersManager />} />
         <Route path="/feedback" element={<FeedbackManager />} />
         <Route path="/coupons" element={<CouponsManager />} />
+        <Route path="/coupons/new" element={<CouponEditPage />} />
+        <Route path="/coupons/:id/edit" element={<CouponEditPage />} />
         <Route path="/users" element={<UsersManager />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/warnings" element={<WarningsManager />} />
         <Route path="/sticky" element={<StickyManager />} />
+        <Route path="/sticky/new" element={<StickyEditPage />} />
+        <Route path="/sticky/:id/edit" element={<StickyEditPage />} />
         <Route path="/leveling" element={<Navigate to="/leveling/rank-card" replace />} />
         <Route path="/leveling/rank-card-editor" element={<RankCardEditor />} />
         <Route path="/leveling/embeds" element={<LevelEmbedsManager />} />
@@ -546,22 +563,38 @@ function ProtectedAppRoutes() {
         <Route path="/ticket-panels" element={<TicketPanels />} />
         <Route path="/ticket-config" element={<TicketConfig />} />
         <Route path="/ticket-forms" element={<TicketForms />} />
+        <Route path="/ticket-forms/new" element={<TicketFormEditPage />} />
+        <Route path="/ticket-forms/:id/edit" element={<TicketFormEditPage />} />
         <Route path="/ticket-teams" element={<TicketTeams />} />
+        <Route path="/ticket-teams/new" element={<TicketTeamEditPage />} />
+        <Route path="/ticket-teams/:id/edit" element={<TicketTeamEditPage />} />
         <Route path="/ticket-feedback" element={<TicketFeedback />} />
         <Route path="/ticket-transcripts" element={<TicketTranscripts />} />
         <Route path="/ticket-claiming" element={<TicketClaiming />} />
         <Route path="/welcome" element={<WelcomeConfig />} />
         <Route path="/autorole" element={<AutoRoleConfig />} />
         <Route path="/button-roles" element={<ButtonRoles />} />
+        <Route path="/button-roles/new" element={<ButtonRoleEditPage />} />
+        <Route path="/button-roles/:id/edit" element={<ButtonRoleEditPage />} />
         <Route path="/select-roles" element={<SelectMenuRoles />} />
+        <Route path="/select-roles/new" element={<SelectMenuRoleEditPage />} />
+        <Route path="/select-roles/:id/edit" element={<SelectMenuRoleEditPage />} />
         <Route path="/logging" element={<LoggingConfig />} />
         <Route path="/logs" element={<LogViewer />} />
         <Route path="/starboard" element={<StarboardConfig />} />
         <Route path="/automod" element={<AutoModConfig />} />
         <Route path="/reaction-roles" element={<ReactionRoles />} />
+        <Route path="/reaction-roles/new" element={<ReactionRoleEditPage />} />
+        <Route path="/reaction-roles/:id/edit" element={<ReactionRoleEditPage />} />
         <Route path="/custom-commands" element={<CustomCommands />} />
+        <Route path="/custom-commands/new" element={<CustomCommandEditPage />} />
+        <Route path="/custom-commands/:id/edit" element={<CustomCommandEditPage />} />
         <Route path="/autoresponder" element={<AutoResponder />} />
+        <Route path="/autoresponder/new" element={<AutoResponderEditPage />} />
+        <Route path="/autoresponder/:id/edit" element={<AutoResponderEditPage />} />
         <Route path="/scheduled-messages" element={<ScheduledMessages />} />
+        <Route path="/scheduled-messages/new" element={<ScheduledMessagesEditPage />} />
+        <Route path="/scheduled-messages/:id/edit" element={<ScheduledMessagesEditPage />} />
         <Route path="/backup" element={<BackupRestore />} />
       </Routes>
       </Suspense>

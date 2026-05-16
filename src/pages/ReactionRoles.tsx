@@ -1,10 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -15,10 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { ChannelSelect } from "@/components/ChannelSelect";
-import { RoleSelect } from "@/components/RoleSelect";
-import { EmbedBuilder, EMBED_DEFAULTS } from "@/components/EmbedBuilder";
-import type { EmbedFormData, EmbedField } from "@/components/EmbedBuilder";
+import { EMBED_DEFAULTS } from "@/components/EmbedBuilder";
+import type { EmbedField } from "@/components/EmbedBuilder";
 import {
   Smile,
   Plus,
@@ -28,9 +25,7 @@ import {
   CheckCircle2,
   Calendar,
   Hash,
-  X,
 } from "lucide-react";
-import { EmojiPicker } from "@/components/EmojiPicker";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -56,39 +51,7 @@ interface ReactionRolePanel {
   created_at: string;
 }
 
-interface PanelForm {
-  name: string;
-  channel_id: string;
-  embed_title: string;
-  embed_description: string;
-  embed_color: string;
-  embed_footer: string;
-  embed_image_url: string;
-  embed_thumbnail_url: string;
-  embed_fields: EmbedField[];
-  mappings: ReactionMapping[];
-}
-
 // ─── Constants ───────────────────────────────────────────────────────────────
-
-const emptyPanelForm = (): PanelForm => ({
-  name: "",
-  channel_id: "",
-  embed_title: "",
-  embed_description: "",
-  embed_color: EMBED_DEFAULTS.color,
-  embed_footer: "",
-  embed_image_url: "",
-  embed_thumbnail_url: "",
-  embed_fields: [],
-  mappings: [],
-});
-
-const emptyMapping = (): ReactionMapping => ({
-  emoji: "",
-  role_id: "",
-  label: "",
-});
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -252,12 +215,10 @@ function PanelCard({
 export function ReactionRoles() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   // ── State ──
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingPanel, setEditingPanel] = useState<ReactionRolePanel | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ReactionRolePanel | null>(null);
-  const [form, setForm] = useState<PanelForm>(emptyPanelForm());
 
   // ── Queries ──────────────────────────────────────────────────────────────
 
@@ -271,55 +232,6 @@ export function ReactionRoles() {
   });
 
   // ── Mutations ────────────────────────────────────────────────────────────
-
-  const createMutation = useMutation<any, Error, Record<string, unknown>>({
-    mutationFn: (body: Record<string, unknown>) =>
-      fetch("/api/reaction-roles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(body),
-      }).then(async (r) => {
-        if (!r.ok) throw new Error(await r.text());
-        return r.json();
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["reaction-roles"] });
-      setDialogOpen(false);
-      toast({ title: "Đã tạo panel thành công" });
-    },
-    onError: (e: Error) =>
-      toast({
-        variant: "destructive",
-        title: "Lỗi tạo panel",
-        description: e.message,
-      }),
-  });
-
-  const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
-    mutationFn: ({ id, ...body }: { id: number } & Record<string, unknown>) =>
-      fetch(`/api/reaction-roles/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(body),
-      }).then(async (r) => {
-        if (!r.ok) throw new Error(await r.text());
-        return r.json();
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["reaction-roles"] });
-      setDialogOpen(false);
-      setEditingPanel(null);
-      toast({ title: "Đã cập nhật panel" });
-    },
-    onError: (e: Error) =>
-      toast({
-        variant: "destructive",
-        title: "Lỗi cập nhật",
-        description: e.message,
-      }),
-  });
 
   const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
@@ -363,74 +275,6 @@ export function ReactionRoles() {
       }),
   });
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
-
-  const openCreate = () => {
-    setEditingPanel(null);
-    setForm(emptyPanelForm());
-    setDialogOpen(true);
-  };
-
-  const openEdit = (panel: ReactionRolePanel) => {
-    setEditingPanel(panel);
-    setForm({
-      name: panel.name,
-      channel_id: panel.channel_id ?? "",
-      embed_title: panel.embed_title ?? "",
-      embed_description: panel.embed_description ?? "",
-      embed_color: panel.embed_color ?? EMBED_DEFAULTS.color,
-      embed_footer: panel.embed_footer ?? "",
-      embed_image_url: panel.embed_image_url ?? "",
-      embed_thumbnail_url: panel.embed_thumbnail_url ?? "",
-      embed_fields: panel.embed_fields ?? [],
-      mappings: panel.mappings?.map((m) => ({ ...m })) ?? [],
-    });
-    setDialogOpen(true);
-  };
-
-  const handleSave = () => {
-    const body = {
-      name: form.name,
-      channel_id: form.channel_id,
-      embed_title: form.embed_title,
-      embed_description: form.embed_description,
-      embed_color: form.embed_color,
-      embed_footer: form.embed_footer,
-      embed_image_url: form.embed_image_url,
-      embed_thumbnail_url: form.embed_thumbnail_url,
-      embed_fields: form.embed_fields,
-      mappings: form.mappings,
-    };
-    if (editingPanel) {
-      updateMutation.mutate({ id: editingPanel.id, ...body });
-    } else {
-      createMutation.mutate(body);
-    }
-  };
-
-  // ── Mapping form helpers ──────────────────────────────────────────────────
-
-  const addMapping = () => {
-    setForm((prev) => ({
-      ...prev,
-      mappings: [...prev.mappings, emptyMapping()],
-    }));
-  };
-
-  const removeMapping = (idx: number) => {
-    setForm((prev) => ({
-      ...prev,
-      mappings: prev.mappings.filter((_, i) => i !== idx),
-    }));
-  };
-
-  const updateMapping = (idx: number, patch: Partial<ReactionMapping>) => {
-    setForm((prev) => ({
-      ...prev,
-      mappings: prev.mappings.map((m, i) => (i === idx ? { ...m, ...patch } : m)),
-    }));
-  };
-
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
@@ -446,7 +290,7 @@ export function ReactionRoles() {
             Tạo panel reaction role để thành viên tự nhận role bằng emoji.
           </p>
         </div>
-        <Button onClick={openCreate}>
+        <Button onClick={() => navigate('/reaction-roles/new')}>
           <Plus className="h-4 w-4 mr-1.5" />
           Tạo Panel
         </Button>
@@ -466,7 +310,7 @@ export function ReactionRoles() {
             <p className="text-xs text-muted-foreground mt-1">
               Tạo panel reaction role để thành viên tự nhận role bằng emoji.
             </p>
-            <Button variant="outline" size="sm" className="mt-4" onClick={openCreate}>
+            <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate('/reaction-roles/new')}>
               <Plus className="h-4 w-4 mr-1.5" />
               Tạo Panel
             </Button>
@@ -481,7 +325,7 @@ export function ReactionRoles() {
             <PanelCard
               key={panel.id}
               panel={panel}
-              onEdit={() => openEdit(panel)}
+              onEdit={() => navigate('/reaction-roles/' + panel.id + '/edit')}
               onDelete={() => setDeleteTarget(panel)}
               onSend={() => sendMutation.mutate(panel.id)}
               sendPending={sendMutation.isPending}
@@ -489,185 +333,6 @@ export function ReactionRoles() {
           ))}
         </div>
       )}
-
-      {/* ── Create / Edit Dialog ── */}
-      <Dialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDialogOpen(false);
-            setEditingPanel(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingPanel ? "Chỉnh sửa Panel" : "Tạo Panel Reaction Role"}
-            </DialogTitle>
-            <DialogDescription>
-              Tạo panel reaction role để thành viên tự nhận role khi thả emoji.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6 py-2">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label>Tên Panel</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                placeholder="VD: Chọn màu sắc"
-              />
-            </div>
-
-            {/* Channel */}
-            <div className="space-y-2">
-              <Label>Kênh</Label>
-              <ChannelSelect
-                value={form.channel_id}
-                onChange={(v) => setForm((p) => ({ ...p, channel_id: v }))}
-                placeholder="Chọn kênh gửi panel"
-                filter="text"
-              />
-            </div>
-
-            <Separator />
-
-            {/* Embed settings */}
-            <div className="space-y-4">
-              <p className="text-sm font-medium">Cài đặt Embed</p>
-              <EmbedBuilder
-                data={{
-                  title: form.embed_title,
-                  description: form.embed_description,
-                  color: form.embed_color,
-                  footer: form.embed_footer,
-                  image_url: form.embed_image_url,
-                  thumbnail_url: form.embed_thumbnail_url,
-                  fields: form.embed_fields,
-                }}
-                onChange={(ed: EmbedFormData) => {
-                  setForm((p) => ({
-                    ...p,
-                    embed_title: ed.title,
-                    embed_description: ed.description,
-                    embed_color: ed.color,
-                    embed_footer: ed.footer,
-                    embed_image_url: ed.image_url,
-                    embed_thumbnail_url: ed.thumbnail_url,
-                    embed_fields: ed.fields,
-                  }));
-                }}
-                compact
-              />
-            </div>
-
-            <Separator />
-
-            {/* Mappings builder */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Emoji → Role</p>
-                <Button variant="outline" size="sm" onClick={addMapping}>
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  Thêm
-                </Button>
-              </div>
-
-              {form.mappings.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-4">
-                  Chưa có mapping nào. Nhấn "Thêm" để bắt đầu.
-                </p>
-              )}
-
-              <div className="space-y-3">
-                {form.mappings.map((mapping, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-lg border bg-muted/30 p-3 space-y-3"
-                  >
-                    {/* Mapping header */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        Mapping #{idx + 1}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-destructive hover:text-destructive"
-                        onClick={() => removeMapping(idx)}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-
-                    {/* Emoji + Label */}
-                    <div className="grid grid-cols-[80px_1fr] gap-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Emoji</Label>
-                        <div className="flex items-center gap-1">
-                          <Input
-                            value={mapping.emoji}
-                            onChange={(e) =>
-                              updateMapping(idx, { emoji: e.target.value })
-                            }
-                            placeholder="🔴"
-                            className="h-8 text-sm"
-                          />
-                          <EmojiPicker
-                            onSelect={(emoji) => updateMapping(idx, { emoji })}
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Nhãn</Label>
-                        <Input
-                          value={mapping.label}
-                          onChange={(e) =>
-                            updateMapping(idx, { label: e.target.value })
-                          }
-                          placeholder="VD: Đỏ"
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Role */}
-                    <div className="space-y-1">
-                      <Label className="text-xs">Role</Label>
-                      <RoleSelect
-                        value={mapping.role_id}
-                        onChange={(v) => updateMapping(idx, { role_id: v })}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDialogOpen(false);
-                setEditingPanel(null);
-              }}
-            >
-              Hủy
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={createMutation.isPending || updateMutation.isPending}
-            >
-              {createMutation.isPending || updateMutation.isPending
-                ? "Đang lưu..."
-                : "Lưu"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* ── Delete Confirmation Dialog ── */}
       <Dialog

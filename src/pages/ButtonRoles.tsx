@@ -1,10 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -13,18 +12,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { RoleSelect } from "@/components/RoleSelect";
-import { EmbedBuilder, EMBED_DEFAULTS } from "@/components/EmbedBuilder";
-import type { EmbedFormData, EmbedField } from "@/components/EmbedBuilder";
+import { EMBED_DEFAULTS } from "@/components/EmbedBuilder";
+import type { EmbedField } from "@/components/EmbedBuilder";
 import {
   MousePointerClick,
   Plus,
@@ -33,9 +24,7 @@ import {
   CheckCircle2,
   Calendar,
   Hash,
-  X,
 } from "lucide-react";
-import { EmojiPicker } from "@/components/EmojiPicker";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -63,26 +52,6 @@ interface ButtonRolePanel {
   created_at: string;
 }
 
-interface PanelForm {
-  name: string;
-  embed_title: string;
-  embed_description: string;
-  embed_color: string;
-  embed_footer: string;
-  embed_image_url: string;
-  embed_thumbnail_url: string;
-  embed_fields: EmbedField[];
-  buttons: ButtonRoleItem[];
-}
-
-interface ButtonForm {
-  label: string;
-  emoji: string;
-  role_id: string;
-  style: string;
-  row: number;
-}
-
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const BUTTON_STYLES = [
@@ -91,26 +60,6 @@ const BUTTON_STYLES = [
   { key: "success", label: "Success", bg: "#57f287", text: "#000000" },
   { key: "danger", label: "Danger", bg: "#ed4245", text: "#ffffff" },
 ] as const;
-
-const emptyPanelForm = (): PanelForm => ({
-  name: "",
-  embed_title: "",
-  embed_description: "",
-  embed_color: EMBED_DEFAULTS.color,
-  embed_footer: "",
-  embed_image_url: "",
-  embed_thumbnail_url: "",
-  embed_fields: [],
-  buttons: [],
-});
-
-const emptyButtonForm = (): ButtonForm => ({
-  label: "",
-  emoji: "",
-  role_id: "",
-  style: "primary",
-  row: 0,
-});
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -268,12 +217,10 @@ function PanelCard({
 export function ButtonRoles() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   // ── State ──
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingPanel, setEditingPanel] = useState<ButtonRolePanel | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ButtonRolePanel | null>(null);
-  const [form, setForm] = useState<PanelForm>(emptyPanelForm());
 
   // ── Queries ──────────────────────────────────────────────────────────────
 
@@ -287,55 +234,6 @@ export function ButtonRoles() {
   });
 
   // ── Mutations ────────────────────────────────────────────────────────────
-
-  const createMutation = useMutation<any, Error, Record<string, unknown>>({
-    mutationFn: (body: Record<string, unknown>) =>
-      fetch("/api/welcome/button-roles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(body),
-      }).then(async (r) => {
-        if (!r.ok) throw new Error(await r.text());
-        return r.json();
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["button-roles"] });
-      setDialogOpen(false);
-      toast({ title: "Đã tạo panel thành công" });
-    },
-    onError: (e: Error) =>
-      toast({
-        variant: "destructive",
-        title: "Lỗi tạo panel",
-        description: e.message,
-      }),
-  });
-
-  const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
-    mutationFn: ({ id, ...body }: { id: number } & Record<string, unknown>) =>
-      fetch(`/api/welcome/button-roles/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(body),
-      }).then(async (r) => {
-        if (!r.ok) throw new Error(await r.text());
-        return r.json();
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["button-roles"] });
-      setDialogOpen(false);
-      setEditingPanel(null);
-      toast({ title: "Đã cập nhật panel" });
-    },
-    onError: (e: Error) =>
-      toast({
-        variant: "destructive",
-        title: "Lỗi cập nhật",
-        description: e.message,
-      }),
-  });
 
   const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
@@ -358,72 +256,6 @@ export function ButtonRoles() {
       }),
   });
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
-
-  const openCreate = () => {
-    setEditingPanel(null);
-    setForm(emptyPanelForm());
-    setDialogOpen(true);
-  };
-
-  const openEdit = (panel: ButtonRolePanel) => {
-    setEditingPanel(panel);
-    setForm({
-      name: panel.name,
-      embed_title: panel.embed_title ?? "",
-      embed_description: panel.embed_description ?? "",
-      embed_color: panel.embed_color ?? EMBED_DEFAULTS.color,
-      embed_footer: panel.embed_footer ?? "",
-      embed_image_url: panel.embed_image_url ?? "",
-      embed_thumbnail_url: panel.embed_thumbnail_url ?? "",
-      embed_fields: panel.embed_fields ?? [],
-      buttons: panel.buttons?.map((b) => ({ ...b })) ?? [],
-    });
-    setDialogOpen(true);
-  };
-
-  const handleSave = () => {
-    const body = {
-      name: form.name,
-      embed_title: form.embed_title,
-      embed_description: form.embed_description,
-      embed_color: form.embed_color,
-      embed_footer: form.embed_footer,
-      embed_image_url: form.embed_image_url,
-      embed_thumbnail_url: form.embed_thumbnail_url,
-      embed_fields: form.embed_fields,
-      buttons: form.buttons,
-    };
-    if (editingPanel) {
-      updateMutation.mutate({ id: editingPanel.id, ...body });
-    } else {
-      createMutation.mutate(body);
-    }
-  };
-
-  // ── Button form helpers ──────────────────────────────────────────────────
-
-  const addButton = () => {
-    setForm((prev) => ({
-      ...prev,
-      buttons: [...prev.buttons, emptyButtonForm()],
-    }));
-  };
-
-  const removeButton = (idx: number) => {
-    setForm((prev) => ({
-      ...prev,
-      buttons: prev.buttons.filter((_, i) => i !== idx),
-    }));
-  };
-
-  const updateButton = (idx: number, patch: Partial<ButtonForm>) => {
-    setForm((prev) => ({
-      ...prev,
-      buttons: prev.buttons.map((b, i) => (i === idx ? { ...b, ...patch } : b)),
-    }));
-  };
-
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
@@ -439,7 +271,7 @@ export function ButtonRoles() {
             Tạo panel với các nút để thành viên tự chọn role.
           </p>
         </div>
-        <Button onClick={openCreate}>
+        <Button onClick={() => navigate('/button-roles/new')}>
           <Plus className="h-4 w-4 mr-1.5" />
           Tạo Panel
         </Button>
@@ -459,7 +291,7 @@ export function ButtonRoles() {
             <p className="text-xs text-muted-foreground mt-1">
               Tạo panel button role để thành viên tự chọn role.
             </p>
-            <Button variant="outline" size="sm" className="mt-4" onClick={openCreate}>
+            <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate('/button-roles/new')}>
               <Plus className="h-4 w-4 mr-1.5" />
               Tạo Panel
             </Button>
@@ -474,226 +306,12 @@ export function ButtonRoles() {
             <PanelCard
               key={panel.id}
               panel={panel}
-              onEdit={() => openEdit(panel)}
+              onEdit={() => navigate('/button-roles/' + panel.id + '/edit')}
               onDelete={() => setDeleteTarget(panel)}
             />
           ))}
         </div>
       )}
-
-      {/* ── Create / Edit Dialog ── */}
-      <Dialog
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDialogOpen(false);
-            setEditingPanel(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingPanel ? "Chỉnh sửa Panel" : "Tạo Panel Button Role"}
-            </DialogTitle>
-            <DialogDescription>
-              Tạo panel với các nút để thành viên tự chọn role khi nhấn.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6 py-2">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label>Tên panel</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                placeholder="VD: Chọn màu sắc"
-              />
-            </div>
-
-            <Separator />
-
-            {/* Embed settings */}
-            <div className="space-y-4">
-              <p className="text-sm font-medium">Cài đặt Embed</p>
-              <EmbedBuilder
-                data={{
-                  title: form.embed_title,
-                  description: form.embed_description,
-                  color: form.embed_color,
-                  footer: form.embed_footer,
-                  image_url: form.embed_image_url,
-                  thumbnail_url: form.embed_thumbnail_url,
-                  fields: form.embed_fields,
-                }}
-                onChange={(ed: EmbedFormData) => {
-                  setForm((p) => ({
-                    ...p,
-                    embed_title: ed.title,
-                    embed_description: ed.description,
-                    embed_color: ed.color,
-                    embed_footer: ed.footer,
-                    embed_image_url: ed.image_url,
-                    embed_thumbnail_url: ed.thumbnail_url,
-                    embed_fields: ed.fields,
-                  }));
-                }}
-                compact
-              />
-            </div>
-
-            <Separator />
-
-            {/* Buttons builder */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Nút Role</p>
-                <Button variant="outline" size="sm" onClick={addButton}>
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  Thêm nút
-                </Button>
-              </div>
-
-              {form.buttons.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-4">
-                  Chưa có nút nào. Nhấn "Thêm nút" để bắt đầu.
-                </p>
-              )}
-
-              <div className="space-y-3">
-                {form.buttons.map((btn, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-lg border bg-muted/30 p-3 space-y-3"
-                  >
-                    {/* Button header */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        Nút #{idx + 1}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-destructive hover:text-destructive"
-                        onClick={() => removeButton(idx)}
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-
-                    {/* Label + Emoji */}
-                    <div className="grid grid-cols-[1fr_80px] gap-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Nhãn</Label>
-                        <Input
-                          value={btn.label}
-                          onChange={(e) =>
-                            updateButton(idx, { label: e.target.value })
-                          }
-                          placeholder="VD: Đỏ"
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Emoji</Label>
-                        <div className="flex items-center gap-1">
-                          <Input
-                            value={btn.emoji}
-                            onChange={(e) =>
-                              updateButton(idx, { emoji: e.target.value })
-                            }
-                            placeholder="🔴"
-                            className="h-8 text-sm"
-                          />
-                          <EmojiPicker onSelect={(emoji) => updateButton(idx, { emoji })} />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Role */}
-                    <div className="space-y-1">
-                      <Label className="text-xs">Role</Label>
-                      <RoleSelect
-                        value={btn.role_id}
-                        onChange={(v) => updateButton(idx, { role_id: v })}
-                      />
-                    </div>
-
-                    {/* Style + Row */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Kiểu nút</Label>
-                        <Select
-                          value={btn.style}
-                          onValueChange={(v) => updateButton(idx, { style: v })}
-                        >
-                          <SelectTrigger className="h-8 text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {BUTTON_STYLES.map((s) => (
-                              <SelectItem key={s.key} value={s.key}>
-                                <span className="flex items-center gap-2">
-                                  <span
-                                    className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
-                                    style={{ backgroundColor: s.bg }}
-                                  />
-                                  {s.label}
-                                </span>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Hàng</Label>
-                        <Select
-                          value={String(btn.row)}
-                          onValueChange={(v) =>
-                            updateButton(idx, { row: Number(v) })
-                          }
-                        >
-                          <SelectTrigger className="h-8 text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {[0, 1, 2, 3, 4].map((r) => (
-                              <SelectItem key={r} value={String(r)}>
-                                Hàng {r}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDialogOpen(false);
-                setEditingPanel(null);
-              }}
-            >
-              Hủy
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={createMutation.isPending || updateMutation.isPending}
-            >
-              {createMutation.isPending || updateMutation.isPending
-                ? "Đang lưu..."
-                : "Lưu"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* ── Delete Confirmation Dialog ── */}
       <Dialog
