@@ -76,6 +76,7 @@ export function GuildSelector() {
           {guilds.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-3">Chưa có server nào</p>
           ) : (
+            <>
             <div className="max-h-64 overflow-y-auto py-1">
               {guilds.map(guild => {
                 const isSelected = guild.id === selectedGuildId;
@@ -112,6 +113,7 @@ export function GuildSelector() {
                 Xem tất cả server
               </button>
             </div>
+            </>
           )}
         </div>
       )}
