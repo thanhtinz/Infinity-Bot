@@ -438,6 +438,9 @@ def get_leaderboard(
 ):
     from src.models.models import User as UserM
     now = datetime.datetime.utcnow()
+    sys_cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    shop_reset_at = sys_cfg.shop_leaderboard_reset_at if sys_cfg else None
+
     since_map = {
         "daily": now - datetime.timedelta(days=1),
         "7days": now - datetime.timedelta(days=7),
@@ -445,6 +448,12 @@ def get_leaderboard(
         "all": None,
     }
     since = since_map.get(time)
+
+    # Lấy mốc mới hơn giữa reset_at và time filter
+    if shop_reset_at and since:
+        since = max(since, shop_reset_at)
+    elif shop_reset_at:
+        since = shop_reset_at
 
     query = select(
         Order.user_id,
@@ -473,7 +482,17 @@ def get_leaderboard(
             "don_count": r.don_count,
             "total_spent": float(r.total_spent or 0),
         })
-    return result
+    return {"reset_at": shop_reset_at.isoformat() if shop_reset_at else None, "items": result}
+
+
+@router.post("/leaderboard/reset")
+def reset_shop_leaderboard(db=Depends(get_db)):
+    sys_cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not sys_cfg:
+        raise HTTPException(status_code=404, detail="Chưa cấu hình bot")
+    sys_cfg.shop_leaderboard_reset_at = datetime.datetime.utcnow()
+    db.commit()
+    return {"ok": True, "reset_at": sys_cfg.shop_leaderboard_reset_at.isoformat()}
 
 
 # ── PayOS ─────────────────────────────────────────────────────────────────────

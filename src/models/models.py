@@ -23,6 +23,7 @@ class SystemConfig(Base):
     welcome_channel_id = Column(String, nullable=True)
     bot_status = Column(String, default="offline")
     command_prefix = Column(String, default="!")
+    shop_leaderboard_reset_at = Column(DateTime, nullable=True)
 
 class User(Base):
     __tablename__ = "users"
@@ -173,6 +174,7 @@ class LevelingConfig(Base):
     remove_old_reward_roles = Column(Boolean, default=False)
     stack_reward_roles = Column(Boolean, default=True)
     rank_card_config = Column(JSON, default=dict)
+    leaderboard_reset_at = Column(DateTime, nullable=True)
 
 class MemberXP(Base):
     __tablename__ = "member_xp"

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
@@ -270,7 +271,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
 
   const { data: config } = useQuery<LevelingConfig>({ queryKey: ["leveling_config"], queryFn: () => fetch("/api/leveling/config", { credentials: "include" }).then(r => r.json()) });
   const { data: rankCardConfig } = useQuery<RankCardConfig>({ queryKey: ["leveling_rank_card_config"], queryFn: () => fetch("/api/leveling/rank-card/config", { credentials: "include" }).then(r => r.json()) });
-  const { data: leaderboard } = useQuery<{ items: LeaderboardItem[] }>({ queryKey: ["leveling_leaderboard"], queryFn: () => fetch("/api/leveling/leaderboard", { credentials: "include" }).then(r => r.json()) });
+  const { data: leaderboard } = useQuery<{ items: LeaderboardItem[]; reset_at: string | null }>({ queryKey: ["leveling_leaderboard"], queryFn: () => fetch("/api/leveling/leaderboard", { credentials: "include" }).then(r => r.json()) });
   const { data: rewards = [] } = useQuery<Reward[]>({ queryKey: ["leveling_rewards"], queryFn: () => fetch("/api/leveling/rewards", { credentials: "include" }).then(r => r.json()).then(rows => rows.map((r: any) => ({...r, _sa_instance_state: undefined}))) });
   const { data: multipliers = [] } = useQuery<Multiplier[]>({ queryKey: ["leveling_multipliers"], queryFn: () => fetch("/api/leveling/multipliers", { credentials: "include" }).then(r => r.json()).then(rows => rows.map((r: any) => ({...r, _sa_instance_state: undefined}))) });
   const previewUrl = useMemo(() => `/api/leveling/rank-card/preview?version=${previewVersion}`, [previewVersion]);
@@ -422,6 +423,11 @@ export function LevelingManager({ section }: { section?: string } = {}) {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_multipliers"] }); setMulti({ type: "global", target_id: "", target_name: "", multiplier: 1, priority: 0, enabled: true }); },
   });
   const delMulti = useMutation({ mutationFn: (id: number) => fetch(`/api/leveling/multipliers/${id}`, { method: "DELETE", credentials: "include" }), onSuccess: () => qc.invalidateQueries({ queryKey: ["leveling_multipliers"] }) });
+  const resetLeaderboard = useMutation({
+    mutationFn: () => fetch("/api/leveling/leaderboard/reset", { method: "POST", credentials: "include" }).then(r => r.json()),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_leaderboard"] }); toast({ title: "Đã reset", description: "BXH level đã được reset." }); },
+    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Reset thất bại." }),
+  });
 
   if (!form) return <div>Đang tải...</div>;
 
@@ -841,7 +847,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
         </Card>
       </TabsContent>
 
-      <TabsContent value="leaderboard"><Card><CardHeader><CardTitle className="flex items-center gap-2"><ListOrdered className="w-4 h-4" /> Leaderboard</CardTitle></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Rank</TableHead><TableHead>User</TableHead><TableHead>Level</TableHead><TableHead>XP</TableHead><TableHead>Tiến độ</TableHead><TableHead>Tin nhắn</TableHead></TableRow></TableHeader><TableBody>{leaderboard?.items?.map(i => <TableRow key={i.discord_id}><TableCell>#{i.rank}</TableCell><TableCell className="font-medium">{i.username || i.discord_id}</TableCell><TableCell>{i.level}</TableCell><TableCell>{i.xp.toLocaleString()}</TableCell><TableCell><Progress value={Math.min(100, ((i.xp || 0) % 10000) / 100)} className="h-2" /></TableCell><TableCell>{i.message_count}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
+      <TabsContent value="leaderboard"><Card><CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="flex items-center gap-2"><ListOrdered className="w-4 h-4" /> Leaderboard</CardTitle><AlertDialog><AlertDialogTrigger asChild><Button variant="destructive" size="sm"><RotateCcw className="h-3.5 w-3.5 mr-1.5" />Reset BXH</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Reset BXH Level?</AlertDialogTitle><AlertDialogDescription>BXH sẽ chỉ tính những member hoạt động sau thời điểm này. Dữ liệu XP vẫn được giữ nguyên.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Hủy</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => resetLeaderboard.mutate()}>Xác nhận reset</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></div>{leaderboard?.reset_at && <CardDescription>Reset lần cuối: {new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(leaderboard.reset_at))}</CardDescription>}</CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Rank</TableHead><TableHead>User</TableHead><TableHead>Level</TableHead><TableHead>XP</TableHead><TableHead>Tiến độ</TableHead><TableHead>Tin nhắn</TableHead></TableRow></TableHeader><TableBody>{leaderboard?.items?.map(i => <TableRow key={i.discord_id}><TableCell>#{i.rank}</TableCell><TableCell className="font-medium">{i.username || i.discord_id}</TableCell><TableCell>{i.level}</TableCell><TableCell>{i.xp.toLocaleString()}</TableCell><TableCell><Progress value={Math.min(100, ((i.xp || 0) % 10000) / 100)} className="h-2" /></TableCell><TableCell>{i.message_count}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
 
       <TabsContent value="rewards"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Gift className="w-4 h-4" /> Role Rewards</CardTitle></CardHeader><CardContent className="space-y-4"><div className="grid md:grid-cols-[120px_1fr_120px] gap-3 items-end"><div><Label>Level</Label><Input type="number" value={reward.level} onChange={e => setReward({...reward, level: Number(e.target.value)})} /></div><div><Label>Role</Label><RoleSelect value={reward.role_id} onChange={v => setReward({...reward, role_id: v})} /></div><Button onClick={() => addReward.mutate()} disabled={!reward.role_id}>Thêm</Button></div><Table><TableHeader><TableRow><TableHead>Level</TableHead><TableHead>Role</TableHead><TableHead></TableHead></TableRow></TableHeader><TableBody>{rewards.map(r => <TableRow key={r.id}><TableCell>{r.level}</TableCell><TableCell>{r.role_name || r.role_id}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => delReward.mutate(r.id)}>Xoá</Button></TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
 

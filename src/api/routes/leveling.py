@@ -388,12 +388,16 @@ def member_rank_card(discord_id: str, db: Session = Depends(get_db)):
 @router.get("/leveling/leaderboard")
 def get_leaderboard(page: int = 1, limit: int = 50, db: Session = Depends(get_db)):
     guild_id = _guild_id(db)
+    cfg = _get_or_create_config(db, guild_id)
     page = max(1, page)
     limit = min(max(1, limit), 100)
-    total = db.execute(select(func.count()).select_from(MemberXP).where(MemberXP.guild_id == guild_id)).scalar() or 0
+    base_where = [MemberXP.guild_id == guild_id]
+    if cfg.leaderboard_reset_at:
+        base_where.append(MemberXP.updated_at >= cfg.leaderboard_reset_at)
+    total = db.execute(select(func.count()).select_from(MemberXP).where(*base_where)).scalar() or 0
     rows = db.execute(
         select(MemberXP)
-        .where(MemberXP.guild_id == guild_id)
+        .where(*base_where)
         .order_by(MemberXP.xp.desc(), MemberXP.level.desc())
         .offset((page - 1) * limit)
         .limit(limit)
@@ -402,6 +406,7 @@ def get_leaderboard(page: int = 1, limit: int = 50, db: Session = Depends(get_db
         "page": page,
         "limit": limit,
         "total": total,
+        "reset_at": cfg.leaderboard_reset_at.isoformat() if cfg.leaderboard_reset_at else None,
         "items": [
             {
                 "rank": (page - 1) * limit + idx + 1,
@@ -442,6 +447,17 @@ def reset_member(discord_id: str, db: Session = Depends(get_db)):
         db.delete(row)
         db.commit()
     return {"ok": True}
+
+
+@router.post("/leveling/leaderboard/reset")
+def reset_leaderboard(db: Session = Depends(get_db)):
+    """Đặt mốc reset — leaderboard chỉ tính XP tích lũy sau thời điểm này."""
+    import datetime
+    guild_id = _guild_id(db)
+    cfg = _get_or_create_config(db, guild_id)
+    cfg.leaderboard_reset_at = datetime.datetime.utcnow()
+    db.commit()
+    return {"ok": True, "reset_at": cfg.leaderboard_reset_at.isoformat()}
 
 
 @router.get("/leveling/rewards")
