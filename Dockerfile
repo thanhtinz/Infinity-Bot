@@ -37,4 +37,4 @@ COPY --from=frontend /app/dist ./dist
 # Port Railway inject qua env PORT
 ENV PORT=8000
 
-CMD uv run uvicorn app:asgi --host 0.0.0.0 --port ${PORT}
+CMD ["/bin/sh", "-c", "exec uv run uvicorn app:asgi --host 0.0.0.0 --port ${PORT:-8000}"]
