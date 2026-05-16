@@ -2890,4 +2890,155 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
+  // ── Extended Moderation ────────────────────────────────────────────────────
+  softban: {
+    vi: {
+      title: "Softbanned",
+      description: "{user.mention} đã bị softban khỏi server {server}.",
+      color: "#ED4245",
+      author: "", author_icon_url: "", footer: "Softban — tin nhắn đã bị xóa", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "Lý do", value: "{reason}", inline: false },
+        { name: "Mod", value: "{mod.name}", inline: true },
+      ],
+      enabled: true,
+    },
+    en: {
+      title: "Softbanned",
+      description: "{user.mention} has been softbanned from **{server}**.",
+      color: "#ED4245",
+      author: "", author_icon_url: "", footer: "Softban — messages deleted", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "Reason", value: "{reason}", inline: false },
+        { name: "Mod", value: "{mod.name}", inline: true },
+      ],
+      enabled: true,
+    },
+  },
+  mute: {
+    vi: {
+      title: "Đã bị mute",
+      description: "{user.mention} đã bị mute trong server {server}.",
+      color: "#5865F2",
+      author: "", author_icon_url: "", footer: "Hãy tuân thủ nội quy server", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "Thời gian", value: "{duration}", inline: true },
+        { name: "Lý do", value: "{reason}", inline: false },
+      ],
+      enabled: true,
+    },
+    en: {
+      title: "Muted",
+      description: "{user.mention} has been muted in **{server}**.",
+      color: "#5865F2",
+      author: "", author_icon_url: "", footer: "Please follow server rules", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "Duration", value: "{duration}", inline: true },
+        { name: "Reason", value: "{reason}", inline: false },
+      ],
+      enabled: true,
+    },
+  },
+  deafen: {
+    vi: {
+      title: "Đã bị deafen",
+      description: "{user.mention} đã bị deafen trong voice.",
+      color: "#9B59B6",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "Lý do", value: "{reason}", inline: false },
+        { name: "Mod", value: "{mod.name}", inline: true },
+      ],
+      enabled: true,
+    },
+    en: {
+      title: "Deafened",
+      description: "{user.mention} has been server deafened.",
+      color: "#9B59B6",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "Reason", value: "{reason}", inline: false },
+        { name: "Mod", value: "{mod.name}", inline: true },
+      ],
+      enabled: true,
+    },
+  },
+  rolepersist: {
+    vi: {
+      title: "Role Persist",
+      description: "Role **{role.name}** đã được gán cố định cho {user.mention}.",
+      color: "#5865F2",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Mod", value: "{mod.name}", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "Role Persist",
+      description: "Role **{role.name}** has been persistently assigned to {user.mention}.",
+      color: "#5865F2",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Mod", value: "{mod.name}", inline: true }],
+      enabled: true,
+    },
+  },
+  temprole: {
+    vi: {
+      title: "Temporary Role",
+      description: "Role **{role.name}** đã được gán cho {user.mention} trong **{duration}**.",
+      color: "#F0B232",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "Mod", value: "{mod.name}", inline: true },
+        { name: "Hết hạn", value: "{expires_at}", inline: true },
+      ],
+      enabled: true,
+    },
+    en: {
+      title: "Temporary Role",
+      description: "Role **{role.name}** assigned to {user.mention} for **{duration}**.",
+      color: "#F0B232",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "Mod", value: "{mod.name}", inline: true },
+        { name: "Expires", value: "{expires_at}", inline: true },
+      ],
+      enabled: true,
+    },
+  },
+  lockdown_start: {
+    vi: {
+      title: "Lockdown",
+      description: "Server **{server}** đã vào chế độ lockdown.",
+      color: "#ED4245",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Kênh bị khóa", value: "{count}", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "Lockdown",
+      description: "Server **{server}** is now in lockdown mode.",
+      color: "#ED4245",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Channels Locked", value: "{count}", inline: true }],
+      enabled: true,
+    },
+  },
+  lockdown_end: {
+    vi: {
+      title: "Lockdown kết thúc",
+      description: "Server **{server}** đã thoát chế độ lockdown.",
+      color: "#57F287",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Kênh được mở", value: "{count}", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "Lockdown Ended",
+      description: "Server **{server}** lockdown has been lifted.",
+      color: "#57F287",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Channels Unlocked", value: "{count}", inline: true }],
+      enabled: true,
+    },
+  },
 };

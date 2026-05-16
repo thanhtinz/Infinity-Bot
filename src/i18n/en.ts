@@ -113,6 +113,7 @@ const en: Record<TranslationKey, string> = {
   nav_multipliers: "Multipliers",
   nav_welcome: "Welcome",
   nav_moderation: "Moderation",
+  nav_modCases: "Mod Cases & Notes",
   nav_automod: "Auto Mod",
   nav_loggingConfig: "Log Config",
   nav_logging: "Logging",

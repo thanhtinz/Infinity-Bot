@@ -28,6 +28,7 @@ const LevelingManager = lazy(() => import("./pages/LevelingManager").then(m => (
 
 const Leaderboard = lazy(() => import("./pages/Leaderboard").then(m => ({ default: m.Leaderboard })));
 const WarningsManager = lazy(() => import("./pages/WarningsManager").then(m => ({ default: m.WarningsManager })));
+const ModerationManager = lazy(() => import("./pages/ModerationManager").then(m => ({ default: m.ModerationManager })));
 const StickyManager = lazy(() => import("./pages/StickyManager").then(m => ({ default: m.StickyManager })));
 const StickyEditPage = lazy(() => import("./pages/sticky/StickyEditPage").then(m => ({ default: m.StickyEditPage })));
 const TicketsPage = lazy(() => import("./pages/TicketsPage").then(m => ({ default: m.TicketsPage })));
@@ -195,6 +196,7 @@ const navGroups: NavGroup[] = [
     label: "nav_moderation",
     feature: "moderation",
     items: [
+      { to: "/moderation", icon: Shield, label: "nav_modCases" },
       { to: "/automod", icon: Shield, label: "nav_automod" },
       { to: "/logging", icon: ScrollText, label: "nav_loggingConfig" },
       { to: "/logs", icon: Activity, label: "nav_logging" },
@@ -676,6 +678,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/users" element={<UsersManager />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/warnings" element={<WarningsManager />} />
+        <Route path="/moderation" element={<ModerationManager />} />
         <Route path="/sticky" element={<StickyManager />} />
         <Route path="/sticky/new" element={<StickyEditPage />} />
         <Route path="/sticky/:id/edit" element={<StickyEditPage />} />

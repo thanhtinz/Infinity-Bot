@@ -749,6 +749,75 @@ class CustomCommand(Base):
     additional_responses = Column(JSON, default=list)  # [{type: "text"|"embed", content: ..., embed: {...}}]
 
 
+# ── Advanced Moderation System ─────────────────────────────────────────────────
+
+class ModerationCase(Base):
+    """Unified mod log — one row per mod action (warn, kick, ban, mute, softban, etc.)."""
+    __tablename__ = "moderation_cases"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, index=True)
+    case_number = Column(Integer, nullable=False)          # auto-increment per guild
+    action = Column(String, nullable=False)                # warn, kick, ban, unban, mute, unmute, softban, deafen, undeafen, timeout, rolepersist, temprole
+    target_id = Column(String, nullable=False, index=True) # Discord user ID
+    target_name = Column(String, nullable=True)
+    moderator_id = Column(String, nullable=True)
+    moderator_name = Column(String, nullable=True)
+    reason = Column(Text, nullable=True)
+    duration = Column(Integer, nullable=True)              # seconds (for timed actions)
+    expires_at = Column(DateTime, nullable=True)
+    active = Column(Boolean, default=True)                 # for timed mutes/bans
+    role_id = Column(String, nullable=True)                # for rolepersist/temprole
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+
+class ModerationNote(Base):
+    """Notes about a member, visible to staff only."""
+    __tablename__ = "moderation_notes"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, index=True)
+    target_id = Column(String, nullable=False, index=True)  # Discord user ID
+    author_id = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class RolePersist(Base):
+    """Roles that persist if a member leaves and rejoins."""
+    __tablename__ = "role_persists"
+    __table_args__ = (UniqueConstraint("guild_id", "target_id", "role_id", name="uq_rolepersist"),)
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, index=True)
+    target_id = Column(String, nullable=False, index=True)
+    role_id = Column(String, nullable=False)
+    assigned_by = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class TempRole(Base):
+    """Temporary role assignments — auto-removed after expiry."""
+    __tablename__ = "temp_roles"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, index=True)
+    target_id = Column(String, nullable=False, index=True)
+    role_id = Column(String, nullable=False)
+    assigned_by = Column(String, nullable=True)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class ModerationConfig(Base):
+    """Per-guild moderation settings."""
+    __tablename__ = "moderation_configs"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, unique=True)
+    mute_role_id = Column(String, nullable=True)
+    mod_log_channel_id = Column(String, nullable=True)
+    lockdown_channels = Column(JSON, default=list)       # channel IDs for /lockdown
+    ignored_users = Column(JSON, default=list)
+    ignored_roles = Column(JSON, default=list)
+    ignored_channels = Column(JSON, default=list)
+    dm_on_action = Column(Boolean, default=True)         # DM user on mod actions
+    show_mod_in_dm = Column(Boolean, default=False)      # show mod name in DM
+    auto_dehoist = Column(Boolean, default=False)         # auto-fix hoisted names
+    starboard_enabled = Column(Boolean, default=False)
+
+
 class AutoResponder(Base):
     __tablename__ = "auto_responders"
     id = Column(Integer, primary_key=True, index=True)

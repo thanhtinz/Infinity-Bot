@@ -111,6 +111,7 @@ const vi = {
   nav_multipliers: "Multipliers",
   nav_welcome: "Chào mừng",
   nav_moderation: "Kiểm duyệt",
+  nav_modCases: "Cases & Ghi chú",
   nav_automod: "Auto Mod",
   nav_loggingConfig: "Cấu hình Log",
   nav_logging: "Nhật ký",

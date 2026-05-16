@@ -653,6 +653,69 @@ DEFAULTS: dict[str, dict] = {
         "footer": "Chỉ bạn mới thấy thông tin này • Liên hệ admin để đặt hàng",
         "fields": [],
     },
+    # ── Extended Moderation ───────────────────────────────────────────────────
+    "softban": {
+        "title": "🔨 Softbanned",
+        "description": "{user.mention} đã bị softban khỏi server **{server}**.",
+        "color": "#ED4245",
+        "footer": "Softban — tin nhắn đã bị xóa",
+        "fields": [
+            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
+        ],
+    },
+    "mute": {
+        "title": "🔇 Đã bị mute",
+        "description": "{user.mention} đã bị mute trong server **{server}**.",
+        "color": "#5865F2",
+        "footer": "Hãy tuân thủ nội quy server",
+        "fields": [
+            {"name": "⏰ Thời gian", "value": "{duration}", "inline": True},
+            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+        ],
+    },
+    "deafen": {
+        "title": "🔇 Đã bị deafen",
+        "description": "{user.mention} đã bị deafen trong server **{server}**.",
+        "color": "#9B59B6",
+        "fields": [
+            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
+        ],
+    },
+    "rolepersist": {
+        "title": "📌 Role Persist",
+        "description": "Role **{role.name}** đã được gán cố định cho {user.mention}.",
+        "color": "#5865F2",
+        "fields": [
+            {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
+        ],
+    },
+    "temprole": {
+        "title": "⏱️ Temporary Role",
+        "description": "Role **{role.name}** đã được gán cho {user.mention} trong **{duration}**.",
+        "color": "#F0B232",
+        "fields": [
+            {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
+            {"name": "⏰ Hết hạn", "value": "{expires_at}", "inline": True},
+        ],
+    },
+    "lockdown_start": {
+        "title": "🔒 Lockdown",
+        "description": "Server **{server}** đã vào chế độ lockdown.",
+        "color": "#ED4245",
+        "fields": [
+            {"name": "🔒 Kênh bị khóa", "value": "{count}", "inline": True},
+        ],
+    },
+    "lockdown_end": {
+        "title": "🔓 Lockdown End",
+        "description": "Server **{server}** đã thoát chế độ lockdown.",
+        "color": "#57F287",
+        "fields": [
+            {"name": "🔓 Kênh được mở", "value": "{count}", "inline": True},
+        ],
+    },
 }
 
 

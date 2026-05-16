@@ -134,6 +134,7 @@ def create_bot():
         "src.bot.cogs.scheduler", "src.bot.cogs.autoresponder",
         "src.bot.cogs.interactions", "src.bot.cogs.leveling", "src.bot.cogs.help_cog",
         "src.bot.cogs.channel_admin", "src.bot.cogs.onboarding",
+        "src.bot.cogs.fun", "src.bot.cogs.moderation_ext",
         "src.bot.prefix_commands", "src.bot.embed_utils",
     ]
     for _mod_name in _cog_modules:
@@ -167,6 +168,8 @@ def create_bot():
     from src.bot.cogs.help_cog import HelpCog
     from src.bot.cogs.channel_admin import ChannelAdminCog
     from src.bot.cogs.onboarding import OnboardingCog
+    from src.bot.cogs.fun import FunCog
+    from src.bot.cogs.moderation_ext import ModerationExtCog
     from src.bot.prefix_commands import PrefixCommandsCog
 
     # Tag cogs with feature keys for runtime check
@@ -187,6 +190,8 @@ def create_bot():
         "InteractionCog": "interactions",
         "LevelingCog": "leveling",
         "ChannelAdminCog": "moderation",
+        "FunCog": "fun",
+        "ModerationExtCog": "moderation",
         "PrefixCommandsCog": None,
     }
 
@@ -206,6 +211,8 @@ def create_bot():
         ChannelAdminCog(bot_client),
         HelpCog(bot_client),
         OnboardingCog(bot_client),
+        FunCog(bot_client),
+        ModerationExtCog(bot_client),
         PrefixCommandsCog(bot_client),
     ]
     for cog in cogs:
