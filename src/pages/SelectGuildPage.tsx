@@ -60,27 +60,31 @@ export function SelectGuildPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {guilds.map(guild => (
               <button
                 key={guild.id}
                 onClick={() => handleSelect(guild.id)}
-                className="group flex flex-col items-center gap-3 p-4 rounded-xl border bg-card hover:bg-accent hover:border-primary/30 transition-all text-center"
+                className="group flex flex-col items-center gap-2 text-center"
               >
-                {guild.icon ? (
-                  <img
-                    src={guild.icon}
-                    alt=""
-                    className="w-16 h-16 rounded-xl object-cover group-hover:scale-105 transition-transform"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <span className="text-2xl font-bold text-muted-foreground">
-                      {guild.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
-                <p className="text-sm font-medium leading-snug line-clamp-2 w-full">{guild.name}</p>
+                {/* Square avatar card */}
+                <div className="w-full aspect-square rounded-2xl overflow-hidden border bg-muted group-hover:ring-2 group-hover:ring-primary/50 transition-all">
+                  {guild.icon ? (
+                    <img
+                      src={guild.icon}
+                      alt=""
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                      <span className="text-4xl font-bold text-muted-foreground">
+                        {guild.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {/* Name below */}
+                <p className="text-sm font-medium leading-snug line-clamp-2 w-full px-1">{guild.name}</p>
               </button>
             ))}
           </div>
