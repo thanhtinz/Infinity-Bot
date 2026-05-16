@@ -15,6 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { FileQuestion, Plus, Pencil, Trash2 } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -53,13 +54,13 @@ export function TicketForms() {
 
   const { data: forms, isLoading } = useQuery({
     queryKey: ["ticket-forms"],
-    queryFn: () => fetch("/api/ticket-forms").then((r) => r.json()),
+    queryFn: () => apiFetch("/api/ticket-forms").then((r) => r.json()),
     staleTime: 30_000,
   });
 
   const { data: panels } = useQuery({
     queryKey: ["ticket-panels"],
-    queryFn: () => fetch("/api/ticket-panels").then((r) => r.json()),
+    queryFn: () => apiFetch("/api/ticket-panels").then((r) => r.json()),
     staleTime: 30_000,
   });
 

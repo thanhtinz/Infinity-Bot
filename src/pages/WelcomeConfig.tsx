@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { HandMetal, LogOut, MessageSquare, UserCog, Plus, Trash2 } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -98,13 +99,13 @@ function substituteVars(text: string): string {
 // ─── API helpers ─────────────────────────────────────────────────────────────
 
 async function fetchConfig(): Promise<WelcomeConfigData> {
-  const res = await fetch("/api/welcome/config", { credentials: "include" });
+  const res = await apiFetch("/api/welcome/config");
   if (!res.ok) throw new Error("Tải cấu hình thất bại");
   return res.json();
 }
 
 async function saveConfig(data: WelcomeConfigData): Promise<{ ok: boolean }> {
-  const res = await fetch("/api/welcome/config", {
+  const res = await apiFetch("/api/welcome/config", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -142,7 +143,7 @@ async function saveEmbed(
     if (!res.ok) throw new Error("Lưu embed thất bại");
     return res.json();
   } else {
-    const res = await fetch("/api/embeds", {
+    const res = await apiFetch("/api/embeds", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -419,7 +420,7 @@ export function WelcomeConfig() {
   const { data: embeds = [] } = useQuery<EmbedTemplate[]>({
     queryKey: ["embeds"],
     queryFn: () =>
-      fetch("/api/embeds", { credentials: "include" }).then((r) => r.json()),
+      apiFetch("/api/embeds").then((r) => r.json()),
     staleTime: 60_000,
   });
 

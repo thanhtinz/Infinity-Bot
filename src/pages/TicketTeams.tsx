@@ -15,6 +15,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { UserCheck, Plus, Pencil, Trash2 } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -42,7 +43,7 @@ export function TicketTeams() {
 
   const { data: teams, isLoading } = useQuery({
     queryKey: ["ticket-teams"],
-    queryFn: () => fetch("/api/ticket-teams").then((r) => r.json()),
+    queryFn: () => apiFetch("/api/ticket-teams").then((r) => r.json()),
     staleTime: 30_000,
   });
 

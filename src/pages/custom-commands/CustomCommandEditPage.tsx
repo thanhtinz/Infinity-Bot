@@ -25,6 +25,7 @@ import { CommandAdvancedSection } from "./CommandAdvancedSection";
 import { CommandAdditionalResponses } from "./CommandAdditionalResponses";
 import { CommandResponseSection } from "./CommandResponseSection";
 import { CommandSettingsSection } from "./CommandSettingsSection";
+import { apiFetch } from "@/hooks/useApi";
 
 export function CustomCommandEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -48,7 +49,7 @@ export function CustomCommandEditPage() {
   const { isLoading } = useQuery<CustomCommand[]>({
     queryKey: ["custom-commands"],
     queryFn: () =>
-      fetch("/api/custom-commands", { credentials: "include" }).then((r) =>
+      apiFetch("/api/custom-commands").then((r) =>
         r.json()
       ),
     enabled: !isNew,
@@ -104,7 +105,7 @@ export function CustomCommandEditPage() {
   // ── Mutations ──
   const createMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
-      fetch("/api/custom-commands", {
+      apiFetch("/api/custom-commands", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

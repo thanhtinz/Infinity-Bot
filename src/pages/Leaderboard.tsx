@@ -21,6 +21,7 @@ import {
 import { Trophy, Users, DollarSign, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { apiFetch } from "@/hooks/useApi";
 
 interface LeaderboardRow {
   rank: number;
@@ -72,7 +73,7 @@ export function Leaderboard() {
 
   const resetMutation = useMutation({
     mutationFn: () =>
-      fetch("/api/leaderboard/reset", { method: "POST", credentials: "include" }).then((r) => r.json()),
+      apiFetch("/api/leaderboard/reset", { method: "POST", credentials: "include" }).then((r) => r.json()),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leaderboard"] });
       toast({ title: "Đã reset", description: "BXH chi tiêu & mua hàng đã được reset." });

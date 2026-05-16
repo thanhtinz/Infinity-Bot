@@ -15,6 +15,7 @@ import {
   Hash,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -213,7 +214,7 @@ export function StickyEditPage() {
   const { isLoading } = useQuery<StickyMessage[]>({
     queryKey: ["sticky"],
     queryFn: () =>
-      fetch("/api/sticky", { credentials: "include" }).then((r) => r.json()),
+      apiFetch("/api/sticky").then((r) => r.json()),
     enabled: !isNew,
     staleTime: 60_000,
   });
@@ -245,7 +246,7 @@ export function StickyEditPage() {
   // ── Mutations ──
   const createMutation = useMutation({
     mutationFn: (body: FormState) =>
-      fetch("/api/sticky", {
+      apiFetch("/api/sticky", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

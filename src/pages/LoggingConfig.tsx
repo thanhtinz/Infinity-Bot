@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect } from "@/components/RoleSelect";
 import { ScrollText, Mic, ShieldCheck, Users, Server, Filter, X } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 interface LoggingConfigData {
   message_log_channel_id: string;
@@ -19,13 +20,13 @@ interface LoggingConfigData {
 }
 
 async function fetchLoggingConfig(): Promise<LoggingConfigData> {
-  const res = await fetch("/api/logging/config", { credentials: "include" });
+  const res = await apiFetch("/api/logging/config");
   if (!res.ok) throw new Error("Tải cấu hình thất bại");
   return res.json();
 }
 
 async function saveLoggingConfig(data: LoggingConfigData): Promise<{ ok: boolean }> {
-  const res = await fetch("/api/logging/config", {
+  const res = await apiFetch("/api/logging/config", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

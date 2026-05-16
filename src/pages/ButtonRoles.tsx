@@ -25,6 +25,7 @@ import {
   Calendar,
   Hash,
 } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -227,7 +228,7 @@ export function ButtonRoles() {
   const { data: panels = [], isLoading } = useQuery<ButtonRolePanel[]>({
     queryKey: ["button-roles"],
     queryFn: () =>
-      fetch("/api/welcome/button-roles", { credentials: "include" }).then((r) =>
+      apiFetch("/api/welcome/button-roles").then((r) =>
         r.json()
       ),
     staleTime: 60_000,

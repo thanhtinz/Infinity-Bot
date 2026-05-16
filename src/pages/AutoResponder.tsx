@@ -19,6 +19,7 @@ import {
 
 import type { AutoResponderRule } from "./auto-responder/arTypes";
 import { RuleCard } from "./auto-responder/RuleCard";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -35,7 +36,7 @@ export function AutoResponder() {
   const { data: rules = [], isLoading } = useQuery<AutoResponderRule[]>({
     queryKey: ["auto-responders"],
     queryFn: () =>
-      fetch("/api/auto-responders", { credentials: "include" }).then((r) => {
+      apiFetch("/api/auto-responders").then((r) => {
         if (!r.ok) throw new Error("Failed to fetch");
         return r.json();
       }),

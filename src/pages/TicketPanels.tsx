@@ -24,6 +24,7 @@ import { PanelEditDialog } from "./ticket-panels/PanelEditDialog";
 import { GroupEditDialog } from "./ticket-panels/GroupEditDialog";
 import { GroupListSection } from "./ticket-panels/GroupListSection";
 import { DeletePanelDialog, DeleteGroupDialog } from "./ticket-panels/DeleteDialogs";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -53,7 +54,7 @@ export function TicketPanels() {
   const { data: panels = [], isLoading } = useQuery<TicketPanel[]>({
     queryKey: ["ticket-panels"],
     queryFn: () =>
-      fetch("/api/ticket-panels", { credentials: "include" }).then((r) =>
+      apiFetch("/api/ticket-panels").then((r) =>
         r.json()
       ),
     staleTime: 60_000,
@@ -62,7 +63,7 @@ export function TicketPanels() {
   const { data: groups = [] } = useQuery<TicketPanelGroup[]>({
     queryKey: ["ticket-panel-groups"],
     queryFn: () =>
-      fetch("/api/ticket-panel-groups", { credentials: "include" }).then((r) =>
+      apiFetch("/api/ticket-panel-groups").then((r) =>
         r.json()
       ),
     staleTime: 60_000,
@@ -72,7 +73,7 @@ export function TicketPanels() {
 
   const createMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
-      fetch("/api/ticket-panels", {
+      apiFetch("/api/ticket-panels", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -144,7 +145,7 @@ export function TicketPanels() {
 
   const createGroupMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
-      fetch("/api/ticket-panel-groups", {
+      apiFetch("/api/ticket-panel-groups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

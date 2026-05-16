@@ -11,6 +11,7 @@ import { EmbedBuilder, EMBED_DEFAULTS } from "@/components/EmbedBuilder";
 import type { EmbedFormData, EmbedField } from "@/components/EmbedBuilder";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ArrowLeft, Plus, X } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -101,7 +102,7 @@ export function SelectMenuRoleEditPage() {
   const { data: panels, isLoading } = useQuery<SelectRolePanel[]>({
     queryKey: ["select-roles"],
     queryFn: () =>
-      fetch("/api/welcome/select-roles", { credentials: "include" }).then((r) =>
+      apiFetch("/api/welcome/select-roles").then((r) =>
         r.json()
       ),
     enabled: !isNew,
@@ -133,7 +134,7 @@ export function SelectMenuRoleEditPage() {
   // ── Mutations ──
   const createMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
-      fetch("/api/welcome/select-roles", {
+      apiFetch("/api/welcome/select-roles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

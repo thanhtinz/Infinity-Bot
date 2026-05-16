@@ -15,6 +15,7 @@ import { ChannelSelect } from "@/components/ChannelSelect";
 import { RefreshCw, Plus, ShoppingCart, User2, Truck, ExternalLink, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Order, Product } from "../types";
+import { apiFetch } from "@/hooks/useApi";
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   PAID:      { label: "Đã thanh toán", cls: "bg-green-500/15 text-green-600 border-green-500/30" },
@@ -45,13 +46,13 @@ export function OrdersManager() {
 
   const { data: orders = [], isLoading, refetch } = useQuery<Order[]>({
     queryKey: ["orders"],
-    queryFn: () => fetch("/api/orders", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/orders").then((r) => r.json()),
     refetchInterval: 15000,
   });
 
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["products"],
-    queryFn: () => fetch("/api/products", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/products").then((r) => r.json()),
   });
 
   const updateStatusMutation = useMutation({
@@ -71,7 +72,7 @@ export function OrdersManager() {
 
   const createMutation = useMutation({
     mutationFn: (body: object) =>
-      fetch("/api/orders", {
+      apiFetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -14,6 +14,7 @@ import { ImageIcon, PackagePlus, X, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import type { Product, ProductPackage } from "../../types";
+import { apiFetch } from "@/hooks/useApi";
 
 const productSchema = z.object({
   name: z.string().min(1, "Tên không được để trống"),
@@ -39,7 +40,7 @@ export function ProductEditPage() {
 
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["products"],
-    queryFn: () => fetch("/api/products", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/products").then((r) => r.json()),
     enabled: !isNew,
     staleTime: 60_000,
   });
@@ -74,7 +75,7 @@ export function ProductEditPage() {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/products/upload-image", {
+      const res = await apiFetch("/api/products/upload-image", {
         method: "POST",
         credentials: "include",
         body: fd,
@@ -98,7 +99,7 @@ export function ProductEditPage() {
   // ── Mutations ───────────────────────────────────────────────
   const createMutation = useMutation({
     mutationFn: (values: ProductForm & { packages: ProductPackage[] }) =>
-      fetch("/api/products", {
+      apiFetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

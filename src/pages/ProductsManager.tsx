@@ -9,6 +9,7 @@ import { Plus, Pencil, Trash2, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { Product } from "../types";
+import { apiFetch } from "@/hooks/useApi";
 
 export function ProductsManager() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export function ProductsManager() {
 
   const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ["products"],
-    queryFn: () => fetch("/api/products", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/products").then((r) => r.json()),
     staleTime: 30_000,
   });
 

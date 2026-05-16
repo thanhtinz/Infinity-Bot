@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { UserCheck2, Save, UserX } from "lucide-react";
 import { ChannelSelect } from "@/components/ChannelSelect";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -50,12 +51,12 @@ export function TicketClaiming() {
   // ── Queries ──
   const { data: claimConfig, isLoading: configLoading } = useQuery<ClaimConfig>({
     queryKey: ["ticket-claim-config"],
-    queryFn: () => fetch("/api/ticket-claim-config").then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
+    queryFn: () => apiFetch("/api/ticket-claim-config").then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
   });
 
   const { data: claimedTickets, isLoading: ticketsLoading } = useQuery<ClaimedTicket[]>({
     queryKey: ["tickets-claimed"],
-    queryFn: () => fetch("/api/tickets?claimed=true").then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
+    queryFn: () => apiFetch("/api/tickets?claimed=true").then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
   });
 
   // Sync config on load
@@ -70,7 +71,7 @@ export function TicketClaiming() {
   // ── Mutations ──
   const saveConfigMutation = useMutation({
     mutationFn: (payload: ClaimConfig) =>
-      fetch("/api/ticket-claim-config", {
+      apiFetch("/api/ticket-claim-config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

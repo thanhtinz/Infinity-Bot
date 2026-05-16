@@ -31,6 +31,7 @@ import type {
 import { StatCard } from "./tickets/ticketHelpers";
 import { TicketDetailDialog } from "./tickets/TicketDetailDialog";
 import { TicketTable, BlacklistTable } from "./tickets/TicketTables";
+import { apiFetch } from "@/hooks/useApi";
 
 /* ── Main page ── */
 
@@ -75,7 +76,7 @@ export function TicketsPage() {
   const { data: stats, isLoading: statsLoading } = useQuery<TicketStats>({
     queryKey: ["ticket-stats"],
     queryFn: () =>
-      fetch("/api/ticket-stats", { credentials: "include" }).then((r) =>
+      apiFetch("/api/ticket-stats").then((r) =>
         r.json()
       ),
     staleTime: 30_000,
@@ -85,7 +86,7 @@ export function TicketsPage() {
   const { data: panels = [] } = useQuery<TicketPanelRef[]>({
     queryKey: ["ticket-panels"],
     queryFn: () =>
-      fetch("/api/ticket-panels", { credentials: "include" }).then((r) =>
+      apiFetch("/api/ticket-panels").then((r) =>
         r.json()
       ),
     staleTime: 60_000,
@@ -96,7 +97,7 @@ export function TicketsPage() {
   >({
     queryKey: ["ticket-blacklist"],
     queryFn: () =>
-      fetch("/api/ticket-blacklist", { credentials: "include" }).then((r) =>
+      apiFetch("/api/ticket-blacklist").then((r) =>
         r.json()
       ),
     staleTime: 30_000,

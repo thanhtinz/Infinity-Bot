@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, ShieldAlert, ShieldCheck, Trash2, Search, Users, UserCheck } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 interface WarningRow {
   id: number;
@@ -24,7 +25,7 @@ export function WarningsManager() {
 
   const { data: warnings = [], isLoading } = useQuery<WarningRow[]>({
     queryKey: ["warnings"],
-    queryFn: () => fetch("/api/warnings", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/warnings").then((r) => r.json()),
   });
 
   const deleteMutation = useMutation({

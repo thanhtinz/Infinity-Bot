@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Users, UserCheck, Ban, DollarSign, Search, FileText, ShieldBan } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/hooks/useApi";
 
 interface UserRecord {
   id: number;
@@ -60,7 +61,7 @@ export function UsersManager() {
 
   const { data: users = [], isLoading } = useQuery<UserRecord[]>({
     queryKey: ["users"],
-    queryFn: () => fetch("/api/users", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/users").then((r) => r.json()),
   });
 
   const { data: userOrders = [] } = useQuery<UserOrder[]>({

@@ -34,6 +34,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/hooks/useApi";
 
 /* ───────── Types ───────── */
 
@@ -177,7 +178,7 @@ export function LogViewer() {
   const { data: stats, isLoading: statsLoading } = useQuery<LogStats>({
     queryKey: ["logging-stats"],
     queryFn: () =>
-      fetch("/api/logging/stats", { credentials: "include" }).then((r) =>
+      apiFetch("/api/logging/stats").then((r) =>
         r.json()
       ),
   });

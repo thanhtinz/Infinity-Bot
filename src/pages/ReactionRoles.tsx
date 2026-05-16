@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { EMBED_DEFAULTS } from "@/components/EmbedBuilder";
 import type { EmbedField } from "@/components/EmbedBuilder";
+import { apiFetch } from "@/hooks/useApi";
 import {
   Smile,
   Plus,
@@ -225,7 +226,7 @@ export function ReactionRoles() {
   const { data: panels = [], isLoading } = useQuery<ReactionRolePanel[]>({
     queryKey: ["reaction-roles"],
     queryFn: () =>
-      fetch("/api/reaction-roles", { credentials: "include" }).then((r) =>
+      apiFetch("/api/reaction-roles").then((r) =>
         r.json()
       ),
     staleTime: 60_000,

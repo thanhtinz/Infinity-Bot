@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { Gift, Trophy, Clock, Users, Trash2, Info } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 interface Giveaway {
   id: number;
@@ -39,7 +40,7 @@ export function GiveawaysManager() {
 
   const { data: giveaways = [], isLoading } = useQuery<Giveaway[]>({
     queryKey: ["giveaways"],
-    queryFn: () => fetch("/api/giveaways", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/giveaways").then((r) => r.json()),
   });
 
   const deleteMutation = useMutation({

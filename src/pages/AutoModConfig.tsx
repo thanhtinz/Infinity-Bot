@@ -37,6 +37,7 @@ import {
   AtSign,
   ChevronDown,
 } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -71,13 +72,13 @@ const ACTION_OPTIONS = [
 // ─── API ─────────────────────────────────────────────────────────────────────
 
 async function fetchAutoModConfig(): Promise<AutoModConfigData> {
-  const res = await fetch("/api/automod/config", { credentials: "include" });
+  const res = await apiFetch("/api/automod/config");
   if (!res.ok) throw new Error("Tải cấu hình thất bại");
   return res.json();
 }
 
 async function saveAutoModConfig(data: AutoModConfigData): Promise<{ ok: boolean }> {
-  const res = await fetch("/api/automod/config", {
+  const res = await apiFetch("/api/automod/config", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

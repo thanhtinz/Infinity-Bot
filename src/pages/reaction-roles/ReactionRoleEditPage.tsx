@@ -12,6 +12,7 @@ import { EmbedBuilder, EMBED_DEFAULTS } from "@/components/EmbedBuilder";
 import type { EmbedFormData, EmbedField } from "@/components/EmbedBuilder";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ArrowLeft, Plus, X } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -86,7 +87,7 @@ export function ReactionRoleEditPage() {
   const { data: panels, isLoading } = useQuery<ReactionRolePanel[]>({
     queryKey: ["reaction-roles"],
     queryFn: () =>
-      fetch("/api/reaction-roles", { credentials: "include" }).then((r) =>
+      apiFetch("/api/reaction-roles").then((r) =>
         r.json()
       ),
     enabled: !isNew,
@@ -116,7 +117,7 @@ export function ReactionRoleEditPage() {
   // ── Mutations ──
   const createMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
-      fetch("/api/reaction-roles", {
+      apiFetch("/api/reaction-roles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

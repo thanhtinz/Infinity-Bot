@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { CustomCommand } from "./custom-commands/ccTypes";
 import { CommandCard } from "./custom-commands/CommandCard";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -34,7 +35,7 @@ export function CustomCommands() {
   const { data: commands = [], isLoading } = useQuery<CustomCommand[]>({
     queryKey: ["custom-commands"],
     queryFn: () =>
-      fetch("/api/custom-commands", { credentials: "include" }).then((r) =>
+      apiFetch("/api/custom-commands").then((r) =>
         r.json()
       ),
     staleTime: 60_000,

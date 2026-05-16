@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 interface Coupon {
   id: number;
@@ -38,7 +39,7 @@ export function CouponEditPage() {
 
   const { data: coupons, isLoading } = useQuery<Coupon[]>({
     queryKey: ["coupons"],
-    queryFn: () => fetch("/api/coupons", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/coupons").then((r) => r.json()),
     enabled: !isNew,
     staleTime: 60_000,
   });
@@ -59,7 +60,7 @@ export function CouponEditPage() {
 
   const createMutation = useMutation({
     mutationFn: (body: object) =>
-      fetch("/api/coupons", {
+      apiFetch("/api/coupons", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

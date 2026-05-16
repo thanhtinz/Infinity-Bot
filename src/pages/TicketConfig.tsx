@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect } from "@/components/RoleSelect";
+import { apiFetch } from "@/hooks/useApi";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface TicketConfigData {
@@ -159,7 +160,7 @@ export function TicketConfig() {
   const { data: config, isLoading } = useQuery<TicketConfigData | null>({
     queryKey: ["ticket-config"],
     queryFn: async () => {
-      const res = await fetch("/api/ticket-config", {
+      const res = await apiFetch("/api/ticket-config", {
         credentials: "include",
       });
       if (res.status === 404) return null;
@@ -195,7 +196,7 @@ export function TicketConfig() {
   const saveMutation = useMutation({
     mutationFn: async (data: ConfigForm) => {
       const payload = formToPayload(data);
-      const res = await fetch("/api/ticket-config", {
+      const res = await apiFetch("/api/ticket-config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

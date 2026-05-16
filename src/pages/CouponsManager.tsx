@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Copy, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/hooks/useApi";
 
 interface Coupon {
   id: number;
@@ -27,7 +28,7 @@ export function CouponsManager() {
 
   const { data: coupons = [], isLoading } = useQuery<Coupon[]>({
     queryKey: ["coupons"],
-    queryFn: () => fetch("/api/coupons", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/coupons").then((r) => r.json()),
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["coupons"] });

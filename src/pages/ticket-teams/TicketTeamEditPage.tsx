@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { MultiRoleSelect } from "@/components/RoleSelect";
 import { ArrowLeft } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -57,14 +58,14 @@ export function TicketTeamEditPage() {
 
   const { data: teams, isLoading } = useQuery({
     queryKey: ["ticket-teams"],
-    queryFn: () => fetch("/api/ticket-teams").then((r) => r.json()),
+    queryFn: () => apiFetch("/api/ticket-teams").then((r) => r.json()),
     enabled: !isNew,
     staleTime: 60_000,
   });
 
   const { data: panels } = useQuery({
     queryKey: ["ticket-panels"],
-    queryFn: () => fetch("/api/ticket-panels").then((r) => r.json()),
+    queryFn: () => apiFetch("/api/ticket-panels").then((r) => r.json()),
     staleTime: 30_000,
   });
 
@@ -84,7 +85,7 @@ export function TicketTeamEditPage() {
 
   const createMutation = useMutation({
     mutationFn: (body: Record<string, unknown>) =>
-      fetch("/api/ticket-teams", {
+      apiFetch("/api/ticket-teams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

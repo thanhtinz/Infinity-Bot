@@ -9,6 +9,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import type { SystemConfig } from "../types";
+import { apiFetch } from "@/hooks/useApi";
 
 interface Stats {
   chart: { date: string; revenue: number; orders: number }[];
@@ -47,14 +48,14 @@ function StatCard({
 export function DashboardHome() {
   const { data: config, isLoading: configLoading } = useQuery<SystemConfig>({
     queryKey: ["config"],
-    queryFn: () => fetch("/api/config", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/config").then((r) => r.json()),
     refetchInterval: 15_000,
     staleTime: 30_000,
   });
 
   const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
     queryKey: ["stats"],
-    queryFn: () => fetch("/api/stats", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/stats").then((r) => r.json()),
     refetchInterval: 60_000,
     staleTime: 60_000,
   });

@@ -22,6 +22,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileText, Search, Eye, Download } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -62,7 +63,7 @@ export function TicketTranscripts() {
 
   const { data: transcripts, isLoading } = useQuery({
     queryKey: ["ticket-transcripts"],
-    queryFn: () => fetch("/api/ticket-transcripts").then((r) => r.json()),
+    queryFn: () => apiFetch("/api/ticket-transcripts").then((r) => r.json()),
     staleTime: 30_000,
   });
 

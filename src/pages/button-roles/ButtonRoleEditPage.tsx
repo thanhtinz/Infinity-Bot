@@ -18,6 +18,7 @@ import { EmbedBuilder, EMBED_DEFAULTS } from "@/components/EmbedBuilder";
 import type { EmbedFormData, EmbedField } from "@/components/EmbedBuilder";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ArrowLeft, Plus, X } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -109,7 +110,7 @@ export function ButtonRoleEditPage() {
   const { data: panels, isLoading } = useQuery<ButtonRolePanel[]>({
     queryKey: ["button-roles"],
     queryFn: () =>
-      fetch("/api/welcome/button-roles", { credentials: "include" }).then((r) =>
+      apiFetch("/api/welcome/button-roles").then((r) =>
         r.json()
       ),
     enabled: !isNew,
@@ -138,7 +139,7 @@ export function ButtonRoleEditPage() {
   // ── Mutations ──
   const createMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
-      fetch("/api/welcome/button-roles", {
+      apiFetch("/api/welcome/button-roles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link2, UserPlus, UserMinus, AlertTriangle, Info } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 interface InviteRecord {
   inviter_id: string;
@@ -39,12 +40,12 @@ export function InviteTracking() {
 
   const { data: invites = [], isLoading: invitesLoading } = useQuery<InviteRecord[]>({
     queryKey: ["invites"],
-    queryFn: () => fetch("/api/invites", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/invites").then((r) => r.json()),
   });
 
   const { data: logs = [], isLoading: logsLoading } = useQuery<InviteLogEntry[]>({
     queryKey: ["invites_log"],
-    queryFn: () => fetch("/api/invites/log", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/invites/log").then((r) => r.json()),
   });
 
   const sortedInvites = [...invites].sort((a, b) => b.total - a.total);

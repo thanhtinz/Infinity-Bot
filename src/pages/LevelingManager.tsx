@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect, MultiChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect, RoleSelect } from "@/components/RoleSelect";
 import { Filter, Gift, Hash, ImagePlus, ListOrdered, Settings, Shield, Sparkles, User, X, Zap, Layers, MousePointer2, Type, Square, CircleUserRound, Wand2, MessageSquareText, Maximize2, ZoomIn, ZoomOut, RotateCcw, ArrowLeft, Save, Copy, Trash2, Eye, EyeOff, Plus, RefreshCw, Upload } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 interface LevelingConfig {
   enabled: boolean;
@@ -258,7 +259,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
   const bgInputRef = useRef<HTMLInputElement | null>(null);
   const { data: bgList, refetch: refetchBgList } = useQuery<{ backgrounds: { slug: string; url: string; index: number }[]; active_slug: string | null }>({
     queryKey: ["leveling_bg_list"],
-    queryFn: () => fetch("/api/leveling/rank-card/backgrounds", { credentials: "include" }).then(r => r.json()),
+    queryFn: () => apiFetch("/api/leveling/rank-card/backgrounds").then(r => r.json()),
   });
   const autoSyncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -269,11 +270,11 @@ export function LevelingManager({ section }: { section?: string } = {}) {
   const [dragState, setDragState] = useState<{ id: string; pointerId: number; startClientX: number; startClientY: number; startX: number; startY: number; scale: number } | null>(null);
 
 
-  const { data: config } = useQuery<LevelingConfig>({ queryKey: ["leveling_config"], queryFn: () => fetch("/api/leveling/config", { credentials: "include" }).then(r => r.json()) });
-  const { data: rankCardConfig } = useQuery<RankCardConfig>({ queryKey: ["leveling_rank_card_config"], queryFn: () => fetch("/api/leveling/rank-card/config", { credentials: "include" }).then(r => r.json()) });
-  const { data: leaderboard } = useQuery<{ items: LeaderboardItem[]; reset_at: string | null }>({ queryKey: ["leveling_leaderboard"], queryFn: () => fetch("/api/leveling/leaderboard", { credentials: "include" }).then(r => r.json()) });
-  const { data: rewards = [] } = useQuery<Reward[]>({ queryKey: ["leveling_rewards"], queryFn: () => fetch("/api/leveling/rewards", { credentials: "include" }).then(r => r.json()).then(rows => rows.map((r: any) => ({...r, _sa_instance_state: undefined}))) });
-  const { data: multipliers = [] } = useQuery<Multiplier[]>({ queryKey: ["leveling_multipliers"], queryFn: () => fetch("/api/leveling/multipliers", { credentials: "include" }).then(r => r.json()).then(rows => rows.map((r: any) => ({...r, _sa_instance_state: undefined}))) });
+  const { data: config } = useQuery<LevelingConfig>({ queryKey: ["leveling_config"], queryFn: () => apiFetch("/api/leveling/config").then(r => r.json()) });
+  const { data: rankCardConfig } = useQuery<RankCardConfig>({ queryKey: ["leveling_rank_card_config"], queryFn: () => apiFetch("/api/leveling/rank-card/config").then(r => r.json()) });
+  const { data: leaderboard } = useQuery<{ items: LeaderboardItem[]; reset_at: string | null }>({ queryKey: ["leveling_leaderboard"], queryFn: () => apiFetch("/api/leveling/leaderboard").then(r => r.json()) });
+  const { data: rewards = [] } = useQuery<Reward[]>({ queryKey: ["leveling_rewards"], queryFn: () => apiFetch("/api/leveling/rewards").then(r => r.json()).then(rows => rows.map((r: any) => ({...r, _sa_instance_state: undefined}))) });
+  const { data: multipliers = [] } = useQuery<Multiplier[]>({ queryKey: ["leveling_multipliers"], queryFn: () => apiFetch("/api/leveling/multipliers").then(r => r.json()).then(rows => rows.map((r: any) => ({...r, _sa_instance_state: undefined}))) });
   const previewUrl = useMemo(() => `/api/leveling/rank-card/preview?version=${previewVersion}`, [previewVersion]);
 
   useEffect(() => () => {
@@ -291,7 +292,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
     autoSyncTimer.current = setTimeout(async () => {
       setIsAutoSyncing(true);
       try {
-        const res = await fetch("/api/leveling/rank-card/preview", {
+        const res = await apiFetch("/api/leveling/rank-card/preview", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -384,7 +385,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
   const renderServerPreview = useMutation({
     mutationFn: async () => {
       if (!rankCard) throw new Error("Missing rank card config");
-      const response = await fetch("/api/leveling/rank-card/preview", {
+      const response = await apiFetch("/api/leveling/rank-card/preview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -403,28 +404,28 @@ export function LevelingManager({ section }: { section?: string } = {}) {
   });
 
   const saveRankCard = useMutation({
-    mutationFn: () => fetch("/api/leveling/rank-card/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(rankCard) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
+    mutationFn: () => apiFetch("/api/leveling/rank-card/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(rankCard) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
     onSuccess: (data) => { setRankCard(data); setPreviewVersion((v) => v + 1); qc.invalidateQueries({ queryKey: ["leveling_rank_card_config"] }); toast({ title: "Saved", description: "Ảnh rank card đã được cập nhật." }); },
     onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu rank card thất bại." }),
   });
 
   const saveConfig = useMutation({
-    mutationFn: () => fetch("/api/leveling/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(form) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
+    mutationFn: () => apiFetch("/api/leveling/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(form) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_config"] }); toast({ title: "Saved", description: "Cấu hình Leveling đã được lưu." }); },
     onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu cấu hình thất bại." }),
   });
   const addReward = useMutation({
-    mutationFn: () => fetch("/api/leveling/rewards", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(reward) }).then(r => r.json()),
+    mutationFn: () => apiFetch("/api/leveling/rewards", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(reward) }).then(r => r.json()),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_rewards"] }); setReward({ level: 1, role_id: "", role_name: "" }); },
   });
   const delReward = useMutation({ mutationFn: (id: number) => fetch(`/api/leveling/rewards/${id}`, { method: "DELETE", credentials: "include" }), onSuccess: () => qc.invalidateQueries({ queryKey: ["leveling_rewards"] }) });
   const addMulti = useMutation({
-    mutationFn: () => fetch("/api/leveling/multipliers", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(multi) }).then(r => r.json()),
+    mutationFn: () => apiFetch("/api/leveling/multipliers", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(multi) }).then(r => r.json()),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_multipliers"] }); setMulti({ type: "global", target_id: "", target_name: "", multiplier: 1, priority: 0, enabled: true }); },
   });
   const delMulti = useMutation({ mutationFn: (id: number) => fetch(`/api/leveling/multipliers/${id}`, { method: "DELETE", credentials: "include" }), onSuccess: () => qc.invalidateQueries({ queryKey: ["leveling_multipliers"] }) });
   const resetLeaderboard = useMutation({
-    mutationFn: () => fetch("/api/leveling/leaderboard/reset", { method: "POST", credentials: "include" }).then(r => r.json()),
+    mutationFn: () => apiFetch("/api/leveling/leaderboard/reset", { method: "POST", credentials: "include" }).then(r => r.json()),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_leaderboard"] }); toast({ title: "Đã reset", description: "BXH level đã được reset." }); },
     onError: () => toast({ variant: "destructive", title: "Error", description: "Reset thất bại." }),
   });
@@ -559,11 +560,11 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                         try {
                           const fd = new FormData();
                           fd.append("file", file);
-                          const res = await fetch("/api/leveling/rank-card/background", { method: "POST", credentials: "include", body: fd });
+                          const res = await apiFetch("/api/leveling/rank-card/background", { method: "POST", credentials: "include", body: fd });
                           if (!res.ok) { const err = await res.json(); throw new Error(err.detail || "Upload failed"); }
                           const data = await res.json();
                           // Auto-set as active
-                          await fetch("/api/leveling/rank-card/background/active", { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: data.slug }) });
+                          await apiFetch("/api/leveling/rank-card/background/active", { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: data.slug }) });
                           refetchBgList();
                           setPreviewVersion(v => v + 1);
                         } catch (err: unknown) {
@@ -578,7 +579,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                           {/* No background option */}
                           <button type="button" onClick={async () => {
-                            await fetch("/api/leveling/rank-card/background/active", { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: "" }) });
+                            await apiFetch("/api/leveling/rank-card/background/active", { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: "" }) });
                             refetchBgList(); setPreviewVersion(v => v + 1);
                           }} className={`group relative aspect-video overflow-hidden rounded-xl border-2 bg-slate-900 transition ${!bgList?.active_slug ? "border-primary ring-2 ring-primary/40" : "border-transparent hover:border-muted-foreground/40"}`}>
                             <span className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">Không có</span>
@@ -586,7 +587,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                           {bgList?.backgrounds.map(bg => (
                             <div key={bg.slug} className="group relative">
                               <button type="button" onClick={async () => {
-                                await fetch("/api/leveling/rank-card/background/active", { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: bg.slug }) });
+                                await apiFetch("/api/leveling/rank-card/background/active", { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: bg.slug }) });
                                 refetchBgList(); setPreviewVersion(v => v + 1);
                               }} className={`block w-full aspect-video overflow-hidden rounded-xl border-2 transition ${bgList?.active_slug === bg.slug ? "border-primary ring-2 ring-primary/40" : "border-transparent hover:border-muted-foreground/40"}`}>
                                 <img src={bg.url + "?t=" + Date.now()} alt={bg.slug} className="h-full w-full object-cover" />
@@ -866,7 +867,7 @@ export function RankCardEditor() {
   const [panState, setPanState] = useState<{ pointerId: number; x: number; y: number; left: number; top: number } | null>(null);
   const [dragState, setDragState] = useState<{ id: string; pointerId: number; startClientX: number; startClientY: number; startX: number; startY: number; scale: number } | null>(null);
 
-  const { data: rankCardConfig } = useQuery<RankCardConfig>({ queryKey: ["leveling_rank_card_config"], queryFn: () => fetch("/api/leveling/rank-card/config", { credentials: "include" }).then(r => r.json()) });
+  const { data: rankCardConfig } = useQuery<RankCardConfig>({ queryKey: ["leveling_rank_card_config"], queryFn: () => apiFetch("/api/leveling/rank-card/config").then(r => r.json()) });
   useEffect(() => { if (rankCardConfig) setRankCard({ ...rankCardConfig, layout_config: rankCardConfig.layout_config?.layers?.length ? rankCardConfig.layout_config : defaultLayout() }); }, [rankCardConfig]);
 
   const layout = rankCard?.layout_config;
@@ -883,7 +884,7 @@ export function RankCardEditor() {
     setSelectedLayerId(layer.id);
   };
   const saveRankCard = useMutation({
-    mutationFn: () => fetch("/api/leveling/rank-card/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(rankCard) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
+    mutationFn: () => apiFetch("/api/leveling/rank-card/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(rankCard) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
     onSuccess: (data) => { setRankCard(data); qc.invalidateQueries({ queryKey: ["leveling_rank_card_config"] }); toast({ title: "Saved", description: "Ảnh rank card đã được cập nhật." }); },
     onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu rank card thất bại." }),
   });

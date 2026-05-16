@@ -26,6 +26,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { SmilePlus, Copy, Trash2, Upload, ImageIcon, RefreshCw, Sticker, Smile } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -64,7 +65,7 @@ export function EmojiManager() {
   const { data: emojis = [], isLoading: emojisLoading } = useQuery<Emoji[]>({
     queryKey: ["discord-emojis"],
     queryFn: () =>
-      fetch("/api/discord/emojis", { credentials: "include" }).then((r) => {
+      apiFetch("/api/discord/emojis").then((r) => {
         if (!r.ok) throw new Error("Failed to load emojis");
         return r.json();
       }),
@@ -75,7 +76,7 @@ export function EmojiManager() {
   const { data: stickers = [], isLoading: stickersLoading } = useQuery<StickerItem[]>({
     queryKey: ["discord-stickers"],
     queryFn: () =>
-      fetch("/api/discord/stickers", { credentials: "include" }).then((r) => {
+      apiFetch("/api/discord/stickers").then((r) => {
         if (!r.ok) throw new Error("Failed to load stickers");
         return r.json();
       }),
@@ -128,7 +129,7 @@ export function EmojiManager() {
   // ── Sync emoji mutation ──
   const syncMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/managed-emojis/sync", {
+      const res = await apiFetch("/api/managed-emojis/sync", {
         method: "POST",
         credentials: "include",
       });
@@ -483,7 +484,7 @@ function EmojiUploadDialog({
     mutationFn: async () => {
       if (!file) throw new Error("No file selected");
       const dataUri = await prepareImageData(file);
-      const res = await fetch("/api/discord/emojis", {
+      const res = await apiFetch("/api/discord/emojis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -616,7 +617,7 @@ function StickerUploadDialog({
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
-      const res = await fetch("/api/discord/stickers", {
+      const res = await apiFetch("/api/discord/stickers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

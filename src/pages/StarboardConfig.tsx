@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { Star } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -23,13 +24,13 @@ interface StarboardConfigData {
 // ─── API helpers ─────────────────────────────────────────────────────────────
 
 async function fetchStarboardConfig(): Promise<StarboardConfigData> {
-  const res = await fetch("/api/starboard/config", { credentials: "include" });
+  const res = await apiFetch("/api/starboard/config");
   if (!res.ok) throw new Error("Tải cấu hình thất bại");
   return res.json();
 }
 
 async function saveStarboardConfig(data: StarboardConfigData): Promise<{ ok: boolean }> {
-  const res = await fetch("/api/starboard/config", {
+  const res = await apiFetch("/api/starboard/config", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

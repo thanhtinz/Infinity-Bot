@@ -23,6 +23,7 @@ import {
   Heart,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 interface Feature {
   key: string;
@@ -52,13 +53,13 @@ const ICON_MAP: Record<string, LucideIcon> = {
 };
 
 async function fetchFeatures(): Promise<Feature[]> {
-  const res = await fetch("/api/features", { credentials: "include" });
+  const res = await apiFetch("/api/features");
   if (!res.ok) throw new Error("Failed to load features");
   return res.json();
 }
 
 async function updateFeatures(features: Record<string, boolean>): Promise<Feature[]> {
-  const res = await fetch("/api/features", {
+  const res = await apiFetch("/api/features", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

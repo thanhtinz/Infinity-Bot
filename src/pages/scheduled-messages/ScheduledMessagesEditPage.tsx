@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import type { EmbedField, ScheduledMessage, FormState } from "./smTypes";
 import { emptyEmbed, emptyForm, toDatetimeLocal } from "./smConstants";
 import { EmbedEditorSection } from "./EmbedEditorSection";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -52,7 +53,7 @@ export function ScheduledMessagesEditPage() {
   const { data: messages, isLoading } = useQuery<ScheduledMessage[]>({
     queryKey: ["scheduled-messages"],
     queryFn: () =>
-      fetch("/api/scheduled-messages", { credentials: "include" }).then((r) =>
+      apiFetch("/api/scheduled-messages").then((r) =>
         r.json()
       ),
     enabled: !isNew,
@@ -78,7 +79,7 @@ export function ScheduledMessagesEditPage() {
   // ── Mutations ──
   const createMutation = useMutation({
     mutationFn: (body: Partial<FormState>) =>
-      fetch("/api/scheduled-messages", {
+      apiFetch("/api/scheduled-messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

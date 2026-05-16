@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, Trash2, Search, Star, StarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/hooks/useApi";
 
 interface FeedbackRow {
   id: number;
@@ -70,7 +71,7 @@ export function FeedbackManager() {
 
   const { data: feedbacks = [], isLoading } = useQuery<FeedbackRow[]>({
     queryKey: ["feedback"],
-    queryFn: () => fetch("/api/feedback", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/feedback").then((r) => r.json()),
   });
 
   const deleteMutation = useMutation({

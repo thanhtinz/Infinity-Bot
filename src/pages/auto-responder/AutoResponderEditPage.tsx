@@ -12,6 +12,7 @@ import { DEFAULT_COLOR, emptyEmbed, emptyField, emptyForm } from "./arConstants"
 import { TriggerSection } from "./TriggerSection";
 import { ResponseSection } from "./ResponseSection";
 import { FilterSection } from "./FilterSection";
+import { apiFetch } from "@/hooks/useApi";
 
 export function AutoResponderEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -33,7 +34,7 @@ export function AutoResponderEditPage() {
   const { isLoading } = useQuery<AutoResponderRule[]>({
     queryKey: ["auto-responders"],
     queryFn: () =>
-      fetch("/api/auto-responders", { credentials: "include" }).then((r) => {
+      apiFetch("/api/auto-responders").then((r) => {
         if (!r.ok) throw new Error("Failed to fetch");
         return r.json();
       }),
@@ -88,7 +89,7 @@ export function AutoResponderEditPage() {
   // ── Mutations ──
   const createMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
-      fetch("/api/auto-responders", {
+      apiFetch("/api/auto-responders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -20,6 +20,7 @@ import {
   Hash,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -100,14 +101,14 @@ export function StickyManager() {
   >({
     queryKey: ["sticky"],
     queryFn: () =>
-      fetch("/api/sticky", { credentials: "include" }).then((r) => r.json()),
+      apiFetch("/api/sticky").then((r) => r.json()),
     staleTime: 60_000,
   });
 
   const { data: stats, isLoading: loadingStats } = useQuery<StickyStats>({
     queryKey: ["sticky-stats"],
     queryFn: () =>
-      fetch("/api/sticky/stats", { credentials: "include" }).then((r) =>
+      apiFetch("/api/sticky/stats").then((r) =>
         r.json()
       ),
     staleTime: 60_000,
@@ -116,7 +117,7 @@ export function StickyManager() {
   const { data: channels = [] } = useQuery<DiscordChannel[]>({
     queryKey: ["discord-channels-all"],
     queryFn: () =>
-      fetch("/api/discord/channels/all", { credentials: "include" }).then(
+      apiFetch("/api/discord/channels/all").then(
         (r) => r.json()
       ),
     staleTime: 120_000,

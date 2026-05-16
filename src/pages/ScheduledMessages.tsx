@@ -20,6 +20,7 @@ import {
   CalendarClock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -111,7 +112,7 @@ export function ScheduledMessages() {
   const { data: messages = [], isLoading } = useQuery<ScheduledMessage[]>({
     queryKey: ["scheduled-messages"],
     queryFn: () =>
-      fetch("/api/scheduled-messages", { credentials: "include" }).then((r) =>
+      apiFetch("/api/scheduled-messages").then((r) =>
         r.json()
       ),
   });

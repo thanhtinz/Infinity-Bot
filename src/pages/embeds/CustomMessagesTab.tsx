@@ -36,6 +36,7 @@ import { MessageSidebar } from "./MessageSidebar";
 import { EditorToolbar } from "./EditorToolbar";
 import { MessageContentBlock } from "./MessageContentBlock";
 import { useCustomMessagesMutations } from "./useCustomMessagesMutations";
+import { apiFetch } from "@/hooks/useApi";
 
 export function CustomMessagesTab() {
   // ── Load share param from URL ──
@@ -73,13 +74,13 @@ export function CustomMessagesTab() {
   // ── Queries ──
   const { data: customEmbeds = [], isLoading: listLoading } = useQuery<CustomEmbed[]>({
     queryKey: ["custom-embeds"],
-    queryFn: () => fetch("/api/embeds/custom", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/embeds/custom").then((r) => r.json()),
     staleTime: 30_000,
   });
 
   const { data: channels = [] } = useQuery<{ id: string; name: string; type: number }[]>({
     queryKey: ["discord-channels"],
-    queryFn: () => fetch("/api/discord/channels/all", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/discord/channels/all").then((r) => r.json()),
     staleTime: 300_000,
   });
 

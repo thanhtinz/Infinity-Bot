@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { MultiRoleSelect } from "@/components/RoleSelect";
 import { UserPlus, Bot } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 interface AutoRoleData {
   join_roles: string[];
@@ -12,13 +13,13 @@ interface AutoRoleData {
 }
 
 async function fetchAutoRole(): Promise<AutoRoleData> {
-  const res = await fetch("/api/welcome/autorole", { credentials: "include" });
+  const res = await apiFetch("/api/welcome/autorole");
   if (!res.ok) throw new Error("Tải cấu hình thất bại");
   return res.json();
 }
 
 async function saveAutoRole(data: AutoRoleData): Promise<{ ok: boolean }> {
-  const res = await fetch("/api/welcome/autorole", {
+  const res = await apiFetch("/api/welcome/autorole", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

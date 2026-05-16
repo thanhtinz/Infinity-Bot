@@ -31,6 +31,7 @@ import type { FormState, EmbedField, EmbedTemplate, EmbedsManagerProps } from ".
 import { EMBED_EVENTS, EVENT_GROUPS, VARIABLES } from "./embeds/embedEvents";
 import { DiscordPreview, defaultForm } from "./embeds/DiscordPreview";
 import { CustomMessagesTab } from "./embeds/CustomMessagesTab";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -68,7 +69,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
   // ── Fetch embeds ──
   const { data: embeds = [] } = useQuery<EmbedTemplate[]>({
     queryKey: ["embeds"],
-    queryFn: () => fetch("/api/embeds", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/embeds").then((r) => r.json()),
     staleTime: 300_000,
   });
 
@@ -108,7 +109,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
         if (!res.ok) throw new Error("Lưu thất bại");
         return res.json();
       } else {
-        const res = await fetch("/api/embeds", {
+        const res = await apiFetch("/api/embeds", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",

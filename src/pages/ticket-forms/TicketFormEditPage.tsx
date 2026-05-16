@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ArrowLeft, Plus, GripVertical, X } from "lucide-react";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -68,14 +69,14 @@ export function TicketFormEditPage() {
 
   const { data: forms, isLoading } = useQuery({
     queryKey: ["ticket-forms"],
-    queryFn: () => fetch("/api/ticket-forms").then((r) => r.json()),
+    queryFn: () => apiFetch("/api/ticket-forms").then((r) => r.json()),
     enabled: !isNew,
     staleTime: 60_000,
   });
 
   const { data: panels } = useQuery({
     queryKey: ["ticket-panels"],
-    queryFn: () => fetch("/api/ticket-panels").then((r) => r.json()),
+    queryFn: () => apiFetch("/api/ticket-panels").then((r) => r.json()),
     staleTime: 30_000,
   });
 
@@ -93,7 +94,7 @@ export function TicketFormEditPage() {
 
   const createMutation = useMutation({
     mutationFn: (body: Record<string, unknown>) =>
-      fetch("/api/ticket-forms", {
+      apiFetch("/api/ticket-forms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

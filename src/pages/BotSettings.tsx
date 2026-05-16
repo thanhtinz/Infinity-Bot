@@ -33,6 +33,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect } from "@/components/RoleSelect";
 import { useGuild } from "@/contexts/GuildContext";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── shared query ────────────────────────────────────────────────────────────
 
@@ -41,7 +42,7 @@ function useConfig() {
   return useQuery({
     queryKey: ["config", selectedGuildId],
     queryFn: () =>
-      fetch("/api/config", {
+      apiFetch("/api/config", {
         credentials: "include",
         headers: selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {},
       }).then((r) => r.json()),
@@ -77,7 +78,7 @@ function GeneralSection() {
   const save = async () => {
     setSaving(true);
     try {
-      await fetch("/api/config", {
+      await apiFetch("/api/config", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -254,7 +255,7 @@ function ChannelsSection() {
 
   const mutation = useMutation({
     mutationFn: (v: ChannelFormValues) =>
-      fetch("/api/config", {
+      apiFetch("/api/config", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -369,7 +370,7 @@ function TempVoiceSection() {
 
   const { data: tvConfig } = useQuery({
     queryKey: ["tempvoice_config"],
-    queryFn: () => fetch("/api/tempvoice/config", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/tempvoice/config").then((r) => r.json()),
     staleTime: 60_000,
   });
 
@@ -410,7 +411,7 @@ function TempVoiceSection() {
 
   const mutation = useMutation({
     mutationFn: () =>
-      fetch("/api/tempvoice/config", {
+      apiFetch("/api/tempvoice/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -573,7 +574,7 @@ function LoggingSection() {
 
   const { data, isLoading } = useQuery<LoggingData>({
     queryKey: ["logging-config"],
-    queryFn: () => fetch("/api/logging/config", { credentials: "include" }).then((r) => {
+    queryFn: () => apiFetch("/api/logging/config").then((r) => {
       if (!r.ok) throw new Error();
       return r.json();
     }),
@@ -600,7 +601,7 @@ function LoggingSection() {
 
   const mutation = useMutation({
     mutationFn: () =>
-      fetch("/api/logging/config", {
+      apiFetch("/api/logging/config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

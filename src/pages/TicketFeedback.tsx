@@ -14,6 +14,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star, MessageCircleHeart, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -80,7 +81,7 @@ export function TicketFeedback() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["ticket-feedback"],
-    queryFn: () => fetch("/api/ticket-feedback").then((r) => r.json()),
+    queryFn: () => apiFetch("/api/ticket-feedback").then((r) => r.json()),
     staleTime: 30_000,
   });
 
