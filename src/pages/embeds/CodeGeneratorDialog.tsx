@@ -10,7 +10,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Code2, Copy } from "lucide-react";
-import type { CustomFormState, EmbedData, ActionRow } from "./embedTypes";
+import type { CustomFormState } from "./embedTypes";
 
 interface CodeGeneratorDialogProps {
   open: boolean;

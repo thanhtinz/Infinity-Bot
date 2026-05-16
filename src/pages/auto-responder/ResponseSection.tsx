@@ -29,7 +29,6 @@ interface ResponseSectionProps {
   hasReact: boolean;
   varsOpen: boolean;
   setVarsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  focusedInput: "text" | "embed_desc" | null;
   setFocusedInput: React.Dispatch<React.SetStateAction<"text" | "embed_desc" | null>>;
   addField: () => void;
   removeField: (idx: number) => void;
@@ -47,7 +46,6 @@ export function ResponseSection({
   hasReact,
   varsOpen,
   setVarsOpen,
-  _focusedInput,
   setFocusedInput,
   addField,
   removeField,

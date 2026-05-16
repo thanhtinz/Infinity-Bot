@@ -295,7 +295,6 @@ export function AutoResponderEditPage() {
           hasReact={hasReact}
           varsOpen={varsOpen}
           setVarsOpen={setVarsOpen}
-          focusedInput={focusedInput}
           setFocusedInput={setFocusedInput}
           addField={addField}
           removeField={removeField}

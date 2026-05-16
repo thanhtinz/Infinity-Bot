@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import type { EmbedField, CustomEmbed, EmbedData, CustomFormState, ActionRow, MessageFlags, AllowedMentions, EmbedOpenState } from "./embedTypes";
@@ -104,7 +103,7 @@ export function useCustomMessagesMutations(
       if (!res.ok) throw new Error("Gửi thất bại");
       return res.json() as Promise<CustomEmbed & { message_url?: string }>;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast({ title: "Đã gửi", description: "Embed đã được gửi lên Discord." });
       queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
     },
