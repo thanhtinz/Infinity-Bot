@@ -23,6 +23,7 @@ class SystemConfig(Base):
     welcome_channel_id = Column(String, nullable=True)
     bot_status = Column(String, default="offline")
     command_prefix = Column(String, default="!")
+    bot_invisible = Column(Boolean, default=False)
     shop_leaderboard_reset_at = Column(DateTime, nullable=True)
 
 class User(Base):

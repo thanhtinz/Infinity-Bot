@@ -75,6 +75,8 @@ async def init_db():
             all_stmts.append("ALTER TABLE system_config ADD COLUMN public_app_url VARCHAR")
         if "shop_leaderboard_reset_at" not in sc:
             all_stmts.append("ALTER TABLE system_config ADD COLUMN shop_leaderboard_reset_at TIMESTAMP")
+        if "bot_invisible" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN bot_invisible BOOLEAN DEFAULT FALSE")
 
         # embed_templates
         et = cols("embed_templates")

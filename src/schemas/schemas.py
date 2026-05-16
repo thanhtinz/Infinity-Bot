@@ -18,6 +18,7 @@ class SystemConfigBase(BaseModel):
     bang_gia_channel_id: Optional[str] = None
     welcome_channel_id: Optional[str] = None
     command_prefix: Optional[str] = "!"
+    bot_invisible: Optional[bool] = None
     
 class SystemConfigResponse(SystemConfigBase):
     """Full response — dùng nội bộ (không expose qua API public)."""
@@ -48,6 +49,7 @@ class SystemConfigSafe(BaseModel):
     has_discord_client_secret: bool = False
     has_payos_api_key: bool = False
     has_payos_checksum_key: bool = False
+    bot_invisible: bool = False
 
     class Config:
         from_attributes = True

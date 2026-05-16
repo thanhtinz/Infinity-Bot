@@ -86,6 +86,7 @@ interface NavGroup {
   label: string;
   items: NavItem[];
   feature?: string;  // if set, entire group hidden when disabled
+  ownerOnly?: boolean; // if true, only visible to bot owner
 }
 
 const navGroups: NavGroup[] = [
@@ -194,11 +195,19 @@ const navGroups: NavGroup[] = [
       { to: "/backup", icon: Database, label: "Sao lưu & Khôi phục" },
     ],
   },
+  {
+    key: "bot_owner",
+    icon: Activity,
+    label: "Tình trạng Bot",
+    ownerOnly: true,
+    items: [
+      { to: "/bot-status", icon: Activity, label: "Trạng thái & Điều khiển" },
+    ],
+  },
 ];
 
 const standaloneItems: NavItem[] = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/bot-status", icon: Activity, label: "Trạng thái Bot" },
   { to: "/features", icon: ToggleRight, label: "Tính năng" },
 ];
 
@@ -233,12 +242,13 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   const filteredGroups = useMemo(() => {
     return navGroups
       .filter(g => !g.feature || !disabledFeatures.has(g.feature))
+      .filter(g => !g.ownerOnly || user?.is_owner)
       .map(g => ({
         ...g,
         items: g.items.filter(item => !item.feature || !disabledFeatures.has(item.feature)),
       }))
       .filter(g => g.items.length > 0);
-  }, [disabledFeatures]);
+  }, [disabledFeatures, user]);
 
   // Determine which groups should be open by default based on current path
   const defaultOpenGroups = useMemo(() => {
@@ -360,7 +370,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           );
         })}
 
-        {/* Standalone: Cấu hình Bot */}
+        {/* Standalone: Tính năng */}
         {standaloneItems.slice(1).map((item) => {
           const Icon = item.icon;
           return (
@@ -475,6 +485,20 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   );
 }
 
+function OwnerRoute({ children }: { children: React.ReactNode }) {
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["auth_me"],
+    queryFn: () => fetch("/api/auth/me", { credentials: "include" }).then(res => {
+      if (!res.ok) throw new Error("Not logged in");
+      return res.json();
+    }),
+    retry: false,
+  });
+  if (isLoading) return null;
+  if (!user?.is_owner) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 function SetupGate() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["setup_status"],
@@ -542,7 +566,7 @@ function ProtectedAppRoutes() {
         <Routes>
         <Route path="/select-guild" element={<SelectGuildPage />} />
         <Route path="/" element={<DashboardHome />} />
-        <Route path="/bot-status" element={<BotStatus />} />
+        <Route path="/bot-status" element={<OwnerRoute><BotStatus /></OwnerRoute>} />
         <Route path="/leveling/rank-card" element={<LevelingManager section="rank-card" />} />
         <Route path="/features" element={<Features />} />
         <Route path="/config" element={<Navigate to="/config/discord" replace />} />
