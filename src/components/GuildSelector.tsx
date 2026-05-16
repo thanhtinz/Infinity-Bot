@@ -1,6 +1,6 @@
 import { useGuild } from "@/contexts/GuildContext";
 import { useQueryClient } from "@tanstack/react-query";
-import { Server, ChevronDown, Check } from "lucide-react";
+import { Server, ChevronDown, Check, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -102,6 +102,15 @@ export function GuildSelector() {
                   </button>
                 );
               })}
+            </div>
+            <div className="border-t">
+              <button
+                onClick={() => { setOpen(false); navigate("/select-guild"); }}
+                className="flex items-center gap-2 w-full px-3 py-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                Xem tất cả server
+              </button>
             </div>
           )}
         </div>
