@@ -95,6 +95,7 @@ const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "don_hang_moi",      label: "Đơn hàng mới",           icon: ShoppingCart, desc: "Khi admin tạo đơn /tao_don" },
   { key: "qr_thanh_toan",     label: "QR Thanh toán",          icon: QrCode,       desc: "Gửi ảnh QR PayOS cho khách" },
   { key: "don_hang_het_han",  label: "Đơn hàng hết hạn",      icon: Timer,        desc: "Khi đơn quá 15 phút chưa thanh toán" },
+  { key: "ghi_chu_don_hang",  label: "Ghi chú đơn hàng",      icon: ShoppingCart, desc: "Khi admin thêm ghi chú vào đơn hàng" },
   { key: "bang_gia",          label: "Bảng giá sản phẩm",     icon: ShoppingCart, desc: "Embed tổng quan khi dùng /bang_gia hoặc /san_pham" },
   { key: "san_pham_detail",   label: "Chi tiết sản phẩm",      icon: ShoppingCart, desc: "Embed chi tiết gói giá khi chọn sản phẩm (/san_pham)" },
   { key: "bxh_chi_tieu",      label: "BXH Chi tiêu",           icon: Trophy,       desc: "Embed bảng xếp hạng chi tiêu" },
@@ -224,7 +225,7 @@ const EMBED_EVENTS: EmbedEventDef[] = [
 // ─── Event groups ────────────────────────────────────────────────────────────
 
 const EVENT_GROUPS: { label: string; keys: string[] }[] = [
-  { label: "Đơn hàng",    keys: ["don_hang_moi", "qr_thanh_toan", "don_hang_het_han", "bang_gia", "san_pham_detail", "bxh_chi_tieu", "bxh_don_hang", "feedback"] },
+  { label: "Đơn hàng",    keys: ["don_hang_moi", "qr_thanh_toan", "don_hang_het_han", "ghi_chu_don_hang", "bang_gia", "san_pham_detail", "bxh_chi_tieu", "bxh_don_hang", "feedback"] },
   { label: "Cộng đồng",   keys: ["giveaway", "ket_qua_giveaway", "dm_welcome", "reaction_role_panel", "starboard_post"] },
   { label: "Ticket",      keys: ["ticket_mo", "ticket_dong", "ticket_nhan", "ticket_unclaim", "ticket_panel"] },
   { label: "Kiểm duyệt", keys: ["canh_bao", "kick", "ban", "unban", "automod_warn", "automod_mute", "automod_kick", "automod_delete"] },
@@ -267,6 +268,21 @@ const DEFAULTS: Record<string, Omit<EmbedTemplate, "id" | "event_type" | "name">
     image_url: "",
     fields: [
       { name: "Sản phẩm", value: "{product.name}", inline: true },
+    ],
+    enabled: true,
+  },
+  ghi_chu_don_hang: {
+    title: "📝 Ghi chú đơn hàng",
+    description: "Đơn hàng #{order.id} của {user.mention} vừa được cập nhật ghi chú.",
+    color: "#5865F2",
+    author: "",
+    author_icon_url: "",
+    footer: "Infinity Mall",
+    thumbnail_url: "",
+    image_url: "",
+    fields: [
+      { name: "📦 Sản phẩm", value: "{product.name}", inline: true },
+      { name: "📝 Ghi chú", value: "{note}", inline: false },
     ],
     enabled: true,
   },
@@ -1416,6 +1432,7 @@ const VARIABLES: { token: string; desc: string }[] = [
   { token: "{order.total}",       desc: "Tổng tiền (100,000)" },
   { token: "{order.status}",      desc: "Trạng thái đơn hàng" },
   { token: "{order.created_at}",  desc: "Ngày tạo đơn" },
+  { token: "{note}",              desc: "Ghi chú đơn hàng" },
   { token: "{product.name}",      desc: "Tên sản phẩm" },
   { token: "{product.description}", desc: "Mô tả sản phẩm" },
   { token: "{package.name}",      desc: "Tên gói sản phẩm (san_pham_detail)" },

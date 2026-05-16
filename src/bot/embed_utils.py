@@ -82,6 +82,16 @@ DEFAULTS: dict[str, dict] = {
             {"name": "📦 Sản phẩm", "value": "{product.name}", "inline": True},
         ],
     },
+    "ghi_chu_don_hang": {
+        "title": "📝 Ghi chú đơn hàng",
+        "description": "Đơn hàng #{order.id} của {user.mention} vừa được cập nhật ghi chú.",
+        "color": "#5865F2",
+        "footer": "Infinity Mall",
+        "fields": [
+            {"name": "📦 Sản phẩm", "value": "{product.name}", "inline": True},
+            {"name": "📝 Ghi chú", "value": "{note}", "inline": False},
+        ],
+    },
     "ket_qua_giveaway": {
         "title": "🏆 Kết quả Giveaway",
         "description": "Giveaway đã kết thúc!\nPhần thưởng: **{prize}**",
