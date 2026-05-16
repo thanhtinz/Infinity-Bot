@@ -24,6 +24,8 @@ class SystemConfig(Base):
     bot_status = Column(String, default="offline")
     command_prefix = Column(String, default="!")
     bot_invisible = Column(Boolean, default=False)
+    guild_name = Column(String, nullable=True)
+    guild_icon = Column(String, nullable=True)
     shop_leaderboard_reset_at = Column(DateTime, nullable=True)
 
 class User(Base):

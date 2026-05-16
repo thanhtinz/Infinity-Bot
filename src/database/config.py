@@ -77,6 +77,10 @@ async def init_db():
             all_stmts.append("ALTER TABLE system_config ADD COLUMN shop_leaderboard_reset_at TIMESTAMP")
         if "bot_invisible" not in sc:
             all_stmts.append("ALTER TABLE system_config ADD COLUMN bot_invisible BOOLEAN DEFAULT FALSE")
+        if "guild_name" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN guild_name VARCHAR")
+        if "guild_icon" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN guild_icon VARCHAR")
 
         # embed_templates
         et = cols("embed_templates")

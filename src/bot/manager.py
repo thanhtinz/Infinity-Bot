@@ -297,7 +297,7 @@ def create_bot():
         if bot_ready_event and not bot_ready_event.is_set():
             bot_ready_event.set()
         bot_client.loop.create_task(_check_expired_orders(bot_client))
-        # Apply invisible status if configured
+        # Apply invisible status + cache guild name/icon
         try:
             _inv_session = get_session()
             try:
@@ -305,10 +305,23 @@ def create_bot():
                 if _cfg and _cfg.bot_invisible:
                     await bot_client.change_presence(status=discord.Status.invisible)
                     logger.info("Bot presence set to invisible (bot_invisible=True)")
+                # Cache guild name + icon for every guild into their SystemConfig row
+                for _guild in bot_client.guilds:
+                    _gid = str(_guild.id)
+                    _gc = _inv_session.execute(
+                        select(SystemConfig).where(SystemConfig.guild_id == _gid)
+                    ).scalars().first()
+                    if _gc is None:
+                        _gc = _inv_session.execute(select(SystemConfig).limit(1)).scalars().first()
+                    if _gc:
+                        _gc.guild_name = _guild.name
+                        _gc.guild_icon = str(_guild.icon.url) if _guild.icon else None
+                _inv_session.commit()
+                logger.info("Cached guild name/icon into SystemConfig")
             finally:
                 _inv_session.close()
         except Exception as _inv_err:
-            logger.warning(f"Failed to apply invisible status: {_inv_err}")
+            logger.warning(f"Failed to apply invisible status / cache guild info: {_inv_err}")
         # Re-register persistent views (bảng giá) để hoạt động sau restart
         try:
             from src.bot.cogs.admin_shop import BangGiaView

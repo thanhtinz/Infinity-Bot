@@ -89,14 +89,14 @@ async def get_bot_guilds(request: Request, db=Depends(get_db)):
                 "member_count": guild.member_count,
             })
     else:
-        # Fallback: lấy từ DB SystemConfig rows
+        # Fallback: lấy từ DB SystemConfig rows (dùng cached guild_name/guild_icon)
         configs = db.execute(select(SystemConfig).where(SystemConfig.guild_id.isnot(None))).scalars().all()
         for cfg in configs:
             if cfg.guild_id:
                 result.append({
                     "id": cfg.guild_id,
-                    "name": f"Guild {cfg.guild_id}",
-                    "icon": None,
+                    "name": cfg.guild_name or f"Guild {cfg.guild_id}",
+                    "icon": cfg.guild_icon or None,
                     "member_count": 0,
                 })
     return result
