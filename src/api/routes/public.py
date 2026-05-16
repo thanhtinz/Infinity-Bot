@@ -131,62 +131,27 @@ async def public_status():
 
 @router.get("/commands")
 async def public_commands():
-    """Danh sách slash commands theo category."""
-    categories = [
-        {
-            "name": "🛒 Shop",
-            "commands": [
-                {"name": "/shop", "description": "View the product list"},
-                {"name": "/mua", "description": "Purchase a product"},
-                {"name": "/donhang", "description": "View your orders"},
-                {"name": "/topshop", "description": "Top buyers leaderboard"},
-            ],
-        },
-        {
-            "name": "🎫 Ticket",
-            "commands": [
-                {"name": "/ticket", "description": "Open a support ticket"},
-                {"name": "/close", "description": "Close the current ticket"},
-                {"name": "/claim", "description": "Claim a ticket to handle"},
-                {"name": "/transcript", "description": "Export ticket history"},
-            ],
-        },
-        {
-            "name": "🎉 Giveaway",
-            "commands": [
-                {"name": "/giveaway start", "description": "Create a new giveaway"},
-                {"name": "/giveaway end", "description": "End a giveaway"},
-                {"name": "/giveaway reroll", "description": "Reroll the winner"},
-                {"name": "/giveaway list", "description": "View all giveaways"},
-            ],
-        },
-        {
-            "name": "🔨 Moderation",
-            "commands": [
-                {"name": "/ban", "description": "Ban a member from the server"},
-                {"name": "/kick", "description": "Kick a member"},
-                {"name": "/timeout", "description": "Timeout a member"},
-                {"name": "/unban", "description": "Unban a member"},
-                {"name": "/warn", "description": "Warn a member"},
-            ],
-        },
-        {
-            "name": "🎙️ TempVoice",
-            "commands": [
-                {"name": "/voice rename", "description": "Rename your voice channel"},
-                {"name": "/voice limit", "description": "Set member limit"},
-                {"name": "/voice lock", "description": "Lock the voice channel"},
-                {"name": "/voice kick", "description": "Kick someone from the channel"},
-            ],
-        },
-        {
-            "name": "⚙️ Utilities",
-            "commands": [
-                {"name": "/embed", "description": "Create a custom embed"},
-                {"name": "/sticky", "description": "Pin a sticky message"},
-                {"name": "/invite", "description": "Invite stats"},
-                {"name": "/prefix", "description": "Change bot prefix"},
-            ],
-        },
-    ]
-    return {"categories": categories}
+    """Danh sách slash commands đầy đủ theo dữ liệu help trong bot."""
+    from src.bot.cogs.help_cog import HELP_CATEGORIES
+
+    categories = []
+    total = 0
+    for cat in HELP_CATEGORIES:
+        commands = []
+        for cmd in cat.get("commands", []):
+            total += 1
+            commands.append({
+                "name": f"/{cmd['name']}",
+                "description": cmd.get("desc", ""),
+                "usage": cmd.get("usage", f"`/{cmd['name']}`"),
+                "emoji": cmd.get("emoji", "▫️"),
+                "admin": bool(cmd.get("admin")),
+            })
+        categories.append({
+            "key": cat.get("key"),
+            "emoji": cat.get("emoji", "▫️"),
+            "name": cat.get("name", "Commands"),
+            "commands": commands,
+            "count": len(commands),
+        })
+    return {"categories": categories, "total": total}
