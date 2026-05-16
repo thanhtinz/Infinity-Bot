@@ -1,11 +1,34 @@
 import { useEffect, useMemo, useState } from "react";
-import { Crown, Search, Shield, Sparkles, TerminalSquare, Zap } from "lucide-react";
+import { Crown, Gift, HandHeart, MessageCircle, Mic, Package, Search, Shield, ShoppingBag, Smile, TerminalSquare, Trophy, UserPlus, Wrench, Zap } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
-interface Command { name: string; description: string; usage?: string; emoji?: string; admin?: boolean; }
-interface Category { key?: string; emoji?: string; name: string; count?: number; commands: Command[]; }
+interface Command { name: string; description: string; usage?: string; admin?: boolean; }
+interface Category { key?: string; name: string; count?: number; commands: Command[]; }
 
 type FilterKey = "all" | "public" | "admin" | string;
+
+const categoryIcons = {
+  shop: ShoppingBag,
+  leveling: Trophy,
+  giveaway: Gift,
+  ticket: MessageCircle,
+  moderation: Shield,
+  channel_admin: Wrench,
+  invites: UserPlus,
+  voice: Mic,
+  utility: Package,
+  interactions: HandHeart,
+  expressions: Smile,
+} as const;
+
+function getCategoryIcon(key?: string) {
+  return categoryIcons[key as keyof typeof categoryIcons] || TerminalSquare;
+}
+
+function getCommandIcon(catKey?: string, admin?: boolean) {
+  if (admin) return Shield;
+  return getCategoryIcon(catKey);
+}
 
 export function PublicCommandsPage() {
   useLandingFonts();
@@ -23,10 +46,10 @@ export function PublicCommandsPage() {
   const adminCommands = allCommands.filter(cmd => cmd.admin).length;
 
   const tabs = useMemo(() => [
-    { key: "all", label: "All", count: totalCommands, icon: TerminalSquare },
-    { key: "public", label: "Public", count: totalCommands - adminCommands, icon: Sparkles },
-    { key: "admin", label: "Admin", count: adminCommands, icon: Shield },
-    ...cats.map(cat => ({ key: cat.key || cat.name, label: `${cat.emoji || "▫️"} ${cat.name}`, count: cat.commands.length, icon: Zap })),
+    { key: "all", label: "All", count: totalCommands },
+    { key: "public", label: "Public", count: totalCommands - adminCommands },
+    { key: "admin", label: "Admin", count: adminCommands },
+    ...cats.map(cat => ({ key: cat.key || cat.name, label: cat.name, count: cat.commands.length })),
   ], [adminCommands, cats, totalCommands]);
 
   const filtered = useMemo(() => {
@@ -82,7 +105,6 @@ export function PublicCommandsPage() {
           <div className="px-4 md:px-5 py-4 overflow-x-auto border-b border-white/10">
             <div className="flex gap-2 min-w-max">
               {tabs.map(tab => {
-                const Icon = tab.icon;
                 const active = activeFilter === tab.key;
                 return (
                   <button
@@ -94,7 +116,6 @@ export function PublicCommandsPage() {
                         : "border-white/10 bg-white/[0.025] text-white/45 hover:text-white hover:bg-white/[0.06]"
                     }`}
                   >
-                    <Icon className="w-3.5 h-3.5" />
                     <span>{tab.label}</span>
                     <span className="text-[11px] px-1.5 py-0.5 rounded-md bg-black/25 text-white/45">{tab.count}</span>
                   </button>
@@ -105,12 +126,14 @@ export function PublicCommandsPage() {
         </div>
 
         <div className="relative space-y-8">
-          {filtered.map(cat => (
+          {filtered.map(cat => {
+            const CategoryIcon = getCategoryIcon(cat.key);
+            return (
             <section key={cat.key || cat.name} className="rounded-3xl border border-white/10 bg-white/[0.025] overflow-hidden">
               <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
-                    <span>{cat.emoji || "▫️"}</span>
+                    <CategoryIcon className="w-5 h-5 text-[#aeb6ff]" />
                     <span>{cat.name}</span>
                   </h2>
                   <p className="text-xs text-white/35 mt-1">{cat.commands.length} visible commands</p>
@@ -121,11 +144,13 @@ export function PublicCommandsPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 md:p-5">
-                {cat.commands.map(cmd => (
+                {cat.commands.map(cmd => {
+                  const CommandIcon = getCommandIcon(cat.key, cmd.admin);
+                  return (
                   <article key={`${cat.key}-${cmd.name}`} className="group rounded-2xl border border-white/8 bg-[#0b0e14]/80 p-4 hover:bg-[#121722] hover:border-[#5865F2]/25 transition-colors">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#5865F2]/15 border border-[#5865F2]/20 flex items-center justify-center text-lg shrink-0">
-                        {cmd.emoji || "⌁"}
+                      <div className="w-10 h-10 rounded-xl bg-[#5865F2]/15 border border-[#5865F2]/20 flex items-center justify-center shrink-0">
+                        <CommandIcon className="w-5 h-5 text-[#aeb6ff]" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2 mb-1.5">
@@ -147,10 +172,12 @@ export function PublicCommandsPage() {
                       </div>
                     </div>
                   </article>
-                ))}
+                  );
+                })}
               </div>
             </section>
-          ))}
+            );
+          })}
 
           {filtered.length === 0 && (
             <div className="text-center py-16 rounded-3xl border border-white/10 bg-white/[0.025]">

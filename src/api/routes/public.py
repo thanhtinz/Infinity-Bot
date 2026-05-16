@@ -131,26 +131,167 @@ async def public_status():
 
 @router.get("/commands")
 async def public_commands():
-    """Danh sách slash commands đầy đủ theo dữ liệu help trong bot."""
+    """Full public slash-command catalog for the landing page."""
     from src.bot.cogs.help_cog import HELP_CATEGORIES
+
+    category_labels = {
+        "shop": "Shop",
+        "leveling": "Leveling",
+        "giveaway": "Giveaway",
+        "ticket": "Ticket",
+        "moderation": "Moderation",
+        "channel_admin": "Channel Admin",
+        "invites": "Invite Tracking",
+        "voice": "Temp Voice",
+        "utility": "Utilities",
+        "interactions": "Interactions",
+        "expressions": "Expressions",
+    }
+
+    command_descriptions = {
+        "san_pham": "Browse products and product details.",
+        "orders": "View your orders or a specific order.",
+        "feedback": "Leave product feedback.",
+        "support": "Contact server support.",
+        "bxh": "View the shop leaderboard.",
+        "tao_don": "Create an order for a member.",
+        "tao_don_custom": "Create a custom order with a custom name.",
+        "bang_gia": "Send the product price list to a channel.",
+        "level rank": "View your rank card and XP.",
+        "level leaderboard": "View the server XP leaderboard.",
+        "level background": "Choose a personal rank-card background.",
+        "giveaway": "Create a new giveaway.",
+        "giveaway_list": "View active giveaways.",
+        "giveaway_reroll": "Reroll a giveaway winner.",
+        "giveaway_end": "End a giveaway early.",
+        "giveaway_ban": "Ban a member from giveaways.",
+        "giveaway_unban": "Unban a member from giveaways.",
+        "ticket create": "Create a support ticket.",
+        "ticket close": "Close the current ticket.",
+        "ticket reopen": "Reopen a closed ticket.",
+        "ticket claim": "Claim a ticket as staff.",
+        "ticket unclaim": "Release a claimed ticket.",
+        "ticket add": "Add a member to a ticket.",
+        "ticket remove": "Remove a member from a ticket.",
+        "ticket transcript": "Export a ticket transcript.",
+        "ticket notes": "View or add ticket notes.",
+        "ticket history": "View ticket history.",
+        "ticket stats": "View ticket statistics.",
+        "ticket blacklist": "Block a member from creating tickets.",
+        "panel send": "Send a ticket panel to a channel.",
+        "warn": "Warn a member.",
+        "unwarn": "Remove a warning.",
+        "warnings": "View warning history.",
+        "kick": "Kick a member.",
+        "ban": "Ban a member.",
+        "unban": "Unban a user by ID.",
+        "snipe": "View the most recently deleted message.",
+        "editsnipe": "View the most recently edited message.",
+        "purge": "Bulk delete messages in a channel.",
+        "nuke": "Clone and reset a channel.",
+        "lock": "Lock a channel.",
+        "unlock": "Unlock a channel.",
+        "hide_channel": "Hide a channel from regular members.",
+        "show_channel": "Show a hidden channel.",
+        "block_channel": "Block a member or role from a channel.",
+        "unblock_channel": "Unblock a member or role from a channel.",
+        "slowmode": "Set channel slowmode.",
+        "image_only": "Allow only images and videos in a channel.",
+        "announce": "Send an announcement embed.",
+        "move_message": "Move a message to another channel.",
+        "clear_reactions": "Clear reactions from a message.",
+        "pin_message": "Pin a message by link.",
+        "unpin_message": "Unpin a message by link.",
+        "role_add": "Add a role to a member.",
+        "role_remove": "Remove a role from a member.",
+        "nick": "Change or clear a member nickname.",
+        "invites me": "View your invite stats.",
+        "invites info": "View invite stats for a member.",
+        "invites leaderboard": "View the invite leaderboard.",
+        "invites fake": "Mark a member's invites as fake.",
+        "room rename": "Rename your voice room.",
+        "room limit": "Set the room member limit.",
+        "room lock": "Lock your voice room.",
+        "room unlock": "Unlock your voice room.",
+        "room hide": "Hide your voice room.",
+        "room unhide": "Show your voice room.",
+        "room private": "Make your voice room private.",
+        "room public": "Make your voice room public.",
+        "room permit": "Permit a member to join.",
+        "room reject": "Reject a member from joining.",
+        "room boot": "Boot a member from the room.",
+        "room mute": "Mute a member in the room.",
+        "room transfer": "Transfer room ownership.",
+        "room claim": "Claim ownership when the owner leaves.",
+        "room bitrate": "Change room bitrate.",
+        "room panel": "Send the room control panel again.",
+        "afk": "Set your AFK status.",
+        "avatar": "View a member avatar.",
+        "banner": "View a member banner.",
+        "userinfo": "View member information.",
+        "serverinfo": "View server information.",
+        "poll": "Create a quick poll.",
+        "qr": "Generate a QR code from text or a link.",
+        "setprefix": "Set the interaction command prefix.",
+    }
+
+    interaction_descriptions = {
+        "hug": "Hug another member.",
+        "pat": "Pat another member.",
+        "kiss": "Kiss another member.",
+        "slap": "Slap another member.",
+        "punch": "Punch another member.",
+        "wave": "Wave at another member.",
+        "cuddle": "Cuddle another member.",
+        "poke": "Poke another member.",
+        "tickle": "Tickle another member.",
+        "bite": "Bite another member.",
+        "lick": "Lick another member.",
+        "wink": "Wink at another member.",
+        "stare": "Stare at another member.",
+        "brofist": "Brofist another member.",
+        "handhold": "Hold hands with another member.",
+        "nuzzle": "Nuzzle another member.",
+        "smack": "Smack another member.",
+        "airkiss": "Send an air kiss.",
+        "angrystare": "Give an angry stare.",
+        "pinch": "Pinch another member.",
+        "nom": "Nom another member.",
+        "peek": "Peek at another member.",
+    }
+
+    expression_descriptions = {
+        name: f"Post a {name} expression."
+        for name in [
+            "blush", "cry", "dance", "laugh", "smile", "happy", "sad", "sleep", "yawn",
+            "shrug", "facepalm", "clap", "celebrate", "thumbsup", "sorry", "confused",
+            "nervous", "scared", "surprised", "cool", "love", "run", "shy", "smug", "yay",
+        ]
+    }
 
     categories = []
     total = 0
     for cat in HELP_CATEGORIES:
+        cat_key = cat.get("key")
         commands = []
         for cmd in cat.get("commands", []):
             total += 1
+            name = cmd["name"]
+            description = (
+                command_descriptions.get(name)
+                or interaction_descriptions.get(name)
+                or expression_descriptions.get(name)
+                or f"Run the /{name} command."
+            )
             commands.append({
-                "name": f"/{cmd['name']}",
-                "description": cmd.get("desc", ""),
-                "usage": cmd.get("usage", f"`/{cmd['name']}`"),
-                "emoji": cmd.get("emoji", "▫️"),
+                "name": f"/{name}",
+                "description": description,
+                "usage": cmd.get("usage", f"`/{name}`"),
                 "admin": bool(cmd.get("admin")),
             })
         categories.append({
-            "key": cat.get("key"),
-            "emoji": cat.get("emoji", "▫️"),
-            "name": cat.get("name", "Commands"),
+            "key": cat_key,
+            "name": category_labels.get(cat_key, "Commands"),
             "commands": commands,
             "count": len(commands),
         })
