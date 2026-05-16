@@ -103,12 +103,21 @@ def create_bot():
 
     # Đọc shard_count từ DB (None = auto)
     _shard_count = None
+    _debug_guilds = []
     try:
         _s = get_session()
         try:
             _cfg = _s.execute(select(SystemConfig).limit(1)).scalars().first()
             if _cfg and _cfg.shard_count and _cfg.shard_count > 0:
                 _shard_count = _cfg.shard_count
+            # Collect all guild IDs for instant slash command sync
+            all_cfgs = _s.execute(select(SystemConfig)).scalars().all()
+            for _c in all_cfgs:
+                if _c.guild_id:
+                    try:
+                        _debug_guilds.append(int(_c.guild_id))
+                    except (ValueError, TypeError):
+                        pass
         finally:
             _s.close()
     except Exception:
@@ -118,6 +127,7 @@ def create_bot():
     bot_client = discord.AutoShardedBot(
         intents=intents,
         shard_count=_shard_count,  # None = Discord tự quyết
+        debug_guilds=_debug_guilds or None,  # instant sync for known guilds
     )
 
     # ── Load cogs (reload modules to pick up code changes on restart) ─────────
