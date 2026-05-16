@@ -72,7 +72,6 @@ const PublicCommandsPage = lazy(() => import("./pages/PublicCommandsPage").then(
 const PublicPricingPage = lazy(() => import("./pages/PublicPricingPage").then(m => ({ default: m.PublicPricingPage })));
 const PublicStatusPage = lazy(() => import("./pages/PublicStatusPage").then(m => ({ default: m.PublicStatusPage })));
 // TempVoice pages
-const TempVoicePage = lazy(() => import("./pages/voice/TempVoicePage").then(m => ({ default: m.TempVoicePage })));
 const TempVoiceSetup = lazy(() => import("./pages/voice/TempVoiceSetup").then(m => ({ default: m.TempVoiceSetup })));
 const TempVoiceDefaults = lazy(() => import("./pages/voice/TempVoiceDefaults").then(m => ({ default: m.TempVoiceDefaults })));
 const TempVoicePermissions = lazy(() => import("./pages/voice/TempVoicePermissions").then(m => ({ default: m.TempVoicePermissions })));
@@ -181,13 +180,12 @@ const navGroups: NavGroup[] = [
     label: "nav_tempVoice",
     feature: "temp_voice",
     items: [
-      { to: "/voice", icon: Activity, label: "nav_voiceOverview" },
+      { to: "/voice/analytics", icon: BarChart2, label: "nav_voiceAnalytics" },
       { to: "/voice/setup", icon: Settings, label: "nav_voiceSetup" },
       { to: "/voice/defaults", icon: Wrench, label: "nav_voiceDefaults" },
       { to: "/voice/permissions", icon: Shield, label: "nav_voicePermissions" },
       { to: "/voice/cleanup", icon: Filter, label: "nav_voiceCleanup" },
       { to: "/voice/rooms", icon: Mic, label: "nav_voiceRooms" },
-      { to: "/voice/analytics", icon: BarChart2, label: "nav_voiceAnalytics" },
     ],
   },
   {
@@ -732,7 +730,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/scheduled-messages/:id/edit" element={<ScheduledMessagesEditPage />} />
         <Route path="/backup" element={<OwnerRoute><BackupRestore /></OwnerRoute>} />
         {/* TempVoice */}
-        <Route path="/voice" element={<TempVoicePage />} />
+        <Route path="/voice" element={<Navigate to="/voice/analytics" replace />} />
         <Route path="/voice/setup" element={<TempVoiceSetup />} />
         <Route path="/voice/defaults" element={<TempVoiceDefaults />} />
         <Route path="/voice/permissions" element={<TempVoicePermissions />} />
