@@ -11,7 +11,7 @@ router = APIRouter(prefix="/public")
 
 @router.get("/invite")
 def public_invite(db=Depends(get_db)):
-    """Trả về invite URL của bot và link server support — không cần auth."""
+    """Return invite URL and support server URL without auth."""
     config = get_config(db)
     client_id = os.environ.get("DISCORD_CLIENT_ID") or config.discord_client_id
     invite_url = None
@@ -49,7 +49,7 @@ def _memory_mb() -> float | None:
 
 @router.get("/status")
 async def public_status():
-    """Trả về tình trạng bot công khai — không cần auth."""
+    """Return public bot status without auth."""
     try:
         from src.bot.manager import bot as _bot, bot_start_time
         if _bot and _bot.is_ready():
@@ -135,17 +135,15 @@ async def public_commands():
     from src.bot.cogs.help_cog import HELP_CATEGORIES
 
     category_labels = {
-        "shop": "Shop",
-        "leveling": "Leveling",
-        "giveaway": "Giveaway",
-        "ticket": "Ticket",
-        "moderation": "Moderation",
-        "channel_admin": "Channel Admin",
-        "invites": "Invite Tracking",
-        "voice": "Temp Voice",
-        "utility": "Utilities",
-        "interactions": "Interactions",
-        "expressions": "Expressions",
+        "fun": "Fun",
+        "info": "Info",
+        "level": "Level",
+        "manager": "Manager",
+        "misc": "Misc",
+        "moderator": "Moderator",
+        "role": "Role",
+        "tempvoice": "TempVoice",
+        "other": "Other",
     }
 
     command_descriptions = {
@@ -281,6 +279,7 @@ async def public_commands():
                 command_descriptions.get(name)
                 or interaction_descriptions.get(name)
                 or expression_descriptions.get(name)
+                or cmd.get("desc")
                 or f"Run the /{name} command."
             )
             commands.append({

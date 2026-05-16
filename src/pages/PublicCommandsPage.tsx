@@ -1,24 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-import { Crown, Gift, HandHeart, MessageCircle, Mic, Package, Search, Shield, ShoppingBag, Smile, TerminalSquare, Trophy, UserPlus, Wrench, Zap } from "lucide-react";
+import { Bot, Info, Mic, Package, Search, Shield, Smile, Tags, TerminalSquare, Trophy, Wrench, Zap } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 interface Command { name: string; description: string; usage?: string; admin?: boolean; }
 interface Category { key?: string; name: string; count?: number; commands: Command[]; }
 
-type FilterKey = "all" | "public" | "admin" | string;
+type FilterKey = "all" | string;
 
 const categoryIcons = {
-  shop: ShoppingBag,
-  leveling: Trophy,
-  giveaway: Gift,
-  ticket: MessageCircle,
-  moderation: Shield,
-  channel_admin: Wrench,
-  invites: UserPlus,
-  voice: Mic,
-  utility: Package,
-  interactions: HandHeart,
-  expressions: Smile,
+  fun: Smile,
+  info: Info,
+  level: Trophy,
+  manager: Wrench,
+  misc: Package,
+  moderator: Shield,
+  role: Tags,
+  tempvoice: Mic,
+  other: Bot,
 } as const;
 
 function getCategoryIcon(key?: string) {
@@ -43,14 +41,11 @@ export function PublicCommandsPage() {
 
   const allCommands = useMemo(() => cats.flatMap(cat => cat.commands.map(cmd => ({ ...cmd, category: cat }))), [cats]);
   const totalCommands = allCommands.length;
-  const adminCommands = allCommands.filter(cmd => cmd.admin).length;
 
   const tabs = useMemo(() => [
     { key: "all", label: "All", count: totalCommands },
-    { key: "public", label: "Public", count: totalCommands - adminCommands },
-    { key: "admin", label: "Admin", count: adminCommands },
     ...cats.map(cat => ({ key: cat.key || cat.name, label: cat.name, count: cat.commands.length })),
-  ], [adminCommands, cats, totalCommands]);
+  ], [cats, totalCommands]);
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -59,8 +54,6 @@ export function PublicCommandsPage() {
       commands: cat.commands.filter(cmd => {
         const matchesTab =
           activeFilter === "all" ||
-          (activeFilter === "public" && !cmd.admin) ||
-          (activeFilter === "admin" && cmd.admin) ||
           activeFilter === cat.key ||
           activeFilter === cat.name;
         const haystack = `${cmd.name} ${cmd.description} ${cmd.usage || ""} ${cat.name}`.toLowerCase();
@@ -97,7 +90,7 @@ export function PublicCommandsPage() {
               />
             </div>
             <div className="flex items-center gap-2 text-xs text-white/45">
-              <Crown className="w-4 h-4 text-[#fbbf24]" />
+              <TerminalSquare className="w-4 h-4 text-[#aeb6ff]" />
               <span>{visibleCount}/{totalCommands} commands</span>
             </div>
           </div>
