@@ -33,13 +33,13 @@ export function SelectGuildPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-lg">
+    <div className="min-h-screen bg-background p-4 pt-10">
+      <div className="w-full max-w-lg mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <Server className="w-12 h-12 mx-auto mb-4 text-primary" />
-          <h1 className="text-2xl font-bold">Chọn server</h1>
-          <p className="text-muted-foreground mt-2">Chọn server Discord để tiếp tục quản lý</p>
+        <div className="text-center mb-6">
+          <Server className="w-10 h-10 mx-auto mb-3 text-primary" />
+          <h1 className="text-xl font-bold">Chọn server</h1>
+          <p className="text-muted-foreground text-sm mt-1">Chọn server Discord để tiếp tục quản lý</p>
         </div>
 
         {guilds.length === 0 ? (
