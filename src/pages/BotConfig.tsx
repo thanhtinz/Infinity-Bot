@@ -206,6 +206,7 @@ export function BotConfig() {
     queryKey: ["discord_channels_all", activeGuildId],
     queryFn: () => fetch(`/api/discord/channels/all?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
     enabled: !!config?.has_discord_token && !!activeGuildId,
+  });
   const tvVoiceChannels = allChannels.filter((c) => c.type === 2);
 
   const tvMutation = useMutation({
