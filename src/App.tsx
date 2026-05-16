@@ -242,13 +242,18 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   const filteredGroups = useMemo(() => {
     return navGroups
       .filter(g => !g.feature || !disabledFeatures.has(g.feature))
-      .filter(g => !g.ownerOnly || user?.is_owner)
+      .filter(g => !g.ownerOnly)
       .map(g => ({
         ...g,
         items: g.items.filter(item => !item.feature || !disabledFeatures.has(item.feature)),
       }))
       .filter(g => g.items.length > 0);
   }, [disabledFeatures, user]);
+
+  const ownerGroups = useMemo(() => {
+    if (!user?.is_owner) return [];
+    return navGroups.filter(g => g.ownerOnly);
+  }, [user]);
 
   // Determine which groups should be open by default based on current path
   const defaultOpenGroups = useMemo(() => {
@@ -386,6 +391,60 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               <Icon className="w-4 h-4" />
               {item.label}
             </Link>
+          );
+        })}
+
+        {/* Owner-only: Quản lý Bot — luôn ở cuối */}
+        {ownerGroups.map((group) => {
+          const isOpen = openGroups.has(group.key);
+          const isActive = group.items.some((item) => item.to === location.pathname);
+          const GroupIcon = group.icon;
+          return (
+            <div key={group.key}>
+              <button
+                onClick={() => toggleGroup(group.key)}
+                className={cn(
+                  "flex items-center justify-between w-full px-3 py-2 text-sm font-medium cursor-pointer rounded-md transition-colors",
+                  isActive
+                    ? "bg-accent/60 text-foreground"
+                    : "text-foreground/80 hover:bg-accent/40 hover:text-foreground"
+                )}
+              >
+                <span className="flex items-center gap-2.5">
+                  <GroupIcon className="w-4 h-4 shrink-0" />
+                  {group.label}
+                </span>
+                {isOpen ? (
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                )}
+              </button>
+              {isOpen && (
+                <div className="mt-0.5 ml-3 pl-3 border-l border-border space-y-0.5">
+                  {group.items.map((item) => {
+                    const ItemIcon = item.icon;
+                    const isItemActive = location.pathname === item.to;
+                    return (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={onClose}
+                        className={cn(
+                          "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm transition-colors",
+                          isItemActive
+                            ? "bg-primary text-primary-foreground font-medium"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                        )}
+                      >
+                        <ItemIcon className="w-3.5 h-3.5 shrink-0" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           );
         })}
         </>
