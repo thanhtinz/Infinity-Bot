@@ -19,6 +19,13 @@ export interface SystemConfig {
   bang_gia_channel_id?: string;
   welcome_channel_id?: string;
   bot_status: string;
+  bot_invisible?: boolean;
+  has_discord_token?: boolean;
+  has_discord_client_secret?: boolean;
+  has_payos_api_key?: boolean;
+  has_payos_checksum_key?: boolean;
+  command_prefix?: string;
+  public_app_url?: string;
 }
 
 export interface ProductPackage {

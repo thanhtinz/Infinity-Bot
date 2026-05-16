@@ -297,6 +297,18 @@ def create_bot():
         if bot_ready_event and not bot_ready_event.is_set():
             bot_ready_event.set()
         bot_client.loop.create_task(_check_expired_orders(bot_client))
+        # Apply invisible status if configured
+        try:
+            _inv_session = get_session()
+            try:
+                _cfg = _inv_session.execute(select(SystemConfig).limit(1)).scalars().first()
+                if _cfg and _cfg.bot_invisible:
+                    await bot_client.change_presence(status=discord.Status.invisible)
+                    logger.info("Bot presence set to invisible (bot_invisible=True)")
+            finally:
+                _inv_session.close()
+        except Exception as _inv_err:
+            logger.warning(f"Failed to apply invisible status: {_inv_err}")
         # Re-register persistent views (bảng giá) để hoạt động sau restart
         try:
             from src.bot.cogs.admin_shop import BangGiaView

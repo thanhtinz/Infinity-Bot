@@ -316,6 +316,7 @@ def read_config(config: SystemConfig = Depends(get_config)):
         has_discord_client_secret=bool(config.discord_client_secret),
         has_payos_api_key=bool(config.payos_api_key),
         has_payos_checksum_key=bool(config.payos_checksum_key),
+        bot_invisible=bool(config.bot_invisible),
     )
 
 
@@ -350,6 +351,7 @@ def update_config(config_in: SystemConfigBase, db=Depends(get_db)):
         has_discord_client_secret=bool(config.discord_client_secret),
         has_payos_api_key=bool(config.payos_api_key),
         has_payos_checksum_key=bool(config.payos_checksum_key),
+        bot_invisible=bool(config.bot_invisible),
     )
 
 

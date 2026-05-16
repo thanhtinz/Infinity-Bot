@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -23,6 +24,7 @@ import {
   Globe,
   Users,
   Timer,
+  EyeOff,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -144,6 +146,36 @@ export function BotStatus() {
         body: JSON.stringify(body),
       }),
     onSuccess: (res) => handleMutationResponse(res, "Cập nhật trạng thái"),
+    onError: () => toast({ variant: "destructive", title: "Lỗi kết nối" }),
+  });
+
+  const invisibleMutation = useMutation({
+    mutationFn: (invisible: boolean) =>
+      fetch("/api/config", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bot_invisible: invisible }),
+      }),
+    onSuccess: async (res, invisible) => {
+      if (res.ok) {
+        toast({ title: invisible ? "Đã bật chế độ ẩn" : "Đã tắt chế độ ẩn" });
+        queryClient.invalidateQueries({ queryKey: ["config"] });
+        // Apply immediately if bot is running
+        if (isRunning) {
+          await fetch("/api/bot/presence", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              status: invisible ? "invisible" : "online",
+              activity_type: "playing",
+              activity_name: "",
+            }),
+          });
+        }
+      }
+    },
     onError: () => toast({ variant: "destructive", title: "Lỗi kết nối" }),
   });
 
@@ -572,6 +604,28 @@ export function BotStatus() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Row 4: Invisible mode ── */}
+      <Card>
+        <CardContent className="p-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-md bg-muted text-muted-foreground shrink-0">
+              <EyeOff className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">Ẩn tình trạng bot</p>
+              <p className="text-xs text-muted-foreground">
+                Bot hiển thị offline với tất cả mọi người trên Discord. Chỉ bạn thấy trạng thái thực qua dashboard này.
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={config?.bot_invisible ?? false}
+            onCheckedChange={(v) => invisibleMutation.mutate(v)}
+            disabled={invisibleMutation.isPending}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
