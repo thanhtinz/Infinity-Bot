@@ -1,7 +1,23 @@
-"""Public API — no auth required. Bot status, commands list."""
-from fastapi import APIRouter
+"""Public API — no auth required. Bot status, commands list, invite URL."""
+import os
+from fastapi import APIRouter, Depends
+from src.api.routes.config import get_config
+from src.database.config import get_db
 
 router = APIRouter(prefix="/public")
+
+
+@router.get("/invite")
+def public_invite(db=Depends(get_db)):
+    """Trả về invite URL của bot — không cần auth."""
+    client_id = os.environ.get("DISCORD_CLIENT_ID")
+    if not client_id:
+        config = get_config(db)
+        client_id = config.discord_client_id
+    if not client_id:
+        return {"invite_url": None}
+    url = f"https://discord.com/oauth2/authorize?client_id={client_id}&permissions=8&scope=bot%20applications.commands"
+    return {"invite_url": url}
 
 
 @router.get("/status")

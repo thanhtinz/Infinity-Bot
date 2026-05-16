@@ -41,6 +41,7 @@ def create_app(static_dir: str) -> FastAPI:
             "/api/setup/status",
             "/api/public/status",
             "/api/public/commands",
+            "/api/public/invite",
         ]
         
         if path.startswith("/static/"):
