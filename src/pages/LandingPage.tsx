@@ -129,12 +129,10 @@ export function LandingPage() {
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/config", { credentials: "include" })
+    fetch("/api/public/invite")
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        if (d?.discord_client_id) {
-          setInviteUrl(`https://discord.com/oauth2/authorize?client_id=${d.discord_client_id}&permissions=8&scope=bot%20applications.commands`);
-        }
+        if (d?.invite_url) setInviteUrl(d.invite_url);
       })
       .catch(() => {});
   }, []);
