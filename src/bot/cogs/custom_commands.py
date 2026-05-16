@@ -128,15 +128,43 @@ class CustomCommandsCog(discord.Cog):
             if not cmd:
                 return
 
-            # Check allowed channels
-            allowed = cmd.allowed_channels or []
-            if allowed and str(message.channel.id) not in allowed:
+            # Check allowed channels (Allowed Channels overrides Ignored Channels)
+            allowed_ch = [str(c) for c in (cmd.allowed_channels or [])]
+            ignored_ch = [str(c) for c in (getattr(cmd, "ignored_channels", None) or [])]
+            ch_id = str(message.channel.id)
+            if allowed_ch and ch_id not in allowed_ch:
+                return
+            if ignored_ch and ch_id in ignored_ch:
                 return
 
-            # Check required roles
+            # Check allowed/ignored roles
+            if isinstance(message.author, discord.Member):
+                member_role_ids = {str(r.id) for r in message.author.roles}
+                allowed_roles = [str(r) for r in (getattr(cmd, "allowed_roles", None) or [])]
+                ignored_roles = [str(r) for r in (getattr(cmd, "ignored_roles", None) or [])]
+                if allowed_roles and not any(rid in member_role_ids for rid in allowed_roles):
+                    return
+                if ignored_roles and any(rid in member_role_ids for rid in ignored_roles):
+                    return
+
+            # Check required roles (legacy)
             if cmd.required_roles and isinstance(message.author, discord.Member):
                 member_role_ids = {str(r.id) for r in message.author.roles}
                 if not any(rid in member_role_ids for rid in cmd.required_roles):
+                    return
+
+            # Check required args
+            required_args = getattr(cmd, "required_args", 0) or 0
+            if required_args > 0:
+                args = raw_content[len(raw_name):].split()
+                if len(args) < required_args:
+                    try:
+                        notice = await message.channel.send(
+                            f"❌ Lệnh `!{cmd.name}` cần ít nhất **{required_args}** argument(s)."
+                        )
+                        await notice.delete(delay=4)
+                    except Exception:
+                        pass
                     return
 
             # Check cooldown
@@ -161,39 +189,86 @@ class CustomCommandsCog(discord.Cog):
             # Build variables
             variables = _build_vars(message)
 
-            # Send response
-            sent_message = None
-            if cmd.response_type == "embed" and cmd.response_embed:
-                data = cmd.response_embed
-                embed = discord.Embed(
-                    title=_substitute(data.get("title", ""), variables),
-                    description=_substitute(data.get("description", ""), variables),
-                    color=int(data.get("color", "#5865F2").lstrip("#"), 16) if data.get("color") else 0x5865F2,
-                )
-                for field in data.get("fields", []):
-                    embed.add_field(
-                        name=_substitute(field.get("name", ""), variables),
-                        value=_substitute(field.get("value", ""), variables),
-                        inline=field.get("inline", False),
+            # Determine target channel
+            response_channel_id = getattr(cmd, "response_channel_id", None)
+            target_channel = message.channel
+            if response_channel_id:
+                ch = message.guild.get_channel(int(response_channel_id)) if message.guild else None
+                if ch:
+                    target_channel = ch
+
+            # allowed_mentions based on no_everyone
+            no_everyone = getattr(cmd, "no_everyone", False)
+            allowed_mentions = discord.AllowedMentions(everyone=False, roles=False) if no_everyone else discord.AllowedMentions.all()
+
+            # Silent mode: skip all responses
+            if getattr(cmd, "silent", False):
+                return
+
+            # DM mode
+            dm_mode = getattr(cmd, "dm_response", False)
+
+            async def _send_response(resp_type: str, resp_text: str | None, resp_embed_data: dict | None):
+                """Helper to send one response (text or embed)."""
+                if resp_type == "embed" and resp_embed_data:
+                    data = resp_embed_data
+                    embed = discord.Embed(
+                        title=_substitute(data.get("title", ""), variables),
+                        description=_substitute(data.get("description", ""), variables),
+                        color=int(data.get("color", "#5865F2").lstrip("#"), 16) if data.get("color") else 0x5865F2,
                     )
-                if data.get("footer"):
-                    embed.set_footer(text=_substitute(data["footer"], variables))
-                if data.get("author"):
-                    embed.set_author(name=_substitute(data["author"], variables))
-                if data.get("thumbnail_url"):
-                    embed.set_thumbnail(url=_substitute(data["thumbnail_url"], variables))
-                if data.get("image_url"):
-                    embed.set_image(url=_substitute(data["image_url"], variables))
-                sent_message = await message.channel.send(embed=embed)
-            else:
-                text = _substitute(cmd.response_text or "", variables)
-                if text:
-                    sent_message = await message.channel.send(text)
+                    for field in data.get("fields", []):
+                        embed.add_field(
+                            name=_substitute(field.get("name", ""), variables),
+                            value=_substitute(field.get("value", ""), variables),
+                            inline=field.get("inline", False),
+                        )
+                    if data.get("footer"):
+                        embed.set_footer(text=_substitute(data["footer"], variables))
+                    if data.get("author"):
+                        embed.set_author(name=_substitute(data["author"], variables))
+                    if data.get("thumbnail_url"):
+                        embed.set_thumbnail(url=_substitute(data["thumbnail_url"], variables))
+                    if data.get("image_url"):
+                        embed.set_image(url=_substitute(data["image_url"], variables))
+                    if dm_mode:
+                        return await message.author.send(embed=embed)
+                    return await target_channel.send(embed=embed, allowed_mentions=allowed_mentions)
+                else:
+                    text = _substitute(resp_text or "", variables)
+                    if text:
+                        if dm_mode:
+                            return await message.author.send(text)
+                        return await target_channel.send(text, allowed_mentions=allowed_mentions)
+                return None
+
+            # Send primary response
+            sent_message = await _send_response(
+                cmd.response_type,
+                cmd.response_text,
+                cmd.response_embed,
+            )
+
+            # Send additional responses
+            for extra in (getattr(cmd, "additional_responses", None) or []):
+                await _send_response(
+                    extra.get("type", "text"),
+                    extra.get("content"),
+                    extra.get("embed"),
+                )
 
             # Auto react
             if sent_message and cmd.auto_react:
                 try:
                     await sent_message.add_reaction(cmd.auto_react)
+                except Exception:
+                    pass
+
+            # Delete after
+            delete_after = getattr(cmd, "delete_after", 0) or 0
+            if sent_message and delete_after > 0:
+                try:
+                    await sent_message.delete(delay=delete_after)
                 except Exception:
                     pass
 

@@ -145,6 +145,16 @@ async def init_db():
             "allowed_channels": "ALTER TABLE custom_commands ADD COLUMN allowed_channels JSON DEFAULT '[]'",
             "delete_trigger": "ALTER TABLE custom_commands ADD COLUMN delete_trigger BOOLEAN DEFAULT FALSE",
             "auto_react": "ALTER TABLE custom_commands ADD COLUMN auto_react VARCHAR",
+            "silent": "ALTER TABLE custom_commands ADD COLUMN silent BOOLEAN DEFAULT FALSE",
+            "dm_response": "ALTER TABLE custom_commands ADD COLUMN dm_response BOOLEAN DEFAULT FALSE",
+            "no_everyone": "ALTER TABLE custom_commands ADD COLUMN no_everyone BOOLEAN DEFAULT FALSE",
+            "allowed_roles": "ALTER TABLE custom_commands ADD COLUMN allowed_roles JSON DEFAULT '[]'",
+            "ignored_roles": "ALTER TABLE custom_commands ADD COLUMN ignored_roles JSON DEFAULT '[]'",
+            "ignored_channels": "ALTER TABLE custom_commands ADD COLUMN ignored_channels JSON DEFAULT '[]'",
+            "response_channel_id": "ALTER TABLE custom_commands ADD COLUMN response_channel_id VARCHAR",
+            "delete_after": "ALTER TABLE custom_commands ADD COLUMN delete_after INTEGER DEFAULT 0",
+            "required_args": "ALTER TABLE custom_commands ADD COLUMN required_args INTEGER DEFAULT 0",
+            "additional_responses": "ALTER TABLE custom_commands ADD COLUMN additional_responses JSON DEFAULT '[]'",
         }.items():
             if col not in cc:
                 all_stmts.append(stmt)

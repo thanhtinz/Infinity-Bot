@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -29,7 +30,7 @@ import {
 } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { MultiRoleSelect } from "@/components/RoleSelect";
-import { ChannelSelect } from "@/components/ChannelSelect";
+import { ChannelSelect, MultiChannelSelect } from "@/components/ChannelSelect";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import {
   Terminal,
@@ -49,6 +50,9 @@ import {
   ChevronDown,
   ChevronRight,
   Sparkles,
+  Shield,
+  Wrench,
+  ListPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -71,6 +75,12 @@ interface ResponseEmbed {
   author?: string;
 }
 
+interface AdditionalResponse {
+  type: "text" | "embed";
+  content?: string;
+  embed?: ResponseEmbed;
+}
+
 interface CustomCommand {
   id: number;
   name: string;
@@ -87,6 +97,16 @@ interface CustomCommand {
   delete_trigger: boolean;
   auto_react: string | null;
   created_at: string;
+  silent: boolean;
+  dm_response: boolean;
+  no_everyone: boolean;
+  allowed_roles: string[];
+  ignored_roles: string[];
+  ignored_channels: string[];
+  response_channel_id: string;
+  delete_after: number;
+  required_args: number;
+  additional_responses: AdditionalResponse[];
 }
 
 interface CommandForm {
@@ -103,6 +123,16 @@ interface CommandForm {
   allowed_channels: string[];
   delete_trigger: boolean;
   auto_react: string;
+  silent: boolean;
+  dm_response: boolean;
+  no_everyone: boolean;
+  allowed_roles: string[];
+  ignored_roles: string[];
+  ignored_channels: string[];
+  response_channel_id: string;
+  delete_after: number;
+  required_args: number;
+  additional_responses: AdditionalResponse[];
 }
 
 // ─── Variable Reference ──────────────────────────────────────────────────────
@@ -164,6 +194,21 @@ const VARIABLE_GROUPS: { label: string; icon: typeof Variable; vars: { key: stri
     vars: [
       { key: "{nl}", desc: "Xuống dòng mới" },
       { key: "{random_member}", desc: "Random member mention" },
+      { key: "{&role}", desc: "Mention role theo tên" },
+      { key: "{#channel}", desc: "Link channel theo tên" },
+      { key: "{everyone}", desc: "Ping @everyone" },
+      { key: "{here}", desc: "Ping @here" },
+      { key: "$1", desc: "Argument 1" },
+      { key: "$2", desc: "Argument 2" },
+      { key: "$1+", desc: "Tất cả arguments từ 1" },
+      { key: "{choose:opt1;opt2;opt3}", desc: "Chọn ngẫu nhiên" },
+      { key: "{choice}", desc: "Giá trị đã chọn" },
+      { key: "{noeveryone}", desc: "Vô hiệu hóa @everyone" },
+      { key: "{delete}", desc: "Xóa tin nhắn trigger" },
+      { key: "{silent}", desc: "Chỉ thực thi, không phản hồi" },
+      { key: "{dm}", desc: "DM phản hồi cho user" },
+      { key: "{prefix}", desc: "Prefix của bot" },
+      { key: "{respond:#channel}", desc: "Override kênh phản hồi" },
     ],
   },
 ];
@@ -212,6 +257,16 @@ const emptyForm = (): CommandForm => ({
   allowed_channels: [],
   delete_trigger: false,
   auto_react: "",
+  silent: false,
+  dm_response: false,
+  no_everyone: false,
+  allowed_roles: [],
+  ignored_roles: [],
+  ignored_channels: [],
+  response_channel_id: "",
+  delete_after: 0,
+  required_args: 0,
+  additional_responses: [],
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -653,6 +708,16 @@ export function CustomCommands() {
       allowed_channels: cmd.allowed_channels ?? [],
       delete_trigger: cmd.delete_trigger ?? false,
       auto_react: cmd.auto_react ?? "",
+      silent: cmd.silent ?? false,
+      dm_response: cmd.dm_response ?? false,
+      no_everyone: cmd.no_everyone ?? false,
+      allowed_roles: cmd.allowed_roles ?? [],
+      ignored_roles: cmd.ignored_roles ?? [],
+      ignored_channels: cmd.ignored_channels ?? [],
+      response_channel_id: cmd.response_channel_id ?? "",
+      delete_after: cmd.delete_after ?? 0,
+      required_args: cmd.required_args ?? 0,
+      additional_responses: cmd.additional_responses ?? [],
     });
     setDialogOpen(true);
   };
@@ -673,6 +738,17 @@ export function CustomCommands() {
       allowed_channels: form.allowed_channels,
       delete_trigger: form.delete_trigger,
       auto_react: form.auto_react || null,
+      // Phase 3
+      silent: form.silent,
+      dm_response: form.dm_response,
+      no_everyone: form.no_everyone,
+      allowed_roles: form.allowed_roles,
+      ignored_roles: form.ignored_roles,
+      ignored_channels: form.ignored_channels,
+      response_channel_id: form.response_channel_id || null,
+      delete_after: form.delete_after,
+      required_args: form.required_args,
+      additional_responses: form.additional_responses,
     };
     if (editingCommand) {
       updateMutation.mutate({ id: editingCommand.id, ...body });
@@ -1465,6 +1541,306 @@ export function CustomCommands() {
                   </div>
                 </CollapsibleContent>
               </Collapsible>
+            </div>
+
+            <Separator />
+
+            {/* ── Section: Options ── */}
+            <div className="space-y-4">
+              <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                <Wrench className="h-3.5 w-3.5" />
+                Options
+              </p>
+
+              <div className="space-y-3">
+                {/* Delete Command */}
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  <Checkbox
+                    checked={form.delete_trigger}
+                    onCheckedChange={(v) => setForm((p) => ({ ...p, delete_trigger: !!v }))}
+                  />
+                  <div className="flex-1 space-y-0.5">
+                    <Label className="text-sm font-medium">Delete Command</Label>
+                    <p className="text-[11px] text-muted-foreground">Xóa tin nhắn !command của user sau khi bot phản hồi</p>
+                  </div>
+                </div>
+
+                {/* Silent Command */}
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  <Checkbox
+                    checked={form.silent}
+                    onCheckedChange={(v) => setForm((p) => ({ ...p, silent: !!v }))}
+                  />
+                  <div className="flex-1 space-y-0.5">
+                    <Label className="text-sm font-medium">Silent Command</Label>
+                    <p className="text-[11px] text-muted-foreground">Chỉ thực thi lệnh, không gửi phản hồi cho user</p>
+                  </div>
+                </div>
+
+                {/* DM Response */}
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  <Checkbox
+                    checked={form.dm_response}
+                    onCheckedChange={(v) => setForm((p) => ({ ...p, dm_response: !!v }))}
+                  />
+                  <div className="flex-1 space-y-0.5">
+                    <Label className="text-sm font-medium">DM Response</Label>
+                    <p className="text-[11px] text-muted-foreground">Gửi phản hồi qua DM thay vì channel</p>
+                  </div>
+                </div>
+
+                {/* Disable pings */}
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  <Checkbox
+                    checked={form.no_everyone}
+                    onCheckedChange={(v) => setForm((p) => ({ ...p, no_everyone: !!v }))}
+                  />
+                  <div className="flex-1 space-y-0.5">
+                    <Label className="text-sm font-medium">Disable @everyone, @here and role pings</Label>
+                    <p className="text-[11px] text-muted-foreground">Vô hiệu hóa các ping trong phản hồi</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* ── Section: Permissions ── */}
+            <div className="space-y-4">
+              <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                <Shield className="h-3.5 w-3.5" />
+                Permissions
+              </p>
+
+              <div className="grid grid-cols-1 gap-4">
+                {/* Allowed Roles */}
+                <div className="space-y-2">
+                  <Label>Allowed Roles</Label>
+                  <MultiRoleSelect
+                    value={form.allowed_roles}
+                    onChange={(roles) => setForm((p) => ({ ...p, allowed_roles: roles }))}
+                    placeholder="Roles được phép dùng (để trống = tất cả)..."
+                  />
+                </div>
+
+                {/* Ignored Roles */}
+                <div className="space-y-2">
+                  <Label>Ignored Roles</Label>
+                  <MultiRoleSelect
+                    value={form.ignored_roles}
+                    onChange={(roles) => setForm((p) => ({ ...p, ignored_roles: roles }))}
+                    placeholder="Roles bị chặn..."
+                  />
+                </div>
+
+                {/* Allowed Channels */}
+                <div className="space-y-2">
+                  <Label>Allowed Channels</Label>
+                  <MultiChannelSelect
+                    value={form.allowed_channels}
+                    onChange={(chs) => setForm((p) => ({ ...p, allowed_channels: chs }))}
+                    placeholder="Channels được phép (để trống = tất cả)..."
+                  />
+                </div>
+
+                {/* Ignored Channels */}
+                <div className="space-y-2">
+                  <Label>Ignored Channels</Label>
+                  <MultiChannelSelect
+                    value={form.ignored_channels}
+                    onChange={(chs) => setForm((p) => ({ ...p, ignored_channels: chs }))}
+                    placeholder="Channels bị chặn..."
+                  />
+                </div>
+
+                {/* Response Channel */}
+                <div className="space-y-2">
+                  <Label>Response Channel</Label>
+                  <ChannelSelect
+                    filter="text"
+                    value={form.response_channel_id}
+                    onChange={(id) => setForm((p) => ({ ...p, response_channel_id: id }))}
+                    placeholder="Override kênh bot phản hồi..."
+                  />
+                  <p className="text-[11px] text-muted-foreground">Để trống = phản hồi trong kênh user gọi lệnh</p>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* ── Section: Advanced Options ── */}
+            <div className="space-y-4">
+              <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                <Wrench className="h-3.5 w-3.5" />
+                Advanced Options (optional)
+              </p>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1.5">
+                    Cooldown (seconds)
+                  </Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.cooldown}
+                    onChange={(e) => setForm((p) => ({ ...p, cooldown: Math.max(0, parseInt(e.target.value) || 0) }))}
+                    placeholder="2"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Delete After (seconds)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.delete_after}
+                    onChange={(e) => setForm((p) => ({ ...p, delete_after: Math.max(0, parseInt(e.target.value) || 0) }))}
+                    placeholder="10"
+                  />
+                  <p className="text-[11px] text-muted-foreground">0 = không tự xóa</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Required Arguments</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.required_args}
+                    onChange={(e) => setForm((p) => ({ ...p, required_args: Math.max(0, parseInt(e.target.value) || 0) }))}
+                    placeholder="1"
+                  />
+                  <p className="text-[11px] text-muted-foreground">Số $N tối thiểu</p>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* ── Section: Additional Responses ── */}
+            <div className="space-y-4">
+              <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                <ListPlus className="h-3.5 w-3.5" />
+                Additional Responses (optional)
+              </p>
+
+              {form.additional_responses.length > 0 && (
+                <div className="space-y-3">
+                  {form.additional_responses.map((resp, idx) => (
+                    <div key={idx} className="rounded-lg border bg-muted/20 p-3 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setForm((p) => ({
+                              ...p,
+                              additional_responses: p.additional_responses.map((r, i) =>
+                                i === idx ? { ...r, type: "text" } : r
+                              ),
+                            }))}
+                            className={cn(
+                              "rounded px-2 py-0.5 text-xs border transition-colors",
+                              resp.type === "text" ? "bg-foreground text-background border-foreground" : "border-input hover:bg-muted"
+                            )}
+                          >
+                            Text
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setForm((p) => ({
+                              ...p,
+                              additional_responses: p.additional_responses.map((r, i) =>
+                                i === idx ? { ...r, type: "embed" } : r
+                              ),
+                            }))}
+                            className={cn(
+                              "rounded px-2 py-0.5 text-xs border transition-colors",
+                              resp.type === "embed" ? "bg-foreground text-background border-foreground" : "border-input hover:bg-muted"
+                            )}
+                          >
+                            Embed
+                          </button>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-destructive"
+                          onClick={() => setForm((p) => ({
+                            ...p,
+                            additional_responses: p.additional_responses.filter((_, i) => i !== idx),
+                          }))}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+
+                      {resp.type === "text" ? (
+                        <Textarea
+                          value={resp.content ?? ""}
+                          onChange={(e) => setForm((p) => ({
+                            ...p,
+                            additional_responses: p.additional_responses.map((r, i) =>
+                              i === idx ? { ...r, content: e.target.value } : r
+                            ),
+                          }))}
+                          placeholder="Nội dung phản hồi thêm..."
+                          rows={3}
+                        />
+                      ) : (
+                        <div className="space-y-2">
+                          <Input
+                            value={resp.embed?.title ?? ""}
+                            onChange={(e) => setForm((p) => ({
+                              ...p,
+                              additional_responses: p.additional_responses.map((r, i) =>
+                                i === idx ? { ...r, embed: { ...emptyEmbed(), ...r.embed, title: e.target.value } } : r
+                              ),
+                            }))}
+                            placeholder="Tiêu đề embed"
+                          />
+                          <Textarea
+                            value={resp.embed?.description ?? ""}
+                            onChange={(e) => setForm((p) => ({
+                              ...p,
+                              additional_responses: p.additional_responses.map((r, i) =>
+                                i === idx ? { ...r, embed: { ...emptyEmbed(), ...r.embed, description: e.target.value } } : r
+                              ),
+                            }))}
+                            placeholder="Mô tả embed"
+                            rows={3}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setForm((p) => ({
+                    ...p,
+                    additional_responses: [...p.additional_responses, { type: "text", content: "" }],
+                  }))}
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Add Response
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setForm((p) => ({
+                    ...p,
+                    additional_responses: [...p.additional_responses, { type: "embed", embed: emptyEmbed() }],
+                  }))}
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Add Embed Response
+                </Button>
+              </div>
             </div>
           </div>
 

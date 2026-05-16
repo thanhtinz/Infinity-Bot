@@ -701,6 +701,17 @@ class CustomCommand(Base):
     allowed_channels = Column(JSON, default=list)  # restrict to specific channels (empty = all)
     delete_trigger = Column(Boolean, default=False)  # delete the user's !command message
     auto_react = Column(String, nullable=True)     # emoji to react to the response
+    # Phase 3 fields — Dyno-style expansion
+    silent = Column(Boolean, default=False)        # suppress bot default response
+    dm_response = Column(Boolean, default=False)   # DM the response to user
+    no_everyone = Column(Boolean, default=False)   # disable @everyone/@here/role pings
+    allowed_roles = Column(JSON, default=list)     # roles allowed to use (empty = all)
+    ignored_roles = Column(JSON, default=list)     # roles blocked from using
+    ignored_channels = Column(JSON, default=list)  # channels blocked from using
+    response_channel_id = Column(String, nullable=True)  # override response channel
+    delete_after = Column(Integer, default=0)      # delete bot response after N seconds (0 = never)
+    required_args = Column(Integer, default=0)     # minimum number of $N args required
+    additional_responses = Column(JSON, default=list)  # [{type: "text"|"embed", content: ..., embed: {...}}]
 
 
 class AutoResponder(Base):

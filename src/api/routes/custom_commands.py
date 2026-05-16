@@ -7,10 +7,48 @@ from src.models.models import CustomCommand, SystemConfig
 
 router = APIRouter()
 
+_PHASE3_FIELDS = [
+    "silent", "dm_response", "no_everyone",
+    "allowed_roles", "ignored_roles", "ignored_channels",
+    "response_channel_id", "delete_after", "required_args",
+    "additional_responses",
+]
 
 def _get_guild_id(db) -> str:
     config = db.execute(select(SystemConfig).limit(1)).scalars().first()
     return config.guild_id if config else ""
+
+
+def _serialize(c: CustomCommand) -> dict:
+    return {
+        "id": c.id,
+        "name": c.name,
+        "description": c.description,
+        "response_type": c.response_type,
+        "response_text": c.response_text,
+        "response_embed": c.response_embed,
+        "ephemeral": c.ephemeral,
+        "required_roles": c.required_roles or [],
+        "enabled": c.enabled,
+        "created_at": c.created_at.isoformat() if c.created_at else None,
+        # Phase 2
+        "aliases": c.aliases or [],
+        "cooldown": c.cooldown or 0,
+        "allowed_channels": c.allowed_channels or [],
+        "delete_trigger": c.delete_trigger or False,
+        "auto_react": c.auto_react,
+        # Phase 3
+        "silent": getattr(c, "silent", False) or False,
+        "dm_response": getattr(c, "dm_response", False) or False,
+        "no_everyone": getattr(c, "no_everyone", False) or False,
+        "allowed_roles": getattr(c, "allowed_roles", None) or [],
+        "ignored_roles": getattr(c, "ignored_roles", None) or [],
+        "ignored_channels": getattr(c, "ignored_channels", None) or [],
+        "response_channel_id": getattr(c, "response_channel_id", None),
+        "delete_after": getattr(c, "delete_after", 0) or 0,
+        "required_args": getattr(c, "required_args", 0) or 0,
+        "additional_responses": getattr(c, "additional_responses", None) or [],
+    }
 
 
 @router.get("/custom-commands")
@@ -20,32 +58,12 @@ def list_custom_commands(db=Depends(get_db)):
         select(CustomCommand).where(CustomCommand.guild_id == guild_id)
         .order_by(CustomCommand.created_at.desc())
     ).scalars().all()
-    return [
-        {
-            "id": c.id,
-            "name": c.name,
-            "description": c.description,
-            "response_type": c.response_type,
-            "response_text": c.response_text,
-            "response_embed": c.response_embed,
-            "ephemeral": c.ephemeral,
-            "required_roles": c.required_roles or [],
-            "enabled": c.enabled,
-            "created_at": c.created_at.isoformat() if c.created_at else None,
-            "aliases": c.aliases or [],
-            "cooldown": c.cooldown or 0,
-            "allowed_channels": c.allowed_channels or [],
-            "delete_trigger": c.delete_trigger or False,
-            "auto_react": c.auto_react,
-        }
-        for c in cmds
-    ]
+    return [_serialize(c) for c in cmds]
 
 
 @router.post("/custom-commands")
 def create_custom_command(body: dict, db=Depends(get_db)):
     guild_id = _get_guild_id(db)
-    # Check duplicate name
     existing = db.execute(
         select(CustomCommand).where(
             CustomCommand.guild_id == guild_id,
@@ -70,6 +88,16 @@ def create_custom_command(body: dict, db=Depends(get_db)):
         allowed_channels=body.get("allowed_channels", []),
         delete_trigger=body.get("delete_trigger", False),
         auto_react=body.get("auto_react"),
+        silent=body.get("silent", False),
+        dm_response=body.get("dm_response", False),
+        no_everyone=body.get("no_everyone", False),
+        allowed_roles=body.get("allowed_roles", []),
+        ignored_roles=body.get("ignored_roles", []),
+        ignored_channels=body.get("ignored_channels", []),
+        response_channel_id=body.get("response_channel_id"),
+        delete_after=body.get("delete_after", 0),
+        required_args=body.get("required_args", 0),
+        additional_responses=body.get("additional_responses", []),
     )
     db.add(cmd)
     db.commit()
@@ -83,9 +111,13 @@ def update_custom_command(cmd_id: int, body: dict, db=Depends(get_db)):
     if not cmd:
         raise HTTPException(status_code=404, detail="Command not found")
 
-    for field in ["name", "description", "response_type", "response_text",
-                  "response_embed", "ephemeral", "required_roles", "enabled",
-                  "aliases", "cooldown", "allowed_channels", "delete_trigger", "auto_react"]:
+    all_fields = [
+        "name", "description", "response_type", "response_text",
+        "response_embed", "ephemeral", "required_roles", "enabled",
+        "aliases", "cooldown", "allowed_channels", "delete_trigger", "auto_react",
+    ] + _PHASE3_FIELDS
+
+    for field in all_fields:
         if field in body:
             val = body[field]
             if field == "name":
