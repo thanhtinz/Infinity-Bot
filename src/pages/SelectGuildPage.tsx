@@ -1,12 +1,22 @@
 import { useGuild } from "@/contexts/GuildContext";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
-import { Server, Loader2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ExternalLink, Server, Loader2 } from "lucide-react";
 
 export function SelectGuildPage() {
   const { guilds, setSelectedGuildId, isLoading } = useGuild();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const { data: config } = useQuery<{ discord_client_id?: string }>({
+    queryKey: ["system_config"],
+    queryFn: () => fetch("/api/config", { credentials: "include" }).then(r => r.json()),
+    staleTime: 60_000,
+  });
+
+  const inviteUrl = config?.discord_client_id
+    ? `https://discord.com/oauth2/authorize?client_id=${config.discord_client_id}&permissions=8&scope=bot%20applications.commands`
+    : null;
 
   const handleSelect = (guildId: string) => {
     setSelectedGuildId(guildId);
@@ -32,9 +42,22 @@ export function SelectGuildPage() {
         </div>
         <div className="space-y-2">
           {guilds.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              Bot chưa ở trong server nào. Vui lòng thêm bot vào server trước.
-            </p>
+            <div className="text-center py-8 space-y-4">
+              <p className="text-muted-foreground">
+                Bot chưa ở trong server nào. Vui lòng thêm bot vào server trước.
+              </p>
+              {inviteUrl && (
+                <a
+                  href={inviteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Mời bot vào server
+                </a>
+              )}
+            </div>
           ) : (
             guilds.map(guild => (
               <button

@@ -1,10 +1,11 @@
 import { useGuild } from "@/contexts/GuildContext";
-import { useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronDown, Server } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Check, ChevronDown, ExternalLink, Server } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,16 @@ import { cn } from "@/lib/utils";
 export function GuildSelector() {
   const { selectedGuildId, setSelectedGuildId, guilds, isLoading } = useGuild();
   const queryClient = useQueryClient();
+
+  const { data: config } = useQuery<{ discord_client_id?: string }>({
+    queryKey: ["system_config"],
+    queryFn: () => fetch("/api/config", { credentials: "include" }).then(r => r.json()),
+    staleTime: 60_000,
+  });
+
+  const inviteUrl = config?.discord_client_id
+    ? `https://discord.com/oauth2/authorize?client_id=${config.discord_client_id}&permissions=8&scope=bot%20applications.commands`
+    : null;
 
   const selectedGuild = guilds.find(g => g.id === selectedGuildId);
 
@@ -92,6 +103,18 @@ export function GuildSelector() {
               )}
             </DropdownMenuItem>
           ))}
+          {inviteUrl && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="flex items-center gap-2 cursor-pointer text-indigo-500 focus:text-indigo-500"
+                onClick={() => window.open(inviteUrl, "_blank", "noopener,noreferrer")}
+              >
+                <ExternalLink className="w-4 h-4 shrink-0" />
+                <span>Mời bot vào server</span>
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
