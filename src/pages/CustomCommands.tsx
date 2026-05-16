@@ -797,6 +797,10 @@ export function CustomCommands() {
   const [varsOpen, setVarsOpen] = useState(false);
   const [focusedInput, setFocusedInput] = useState<"text" | "embed_desc" | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [permOpen, setPermOpen] = useState(false);
+  const [advOpts2Open, setAdvOpts2Open] = useState(false);
+  const [addRespOpen, setAddRespOpen] = useState(false);
 
   const addAlias = () => {
     const trimmed = aliasInput.trim().toLowerCase().replace(/\s/g, "");
@@ -1546,13 +1550,17 @@ export function CustomCommands() {
             <Separator />
 
             {/* ── Section: Options ── */}
-            <div className="space-y-4">
-              <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
-                <Wrench className="h-3.5 w-3.5" />
-                Options
-              </p>
-
-              <div className="space-y-3">
+            <Collapsible open={optionsOpen} onOpenChange={setOptionsOpen}>
+              <CollapsibleTrigger asChild>
+                <button type="button" className="flex items-center justify-between w-full">
+                  <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                    <Wrench className="h-3.5 w-3.5" />
+                    Options
+                  </p>
+                  {optionsOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-3 pt-3">
                 {/* Delete Command */}
                 <div className="flex items-center gap-3 rounded-lg border p-3">
                   <Checkbox
@@ -1600,18 +1608,23 @@ export function CustomCommands() {
                     <p className="text-[11px] text-muted-foreground">Vô hiệu hóa các ping trong phản hồi</p>
                   </div>
                 </div>
-              </div>
-            </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <Separator />
 
             {/* ── Section: Permissions ── */}
-            <div className="space-y-4">
-              <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
-                <Shield className="h-3.5 w-3.5" />
-                Permissions
-              </p>
-
+            <Collapsible open={permOpen} onOpenChange={setPermOpen}>
+              <CollapsibleTrigger asChild>
+                <button type="button" className="flex items-center justify-between w-full">
+                  <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                    <Shield className="h-3.5 w-3.5" />
+                    Permissions
+                  </p>
+                  {permOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3">
               <div className="grid grid-cols-1 gap-4">
                 {/* Allowed Roles */}
                 <div className="space-y-2">
@@ -1665,17 +1678,23 @@ export function CustomCommands() {
                   <p className="text-[11px] text-muted-foreground">Để trống = phản hồi trong kênh user gọi lệnh</p>
                 </div>
               </div>
-            </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <Separator />
 
             {/* ── Section: Advanced Options ── */}
-            <div className="space-y-4">
-              <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
-                <Wrench className="h-3.5 w-3.5" />
-                Advanced Options (optional)
-              </p>
-
+            <Collapsible open={advOpts2Open} onOpenChange={setAdvOpts2Open}>
+              <CollapsibleTrigger asChild>
+                <button type="button" className="flex items-center justify-between w-full">
+                  <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                    <Wrench className="h-3.5 w-3.5" />
+                    Advanced Options (optional)
+                  </p>
+                  {advOpts2Open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3">
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label className="flex items-center gap-1.5">
@@ -1712,16 +1731,24 @@ export function CustomCommands() {
                   <p className="text-[11px] text-muted-foreground">Số $N tối thiểu</p>
                 </div>
               </div>
-            </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <Separator />
 
             {/* ── Section: Additional Responses ── */}
+            <Collapsible open={addRespOpen} onOpenChange={setAddRespOpen}>
+              <CollapsibleTrigger asChild>
+                <button type="button" className="flex items-center justify-between w-full">
+                  <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                    <ListPlus className="h-3.5 w-3.5" />
+                    Additional Responses (optional)
+                  </p>
+                  {addRespOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3">
             <div className="space-y-4">
-              <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
-                <ListPlus className="h-3.5 w-3.5" />
-                Additional Responses (optional)
-              </p>
 
               {form.additional_responses.length > 0 && (
                 <div className="space-y-3">
@@ -1842,6 +1869,8 @@ export function CustomCommands() {
                 </Button>
               </div>
             </div>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
 
           <DialogFooter>
