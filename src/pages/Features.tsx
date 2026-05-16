@@ -17,6 +17,9 @@ import {
   Wrench,
   Terminal,
   Clock,
+  Trophy,
+  MessageCircleReply,
+  Heart,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -42,6 +45,9 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Wrench,
   Terminal,
   Clock,
+  Trophy,
+  MessageCircleReply,
+  Heart,
 };
 
 async function fetchFeatures(): Promise<Feature[]> {
