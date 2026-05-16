@@ -128,6 +128,7 @@ def create_bot():
         intents=intents,
         shard_count=_shard_count,  # None = Discord tự quyết
         debug_guilds=_debug_guilds or None,  # instant sync for known guilds
+        auto_sync_commands=False,  # We sync manually in on_ready with error handling
     )
 
     # ── Load cogs (reload modules to pick up code changes on restart) ─────────
@@ -342,7 +343,7 @@ def create_bot():
             await bot_client.sync_commands()
             logger.info("Command sync completed successfully")
         except Exception as sync_err:
-            logger.error(f"Command sync failed: {sync_err}")
+            logger.error(f"Command sync failed (non-fatal): {sync_err}", exc_info=True)
 
         await asyncio.to_thread(update_bot_status, "running")
         if bot_ready_event and not bot_ready_event.is_set():
