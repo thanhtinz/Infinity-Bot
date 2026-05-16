@@ -82,7 +82,7 @@ export function TicketsPage() {
     refetchInterval: 60_000,
   });
 
-  const { data: panels = [] } = useQuery<TicketPanel[]>({
+  const { data: panels = [] } = useQuery<TicketPanelRef[]>({
     queryKey: ["ticket-panels"],
     queryFn: () =>
       fetch("/api/ticket-panels", { credentials: "include" }).then((r) =>
@@ -379,7 +379,7 @@ export function TicketsPage() {
         detail={detail}
         detailLoading={detailLoading}
         detailTab={detailTab}
-        setDetailTab={setDetailTab}
+        setDetailTab={(tab) => setDetailTab(tab as "info" | "notes" | "members")}
         updateMutation={updateMutation}
       />
     </div>

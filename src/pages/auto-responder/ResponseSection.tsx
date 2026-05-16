@@ -47,7 +47,7 @@ export function ResponseSection({
   hasReact,
   varsOpen,
   setVarsOpen,
-  focusedInput,
+  _focusedInput,
   setFocusedInput,
   addField,
   removeField,

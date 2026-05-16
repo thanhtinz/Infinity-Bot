@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   ChevronDown, ChevronRight, BellOff,
 } from "lucide-react";
-import type { CustomFormState, MessageFlags, AllowedMentions } from "./embedTypes";
+import type { CustomFormState } from "./embedTypes";
 
 interface MessageContentBlockProps {
   form: CustomFormState;

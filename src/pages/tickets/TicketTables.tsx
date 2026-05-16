@@ -1,4 +1,3 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Inbox, Shield, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { TicketRow, TicketPanelRef, BlacklistEntry } from "./ticketHelpers";
+import type { TicketRow, BlacklistEntry } from "./ticketHelpers";
 import { PRIORITY_CONFIG, STATUS_CONFIG, formatDate, TableSkeleton } from "./ticketHelpers";
 
 // ─── Ticket Table ────────────────────────────────────────────────────────────

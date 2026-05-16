@@ -27,15 +27,12 @@ import { ChannelSelect } from "@/components/ChannelSelect";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import type {
   TicketPanel,
-  TicketButton,
   PanelForm,
   ButtonForm,
 } from "./tpTypes";
 import {
-  DEFAULT_COLOR,
   MAX_BUTTONS,
   PRESET_COLORS,
-  emptyButtonForm,
   getButtonStyle,
 } from "./tpConstants";
 import { DiscordPreview, ButtonStylePicker, CollapsibleSection } from "./tpComponents";

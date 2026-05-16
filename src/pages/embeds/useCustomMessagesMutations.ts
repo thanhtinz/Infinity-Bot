@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import type { EmbedField, CustomEmbed, EmbedData, CustomFormState, ActionRow, MessageFlags, AllowedMentions, EmbedOpenState } from "./embedTypes";
@@ -11,13 +11,13 @@ export function useCustomMessagesMutations(
   setSelectedId: (id: number | null) => void,
   editingExistingId: number | null,
   setEditingExistingId: (id: number | null) => void,
-  isCreatingNew: boolean,
+  _isCreatingNew: boolean,
   setIsCreatingNew: (v: boolean) => void,
   linkInput: string,
   setLinkInput: (v: string) => void,
-  selectedChannelId: string,
+  _selectedChannelId: string,
   setSelectedChannelId: (v: string) => void,
-  embedOpenStates: EmbedOpenState[],
+  _embedOpenStates: EmbedOpenState[],
   setEmbedOpenStates: React.Dispatch<React.SetStateAction<EmbedOpenState[]>>,
   setThreadOpen: (v: boolean) => void,
   setProfileOpen: (v: boolean) => void,

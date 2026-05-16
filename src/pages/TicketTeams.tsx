@@ -29,11 +29,6 @@ interface TicketTeamType {
   created_at?: string;
 }
 
-interface TicketPanel {
-  id: number;
-  name: string;
-}
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function TicketTeams() {
@@ -51,11 +46,7 @@ export function TicketTeams() {
     staleTime: 30_000,
   });
 
-  const { data: panels } = useQuery({
-    queryKey: ["ticket-panels"],
-    queryFn: () => fetch("/api/ticket-panels").then((r) => r.json()),
-    staleTime: 30_000,
-  });
+
 
   // ─── Mutations ───────────────────────────────────────────────────────────
 

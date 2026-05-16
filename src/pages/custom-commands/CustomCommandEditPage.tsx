@@ -14,6 +14,7 @@ import type { CustomCommand, EmbedField } from "./ccTypes";
 import {
   DEFAULT_COLOR,
   emptyEmbed,
+  emptyField,
   emptyForm,
 } from "./ccConstants";
 import type { CommandForm } from "./ccTypes";
