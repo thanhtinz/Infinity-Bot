@@ -34,58 +34,57 @@ export function SelectGuildPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-lg">
+        {/* Header */}
         <div className="text-center mb-8">
           <Server className="w-12 h-12 mx-auto mb-4 text-primary" />
           <h1 className="text-2xl font-bold">Chọn server</h1>
           <p className="text-muted-foreground mt-2">Chọn server Discord để tiếp tục quản lý</p>
         </div>
-        <div className="space-y-2">
-          {guilds.length === 0 ? (
-            <div className="text-center py-8 space-y-4">
-              <p className="text-muted-foreground">
-                Bot chưa ở trong server nào. Vui lòng thêm bot vào server trước.
-              </p>
-              {inviteUrl && (
-                <a
-                  href={inviteUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Mời bot vào server
-                </a>
-              )}
-            </div>
-          ) : (
-            guilds.map(guild => (
+
+        {guilds.length === 0 ? (
+          <div className="text-center py-8 space-y-4">
+            <p className="text-muted-foreground">
+              Bot chưa ở trong server nào. Vui lòng thêm bot vào server trước.
+            </p>
+            {inviteUrl && (
+              <a
+                href={inviteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Mời bot vào server
+              </a>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {guilds.map(guild => (
               <button
                 key={guild.id}
                 onClick={() => handleSelect(guild.id)}
-                className="flex items-center gap-3 w-full px-4 py-3 rounded-lg border bg-card hover:bg-accent transition-colors text-left"
+                className="group flex flex-col items-center gap-3 p-4 rounded-xl border bg-card hover:bg-accent hover:border-primary/30 transition-all text-center"
               >
                 {guild.icon ? (
                   <img
                     src={guild.icon}
                     alt=""
-                    className="w-10 h-10 rounded-full shrink-0 object-cover"
+                    className="w-16 h-16 rounded-xl object-cover group-hover:scale-105 transition-transform"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                    <Server className="w-5 h-5 text-muted-foreground" />
+                  <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <span className="text-2xl font-bold text-muted-foreground">
+                      {guild.name.charAt(0).toUpperCase()}
+                    </span>
                   </div>
                 )}
-                <div className="min-w-0">
-                  <p className="font-medium truncate">{guild.name}</p>
-                  {guild.member_count != null && (
-                    <p className="text-xs text-muted-foreground">{guild.member_count} thành viên</p>
-                  )}
-                </div>
+                <p className="text-sm font-medium leading-snug line-clamp-2 w-full">{guild.name}</p>
               </button>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
