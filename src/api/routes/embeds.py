@@ -5,14 +5,17 @@ import datetime, re, logging
 
 from src.database.config import get_db
 from src.models.models import EmbedTemplate, CustomEmbedMessage, SystemConfig
+from src.api.deps import get_guild_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.get("/embeds")
-def list_embeds(db=Depends(get_db)):
-    rows = db.execute(select(EmbedTemplate).order_by(EmbedTemplate.id)).scalars().all()
+def list_embeds(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    rows = db.execute(
+        select(EmbedTemplate).where(EmbedTemplate.guild_id == guild_id).order_by(EmbedTemplate.id)
+    ).scalars().all()
     return [
         {
             "id": r.id, "name": r.name, "event_type": r.event_type,
@@ -28,8 +31,9 @@ def list_embeds(db=Depends(get_db)):
 
 
 @router.post("/embeds")
-def create_embed(body: dict, db=Depends(get_db)):
+def create_embed(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     e = EmbedTemplate(
+        guild_id=guild_id,
         name=body.get("name", ""),
         event_type=body.get("event_type"),
         title=body.get("title"),

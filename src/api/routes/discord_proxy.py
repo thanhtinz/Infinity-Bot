@@ -1,26 +1,31 @@
 """Discord API proxy routes — guilds, channels, roles, emojis."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 import httpx
 
 from src.database.config import get_db
 from src.models.models import SystemConfig, ManagedEmoji
+from src.api.deps import get_guild_id
 
 router = APIRouter()
+
+
+def _get_bot_token(db) -> str:
+    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token:
+        raise HTTPException(status_code=400, detail="Bot token chưa được cấu hình")
+    return config.discord_token
 
 
 # ── Discord API proxy ────────────────────────────────────────────────────────
 
 @router.get("/discord/guilds")
 async def get_discord_guilds(db=Depends(get_db)):
-    result = db.execute(select(SystemConfig).limit(1))
-    config = result.scalars().first()
-    if not config or not config.discord_token:
-        raise HTTPException(status_code=400, detail="Bot token chưa được cấu hình")
+    token = _get_bot_token(db)
     async with httpx.AsyncClient() as client:
         res = await client.get(
             "https://discord.com/api/users/@me/guilds",
-            headers={"Authorization": f"Bot {config.discord_token}"}
+            headers={"Authorization": f"Bot {token}"}
         )
         if res.status_code != 200:
             raise HTTPException(status_code=400, detail="Không thể lấy danh sách server")
@@ -28,18 +33,12 @@ async def get_discord_guilds(db=Depends(get_db)):
 
 
 @router.get("/discord/channels")
-async def get_discord_channels(guild_id: str = None, db=Depends(get_db)):
-    result = db.execute(select(SystemConfig).limit(1))
-    config = result.scalars().first()
-    if not config or not config.discord_token:
-        return []
-    target_guild = guild_id or config.guild_id
-    if not target_guild:
-        return []
+async def get_discord_channels(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    token = _get_bot_token(db)
     async with httpx.AsyncClient() as client:
         res = await client.get(
-            f"https://discord.com/api/guilds/{target_guild}/channels",
-            headers={"Authorization": f"Bot {config.discord_token}"}
+            f"https://discord.com/api/guilds/{guild_id}/channels",
+            headers={"Authorization": f"Bot {token}"}
         )
         if res.status_code != 200:
             return []
@@ -48,18 +47,12 @@ async def get_discord_channels(guild_id: str = None, db=Depends(get_db)):
 
 
 @router.get("/discord/channels/all")
-async def get_discord_all_channels(guild_id: str = None, db=Depends(get_db)):
-    result = db.execute(select(SystemConfig).limit(1))
-    config = result.scalars().first()
-    if not config or not config.discord_token:
-        return []
-    target_guild = guild_id or config.guild_id
-    if not target_guild:
-        return []
+async def get_discord_all_channels(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    token = _get_bot_token(db)
     async with httpx.AsyncClient() as client:
         res = await client.get(
-            f"https://discord.com/api/guilds/{target_guild}/channels",
-            headers={"Authorization": f"Bot {config.discord_token}"}
+            f"https://discord.com/api/guilds/{guild_id}/channels",
+            headers={"Authorization": f"Bot {token}"}
         )
         if res.status_code != 200:
             return []
@@ -68,18 +61,12 @@ async def get_discord_all_channels(guild_id: str = None, db=Depends(get_db)):
 
 
 @router.get("/discord/roles")
-async def get_discord_roles(guild_id: str = None, db=Depends(get_db)):
-    result = db.execute(select(SystemConfig).limit(1))
-    config = result.scalars().first()
-    if not config or not config.discord_token:
-        return []
-    target_guild = guild_id or config.guild_id
-    if not target_guild:
-        return []
+async def get_discord_roles(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    token = _get_bot_token(db)
     async with httpx.AsyncClient() as client:
         res = await client.get(
-            f"https://discord.com/api/guilds/{target_guild}/roles",
-            headers={"Authorization": f"Bot {config.discord_token}"}
+            f"https://discord.com/api/guilds/{guild_id}/roles",
+            headers={"Authorization": f"Bot {token}"}
         )
         if res.status_code != 200:
             return []
@@ -88,17 +75,12 @@ async def get_discord_roles(guild_id: str = None, db=Depends(get_db)):
 
 
 @router.get("/discord/emojis")
-async def get_discord_emojis(guild_id: str = None, db=Depends(get_db)):
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    if not config or not config.discord_token:
-        return []
-    target_guild = guild_id or config.guild_id
-    if not target_guild:
-        return []
+async def get_discord_emojis(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    token = _get_bot_token(db)
     async with httpx.AsyncClient() as client:
         res = await client.get(
-            f"https://discord.com/api/guilds/{target_guild}/emojis",
-            headers={"Authorization": f"Bot {config.discord_token}"}
+            f"https://discord.com/api/guilds/{guild_id}/emojis",
+            headers={"Authorization": f"Bot {token}"}
         )
         if res.status_code != 200:
             return []
@@ -116,21 +98,16 @@ async def get_discord_emojis(guild_id: str = None, db=Depends(get_db)):
 
 
 @router.post("/discord/emojis")
-async def upload_discord_emoji(body: dict, db=Depends(get_db)):
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    if not config or not config.discord_token:
-        raise HTTPException(status_code=400, detail="Bot chưa cấu hình")
-    target_guild = config.guild_id
-    if not target_guild:
-        raise HTTPException(status_code=400, detail="Chưa chọn server")
+async def upload_discord_emoji(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    token = _get_bot_token(db)
     emoji_name = body.get("name", "").strip()
     image_b64 = body.get("image_base64", "")
     if not emoji_name or not image_b64:
         raise HTTPException(status_code=400, detail="Thiếu name hoặc image_base64")
     async with httpx.AsyncClient() as client:
         res = await client.post(
-            f"https://discord.com/api/guilds/{target_guild}/emojis",
-            headers={"Authorization": f"Bot {config.discord_token}", "Content-Type": "application/json"},
+            f"https://discord.com/api/guilds/{guild_id}/emojis",
+            headers={"Authorization": f"Bot {token}", "Content-Type": "application/json"},
             json={"name": emoji_name, "image": image_b64},
         )
         if res.status_code not in (200, 201):
@@ -142,7 +119,7 @@ async def upload_discord_emoji(body: dict, db=Depends(get_db)):
         # Save to managed emojis DB
         existing = db.execute(select(ManagedEmoji).where(ManagedEmoji.discord_id == str(e["id"]))).scalars().first()
         if not existing:
-            db.add(ManagedEmoji(discord_id=str(e["id"]), name=e["name"], animated=animated, url=url))
+            db.add(ManagedEmoji(discord_id=str(e["id"]), name=e["name"], animated=animated, url=url, guild_id=guild_id))
             db.commit()
         return {
             "id": e["id"],
@@ -154,15 +131,12 @@ async def upload_discord_emoji(body: dict, db=Depends(get_db)):
 
 
 @router.delete("/discord/emojis/{emoji_id}")
-async def delete_discord_emoji(emoji_id: str, db=Depends(get_db)):
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    if not config or not config.discord_token:
-        raise HTTPException(status_code=400, detail="Bot chưa cấu hình")
-    target_guild = config.guild_id
+async def delete_discord_emoji(emoji_id: str, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    token = _get_bot_token(db)
     async with httpx.AsyncClient() as client:
         res = await client.delete(
-            f"https://discord.com/api/guilds/{target_guild}/emojis/{emoji_id}",
-            headers={"Authorization": f"Bot {config.discord_token}"},
+            f"https://discord.com/api/guilds/{guild_id}/emojis/{emoji_id}",
+            headers={"Authorization": f"Bot {token}"},
         )
         if res.status_code not in (200, 204):
             raise HTTPException(status_code=400, detail="Xóa emoji thất bại")

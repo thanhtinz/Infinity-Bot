@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react
 import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ListOrdered, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply, Image as ImageIcon, Filter, Zap } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
+import { GuildProvider, useGuild } from "@/contexts/GuildContext";
+import { GuildSelector } from "@/components/GuildSelector";
 
 // ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
 const DashboardHome = lazy(() => import("./pages/DashboardHome").then(m => ({ default: m.DashboardHome })));
@@ -59,6 +61,7 @@ const SelectMenuRoleEditPage = lazy(() => import("./pages/select-roles/SelectMen
 const AutoResponder = lazy(() => import("./pages/AutoResponder").then(m => ({ default: m.AutoResponder })));
 const AutoResponderEditPage = lazy(() => import("./pages/auto-responder/AutoResponderEditPage").then(m => ({ default: m.AutoResponderEditPage })));
 const BackupRestore = lazy(() => import("./pages/BackupRestore").then(m => ({ default: m.BackupRestore })));
+const SelectGuildPage = lazy(() => import("./pages/SelectGuildPage").then(m => ({ default: m.SelectGuildPage })));
 const Features = lazy(() => import("./pages/Features"));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const InitialSetup = lazy(() => import("./pages/InitialSetup").then(m => ({ default: m.InitialSetup })));
@@ -219,6 +222,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     staleTime: 30_000,
   });
 
+  const { selectedGuildId } = useGuild();
+
   const disabledFeatures = useMemo(() => {
     if (!features) return new Set<string>();
     return new Set(features.filter(f => !f.enabled).map(f => f.key));
@@ -272,8 +277,16 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         <Bot className="w-6 h-6 text-primary" />
         <h1 className="font-bold text-lg">Infinity Mall</h1>
       </div>
+
+      <GuildSelector />
       
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {!selectedGuildId ? (
+          <div className="text-center py-8">
+            <p className="text-sm text-muted-foreground">Chọn server để tiếp tục</p>
+          </div>
+        ) : (
+        <>
         {/* Standalone: Dashboard */}
         {standaloneItems.slice(0, 1).map((item) => {
           const Icon = item.icon;
@@ -365,6 +378,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             </Link>
           );
         })}
+        </>
+        )}
       </nav>
 
       {user && (
@@ -437,8 +452,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     retry: false
   });
 
-  if (isLoading) return <div className="h-screen flex items-center justify-center">Đang tải...</div>;
+  const { selectedGuildId, isLoading: guildLoading } = useGuild();
+
+  if (isLoading || guildLoading) return <div className="h-screen flex items-center justify-center">Đang tải...</div>;
   if (isError) return <Navigate to="/login" replace />;
+  if (!selectedGuildId && location.pathname !== "/select-guild") {
+    return <Navigate to="/select-guild" replace />;
+  }
   const isFullscreenEditor = location.pathname === "/leveling/rank-card-editor";
   if (isFullscreenEditor) {
     return <div className="min-h-screen bg-background text-foreground">{children}</div>;
@@ -520,6 +540,7 @@ function ProtectedAppRoutes() {
     <ProtectedRoute>
       <Suspense fallback={<RouteLoader />}>
         <Routes>
+        <Route path="/select-guild" element={<SelectGuildPage />} />
         <Route path="/" element={<DashboardHome />} />
         <Route path="/bot-status" element={<BotStatus />} />
         <Route path="/leveling/rank-card" element={<LevelingManager section="rank-card" />} />
@@ -603,8 +624,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <SetupGate />
-        <Toaster />
+        <GuildProvider>
+          <SetupGate />
+          <Toaster />
+        </GuildProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

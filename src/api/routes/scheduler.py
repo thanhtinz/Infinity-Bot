@@ -4,19 +4,14 @@ from sqlalchemy import select
 from datetime import datetime
 
 from src.database.config import get_db
-from src.models.models import ScheduledMessage, SystemConfig
+from src.api.deps import get_guild_id
+from src.models.models import ScheduledMessage
 
 router = APIRouter()
 
 
-def _get_guild_id(db) -> str:
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    return config.guild_id if config else ""
-
-
 @router.get("/scheduled-messages")
-def list_scheduled_messages(db=Depends(get_db)):
-    guild_id = _get_guild_id(db)
+def list_scheduled_messages(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     msgs = db.execute(
         select(ScheduledMessage).where(ScheduledMessage.guild_id == guild_id)
         .order_by(ScheduledMessage.send_at.desc())
@@ -40,8 +35,7 @@ def list_scheduled_messages(db=Depends(get_db)):
 
 
 @router.post("/scheduled-messages")
-def create_scheduled_message(body: dict, db=Depends(get_db)):
-    guild_id = _get_guild_id(db)
+def create_scheduled_message(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     send_at_str = body.get("send_at")
     if not send_at_str:
         raise HTTPException(status_code=400, detail="send_at required")

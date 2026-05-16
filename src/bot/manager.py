@@ -101,19 +101,8 @@ def create_bot():
     intents.message_content = True
     intents.members = True
 
-    debug_guilds = None
-    session = get_session()
-    try:
-        config = session.execute(select(SystemConfig).limit(1)).scalars().first()
-        if config and config.guild_id:
-            try:
-                debug_guilds = [int(config.guild_id)]
-            except ValueError:
-                logger.warning(f"Invalid guild_id for command sync: {config.guild_id}")
-    finally:
-        session.close()
-
-    bot_client = discord.Bot(intents=intents, debug_guilds=debug_guilds)
+    # Multi-guild: không dùng debug_guilds → slash commands global
+    bot_client = discord.Bot(intents=intents)
 
     # ── Load cogs (reload modules to pick up code changes on restart) ─────────
     import importlib
@@ -325,6 +314,35 @@ def create_bot():
     async def on_disconnect():
         logger.info("Bot disconnected")
         await asyncio.to_thread(update_bot_status, "offline")
+
+    @bot_client.event
+    async def on_guild_join(guild: discord.Guild):
+        """Khi bot join guild mới → tự tạo SystemConfig row cho guild đó."""
+        logger.info(f"Bot joined guild: {guild.name} ({guild.id})")
+        try:
+            session = get_session()
+            try:
+                existing = session.execute(
+                    select(SystemConfig).where(SystemConfig.guild_id == str(guild.id))
+                ).scalars().first()
+                if not existing:
+                    # Lấy discord_token từ config đầu tiên (shared token)
+                    first_cfg = session.execute(select(SystemConfig).limit(1)).scalars().first()
+                    new_cfg = SystemConfig(
+                        guild_id=str(guild.id),
+                        discord_token=first_cfg.discord_token if first_cfg else None,
+                        discord_client_id=first_cfg.discord_client_id if first_cfg else None,
+                        discord_client_secret=first_cfg.discord_client_secret if first_cfg else None,
+                        public_app_url=first_cfg.public_app_url if first_cfg else None,
+                        bot_status="running",
+                    )
+                    session.add(new_cfg)
+                    session.commit()
+                    logger.info(f"Created SystemConfig for guild {guild.id}")
+            finally:
+                session.close()
+        except Exception as e:
+            logger.error(f"on_guild_join SystemConfig creation failed: {e}")
 
     return bot_client
 

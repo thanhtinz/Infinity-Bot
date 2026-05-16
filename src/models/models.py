@@ -31,6 +31,7 @@ class User(Base):
     discord_id = Column(String, unique=True, index=True)
     username = Column(String)
     total_spent = Column(Float, default=0)
+    guild_id = Column(String, nullable=True, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
     orders = relationship("Order", back_populates="user")
@@ -38,6 +39,7 @@ class User(Base):
 class Product(Base):
     __tablename__ = "products"
     id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
     name = Column(String)
     description = Column(Text, nullable=True)
     note = Column(Text, nullable=True)          # ghi chú nội bộ / hướng dẫn sau khi mua
@@ -49,6 +51,7 @@ class Product(Base):
 class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     product_id = Column(Integer, ForeignKey("products.id"))
     quantity = Column(Integer, default=1)
@@ -67,6 +70,7 @@ class Order(Base):
 class Coupon(Base):
     __tablename__ = "coupons"
     id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
     code = Column(String, unique=True, index=True)
     discount_percent = Column(Float, nullable=True)
     discount_amount = Column(Float, nullable=True)
@@ -77,6 +81,7 @@ class Coupon(Base):
 class Feedback(Base):
     __tablename__ = "feedback"
     id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
     stars = Column(Integer)
@@ -116,12 +121,14 @@ class GiveawayEntry(Base):
     id = Column(Integer, primary_key=True, index=True)
     giveaway_id = Column(Integer, ForeignKey("giveaways.id", ondelete="CASCADE"))
     discord_id = Column(String, nullable=False)
+    guild_id = Column(String, nullable=True, index=True)
     giveaway = relationship("Giveaway", back_populates="entries")
 
 class GiveawayBanned(Base):
     __tablename__ = "giveaway_banned"
     giveaway_id = Column(Integer, ForeignKey("giveaways.id", ondelete="CASCADE"), primary_key=True)
     discord_id = Column(String, nullable=False, primary_key=True)
+    guild_id = Column(String, nullable=True)
 
 class TempVoiceConfig(Base):
     __tablename__ = "temp_voice_config"
@@ -148,6 +155,7 @@ class TempVoiceConfig(Base):
 class TempVoiceRoom(Base):
     __tablename__ = "temp_voice_rooms"
     id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
     channel_id = Column(String, unique=True)
     owner_id = Column(String, nullable=True)
     panel_channel_id = Column(String, nullable=True)
@@ -217,6 +225,7 @@ class LevelMultiplier(Base):
 class EmbedTemplate(Base):
     __tablename__ = "embed_templates"
     id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
     name = Column(String, nullable=False)           # e.g. "don_hang_moi", "thanh_toan", "giao_hang", "feedback", "giveaway"
     event_type = Column(String, nullable=True)      # bind to event
     title = Column(String, nullable=True)
@@ -277,7 +286,9 @@ class InviteTracking(Base):
 class BannedShopUser(Base):
     __tablename__ = "banned_shop_users"
     id = Column(Integer, primary_key=True, index=True)
-    discord_id = Column(String, unique=True, nullable=False)
+    guild_id = Column(String, nullable=True, index=True)
+    discord_id = Column(String, nullable=False, index=True)  # unique per guild via constraint
+    __table_args__ = (UniqueConstraint("guild_id", "discord_id", name="uq_banned_shop_guild_user"),)
     reason = Column(Text, nullable=True)
     banned_by = Column(String, nullable=True)
     banned_at = Column(DateTime, default=datetime.datetime.utcnow)
@@ -419,6 +430,7 @@ class TicketBlacklist(Base):
 class TicketNote(Base):
     __tablename__ = "ticket_notes"
     id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
     ticket_id = Column(Integer, ForeignKey("tickets.id"), nullable=False)
     author_id = Column(String, nullable=False)
     content = Column(Text, nullable=False)
@@ -506,6 +518,7 @@ class WelcomeConfig(Base):
 class ManagedEmoji(Base):
     __tablename__ = "managed_emojis"
     id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
     discord_id = Column(String, unique=True, nullable=False)  # Discord emoji snowflake
     name = Column(String, nullable=False)
     animated = Column(Boolean, default=False)

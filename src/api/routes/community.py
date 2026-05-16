@@ -4,6 +4,7 @@ from sqlalchemy import select, func, case
 import logging
 
 from src.database.config import get_db
+from src.api.deps import get_guild_id
 from src.models.models import (
     SystemConfig, User, Order, Product, BannedShopUser,
     InviteTracking, Giveaway, GiveawayEntry, Warning, Feedback, StickyMessage,
@@ -17,10 +18,10 @@ router = APIRouter()
 # ── Users Manager ─────────────────────────────────────────────────────────────
 
 @router.get("/users")
-def list_users(db=Depends(get_db)):
-    users = db.execute(select(User).order_by(User.total_spent.desc())).scalars().all()
+def list_users(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    users = db.execute(select(User).where(User.guild_id == guild_id).order_by(User.total_spent.desc())).scalars().all()
     banned_ids = {
-        b.discord_id for b in db.execute(select(BannedShopUser)).scalars().all()
+        b.discord_id for b in db.execute(select(BannedShopUser).where(BannedShopUser.guild_id == guild_id)).scalars().all()
     }
     result = []
     for u in users:
@@ -63,13 +64,14 @@ def get_user_orders(user_id: int, db=Depends(get_db)):
 
 
 @router.post("/users/{user_id}/ban")
-def ban_user(user_id: int, body: dict, db=Depends(get_db)):
+def ban_user(user_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     user = db.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Not found")
-    existing = db.execute(select(BannedShopUser).where(BannedShopUser.discord_id == user.discord_id)).scalars().first()
+    existing = db.execute(select(BannedShopUser).where(BannedShopUser.discord_id == user.discord_id, BannedShopUser.guild_id == guild_id)).scalars().first()
     if not existing:
         ban = BannedShopUser(
+            guild_id=guild_id,
             discord_id=user.discord_id,
             reason=body.get("reason", ""),
             banned_by=body.get("banned_by", "admin"),
@@ -80,11 +82,11 @@ def ban_user(user_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.post("/users/{user_id}/unban")
-def unban_user(user_id: int, db=Depends(get_db)):
+def unban_user(user_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     user = db.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Not found")
-    ban = db.execute(select(BannedShopUser).where(BannedShopUser.discord_id == user.discord_id)).scalars().first()
+    ban = db.execute(select(BannedShopUser).where(BannedShopUser.discord_id == user.discord_id, BannedShopUser.guild_id == guild_id)).scalars().first()
     if ban:
         db.delete(ban)
         db.commit()
@@ -288,14 +290,12 @@ def list_stickies(db=Depends(get_db)):
 
 
 @router.post("/sticky")
-def create_sticky(body: dict, db=Depends(get_db)):
+def create_sticky(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     channel_id = str(body.get("channel_id", "")).strip()
     if not channel_id:
         raise HTTPException(status_code=400, detail="channel_id required")
 
     existing = db.execute(select(StickyMessage).where(StickyMessage.channel_id == channel_id)).scalars().first()
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    guild_id = config.guild_id if config else ""
 
     if existing:
         for field in ["content", "embed_enabled", "embed_title", "embed_description",

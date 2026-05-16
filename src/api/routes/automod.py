@@ -3,14 +3,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 
 from src.database.config import get_db
-from src.models.models import AutoModConfig, SystemConfig
+from src.api.deps import get_guild_id
+from src.models.models import AutoModConfig
 
 router = APIRouter()
-
-
-def _get_guild_id(db) -> str:
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    return config.guild_id if config else ""
 
 
 AUTOMOD_FIELDS = [
@@ -24,8 +20,7 @@ AUTOMOD_FIELDS = [
 
 
 @router.get("/automod/config")
-def get_automod_config(db=Depends(get_db)):
-    guild_id = _get_guild_id(db)
+def get_automod_config(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     cfg = db.execute(
         select(AutoModConfig).where(AutoModConfig.guild_id == guild_id)
     ).scalars().first()
@@ -43,8 +38,7 @@ def get_automod_config(db=Depends(get_db)):
 
 
 @router.put("/automod/config")
-def update_automod_config(body: dict, db=Depends(get_db)):
-    guild_id = _get_guild_id(db)
+def update_automod_config(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     cfg = db.execute(
         select(AutoModConfig).where(AutoModConfig.guild_id == guild_id)
     ).scalars().first()

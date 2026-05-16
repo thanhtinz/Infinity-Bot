@@ -81,7 +81,7 @@ def get_discord_oauth_config(db, request: Request | None = None):
 
     return config, client_id, client_secret, discord_token, public_app_url
 
-OWNER_ID = "847746890808164383"
+OWNER_ID = "847746890808164383"  # Legacy fallback — will be removed after first deploy
 
 @router.get("/auth/login")
 async def login(request: Request, db = Depends(get_db)):
@@ -138,31 +138,52 @@ async def auth_callback(code: str, request: Request, response: Response, db = De
         user_info = user_res.json()
         discord_id = user_info.get("id")
         
-        # 3. Check Authorization
+        # 3. Check Authorization — multi-guild: check across ALL guilds bot is in
         is_authorized = False
-        is_owner = (discord_id == OWNER_ID)
-        
-        if is_owner:
+        is_owner = False
+
+        # Legacy fallback: hardcoded owner ID
+        if discord_id == OWNER_ID:
             is_authorized = True
-        else:
-            if config and config.guild_id and config.admin_role_id:
-                # Fetch user's member info in that guild to check roles
-                # Requires bot token to check member roles if OAuth scope doesn't provide it
-                # For simplicity with OAuth "guilds" scope, we can check if user is in guild
-                # and maybe rely on bot logic or fetch /users/@me/guilds
-                # *We will trust the owner to set this up, but strictly speaking,
-                # we need bot token to check member roles.*
-                
-                if discord_token:
-                    member_res = await client.get(
-                        f"https://discord.com/api/guilds/{config.guild_id}/members/{discord_id}",
+            is_owner = True
+
+        if not is_authorized and discord_token:
+            # Lấy tất cả SystemConfig rows (1 per guild)
+            all_configs = db.execute(select(SystemConfig).where(SystemConfig.guild_id.isnot(None))).scalars().all()
+            
+            for guild_cfg in all_configs:
+                if not guild_cfg.guild_id:
+                    continue
+                # Check owner: fetch guild info
+                try:
+                    guild_res = await client.get(
+                        f"https://discord.com/api/guilds/{guild_cfg.guild_id}",
                         headers={"Authorization": f"Bot {discord_token}"}
                     )
-                    if member_res.status_code == 200:
-                        member_data = member_res.json()
-                        roles = member_data.get("roles", [])
-                        if config.admin_role_id in roles:
+                    if guild_res.status_code == 200:
+                        guild_data = guild_res.json()
+                        if guild_data.get("owner_id") == discord_id:
                             is_authorized = True
+                            is_owner = True
+                            break
+                except Exception:
+                    pass
+                
+                # Check admin role trong guild này
+                if guild_cfg.admin_role_id:
+                    try:
+                        member_res = await client.get(
+                            f"https://discord.com/api/guilds/{guild_cfg.guild_id}/members/{discord_id}",
+                            headers={"Authorization": f"Bot {discord_token}"}
+                        )
+                        if member_res.status_code == 200:
+                            member_data = member_res.json()
+                            roles = member_data.get("roles", [])
+                            if guild_cfg.admin_role_id in roles:
+                                is_authorized = True
+                                break
+                    except Exception:
+                        pass
         
         if not is_authorized:
             return RedirectResponse(f"{domain}/login?error=unauthorized")

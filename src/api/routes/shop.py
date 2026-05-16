@@ -7,6 +7,7 @@ import os, uuid, shutil, logging, datetime
 from src.database.config import get_db
 from src.models.models import SystemConfig, Product, Order, User, Coupon
 from src.schemas.schemas import ProductBase, ProductResponse, OrderResponse
+from src.api.deps import get_guild_id
 
 from payos import PayOS
 
@@ -44,8 +45,8 @@ async def _refresh_bang_gia(db):
 # ── Products ──────────────────────────────────────────────────────────────────
 
 @router.get("/products", response_model=list[ProductResponse])
-def get_products(db=Depends(get_db)):
-    result = db.execute(select(Product).order_by(Product.id))
+def get_products(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    result = db.execute(select(Product).where(Product.guild_id == guild_id).order_by(Product.id))
     return result.scalars().all()
 
 
@@ -62,9 +63,10 @@ async def upload_product_image(file: UploadFile = File(...)):
 
 
 @router.post("/products", response_model=ProductResponse)
-async def create_product(product_in: ProductBase, db=Depends(get_db)):
+async def create_product(product_in: ProductBase, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     data = product_in.model_dump()
     data.setdefault("price", 0)
+    data["guild_id"] = guild_id
     product = Product(**data)
     db.add(product)
     db.commit()
@@ -102,9 +104,10 @@ async def delete_product(product_id: int, db=Depends(get_db)):
 # ── Orders ────────────────────────────────────────────────────────────────────
 
 @router.get("/orders")
-def get_orders(db=Depends(get_db)):
+def get_orders(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     result = db.execute(
-        select(Order).options(joinedload(Order.user), joinedload(Order.product))
+        select(Order).where(Order.guild_id == guild_id)
+        .options(joinedload(Order.user), joinedload(Order.product))
         .order_by(Order.created_at.desc())
     )
     orders = result.unique().scalars().all()
@@ -334,8 +337,8 @@ async def deliver_order(order_id: int, body: dict, db=Depends(get_db)):
 # ── Coupons ───────────────────────────────────────────────────────────────────
 
 @router.get("/coupons")
-def get_coupons(db=Depends(get_db)):
-    result = db.execute(select(Coupon).order_by(Coupon.id.desc()))
+def get_coupons(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    result = db.execute(select(Coupon).where(Coupon.guild_id == guild_id).order_by(Coupon.id.desc()))
     coupons = result.scalars().all()
     return [
         {
@@ -349,14 +352,15 @@ def get_coupons(db=Depends(get_db)):
 
 
 @router.post("/coupons")
-def create_coupon(body: dict, db=Depends(get_db)):
+def create_coupon(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     code = str(body.get("code", "")).strip().upper()
     if not code:
         raise HTTPException(status_code=400, detail="Code không được trống")
-    existing = db.execute(select(Coupon).where(Coupon.code == code)).scalars().first()
+    existing = db.execute(select(Coupon).where(Coupon.code == code, Coupon.guild_id == guild_id)).scalars().first()
     if existing:
         raise HTTPException(status_code=400, detail="Code đã tồn tại")
     coupon = Coupon(
+        guild_id=guild_id,
         code=code,
         discount_percent=body.get("discount_percent") or None,
         discount_amount=body.get("discount_amount") or None,

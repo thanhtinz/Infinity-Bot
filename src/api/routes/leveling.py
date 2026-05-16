@@ -6,17 +6,13 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
-from src.models.models import SystemConfig, LevelingConfig, MemberXP, LevelReward, LevelMultiplier
+from src.api.deps import get_guild_id
+from src.models.models import LevelingConfig, MemberXP, LevelReward, LevelMultiplier
 from src.bot.rank_card import demo_rank_card, make_rank_card
 
 router = APIRouter()
 
 RANK_CARD_BG_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", "static", "uploads")
-
-
-def _guild_id(db: Session) -> str:
-    cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    return cfg.guild_id if cfg and cfg.guild_id else "0"
 
 
 def _get_or_create_config(db: Session, guild_id: str) -> LevelingConfig:
@@ -168,13 +164,13 @@ class MultiplierIn(BaseModel):
 
 
 @router.get("/leveling/config")
-def get_leveling_config(db: Session = Depends(get_db)):
-    return _cfg_dict(_get_or_create_config(db, _guild_id(db)))
+def get_leveling_config(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    return _cfg_dict(_get_or_create_config(db, guild_id))
 
 
 @router.put("/leveling/config")
-def update_leveling_config(body: dict, db: Session = Depends(get_db)):
-    cfg = _get_or_create_config(db, _guild_id(db))
+def update_leveling_config(body: dict, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cfg = _get_or_create_config(db, guild_id)
     for key in _cfg_dict(cfg).keys():
         if key in body:
             setattr(cfg, key, body[key])
@@ -198,13 +194,13 @@ def _progress_for(xp: int, level: int) -> tuple[int, int, int]:
 
 
 @router.get("/leveling/rank-card/config")
-def get_rank_card_config(db: Session = Depends(get_db)):
-    return _rank_card_settings(_get_or_create_config(db, _guild_id(db)))
+def get_rank_card_config(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    return _rank_card_settings(_get_or_create_config(db, guild_id))
 
 
 @router.put("/leveling/rank-card/config")
-def update_rank_card_config(body: RankCardConfigIn, db: Session = Depends(get_db)):
-    cfg = _get_or_create_config(db, _guild_id(db))
+def update_rank_card_config(body: RankCardConfigIn, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cfg = _get_or_create_config(db, guild_id)
     current = cfg.rank_card_config if isinstance(cfg.rank_card_config, dict) else {}
     saved = {
         "accent": body.accent,
@@ -239,12 +235,11 @@ def update_rank_card_config(body: RankCardConfigIn, db: Session = Depends(get_db
 
 
 @router.post("/leveling/rank-card/background")
-async def upload_rank_card_background(file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def upload_rank_card_background(file: UploadFile = File(...), db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Upload a custom background image — stores as next available slot."""
     allowed = {"image/png", "image/jpeg", "image/webp", "image/gif"}
     if file.content_type not in allowed:
         raise HTTPException(400, "File phải là ảnh PNG, JPEG, WebP hoặc GIF.")
-    guild_id = _guild_id(db)
     os.makedirs(RANK_CARD_BG_DIR, exist_ok=True)
     # Find next available index
     idx = 1
@@ -266,9 +261,8 @@ async def upload_rank_card_background(file: UploadFile = File(...), db: Session 
 
 
 @router.get("/leveling/rank-card/backgrounds")
-def list_rank_card_backgrounds(db: Session = Depends(get_db)):
+def list_rank_card_backgrounds(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """List all uploaded backgrounds for this guild."""
-    guild_id = _guild_id(db)
     os.makedirs(RANK_CARD_BG_DIR, exist_ok=True)
     items = []
     idx = 1
@@ -289,9 +283,8 @@ def list_rank_card_backgrounds(db: Session = Depends(get_db)):
 
 
 @router.delete("/leveling/rank-card/background/{slug}")
-def delete_rank_card_background(slug: str, db: Session = Depends(get_db)):
+def delete_rank_card_background(slug: str, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Remove a specific background by slug."""
-    guild_id = _guild_id(db)
     # Safety: slug must belong to this guild
     if not slug.startswith(f"rank_bg_{guild_id}"):
         raise HTTPException(403, "Không có quyền xóa file này.")
@@ -309,9 +302,8 @@ def delete_rank_card_background(slug: str, db: Session = Depends(get_db)):
 
 
 @router.put("/leveling/rank-card/background/active")
-def set_active_background(body: dict, db: Session = Depends(get_db)):
+def set_active_background(body: dict, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Set which uploaded background is active (used for rank cards)."""
-    guild_id = _guild_id(db)
     slug = body.get("slug", "")
     cfg = _get_or_create_config(db, guild_id)
     saved = dict(cfg.rank_card_config or {})
@@ -325,9 +317,8 @@ def set_active_background(body: dict, db: Session = Depends(get_db)):
 
 
 @router.delete("/leveling/rank-card/background")
-def delete_rank_card_background_legacy(db: Session = Depends(get_db)):
+def delete_rank_card_background_legacy(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Remove legacy single background image."""
-    guild_id = _guild_id(db)
     bg_path = os.path.join(RANK_CARD_BG_DIR, f"rank_bg_{guild_id}.png")
     if os.path.exists(bg_path):
         os.remove(bg_path)
@@ -335,8 +326,8 @@ def delete_rank_card_background_legacy(db: Session = Depends(get_db)):
 
 
 @router.get("/leveling/rank-card/preview")
-def preview_rank_card_get(db: Session = Depends(get_db)):
-    settings = _rank_card_settings(_get_or_create_config(db, _guild_id(db)))
+def preview_rank_card_get(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    settings = _rank_card_settings(_get_or_create_config(db, guild_id))
     custom_bg = settings.pop("custom_bg_path", None)
     settings.pop("custom_bg_url", None)
     settings["layout_config"] = {}   # always use fixed layout
@@ -345,9 +336,8 @@ def preview_rank_card_get(db: Session = Depends(get_db)):
 
 
 @router.post("/leveling/rank-card/preview")
-def preview_rank_card_post(body: RankCardConfigIn, db: Session = Depends(get_db)):
+def preview_rank_card_post(body: RankCardConfigIn, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Render preview with given config (for live sync in dashboard)."""
-    guild_id = _guild_id(db)
     cfg = _get_or_create_config(db, guild_id)
     db_settings = _rank_card_settings(cfg)
     custom_bg = db_settings.get("custom_bg_path")
@@ -360,8 +350,7 @@ def preview_rank_card_post(body: RankCardConfigIn, db: Session = Depends(get_db)
 
 
 @router.get("/leveling/rank-card/{discord_id}")
-def member_rank_card(discord_id: str, db: Session = Depends(get_db)):
-    guild_id = _guild_id(db)
+def member_rank_card(discord_id: str, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     row = db.execute(select(MemberXP).where(MemberXP.guild_id == guild_id, MemberXP.discord_id == discord_id)).scalars().first()
     if not row:
         raise HTTPException(404, "Member XP not found")
@@ -386,8 +375,7 @@ def member_rank_card(discord_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/leveling/leaderboard")
-def get_leaderboard(page: int = 1, limit: int = 50, db: Session = Depends(get_db)):
-    guild_id = _guild_id(db)
+def get_leaderboard(page: int = 1, limit: int = 50, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     cfg = _get_or_create_config(db, guild_id)
     page = max(1, page)
     limit = min(max(1, limit), 100)
@@ -423,8 +411,7 @@ def get_leaderboard(page: int = 1, limit: int = 50, db: Session = Depends(get_db
 
 
 @router.put("/leveling/member/{discord_id}")
-def update_member(discord_id: str, body: dict, db: Session = Depends(get_db)):
-    guild_id = _guild_id(db)
+def update_member(discord_id: str, body: dict, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     row = db.execute(select(MemberXP).where(MemberXP.guild_id == guild_id, MemberXP.discord_id == discord_id)).scalars().first()
     if not row:
         row = MemberXP(guild_id=guild_id, discord_id=discord_id)
@@ -440,8 +427,7 @@ def update_member(discord_id: str, body: dict, db: Session = Depends(get_db)):
 
 
 @router.delete("/leveling/member/{discord_id}")
-def reset_member(discord_id: str, db: Session = Depends(get_db)):
-    guild_id = _guild_id(db)
+def reset_member(discord_id: str, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     row = db.execute(select(MemberXP).where(MemberXP.guild_id == guild_id, MemberXP.discord_id == discord_id)).scalars().first()
     if row:
         db.delete(row)
@@ -450,10 +436,9 @@ def reset_member(discord_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/leveling/leaderboard/reset")
-def reset_leaderboard(db: Session = Depends(get_db)):
+def reset_leaderboard(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Đặt mốc reset — leaderboard chỉ tính XP tích lũy sau thời điểm này."""
     import datetime
-    guild_id = _guild_id(db)
     cfg = _get_or_create_config(db, guild_id)
     cfg.leaderboard_reset_at = datetime.datetime.utcnow()
     db.commit()
@@ -461,15 +446,14 @@ def reset_leaderboard(db: Session = Depends(get_db)):
 
 
 @router.get("/leveling/rewards")
-def list_rewards(db: Session = Depends(get_db)):
-    guild_id = _guild_id(db)
+def list_rewards(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     rows = db.execute(select(LevelReward).where(LevelReward.guild_id == guild_id).order_by(LevelReward.level)).scalars().all()
     return [r.__dict__ | {"_sa_instance_state": None} for r in rows]
 
 
 @router.post("/leveling/rewards")
-def create_reward(body: RewardIn, db: Session = Depends(get_db)):
-    row = LevelReward(guild_id=_guild_id(db), **body.model_dump())
+def create_reward(body: RewardIn, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    row = LevelReward(guild_id=guild_id, **body.model_dump())
     db.add(row)
     db.commit()
     db.refresh(row)
@@ -497,17 +481,16 @@ def delete_reward(reward_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/leveling/multipliers")
-def list_multipliers(db: Session = Depends(get_db)):
-    guild_id = _guild_id(db)
+def list_multipliers(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     rows = db.execute(select(LevelMultiplier).where(LevelMultiplier.guild_id == guild_id).order_by(LevelMultiplier.type, LevelMultiplier.priority.desc())).scalars().all()
     return [r.__dict__ | {"_sa_instance_state": None} for r in rows]
 
 
 @router.post("/leveling/multipliers")
-def create_multiplier(body: MultiplierIn, db: Session = Depends(get_db)):
+def create_multiplier(body: MultiplierIn, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     if body.type not in {"global", "channel", "role"}:
         raise HTTPException(400, "Invalid multiplier type")
-    row = LevelMultiplier(guild_id=_guild_id(db), **body.model_dump())
+    row = LevelMultiplier(guild_id=guild_id, **body.model_dump())
     db.add(row)
     db.commit()
     db.refresh(row)

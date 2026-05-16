@@ -56,6 +56,37 @@ def get_config(db=Depends(get_db)):
 
 # ── Setup ─────────────────────────────────────────────────────────────────────
 
+@router.get("/guilds")
+async def get_bot_guilds(request: Request, db=Depends(get_db)):
+    """Trả về danh sách guilds bot đang ở. Frontend dùng để populate guild selector."""
+    from src.bot.manager import get_bot_client
+    bot_client = get_bot_client()
+    result = []
+    if bot_client and bot_client.is_ready():
+        for guild in bot_client.guilds:
+            icon_url = None
+            if guild.icon:
+                icon_url = str(guild.icon.url)
+            result.append({
+                "id": str(guild.id),
+                "name": guild.name,
+                "icon": icon_url,
+                "member_count": guild.member_count,
+            })
+    else:
+        # Fallback: lấy từ DB SystemConfig rows
+        configs = db.execute(select(SystemConfig).where(SystemConfig.guild_id.isnot(None))).scalars().all()
+        for cfg in configs:
+            if cfg.guild_id:
+                result.append({
+                    "id": cfg.guild_id,
+                    "name": f"Guild {cfg.guild_id}",
+                    "icon": None,
+                    "member_count": 0,
+                })
+    return result
+
+
 @router.get("/setup/status")
 def get_setup_status(request: Request, db=Depends(get_db)):
     result = db.execute(select(SystemConfig).limit(1))

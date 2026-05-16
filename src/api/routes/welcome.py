@@ -5,7 +5,8 @@ from pydantic import BaseModel
 from typing import Optional
 
 from src.database.config import get_db
-from src.models.models import WelcomeConfig, AutoRoleConfig, ButtonRole, SelectMenuRole, SystemConfig
+from src.api.deps import get_guild_id
+from src.models.models import WelcomeConfig, AutoRoleConfig, ButtonRole, SelectMenuRole
 
 router = APIRouter()
 
@@ -57,16 +58,9 @@ class SelectMenuRoleCreate(BaseModel):
 
 # ── Welcome Config ────────────────────────────────────────────────────────────
 
-def _get_guild_id(db) -> str:
-    cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    if not cfg or not cfg.guild_id:
-        raise HTTPException(400, "Guild ID chưa được cấu hình")
-    return cfg.guild_id
-
 @router.get("/welcome/config")
-def get_welcome_config(db=Depends(get_db)):
-    gid = _get_guild_id(db)
-    cfg = db.execute(select(WelcomeConfig).where(WelcomeConfig.guild_id == gid)).scalars().first()
+def get_welcome_config(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cfg = db.execute(select(WelcomeConfig).where(WelcomeConfig.guild_id == guild_id)).scalars().first()
     if not cfg:
         return {
             "welcome_enabled": False, "welcome_channel_id": None, "welcome_message": None,
@@ -89,11 +83,10 @@ def get_welcome_config(db=Depends(get_db)):
     }
 
 @router.put("/welcome/config")
-def update_welcome_config(data: WelcomeConfigUpdate, db=Depends(get_db)):
-    gid = _get_guild_id(db)
-    cfg = db.execute(select(WelcomeConfig).where(WelcomeConfig.guild_id == gid)).scalars().first()
+def update_welcome_config(data: WelcomeConfigUpdate, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cfg = db.execute(select(WelcomeConfig).where(WelcomeConfig.guild_id == guild_id)).scalars().first()
     if not cfg:
-        cfg = WelcomeConfig(guild_id=gid)
+        cfg = WelcomeConfig(guild_id=guild_id)
         db.add(cfg)
     for k, v in data.model_dump().items():
         setattr(cfg, k, v)
@@ -104,19 +97,17 @@ def update_welcome_config(data: WelcomeConfigUpdate, db=Depends(get_db)):
 # ── Auto Role ─────────────────────────────────────────────────────────────────
 
 @router.get("/welcome/autorole")
-def get_autorole(db=Depends(get_db)):
-    gid = _get_guild_id(db)
-    cfg = db.execute(select(AutoRoleConfig).where(AutoRoleConfig.guild_id == gid)).scalars().first()
+def get_autorole(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cfg = db.execute(select(AutoRoleConfig).where(AutoRoleConfig.guild_id == guild_id)).scalars().first()
     if not cfg:
         return {"join_roles": [], "bot_roles": []}
     return {"join_roles": cfg.join_roles or [], "bot_roles": cfg.bot_roles or []}
 
 @router.put("/welcome/autorole")
-def update_autorole(data: AutoRoleUpdate, db=Depends(get_db)):
-    gid = _get_guild_id(db)
-    cfg = db.execute(select(AutoRoleConfig).where(AutoRoleConfig.guild_id == gid)).scalars().first()
+def update_autorole(data: AutoRoleUpdate, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cfg = db.execute(select(AutoRoleConfig).where(AutoRoleConfig.guild_id == guild_id)).scalars().first()
     if not cfg:
-        cfg = AutoRoleConfig(guild_id=gid)
+        cfg = AutoRoleConfig(guild_id=guild_id)
         db.add(cfg)
     cfg.join_roles = data.join_roles
     cfg.bot_roles = data.bot_roles
@@ -127,9 +118,8 @@ def update_autorole(data: AutoRoleUpdate, db=Depends(get_db)):
 # ── Button Roles ──────────────────────────────────────────────────────────────
 
 @router.get("/welcome/button-roles")
-def list_button_roles(db=Depends(get_db)):
-    gid = _get_guild_id(db)
-    panels = db.execute(select(ButtonRole).where(ButtonRole.guild_id == gid).order_by(ButtonRole.id.desc())).scalars().all()
+def list_button_roles(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    panels = db.execute(select(ButtonRole).where(ButtonRole.guild_id == guild_id).order_by(ButtonRole.id.desc())).scalars().all()
     return [
         {
             "id": p.id, "name": p.name, "buttons": p.buttons or [],
@@ -144,9 +134,8 @@ def list_button_roles(db=Depends(get_db)):
     ]
 
 @router.post("/welcome/button-roles")
-def create_button_role(data: ButtonRoleCreate, db=Depends(get_db)):
-    gid = _get_guild_id(db)
-    panel = ButtonRole(guild_id=gid, **data.model_dump())
+def create_button_role(data: ButtonRoleCreate, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    panel = ButtonRole(guild_id=guild_id, **data.model_dump())
     db.add(panel)
     db.commit()
     db.refresh(panel)
@@ -175,9 +164,8 @@ def delete_button_role(panel_id: int, db=Depends(get_db)):
 # ── Select Menu Roles ─────────────────────────────────────────────────────────
 
 @router.get("/welcome/select-roles")
-def list_select_roles(db=Depends(get_db)):
-    gid = _get_guild_id(db)
-    panels = db.execute(select(SelectMenuRole).where(SelectMenuRole.guild_id == gid).order_by(SelectMenuRole.id.desc())).scalars().all()
+def list_select_roles(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    panels = db.execute(select(SelectMenuRole).where(SelectMenuRole.guild_id == guild_id).order_by(SelectMenuRole.id.desc())).scalars().all()
     return [
         {
             "id": p.id, "name": p.name, "placeholder": p.placeholder,
@@ -193,9 +181,8 @@ def list_select_roles(db=Depends(get_db)):
     ]
 
 @router.post("/welcome/select-roles")
-def create_select_role(data: SelectMenuRoleCreate, db=Depends(get_db)):
-    gid = _get_guild_id(db)
-    panel = SelectMenuRole(guild_id=gid, **data.model_dump())
+def create_select_role(data: SelectMenuRoleCreate, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    panel = SelectMenuRole(guild_id=guild_id, **data.model_dump())
     db.add(panel)
     db.commit()
     db.refresh(panel)

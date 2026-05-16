@@ -5,7 +5,8 @@ from pydantic import BaseModel
 from typing import Optional
 
 from src.database.config import get_db
-from src.models.models import LoggingConfig, LogEntry, SystemConfig
+from src.api.deps import get_guild_id
+from src.models.models import LoggingConfig, LogEntry
 
 router = APIRouter()
 
@@ -20,17 +21,9 @@ class LoggingConfigUpdate(BaseModel):
     ignored_roles: list[str] = []
 
 
-def _get_guild_id(db) -> str:
-    cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    if not cfg or not cfg.guild_id:
-        raise HTTPException(400, "Guild ID chưa được cấu hình")
-    return cfg.guild_id
-
-
 @router.get("/logging/config")
-def get_logging_config(db=Depends(get_db)):
-    gid = _get_guild_id(db)
-    cfg = db.execute(select(LoggingConfig).where(LoggingConfig.guild_id == gid)).scalars().first()
+def get_logging_config(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cfg = db.execute(select(LoggingConfig).where(LoggingConfig.guild_id == guild_id)).scalars().first()
     if not cfg:
         return {
             "message_log_channel_id": None, "voice_log_channel_id": None,
@@ -49,11 +42,10 @@ def get_logging_config(db=Depends(get_db)):
 
 
 @router.put("/logging/config")
-def update_logging_config(data: LoggingConfigUpdate, db=Depends(get_db)):
-    gid = _get_guild_id(db)
-    cfg = db.execute(select(LoggingConfig).where(LoggingConfig.guild_id == gid)).scalars().first()
+def update_logging_config(data: LoggingConfigUpdate, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cfg = db.execute(select(LoggingConfig).where(LoggingConfig.guild_id == guild_id)).scalars().first()
     if not cfg:
-        cfg = LoggingConfig(guild_id=gid)
+        cfg = LoggingConfig(guild_id=guild_id)
         db.add(cfg)
     for k, v in data.model_dump().items():
         setattr(cfg, k, v)
@@ -71,9 +63,9 @@ def get_log_entries(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
     db=Depends(get_db),
+    guild_id: str = Depends(get_guild_id),
 ):
-    gid = _get_guild_id(db)
-    q = select(LogEntry).where(LogEntry.guild_id == gid)
+    q = select(LogEntry).where(LogEntry.guild_id == guild_id)
 
     if category:
         q = q.where(LogEntry.category == category)
@@ -122,11 +114,10 @@ def get_log_entries(
 
 
 @router.get("/logging/stats")
-def get_log_stats(db=Depends(get_db)):
-    gid = _get_guild_id(db)
+def get_log_stats(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     rows = db.execute(
         select(LogEntry.category, func.count())
-        .where(LogEntry.guild_id == gid)
+        .where(LogEntry.guild_id == guild_id)
         .group_by(LogEntry.category)
     ).all()
     stats = {r[0]: r[1] for r in rows}

@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 
 from src.database.config import get_db
-from src.models.models import CustomCommand, SystemConfig
+from src.api.deps import get_guild_id
+from src.models.models import CustomCommand
 
 router = APIRouter()
 
@@ -13,10 +14,6 @@ _PHASE3_FIELDS = [
     "response_channel_id", "delete_after", "required_args",
     "additional_responses",
 ]
-
-def _get_guild_id(db) -> str:
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    return config.guild_id if config else ""
 
 
 def _serialize(c: CustomCommand) -> dict:
@@ -52,8 +49,7 @@ def _serialize(c: CustomCommand) -> dict:
 
 
 @router.get("/custom-commands")
-def list_custom_commands(db=Depends(get_db)):
-    guild_id = _get_guild_id(db)
+def list_custom_commands(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     cmds = db.execute(
         select(CustomCommand).where(CustomCommand.guild_id == guild_id)
         .order_by(CustomCommand.created_at.desc())
@@ -62,8 +58,7 @@ def list_custom_commands(db=Depends(get_db)):
 
 
 @router.post("/custom-commands")
-def create_custom_command(body: dict, db=Depends(get_db)):
-    guild_id = _get_guild_id(db)
+def create_custom_command(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     existing = db.execute(
         select(CustomCommand).where(
             CustomCommand.guild_id == guild_id,

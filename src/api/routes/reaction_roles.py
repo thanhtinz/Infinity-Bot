@@ -6,21 +6,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 
 from src.database.config import get_db
-from src.models.models import ReactionRole, SystemConfig
+from src.api.deps import get_guild_id
+from src.models.models import ReactionRole
 from src.bot.embed_utils import build_embed
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def _get_guild_id(db) -> str:
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    return config.guild_id if config else ""
-
-
 @router.get("/reaction-roles")
-def list_reaction_roles(db=Depends(get_db)):
-    guild_id = _get_guild_id(db)
+def list_reaction_roles(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     panels = db.execute(
         select(ReactionRole).where(ReactionRole.guild_id == guild_id)
         .order_by(ReactionRole.created_at.desc())
@@ -46,8 +41,7 @@ def list_reaction_roles(db=Depends(get_db)):
 
 
 @router.post("/reaction-roles")
-def create_reaction_role(body: dict, db=Depends(get_db)):
-    guild_id = _get_guild_id(db)
+def create_reaction_role(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     panel = ReactionRole(
         guild_id=guild_id,
         name=body.get("name", "Reaction Role Panel"),

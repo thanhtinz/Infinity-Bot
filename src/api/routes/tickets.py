@@ -6,10 +6,11 @@ import datetime, logging
 
 from src.database.config import get_db
 from src.models.models import (
-    SystemConfig, Ticket, TicketPanel, TicketConfig, TicketBlacklist, TicketNote,
+    Ticket, TicketPanel, TicketConfig, TicketBlacklist, TicketNote,
     TicketForm, TicketTeam, TicketFeedback, TicketTranscript,
     TicketFeedbackConfig, TicketClaimConfig, PanelButton, TicketPanelGroup,
 )
+from src.api.deps import get_guild_id
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +20,7 @@ router = APIRouter()
 # ── Ticket Config ─────────────────────────────────────────────────────────────
 
 @router.get("/ticket-config")
-def get_ticket_config(db=Depends(get_db)):
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    guild_id = config.guild_id if config else None
-    if not guild_id:
-        return {"guild_id": None}
+def get_ticket_config(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     tc = db.execute(select(TicketConfig).where(TicketConfig.guild_id == guild_id)).scalars().first()
     if not tc:
         return {"guild_id": guild_id, "category_id": None, "log_channel_id": None,
@@ -44,11 +41,7 @@ def get_ticket_config(db=Depends(get_db)):
 
 
 @router.put("/ticket-config")
-def update_ticket_config(body: dict, db=Depends(get_db)):
-    sc = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    guild_id = sc.guild_id if sc else None
-    if not guild_id:
-        raise HTTPException(status_code=400, detail="guild_id not configured")
+def update_ticket_config(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     tc = db.execute(select(TicketConfig).where(TicketConfig.guild_id == guild_id)).scalars().first()
     if not tc:
         tc = TicketConfig(guild_id=guild_id)
@@ -98,9 +91,7 @@ def list_ticket_panels(db=Depends(get_db)):
 
 
 @router.post("/ticket-panels")
-def create_ticket_panel(body: dict, db=Depends(get_db)):
-    sc = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    guild_id = sc.guild_id if sc else ""
+def create_ticket_panel(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     panel = TicketPanel(
         guild_id=guild_id,
         name=body.get("name", "Panel"),
@@ -213,9 +204,7 @@ def list_ticket_panel_groups(db=Depends(get_db)):
 
 
 @router.post("/ticket-panel-groups")
-def create_ticket_panel_group(body: dict, db=Depends(get_db)):
-    sc = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    guild_id = sc.guild_id if sc else ""
+def create_ticket_panel_group(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     group = TicketPanelGroup(
         guild_id=guild_id,
         name=body.get("name", "Multi Panel"),
@@ -379,9 +368,7 @@ def list_ticket_blacklist(db=Depends(get_db)):
 
 
 @router.post("/ticket-blacklist")
-def add_ticket_blacklist(body: dict, db=Depends(get_db)):
-    sc = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    guild_id = sc.guild_id if sc else ""
+def add_ticket_blacklist(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     bl = TicketBlacklist(
         guild_id=guild_id,
         discord_id=body.get("discord_id", ""),
@@ -467,20 +454,14 @@ def ticket_stats(db=Depends(get_db)):
 # ── Ticket Forms ──────────────────────────────────────────────────────────────
 
 @router.get("/ticket-forms")
-def list_ticket_forms(db=Depends(get_db)):
-    cfg = db.execute(select(SystemConfig)).scalars().first()
-    if not cfg:
-        return []
-    return db.execute(select(TicketForm).where(TicketForm.guild_id == cfg.guild_id)).scalars().all()
+def list_ticket_forms(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    return db.execute(select(TicketForm).where(TicketForm.guild_id == guild_id)).scalars().all()
 
 
 @router.post("/ticket-forms")
-def create_ticket_form(body: dict, db=Depends(get_db)):
-    cfg = db.execute(select(SystemConfig)).scalars().first()
-    if not cfg:
-        raise HTTPException(400, "Not configured")
+def create_ticket_form(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     form = TicketForm(
-        guild_id=cfg.guild_id,
+        guild_id=guild_id,
         name=body.get("name", "Form mặc định"),
         panel_id=body.get("panel_id"),
         questions=body.get("questions", []),
@@ -517,20 +498,14 @@ def delete_ticket_form(form_id: int, db=Depends(get_db)):
 # ── Ticket Teams ──────────────────────────────────────────────────────────────
 
 @router.get("/ticket-teams")
-def list_ticket_teams(db=Depends(get_db)):
-    cfg = db.execute(select(SystemConfig)).scalars().first()
-    if not cfg:
-        return []
-    return db.execute(select(TicketTeam).where(TicketTeam.guild_id == cfg.guild_id)).scalars().all()
+def list_ticket_teams(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    return db.execute(select(TicketTeam).where(TicketTeam.guild_id == guild_id)).scalars().all()
 
 
 @router.post("/ticket-teams")
-def create_ticket_team(body: dict, db=Depends(get_db)):
-    cfg = db.execute(select(SystemConfig)).scalars().first()
-    if not cfg:
-        raise HTTPException(400, "Not configured")
+def create_ticket_team(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     team = TicketTeam(
-        guild_id=cfg.guild_id,
+        guild_id=guild_id,
         name=body.get("name", "Team mới"),
         description=body.get("description"),
         role_ids=body.get("role_ids", []),
@@ -569,11 +544,8 @@ def delete_ticket_team(team_id: int, db=Depends(get_db)):
 # ── Ticket Feedback ───────────────────────────────────────────────────────────
 
 @router.get("/ticket-feedback")
-def list_ticket_feedback(db=Depends(get_db)):
-    cfg = db.execute(select(SystemConfig)).scalars().first()
-    if not cfg:
-        return []
-    rows = db.execute(select(TicketFeedback).where(TicketFeedback.guild_id == cfg.guild_id).order_by(TicketFeedback.created_at.desc())).scalars().all()
+def list_ticket_feedback(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    rows = db.execute(select(TicketFeedback).where(TicketFeedback.guild_id == guild_id).order_by(TicketFeedback.created_at.desc())).scalars().all()
     total = len(rows)
     avg_rating = round(sum(r.rating for r in rows) / total, 2) if total else 0
     by_rating = {str(i): sum(1 for r in rows if r.rating == i) for i in range(1, 6)}
@@ -581,13 +553,10 @@ def list_ticket_feedback(db=Depends(get_db)):
 
 
 @router.post("/ticket-feedback")
-def submit_ticket_feedback(body: dict, db=Depends(get_db)):
-    cfg = db.execute(select(SystemConfig)).scalars().first()
-    if not cfg:
-        raise HTTPException(400)
+def submit_ticket_feedback(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     fb = TicketFeedback(
         ticket_id=body["ticket_id"],
-        guild_id=cfg.guild_id,
+        guild_id=guild_id,
         user_id=body.get("user_id", "dashboard"),
         rating=body["rating"],
         comment=body.get("comment"),
@@ -601,11 +570,8 @@ def submit_ticket_feedback(body: dict, db=Depends(get_db)):
 # ── Ticket Transcripts ───────────────────────────────────────────────────────
 
 @router.get("/ticket-transcripts")
-def list_ticket_transcripts(db=Depends(get_db)):
-    cfg = db.execute(select(SystemConfig)).scalars().first()
-    if not cfg:
-        return []
-    return db.execute(select(TicketTranscript).where(TicketTranscript.guild_id == cfg.guild_id).order_by(TicketTranscript.created_at.desc())).scalars().all()
+def list_ticket_transcripts(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    return db.execute(select(TicketTranscript).where(TicketTranscript.guild_id == guild_id).order_by(TicketTranscript.created_at.desc())).scalars().all()
 
 
 @router.get("/ticket-transcripts/{ticket_id}")
@@ -627,9 +593,7 @@ def feedback_stats(db=Depends(get_db)):
 
 
 @router.get("/ticket-feedback-config")
-def get_feedback_config(db=Depends(get_db)):
-    sc = db.execute(select(SystemConfig)).scalars().first()
-    guild_id = sc.guild_id if sc else ""
+def get_feedback_config(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     cfg = db.execute(select(TicketFeedbackConfig).where(TicketFeedbackConfig.guild_id == guild_id)).scalars().first()
     if not cfg:
         return {"enabled": False, "channel_id": None}
@@ -637,9 +601,7 @@ def get_feedback_config(db=Depends(get_db)):
 
 
 @router.post("/ticket-feedback-config")
-def save_feedback_config(body: dict, db=Depends(get_db)):
-    sc = db.execute(select(SystemConfig)).scalars().first()
-    guild_id = sc.guild_id if sc else ""
+def save_feedback_config(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     cfg = db.execute(select(TicketFeedbackConfig).where(TicketFeedbackConfig.guild_id == guild_id)).scalars().first()
     if not cfg:
         cfg = TicketFeedbackConfig(guild_id=guild_id)
@@ -653,9 +615,7 @@ def save_feedback_config(body: dict, db=Depends(get_db)):
 # ── Ticket Claim Config ──────────────────────────────────────────────────────
 
 @router.get("/ticket-claim-config")
-def get_claim_config(db=Depends(get_db)):
-    sc = db.execute(select(SystemConfig)).scalars().first()
-    guild_id = sc.guild_id if sc else ""
+def get_claim_config(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     cfg = db.execute(select(TicketClaimConfig).where(TicketClaimConfig.guild_id == guild_id)).scalars().first()
     if not cfg:
         return {"enabled": True, "exclusive": False, "notify": True, "notify_channel_id": None}
@@ -664,9 +624,7 @@ def get_claim_config(db=Depends(get_db)):
 
 
 @router.post("/ticket-claim-config")
-def save_claim_config(body: dict, db=Depends(get_db)):
-    sc = db.execute(select(SystemConfig)).scalars().first()
-    guild_id = sc.guild_id if sc else ""
+def save_claim_config(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     cfg = db.execute(select(TicketClaimConfig).where(TicketClaimConfig.guild_id == guild_id)).scalars().first()
     if not cfg:
         cfg = TicketClaimConfig(guild_id=guild_id)

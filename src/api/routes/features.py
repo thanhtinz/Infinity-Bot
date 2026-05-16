@@ -1,11 +1,12 @@
 """Feature toggles API — enable/disable features for guild."""
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
-from src.models.models import FeatureToggle, SystemConfig
+from src.models.models import FeatureToggle
+from src.api.deps import get_guild_id
 
 router = APIRouter()
 
@@ -36,10 +37,7 @@ class FeatureUpdate(BaseModel):
 
 
 @router.get("/features")
-def get_features(db: Session = Depends(get_db)):
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    guild_id = config.guild_id if config else "0"
-
+def get_features(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     toggles = db.execute(
         select(FeatureToggle).where(FeatureToggle.guild_id == guild_id)
     ).scalars().all()
@@ -55,10 +53,7 @@ def get_features(db: Session = Depends(get_db)):
 
 
 @router.put("/features")
-def update_features(body: FeatureUpdate, db: Session = Depends(get_db)):
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    guild_id = config.guild_id if config else "0"
-
+def update_features(body: FeatureUpdate, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     for key, enabled in body.features.items():
         toggle = db.execute(
             select(FeatureToggle).where(
