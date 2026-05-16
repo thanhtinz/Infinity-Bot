@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard, ExternalLink, Zap, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useGuild } from "@/contexts/GuildContext";
 
 const schema = z.object({
   payos_client_id: z.string().optional(),
@@ -18,17 +19,6 @@ const schema = z.object({
   payos_checksum_key: z.string().optional(),
 });
 type FormValues = z.infer<typeof schema>;
-
-async function savePartial(partial: Record<string, unknown>) {
-  const res = await fetch("/api/config", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(partial),
-  });
-  if (!res.ok) throw new Error("Lưu thất bại");
-  return res.json();
-}
 
 function MaskedField({
   field,
@@ -63,11 +53,16 @@ export function ConfigPayOS() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [testing, setTesting] = useState(false);
+  const { selectedGuildId } = useGuild();
 
   const { data: config, isLoading } = useQuery({
-    queryKey: ["config"],
-    queryFn: () => fetch("/api/config", { credentials: "include" }).then((r) => r.json()),
+    queryKey: ["payos_config", selectedGuildId],
+    queryFn: () => fetch("/api/payos/config", {
+      credentials: "include",
+      headers: { "X-Guild-ID": selectedGuildId! },
+    }).then((r) => r.json()),
     staleTime: 60_000,
+    enabled: !!selectedGuildId,
   });
 
   const form = useForm<FormValues>({
@@ -85,9 +80,14 @@ export function ConfigPayOS() {
   }, [config]);
 
   const mutation = useMutation({
-    mutationFn: (v: FormValues) => savePartial(v),
+    mutationFn: (v: FormValues) => fetch("/api/payos/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Guild-ID": selectedGuildId! },
+      credentials: "include",
+      body: JSON.stringify(v),
+    }).then(r => { if (!r.ok) throw new Error("Lưu thất bại"); return r.json(); }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["config"] });
+      qc.invalidateQueries({ queryKey: ["payos_config", selectedGuildId] });
       toast({ title: "Đã lưu", description: "Cấu hình PayOS đã được lưu." });
     },
     onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }),
@@ -98,7 +98,11 @@ export function ConfigPayOS() {
   const handleTest = async () => {
     setTesting(true);
     try {
-      const res = await fetch("/api/payos/test", { method: "POST", credentials: "include" });
+      const res = await fetch("/api/payos/test", {
+        method: "POST",
+        credentials: "include",
+        headers: { "X-Guild-ID": selectedGuildId! },
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Lỗi không xác định");
       toast({ title: "Kết nối thành công", description: data.message });

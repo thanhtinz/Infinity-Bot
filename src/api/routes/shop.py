@@ -501,9 +501,44 @@ def reset_shop_leaderboard(db=Depends(get_db)):
 
 # ── PayOS ─────────────────────────────────────────────────────────────────────
 
+@router.get("/payos/config")
+def get_payos_config(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    config = db.execute(
+        select(SystemConfig).where(SystemConfig.guild_id == guild_id)
+    ).scalars().first()
+    return {
+        "payos_client_id": config.payos_client_id if config else None,
+        "has_payos_api_key": bool(config and config.payos_api_key),
+        "has_payos_checksum_key": bool(config and config.payos_checksum_key),
+    }
+
+
+@router.post("/payos/config")
+def save_payos_config(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    config = db.execute(
+        select(SystemConfig).where(SystemConfig.guild_id == guild_id)
+    ).scalars().first()
+    if not config:
+        raise HTTPException(status_code=404, detail="Chưa có cấu hình cho guild này")
+    if "payos_client_id" in body and body["payos_client_id"] is not None:
+        config.payos_client_id = body["payos_client_id"] or None
+    if "payos_api_key" in body and body["payos_api_key"]:
+        config.payos_api_key = body["payos_api_key"]
+    if "payos_checksum_key" in body and body["payos_checksum_key"]:
+        config.payos_checksum_key = body["payos_checksum_key"]
+    db.commit()
+    return {
+        "payos_client_id": config.payos_client_id,
+        "has_payos_api_key": bool(config.payos_api_key),
+        "has_payos_checksum_key": bool(config.payos_checksum_key),
+    }
+
+
 @router.post("/payos/test")
-def test_payos_connection(db=Depends(get_db)):
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+def test_payos_connection(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    config = db.execute(
+        select(SystemConfig).where(SystemConfig.guild_id == guild_id)
+    ).scalars().first()
     if not config or not all([config.payos_client_id, config.payos_api_key, config.payos_checksum_key]):
         raise HTTPException(status_code=400, detail="PayOS chưa được cấu hình đầy đủ")
     try:
