@@ -17,6 +17,8 @@ bot_ready_event: asyncio.Event | None = None
 
 
 def get_session():
+    if SessionLocal is None:
+        raise RuntimeError("Database is not configured. Please set DATABASE_URL.")
     return SessionLocal()
 
 
