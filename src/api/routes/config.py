@@ -54,6 +54,21 @@ def get_config(db=Depends(get_db)):
     return config
 
 
+def get_config_for_guild(guild_id: str, db) -> SystemConfig:
+    """Lấy config theo guild_id. Fallback về row đầu nếu không tìm thấy."""
+    config = db.execute(
+        select(SystemConfig).where(SystemConfig.guild_id == guild_id)
+    ).scalars().first()
+    if not config:
+        config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config:
+        config = SystemConfig()
+        db.add(config)
+        db.commit()
+        db.refresh(config)
+    return config
+
+
 # ── Setup ─────────────────────────────────────────────────────────────────────
 
 @router.get("/guilds")
@@ -296,8 +311,11 @@ async def delete_discord_sticker(sticker_id: str, db=Depends(get_db)):
 # ── System Config CRUD ────────────────────────────────────────────────────────
 
 @router.get("/config", response_model=SystemConfigSafe)
-def read_config(config: SystemConfig = Depends(get_config)):
-    """Trả về config — secrets được ẩn, chỉ expose boolean has_*."""
+def read_config(request: Request, db=Depends(get_db)):
+    """Trả về config — secrets được ẩn, chỉ expose boolean has_*.
+    Nếu có X-Guild-ID header thì trả config theo guild đó."""
+    guild_id = request.headers.get("X-Guild-ID")
+    config = get_config_for_guild(guild_id, db) if guild_id else get_config(db)
     return SystemConfigSafe(
         id=config.id,
         bot_status=config.bot_status or "offline",
@@ -321,9 +339,16 @@ def read_config(config: SystemConfig = Depends(get_config)):
 
 
 @router.post("/config", response_model=SystemConfigSafe)
-def update_config(config_in: SystemConfigBase, db=Depends(get_db)):
-    result = db.execute(select(SystemConfig).limit(1))
-    config = result.scalars().first()
+def update_config(config_in: SystemConfigBase, request: Request, db=Depends(get_db)):
+    guild_id = request.headers.get("X-Guild-ID")
+    if guild_id:
+        config = db.execute(
+            select(SystemConfig).where(SystemConfig.guild_id == guild_id)
+        ).scalars().first()
+        if not config:
+            config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    else:
+        config = db.execute(select(SystemConfig).limit(1)).scalars().first()
     if not config:
         config = SystemConfig(**config_in.model_dump(exclude_none=True))
         db.add(config)

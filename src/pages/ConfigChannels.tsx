@@ -10,9 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Hash, Shield } from "lucide-react";
+import { useGuild } from "@/contexts/GuildContext";
 
 const schema = z.object({
-  guild_id: z.string().optional(),
   admin_role_id: z.string().optional(),
   don_hang_channel_id: z.string().optional(),
   feedback_channel_id: z.string().optional(),
@@ -21,17 +21,6 @@ const schema = z.object({
   welcome_channel_id: z.string().optional(),
 });
 type FormValues = z.infer<typeof schema>;
-
-async function savePartial(partial: Record<string, unknown>) {
-  const res = await fetch("/api/config", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(partial),
-  });
-  if (!res.ok) throw new Error("Lưu thất bại");
-  return res.json();
-}
 
 function DiscordSelect({
   value, onChange, options, placeholder, disabled,
@@ -59,17 +48,22 @@ function DiscordSelect({
 export function ConfigChannels() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { selectedGuildId } = useGuild();
 
   const { data: config, isLoading } = useQuery({
-    queryKey: ["config"],
-    queryFn: () => fetch("/api/config", { credentials: "include" }).then((r) => r.json()),
+    queryKey: ["config", selectedGuildId],
+    queryFn: () => fetch("/api/config", {
+      credentials: "include",
+      headers: selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {},
+    }).then((r) => r.json()),
     staleTime: 60_000,
+    enabled: !!selectedGuildId,
   });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      guild_id: "", admin_role_id: "", don_hang_channel_id: "",
+      admin_role_id: "", don_hang_channel_id: "",
       feedback_channel_id: "", coupon_channel_id: "", bang_gia_channel_id: "", welcome_channel_id: "",
     },
   });
@@ -77,7 +71,6 @@ export function ConfigChannels() {
   useEffect(() => {
     if (config)
       form.reset({
-        guild_id: config.guild_id || "",
         admin_role_id: config.admin_role_id || "",
         don_hang_channel_id: config.don_hang_channel_id || "",
         feedback_channel_id: config.feedback_channel_id || "",
@@ -87,15 +80,7 @@ export function ConfigChannels() {
       });
   }, [config]);
 
-  const selectedGuildId = form.watch("guild_id");
   const activeGuildId = selectedGuildId || config?.guild_id;
-
-  const { data: guilds = [] } = useQuery<{ id: string; name: string }[]>({
-    queryKey: ["discord_guilds"],
-    queryFn: () => fetch("/api/discord/guilds", { credentials: "include" }).then((r) => r.ok ? r.json() : []),
-    enabled: !!config?.discord_token,
-    staleTime: 60_000,
-  });
 
   const { data: channels = [] } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["discord_channels", activeGuildId],
@@ -114,9 +99,17 @@ export function ConfigChannels() {
   });
 
   const mutation = useMutation({
-    mutationFn: (v: FormValues) => savePartial(v),
+    mutationFn: (v: FormValues) => fetch("/api/config", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {}),
+      },
+      credentials: "include",
+      body: JSON.stringify(v),
+    }).then(r => { if (!r.ok) throw new Error("Lưu thất bại"); return r.json(); }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["config"] });
+      qc.invalidateQueries({ queryKey: ["config", selectedGuildId] });
       qc.invalidateQueries({ queryKey: ["discord_channels"] });
       qc.invalidateQueries({ queryKey: ["discord_roles"] });
       toast({ title: "Đã lưu", description: "Cấu hình kênh & quyền đã được lưu." });
@@ -153,34 +146,11 @@ export function ConfigChannels() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Shield className="w-4 h-4" /> Server & Quyền Admin
+                <Shield className="w-4 h-4" /> Quyền Admin
               </CardTitle>
-              <CardDescription>Bot phải đã được thêm vào server. Cần cấu hình Bot Token trước.</CardDescription>
+              <CardDescription>Cấu hình cho server đang chọn: <strong>{activeGuildId}</strong></CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="guild_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Server (Guild)</FormLabel>
-                    <FormControl>
-                      {guilds.length > 0 ? (
-                        <DiscordSelect
-                          value={field.value}
-                          onChange={field.onChange}
-                          options={guilds}
-                          placeholder="Chọn server..."
-                        />
-                      ) : (
-                        <Input placeholder="ID server Discord..." {...field} value={field.value || ""} />
-                      )}
-                    </FormControl>
-                    <FormDescription>Bot phải có mặt trong server này.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="admin_role_id"

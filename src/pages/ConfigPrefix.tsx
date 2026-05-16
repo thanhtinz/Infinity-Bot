@@ -5,27 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-
-async function savePrefix(commandPrefix: string) {
-  const res = await fetch("/api/config", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ command_prefix: commandPrefix }),
-  });
-  if (!res.ok) throw new Error("Lưu thất bại");
-  return res.json();
-}
+import { useGuild } from "@/contexts/GuildContext";
 
 export function ConfigPrefix() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [cmdPrefix, setCmdPrefix] = useState("!");
+  const { selectedGuildId } = useGuild();
 
   const { data: config, isLoading } = useQuery({
-    queryKey: ["config"],
-    queryFn: () => fetch("/api/config", { credentials: "include" }).then((r) => r.json()),
+    queryKey: ["config", selectedGuildId],
+    queryFn: () => fetch("/api/config", {
+      credentials: "include",
+      headers: selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {},
+    }).then((r) => r.json()),
     staleTime: 60_000,
+    enabled: !!selectedGuildId,
   });
 
   useEffect(() => {
@@ -33,9 +28,17 @@ export function ConfigPrefix() {
   }, [config]);
 
   const prefixMutation = useMutation({
-    mutationFn: () => savePrefix(cmdPrefix),
+    mutationFn: () => fetch("/api/config", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {}),
+      },
+      credentials: "include",
+      body: JSON.stringify({ command_prefix: cmdPrefix }),
+    }).then(r => { if (!r.ok) throw new Error("Lưu thất bại"); return r.json(); }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["config"] });
+      queryClient.invalidateQueries({ queryKey: ["config", selectedGuildId] });
       toast({ title: "Đã lưu", description: `Prefix đã đổi thành "${cmdPrefix}"` });
     },
     onError: () => {
