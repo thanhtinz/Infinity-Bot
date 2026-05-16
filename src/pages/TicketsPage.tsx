@@ -138,7 +138,7 @@ export function TicketsPage() {
       toast({ title: "Đã cập nhật ticket" });
     },
     onError: (e: Error) =>
-      toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+      toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const blacklistRemoveMutation = useMutation({
@@ -279,10 +279,10 @@ export function TicketsPage() {
               }
             >
               <TabsList>
-                <TabsTrigger value="all">Tất cả</TabsTrigger>
-                <TabsTrigger value="open">Đang mở</TabsTrigger>
-                <TabsTrigger value="closed">Đã đóng</TabsTrigger>
-                <TabsTrigger value="deleted">Đã xóa</TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="open">Open</TabsTrigger>
+                <TabsTrigger value="closed">Closed</TabsTrigger>
+                <TabsTrigger value="deleted">Deleted</TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -307,10 +307,10 @@ export function TicketsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tất cả mức</SelectItem>
-                  <SelectItem value="low">Thấp</SelectItem>
-                  <SelectItem value="normal">Bình thường</SelectItem>
-                  <SelectItem value="high">Cao</SelectItem>
-                  <SelectItem value="urgent">Khẩn cấp</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
                 </SelectContent>
               </Select>
 

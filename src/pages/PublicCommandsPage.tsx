@@ -13,7 +13,7 @@ export function PublicCommandsPage() {
 
   useEffect(() => {
     fetch("/api/public/commands").then(r => r.json()).then(d => setCats(d.categories || []));
-    document.title = "Lệnh Bot — Infinity Bot";
+    document.title = "Bot Commands — Infinity Bot";
   }, []);
 
   const filtered = cats.map(c => ({
@@ -32,8 +32,8 @@ export function PublicCommandsPage() {
           <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#5865F2]/20 border border-[#5865F2]/30 mb-4 mx-auto">
             <Zap className="w-5 h-5 text-[#5865F2]" />
           </div>
-          <h1 className="text-4xl font-extrabold text-white mb-3">Danh sách lệnh</h1>
-          <p className="text-white/40">Tất cả slash commands của Infinity Bot</p>
+          <h1 className="text-4xl font-extrabold text-white mb-3">Command List</h1>
+          <p className="text-white/40">All slash commands for Infinity Bot</p>
         </div>
 
         {/* Search */}
@@ -41,7 +41,7 @@ export function PublicCommandsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
           <input
             value={q} onChange={e => setQ(e.target.value)}
-            placeholder="Tìm kiếm lệnh..."
+            placeholder="Search commands..."
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#5865F2]/50"
           />
         </div>
@@ -62,7 +62,7 @@ export function PublicCommandsPage() {
             </div>
           ))}
           {filtered.length === 0 && q && (
-            <p className="text-center text-white/30 py-12">Không tìm thấy lệnh "{q}"</p>
+            <p className="text-center text-white/30 py-12">No commands found for "{q}"</p>
           )}
         </div>
       </div>

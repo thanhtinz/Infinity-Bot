@@ -19,7 +19,7 @@ export function PublicStatusPage() {
   const [status, setStatus] = useState<BotStatus | null>(null);
 
   useEffect(() => {
-    document.title = "Trạng thái — Infinity Bot";
+    document.title = "Status — Infinity Bot";
     const load = () =>
       fetch("/api/public/status").then(r => r.json()).then(setStatus).catch(() => {});
     load();
@@ -35,8 +35,8 @@ export function PublicStatusPage() {
 
       <div className="max-w-3xl mx-auto px-4 pt-28 pb-16">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold text-white mb-2">Trạng thái Bot</h1>
-          <p className="text-white/40 text-sm">Cập nhật mỗi 15 giây</p>
+          <h1 className="text-4xl font-extrabold text-white mb-2">Bot Status</h1>
+          <p className="text-white/40 text-sm">Updates every 15 seconds</p>
         </div>
 
         {/* Status banner */}
@@ -46,7 +46,7 @@ export function PublicStatusPage() {
             : <WifiOff className="w-5 h-5 text-red-400" />}
           <div className="flex-1">
             <p className={`font-bold ${online ? "text-[#00d4aa]" : "text-red-400"}`}>
-              {status === null ? "Đang kiểm tra..." : online ? "Đang hoạt động" : "Ngoại tuyến"}
+              {status === null ? "Checking..." : online ? "Online" : "Offline"}
             </p>
             {status?.username && <p className="text-white/40 text-sm">{status.username}</p>}
           </div>
@@ -60,7 +60,7 @@ export function PublicStatusPage() {
           <div className="grid grid-cols-3 gap-3 mb-6">
             {[
               { icon: Server, label: "Servers", value: status?.guild_count?.toLocaleString() ?? "—" },
-              { icon: Users, label: "Thành viên", value: status?.member_count?.toLocaleString() ?? "—" },
+              { icon: Users, label: "Members", value: status?.member_count?.toLocaleString() ?? "—" },
               { icon: Activity, label: "Latency", value: status?.latency_ms != null ? `${status.latency_ms}ms` : "—" },
             ].map((s, i) => (
               <div key={i} className="p-4 rounded-xl border border-white/5 bg-white/[0.02] text-center">

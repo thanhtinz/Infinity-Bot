@@ -39,10 +39,10 @@ export function ConfigPrefix() {
     }).then(r => { if (!r.ok) throw new Error("Lưu thất bại"); return r.json(); }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["config", selectedGuildId] });
-      toast({ title: "Đã lưu", description: `Prefix đã đổi thành "${cmdPrefix}"` });
+      toast({ title: "Saved", description: `Prefix đã đổi thành "${cmdPrefix}"` });
     },
     onError: () => {
-      toast({ variant: "destructive", title: "Lỗi", description: "Lưu prefix thất bại." });
+      toast({ variant: "destructive", title: "Error", description: "Lưu prefix thất bại." });
     },
   });
 
@@ -79,7 +79,7 @@ export function ConfigPrefix() {
               />
             </div>
             <Button onClick={() => prefixMutation.mutate()} disabled={prefixMutation.isPending} size="sm">
-              {prefixMutation.isPending ? "Đang lưu..." : "Lưu Prefix"}
+              {prefixMutation.isPending ? "Saving..." : "Lưu Prefix"}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">

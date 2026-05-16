@@ -83,7 +83,7 @@ export function UsersManager() {
       setBanReason("");
       toast({ title: "Đã ban user." });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const unbanMutation = useMutation({
@@ -96,7 +96,7 @@ export function UsersManager() {
       qc.invalidateQueries({ queryKey: ["users"] });
       toast({ title: "Đã unban user." });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const filtered = users.filter(
@@ -111,14 +111,14 @@ export function UsersManager() {
   const totalRevenue = users.reduce((sum, u) => sum + u.total_spent, 0);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-64 text-muted-foreground">Đang tải...</div>;
+    return <div className="flex items-center justify-center h-64 text-muted-foreground">Loading...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Users className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">Người dùng</h2>
+        <h2 className="text-2xl font-bold">Users</h2>
       </div>
 
       {/* ── Stat Cards ── */}
@@ -140,7 +140,7 @@ export function UsersManager() {
               <UserCheck className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Đang hoạt động</p>
+              <p className="text-xs text-muted-foreground">Active</p>
               <p className="text-xl font-bold">{activeUsers}</p>
             </div>
           </CardContent>
@@ -191,7 +191,7 @@ export function UsersManager() {
                 <TableHead className="text-right">Tổng chi tiêu</TableHead>
                 <TableHead className="text-center">Số đơn</TableHead>
                 <TableHead>Ngày đăng ký</TableHead>
-                <TableHead>Trạng thái</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -280,7 +280,7 @@ export function UsersManager() {
                   <TableHead>Gói</TableHead>
                   <TableHead className="text-center">SL</TableHead>
                   <TableHead className="text-right">Tổng</TableHead>
-                  <TableHead>Trạng thái</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Ngày</TableHead>
                 </TableRow>
               </TableHeader>
@@ -323,7 +323,7 @@ export function UsersManager() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setBanTarget(null); setBanReason(""); }}>Hủy</Button>
+            <Button variant="outline" onClick={() => { setBanTarget(null); setBanReason(""); }}>Cancel</Button>
             <Button
               variant="destructive"
               disabled={banMutation.isPending || !banReason.trim()}

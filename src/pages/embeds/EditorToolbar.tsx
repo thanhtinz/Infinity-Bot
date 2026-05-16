@@ -80,7 +80,7 @@ export function EditorToolbar({
           <div className="text-xs font-medium text-muted-foreground px-1 mb-1">Gửi lên kênh</div>
           <Select value={selectedChannelId} onValueChange={onChannelChange}>
             <SelectTrigger className="h-8 text-sm">
-              <SelectValue placeholder="Chọn kênh..." />
+              <SelectValue placeholder="Select channel..." />
             </SelectTrigger>
             <SelectContent>
               {channels.filter((c) => c.type === 0).map((ch) => (

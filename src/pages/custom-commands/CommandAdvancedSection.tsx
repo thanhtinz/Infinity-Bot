@@ -50,7 +50,7 @@ export function CommandAdvancedSection({ form, onFormChange, open, onOpenChange 
               onChange={(e) => onFormChange((p) => ({ ...p, delete_after: Math.max(0, parseInt(e.target.value) || 0) }))}
               placeholder="10"
             />
-            <p className="text-[11px] text-muted-foreground">0 = không tự xóa</p>
+            <p className="text-[11px] text-muted-foreground">0 = no auto delete</p>
           </div>
           <div className="space-y-2">
             <Label>Required Arguments</Label>

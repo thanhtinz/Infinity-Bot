@@ -126,7 +126,7 @@ export function CommandResponseSection({
       {/* Text response */}
       {form.response_type === "text" && (
         <div className="space-y-2">
-          <Label>Nội dung</Label>
+          <Label>Content</Label>
           <Textarea
             value={form.response_text}
             onChange={(e) =>

@@ -83,7 +83,7 @@ export function OrdersManager() {
       resetCreateForm();
       toast({ title: "Đã tạo đơn hàng." });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const deliverMutation = useMutation({
@@ -181,7 +181,7 @@ export function OrdersManager() {
 
       {/* Orders — card list (mobile-friendly) */}
       {isLoading ? (
-        <p className="text-muted-foreground text-sm">Đang tải...</p>
+        <p className="text-muted-foreground text-sm">Loading...</p>
       ) : filtered.length === 0 ? (
         <p className="text-muted-foreground text-sm text-center py-8">Không có đơn hàng nào.</p>
       ) : (
@@ -363,7 +363,7 @@ export function OrdersManager() {
             </div>
             {/* Trạng thái */}
             <div className="space-y-1.5">
-              <Label>Trạng thái</Label>
+              <Label>Status</Label>
               <Select value={orderStatus} onValueChange={setOrderStatus}>
                 <SelectTrigger>
                   <SelectValue />
@@ -392,7 +392,7 @@ export function OrdersManager() {
             <Separator />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setCreateOpen(false); resetCreateForm(); }}>Hủy</Button>
+            <Button variant="outline" onClick={() => { setCreateOpen(false); resetCreateForm(); }}>Cancel</Button>
             <Button
               disabled={!discordUid.trim() || (isCustom ? !customProductName.trim() : !selectedProductId) || createMutation.isPending}
               onClick={() => createMutation.mutate({
@@ -429,7 +429,7 @@ export function OrdersManager() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setDeliverTarget(null); setDmContent(""); }}>Hủy</Button>
+            <Button variant="outline" onClick={() => { setDeliverTarget(null); setDmContent(""); }}>Cancel</Button>
             <Button
               disabled={deliverMutation.isPending}
               onClick={() => {

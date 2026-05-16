@@ -35,7 +35,7 @@ const EMOJI_CATEGORIES: { label: string; emojis: [string, string][] }[] = [
     ],
   },
   {
-    label: "Biểu cảm",
+    label: "Emotions",
     emojis: [
       ["😀", "grinning"], ["😃", "smiley"], ["😄", "smile"], ["😁", "grin"], ["😆", "laughing"],
       ["😅", "sweat_smile"], ["🤣", "rofl"], ["😂", "joy"], ["🙂", "slightly_smiling"],
@@ -78,7 +78,7 @@ const EMOJI_CATEGORIES: { label: string; emojis: [string, string][] }[] = [
     ],
   },
   {
-    label: "Biểu tượng",
+    label: "Symbol",
     emojis: [
       ["❤️", "red_heart"], ["🧡", "orange_heart"], ["💛", "yellow_heart"], ["💚", "green_heart"],
       ["💙", "blue_heart"], ["💜", "purple_heart"], ["🖤", "black_heart"], ["🤍", "white_heart"],
@@ -284,7 +284,7 @@ export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
             ) : (
               <div className="px-3 py-8 text-center">
                 <p className="text-xs text-muted-foreground">
-                  {search ? "Không tìm thấy emoji" : "Chưa có emoji custom"}
+                  {search ? "Không tìm thấy emoji" : "No custom emojis yet"}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-1">
                   Thêm emoji tại Quản lý Emoji

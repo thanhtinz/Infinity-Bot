@@ -13,6 +13,7 @@ import {
 import { useDiscordChannels } from "@/hooks/useDiscordData";
 import type { DiscordChannel } from "@/hooks/useDiscordData";
 import { Hash, Volume2, FolderOpen, Megaphone, MessageSquare } from "lucide-react";
+import { useT } from "@/i18n";
 
 const CHANNEL_ICONS: Record<number, typeof Hash> = {
   0: Hash,
@@ -80,8 +81,9 @@ function groupByCategory(
   return result;
 }
 
-export function ChannelSelect({ value, onChange, placeholder = "Chọn kênh...", filter = "text", guildId, disabled }: ChannelSelectProps) {
+export function ChannelSelect({ value, onChange, placeholder = "Select channel...", filter = "text", guildId, disabled }: ChannelSelectProps) {
   const { data: allChannels = [], isLoading } = useDiscordChannels(guildId);
+  const { t } = useT();
 
   const filtered = useMemo(() => filterChannels(allChannels, filter), [allChannels, filter]);
 
@@ -91,7 +93,7 @@ export function ChannelSelect({ value, onChange, placeholder = "Chọn kênh..."
     if (!categories.length && !isLoading) {
       return (
         <Input
-          placeholder={isLoading ? "Đang tải..." : placeholder}
+          placeholder={isLoading ? t("loading") : placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
@@ -101,7 +103,7 @@ export function ChannelSelect({ value, onChange, placeholder = "Chọn kênh..."
     return (
       <Select value={value || ""} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger>
-          <SelectValue placeholder={isLoading ? "Đang tải..." : placeholder} />
+          <SelectValue placeholder={isLoading ? t("loading") : placeholder} />
         </SelectTrigger>
         <SelectContent>
           {categories.map((c) => (
@@ -122,7 +124,7 @@ export function ChannelSelect({ value, onChange, placeholder = "Chọn kênh..."
   if (!groups.length && !isLoading) {
     return (
       <Input
-        placeholder={isLoading ? "Đang tải..." : placeholder}
+        placeholder={isLoading ? t("loading") : placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
@@ -133,7 +135,7 @@ export function ChannelSelect({ value, onChange, placeholder = "Chọn kênh..."
   return (
     <Select value={value || ""} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger>
-        <SelectValue placeholder={isLoading ? "Đang tải..." : placeholder} />
+        <SelectValue placeholder={isLoading ? t("loading") : placeholder} />
       </SelectTrigger>
       <SelectContent>
         {groups.map((group) => (
@@ -170,8 +172,9 @@ interface MultiChannelSelectProps {
   disabled?: boolean;
 }
 
-export function MultiChannelSelect({ value, onChange, placeholder = "Chọn kênh...", filter = "text", guildId, disabled }: MultiChannelSelectProps) {
+export function MultiChannelSelect({ value, onChange, placeholder = "Select channel...", filter = "text", guildId, disabled }: MultiChannelSelectProps) {
   const { data: allChannels = [], isLoading } = useDiscordChannels(guildId);
+  const { t } = useT();
   const filtered = useMemo(() => filterChannels(allChannels, filter), [allChannels, filter]);
   const channelMap = useMemo(() => new Map(allChannels.map((c) => [c.id, c])), [allChannels]);
   const groups = useMemo(() => groupByCategory(filtered.filter((c) => !value.includes(c.id)), allChannels), [filtered, allChannels, value]);
@@ -211,7 +214,7 @@ export function MultiChannelSelect({ value, onChange, placeholder = "Chọn kên
       )}
       <Select value="" onValueChange={addChannel} disabled={disabled || !groups.some((g) => g.channels.length)}>
         <SelectTrigger>
-          <SelectValue placeholder={isLoading ? "Đang tải..." : groups.some((g) => g.channels.length) ? placeholder : "Đã chọn hết"} />
+          <SelectValue placeholder={isLoading ? t("loading") : groups.some((g) => g.channels.length) ? placeholder : "All selected"} />
         </SelectTrigger>
         <SelectContent>
           {groups.map((group) => (

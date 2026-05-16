@@ -4,11 +4,13 @@ import { Server, ChevronDown, Check, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useT } from "@/i18n";
 
 export function GuildSelector() {
   const { selectedGuildId, setSelectedGuildId, guilds, isLoading } = useGuild();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -35,7 +37,7 @@ export function GuildSelector() {
       <div className="px-3 py-3 border-b">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Server className="w-3.5 h-3.5 animate-pulse" />
-          Đang tải server...
+          {t("loading")}
         </div>
       </div>
     );
@@ -43,7 +45,6 @@ export function GuildSelector() {
 
   return (
     <div className="px-3 py-2 border-b relative" ref={ref}>
-      {/* Trigger */}
       <button
         onClick={() => setOpen(v => !v)}
         className={cn(
@@ -62,7 +63,7 @@ export function GuildSelector() {
           </div>
         )}
         <span className="flex-1 text-sm font-medium truncate">
-          {selectedGuild?.name ?? "Chọn server"}
+          {selectedGuild?.name ?? t("selectGuild_title")}
         </span>
         <ChevronDown className={cn(
           "w-3.5 h-3.5 shrink-0 text-muted-foreground transition-transform duration-200",
@@ -70,11 +71,10 @@ export function GuildSelector() {
         )} />
       </button>
 
-      {/* Dropdown */}
       {open && (
         <div className="absolute left-3 right-3 top-full mt-1 z-50 rounded-lg border bg-popover shadow-lg overflow-hidden">
           {guilds.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-3">Chưa có server nào</p>
+            <p className="text-xs text-muted-foreground text-center py-3">{t("selectGuild_noGuilds")}</p>
           ) : (
             <>
             <div className="max-h-64 overflow-y-auto py-1">
@@ -110,7 +110,7 @@ export function GuildSelector() {
                 className="flex items-center gap-2 w-full px-3 py-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
-                Xem tất cả server
+                {t("selectGuild_manage")}
               </button>
             </div>
             </>

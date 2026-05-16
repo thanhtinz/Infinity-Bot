@@ -19,6 +19,7 @@ class SystemConfigBase(BaseModel):
     welcome_channel_id: Optional[str] = None
     command_prefix: Optional[str] = "!"
     bot_invisible: Optional[bool] = None
+    language: Optional[str] = "en"
     
 class SystemConfigResponse(SystemConfigBase):
     """Full response — dùng nội bộ (không expose qua API public)."""
@@ -50,6 +51,7 @@ class SystemConfigSafe(BaseModel):
     has_payos_api_key: bool = False
     has_payos_checksum_key: bool = False
     bot_invisible: bool = False
+    language: str = "en"
 
     class Config:
         from_attributes = True

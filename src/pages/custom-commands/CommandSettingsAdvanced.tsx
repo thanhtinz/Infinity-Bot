@@ -104,7 +104,7 @@ export function CommandSettingsAdvanced({
                   cooldown: Math.max(0, parseInt(e.target.value) || 0),
                 }))
               }
-              placeholder="0 = không giới hạn"
+              placeholder="0 = unlimited"
               className="w-28"
             />
             <span className="text-sm text-muted-foreground">giây</span>

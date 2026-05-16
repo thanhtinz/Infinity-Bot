@@ -53,7 +53,7 @@ export function EmbedCardEditor({
               <Button size="icon" variant="ghost" className="h-7 w-7" title="Di chuyển lên" disabled={idx === 0} onClick={() => onMoveEmbed(idx, "up")}><ArrowUp className="h-3.5 w-3.5" /></Button>
               <Button size="icon" variant="ghost" className="h-7 w-7" title="Di chuyển xuống" disabled={idx === embeds.length - 1} onClick={() => onMoveEmbed(idx, "down")}><ArrowDown className="h-3.5 w-3.5" /></Button>
               <Button size="icon" variant="ghost" className="h-7 w-7" title="Nhân đôi" onClick={() => onDuplicateEmbed(idx)}><Copy className="h-3.5 w-3.5" /></Button>
-              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" title="Xóa" onClick={() => onRemoveEmbed(idx)}><Trash2 className="h-3.5 w-3.5" /></Button>
+              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" title="Delete" onClick={() => onRemoveEmbed(idx)}><Trash2 className="h-3.5 w-3.5" /></Button>
             </div>
 
             {openState.main && (
@@ -87,7 +87,7 @@ export function EmbedCardEditor({
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <Label className="text-xs text-muted-foreground">Tiêu đề</Label>
+                      <Label className="text-xs text-muted-foreground">Title</Label>
                       <span className="text-[11px] text-muted-foreground">{emb.title.length}/256</span>
                     </div>
                     <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
@@ -98,7 +98,7 @@ export function EmbedCardEditor({
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <Label className="text-xs text-muted-foreground">Mô tả</Label>
+                      <Label className="text-xs text-muted-foreground">Description</Label>
                       <span className="text-[11px] text-muted-foreground">{emb.description.length}/4096</span>
                     </div>
                     <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
@@ -108,7 +108,7 @@ export function EmbedCardEditor({
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Màu sắc</Label>
+                    <Label className="text-xs text-muted-foreground">Colors</Label>
                     <div className="flex items-center gap-2">
                       <input type="color" value={emb.color} onChange={(e) => onUpdateEmbed(idx, { color: e.target.value })}
                         className="h-8 w-8 rounded cursor-pointer border-0 p-0" />

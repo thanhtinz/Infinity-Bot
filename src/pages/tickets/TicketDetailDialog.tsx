@@ -195,9 +195,9 @@ export function TicketDetailDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="open">Đang mở</SelectItem>
-                        <SelectItem value="closed">Đã đóng</SelectItem>
-                        <SelectItem value="deleted">Đã xóa</SelectItem>
+                        <SelectItem value="open">Open</SelectItem>
+                        <SelectItem value="closed">Closed</SelectItem>
+                        <SelectItem value="deleted">Deleted</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -220,12 +220,12 @@ export function TicketDetailDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="low">Thấp</SelectItem>
+                        <SelectItem value="low">Low</SelectItem>
                         <SelectItem value="normal">
                           Bình thường
                         </SelectItem>
-                        <SelectItem value="high">Cao</SelectItem>
-                        <SelectItem value="urgent">Khẩn cấp</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

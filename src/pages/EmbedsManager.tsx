@@ -119,12 +119,12 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
       }
     },
     onSuccess: (data) => {
-      toast({ title: "Đã lưu", description: "Embed đã được lưu thành công." });
+      toast({ title: "Saved", description: "Embed đã được lưu thành công." });
       queryClient.invalidateQueries({ queryKey: ["embeds"] });
       setForm((f) => ({ ...f, existingId: data.id ?? f.existingId }));
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể lưu embed. Vui lòng thử lại.", variant: "destructive" });
+      toast({ title: "Error", description: "Không thể lưu embed. Vui lòng thử lại.", variant: "destructive" });
     },
   });
 
@@ -411,7 +411,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
               <div className="px-4 pb-4 space-y-4">
                 {/* Title */}
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Tiêu đề</Label>
+                  <Label className="text-xs text-muted-foreground">Title</Label>
                   <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
                       className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -425,7 +425,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                 {/* Description with char count */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Mô tả</Label>
+                    <Label className="text-xs text-muted-foreground">Description</Label>
                     <span className="text-[11px] text-muted-foreground">{form.description.length}/4096</span>
                   </div>
                   <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
@@ -441,7 +441,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                 </div>
                 {/* Color */}
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Màu sắc</Label>
+                  <Label className="text-xs text-muted-foreground">Colors</Label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"

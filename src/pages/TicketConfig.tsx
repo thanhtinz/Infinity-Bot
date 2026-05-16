@@ -212,7 +212,7 @@ export function TicketConfig() {
       toast({
         variant: "destructive",
         title: "Lưu thất bại",
-        description: "Vui lòng thử lại",
+        description: "Please try again",
       });
     },
   });
@@ -264,7 +264,7 @@ export function TicketConfig() {
             onClick={() => saveMutation.mutate(form)}
           >
             <Save className="mr-1.5 h-3.5 w-3.5" />
-            {saveMutation.isPending ? "Đang lưu..." : "Lưu cấu hình"}
+            {saveMutation.isPending ? "Saving..." : "Lưu cấu hình"}
           </Button>
         </div>
       </div>
@@ -369,7 +369,7 @@ export function TicketConfig() {
       >
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-0.5">
-            <Label>Bật tự động đóng</Label>
+            <Label>Enable auto close</Label>
             <p className="text-xs text-muted-foreground">
               Tự động đóng ticket khi không có hoạt động
             </p>

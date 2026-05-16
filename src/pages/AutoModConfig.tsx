@@ -199,11 +199,11 @@ export function AutoModConfig() {
         log_channel_id: logChannelId,
       }),
     onSuccess: () => {
-      toast({ title: "Đã lưu", description: "Cấu hình Auto Mod đã được cập nhật." });
+      toast({ title: "Saved", description: "Cấu hình Auto Mod đã được cập nhật." });
       qc.invalidateQueries({ queryKey: ["automod_config"] });
     },
     onError: (err: Error) => {
-      toast({ title: "Lỗi", description: err.message, variant: "destructive" });
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     },
   });
 
@@ -267,7 +267,7 @@ export function AutoModConfig() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Hành động</Label>
+                <Label>Actions</Label>
                 <Select value={antiSpamAction} onValueChange={setAntiSpamAction}>
                   <SelectTrigger>
                     <SelectValue />
@@ -463,7 +463,7 @@ export function AutoModConfig() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Hành động</Label>
+                <Label>Actions</Label>
                 <Select value={mentionSpamAction} onValueChange={setMentionSpamAction}>
                   <SelectTrigger>
                     <SelectValue />
@@ -496,7 +496,7 @@ export function AutoModConfig() {
             <ChannelSelect
               value={ignoredChannels[0] ?? ""}
               onChange={(v) => setIgnoredChannels(v ? [v] : [])}
-              placeholder="Chọn kênh..."
+              placeholder="Select channel..."
               filter="text"
             />
             <p className="text-xs text-muted-foreground">
@@ -514,11 +514,11 @@ export function AutoModConfig() {
           </div>
 
           <div className="space-y-2">
-            <Label>Kênh log</Label>
+            <Label>Log channel</Label>
             <ChannelSelect
               value={logChannelId ?? ""}
               onChange={setLogChannelId}
-              placeholder="Chọn kênh..."
+              placeholder="Select channel..."
               filter="text"
             />
             <p className="text-xs text-muted-foreground">
@@ -530,7 +530,7 @@ export function AutoModConfig() {
 
       {/* Save */}
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
-        {mutation.isPending ? "Đang lưu..." : "Lưu cấu hình"}
+        {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
       </Button>
     </div>
   );

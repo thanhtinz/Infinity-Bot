@@ -230,7 +230,7 @@ export function ButtonRoleEditPage() {
   if (!isNew && isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -241,10 +241,10 @@ export function ButtonRoleEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Chỉnh sửa"} Panel Button Role</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"} Panel Button Role</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? "Đang lưu..." : "Lưu"}
+            {isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>

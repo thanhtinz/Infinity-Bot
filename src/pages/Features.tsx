@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 import {
   ShoppingBag,
   Ticket,
@@ -52,7 +53,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 async function fetchFeatures(): Promise<Feature[]> {
   const res = await fetch("/api/features", { credentials: "include" });
-  if (!res.ok) throw new Error("Không thể tải danh sách tính năng");
+  if (!res.ok) throw new Error("Failed to load features");
   return res.json();
 }
 
@@ -63,7 +64,7 @@ async function updateFeatures(features: Record<string, boolean>): Promise<Featur
     credentials: "include",
     body: JSON.stringify({ features }),
   });
-  if (!res.ok) throw new Error("Cập nhật thất bại");
+  if (!res.ok) throw new Error("Update failed");
   return res.json();
 }
 
@@ -85,6 +86,7 @@ function FeatureCardSkeleton() {
 export function Features() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useT();
 
   const { data: features, isLoading } = useQuery<Feature[]>({
     queryKey: ["features"],
@@ -112,8 +114,8 @@ export function Features() {
       }
       toast({
         variant: "destructive",
-        title: "Lỗi",
-        description: "Không thể cập nhật tính năng. Vui lòng thử lại.",
+        title: t("error"),
+        description: t("features_updateFailed"),
       });
     },
     onSettled: () => {
@@ -129,9 +131,9 @@ export function Features() {
     <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Quản lý tính năng</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("features_title")}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Bật/tắt các tính năng của bot. Tính năng tắt sẽ ẩn khỏi menu và không hoạt động trên Discord.
+          {t("features_desc")}
         </p>
       </div>
 
@@ -190,7 +192,7 @@ export function Features() {
                         handleToggle(feature.key, checked)
                       }
                       disabled={mutation.isPending}
-                      aria-label={`Bật/tắt ${feature.label}`}
+                      aria-label={`Toggle ${feature.label}`}
                     />
                   </div>
                 </CardContent>

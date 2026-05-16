@@ -46,7 +46,7 @@ export function EmbedResponseEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Mô tả</Label>
+        <Label>Description</Label>
         <Textarea
           value={form.response_embed.description}
           onChange={(e) =>
@@ -142,7 +142,7 @@ export function EmbedResponseEditor({
                   },
                 }))
               }
-              placeholder="Chân trang"
+              placeholder="Footer"
               className="h-8 text-sm"
             />
           </div>
@@ -226,7 +226,7 @@ export function EmbedResponseEditor({
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <Label className="text-xs">Tên</Label>
+                  <Label className="text-xs">Name</Label>
                   <Input
                     value={field.name}
                     onChange={(e) =>

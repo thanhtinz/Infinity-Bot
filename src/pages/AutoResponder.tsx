@@ -118,7 +118,7 @@ export function AutoResponder() {
 
       {/* Loading */}
       {isLoading && (
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       )}
 
       {/* Empty state */}
@@ -177,7 +177,7 @@ export function AutoResponder() {
                 deleteTarget && deleteMutation.mutate(deleteTarget.id)
               }
             >
-              {deleteMutation.isPending ? "Đang xóa..." : "Xóa"}
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

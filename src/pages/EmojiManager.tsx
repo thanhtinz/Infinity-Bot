@@ -96,13 +96,13 @@ export function EmojiManager() {
       if (!res.ok) throw new Error("Xóa thất bại");
     },
     onSuccess: () => {
-      toast({ title: "Đã xóa", description: "Emoji đã được xóa thành công." });
+      toast({ title: "Deleted", description: "Emoji đã được xóa thành công." });
       queryClient.invalidateQueries({ queryKey: ["discord-emojis"] });
       queryClient.invalidateQueries({ queryKey: ["managed-emojis"] });
       setDeleteTarget(null);
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể xóa emoji.", variant: "destructive" });
+      toast({ title: "Error", description: "Không thể xóa emoji.", variant: "destructive" });
     },
   });
 
@@ -116,12 +116,12 @@ export function EmojiManager() {
       if (!res.ok) throw new Error("Xóa thất bại");
     },
     onSuccess: () => {
-      toast({ title: "Đã xóa", description: "Sticker đã được xóa thành công." });
+      toast({ title: "Deleted", description: "Sticker đã được xóa thành công." });
       queryClient.invalidateQueries({ queryKey: ["discord-stickers"] });
       setStickerDeleteTarget(null);
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể xóa sticker.", variant: "destructive" });
+      toast({ title: "Error", description: "Không thể xóa sticker.", variant: "destructive" });
     },
   });
 
@@ -144,7 +144,7 @@ export function EmojiManager() {
       queryClient.invalidateQueries({ queryKey: ["managed-emojis"] });
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể đồng bộ emoji.", variant: "destructive" });
+      toast({ title: "Error", description: "Không thể đồng bộ emoji.", variant: "destructive" });
     },
   });
 
@@ -152,9 +152,9 @@ export function EmojiManager() {
   const copyUsage = async (usage: string) => {
     try {
       await navigator.clipboard.writeText(usage);
-      toast({ title: "Đã sao chép", description: `\`${usage}\` đã được copy.` });
+      toast({ title: "Copied", description: `\`${usage}\` đã được copy.` });
     } catch {
-      toast({ title: "Lỗi", description: "Không thể sao chép.", variant: "destructive" });
+      toast({ title: "Error", description: "Không thể sao chép.", variant: "destructive" });
     }
   };
 
@@ -291,7 +291,7 @@ export function EmojiManager() {
                       size="icon" variant="ghost"
                       className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-white/20"
                       onClick={() => setDeleteTarget(emoji)}
-                      title="Xóa"
+                      title="Delete"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -360,7 +360,7 @@ export function EmojiManager() {
                       size="icon" variant="ghost"
                       className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-white/20"
                       onClick={() => setStickerDeleteTarget(sticker)}
-                      title="Xóa"
+                      title="Delete"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -401,7 +401,7 @@ export function EmojiManager() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -422,7 +422,7 @@ export function EmojiManager() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => stickerDeleteTarget && deleteStickerMutation.mutate(stickerDeleteTarget.id)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -496,13 +496,13 @@ function EmojiUploadDialog({
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Thành công", description: "Emoji đã được thêm vào server." });
+      toast({ title: "Success", description: "Emoji đã được thêm vào server." });
       onSuccess();
       resetForm();
       onOpenChange(false);
     },
     onError: (err: Error) => {
-      toast({ title: "Lỗi", description: err.message || "Không thể upload emoji.", variant: "destructive" });
+      toast({ title: "Error", description: err.message || "Không thể upload emoji.", variant: "destructive" });
     },
   });
 
@@ -634,13 +634,13 @@ function StickerUploadDialog({
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Thành công", description: "Sticker đã được thêm vào server." });
+      toast({ title: "Success", description: "Sticker đã được thêm vào server." });
       onSuccess();
       resetForm();
       onOpenChange(false);
     },
     onError: (err: Error) => {
-      toast({ title: "Lỗi", description: err.message || "Không thể upload sticker.", variant: "destructive" });
+      toast({ title: "Error", description: err.message || "Không thể upload sticker.", variant: "destructive" });
     },
   });
 
@@ -685,7 +685,7 @@ function StickerUploadDialog({
             <p className="text-xs text-muted-foreground">2–30 ký tự.</p>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="sticker-desc">Mô tả</Label>
+            <Label htmlFor="sticker-desc">Description</Label>
             <Textarea
               id="sticker-desc"
               placeholder="Mô tả sticker (tuỳ chọn)"

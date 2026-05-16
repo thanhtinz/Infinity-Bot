@@ -83,6 +83,8 @@ async def init_db():
             all_stmts.append("ALTER TABLE system_config ADD COLUMN guild_icon VARCHAR")
         if "shard_count" not in sc:
             all_stmts.append("ALTER TABLE system_config ADD COLUMN shard_count INTEGER")
+        if "language" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN language VARCHAR DEFAULT 'en'")
 
         # embed_templates
         et = cols("embed_templates")

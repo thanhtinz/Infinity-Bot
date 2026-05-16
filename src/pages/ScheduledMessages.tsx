@@ -299,7 +299,7 @@ export function ScheduledMessages() {
 
                           {/* Preview */}
                           <span className="truncate text-sm text-muted-foreground">
-                            {preview || "(trống)"}
+                            {preview || "(empty)"}
                           </span>
                         </div>
 
@@ -351,7 +351,7 @@ export function ScheduledMessages() {
                               e.stopPropagation();
                               navigate('/scheduled-messages/' + m.id + '/edit');
                             }}
-                            title="Chỉnh sửa"
+                            title="Edit"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -379,7 +379,7 @@ export function ScheduledMessages() {
                                 e.stopPropagation();
                                 setConfirmDeleteId(m.id);
                               }}
-                              title="Xóa"
+                              title="Delete"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

@@ -88,9 +88,9 @@ export function ConfigPayOS() {
     }).then(r => { if (!r.ok) throw new Error("Lưu thất bại"); return r.json(); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["payos_config", selectedGuildId] });
-      toast({ title: "Đã lưu", description: "Cấu hình PayOS đã được lưu." });
+      toast({ title: "Saved", description: "Cấu hình PayOS đã được lưu." });
     },
-    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." }),
   });
 
   const isConfigured = !!config?.has_payos_api_key;
@@ -201,7 +201,7 @@ export function ConfigPayOS() {
 
                 <div className="pt-1 flex items-center gap-2">
                   <Button type="submit" disabled={mutation.isPending}>
-                    {mutation.isPending ? "Đang lưu..." : "Lưu cấu hình"}
+                    {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
                   </Button>
                   {isConfigured && (
                     <Button type="button" variant="outline" disabled={testing} onClick={handleTest}>

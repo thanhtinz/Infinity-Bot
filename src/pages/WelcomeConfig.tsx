@@ -251,7 +251,7 @@ function EmbedEditor({
     <div className="space-y-4">
       {/* Color picker */}
       <div className="space-y-2">
-        <Label>Màu embed</Label>
+        <Label>Embed color</Label>
         <div className="flex items-center gap-2">
           <div
             className="w-8 h-8 rounded border shrink-0"
@@ -270,7 +270,7 @@ function EmbedEditor({
 
       {/* Title */}
       <div className="space-y-2">
-        <Label>Tiêu đề</Label>
+        <Label>Title</Label>
         <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
           <Input
             className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -286,7 +286,7 @@ function EmbedEditor({
 
       {/* Description */}
       <div className="space-y-2">
-        <Label>Mô tả</Label>
+        <Label>Description</Label>
         <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
           <Textarea
             value={form.description}
@@ -530,17 +530,17 @@ export function WelcomeConfig() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["welcome_config"] });
       qc.invalidateQueries({ queryKey: ["embeds"] });
-      toast({ title: "Đã lưu" });
+      toast({ title: "Saved" });
     },
     onError: () => {
-      toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." });
+      toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." });
     },
   });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-muted-foreground">Đang tải...</p>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -553,7 +553,7 @@ export function WelcomeConfig() {
           <HandMetal className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Chào mừng & Tạm biệt</h1>
+          <h1 className="text-xl font-bold">Welcome & Goodbye</h1>
           <p className="text-sm text-muted-foreground">
             Cấu hình tin nhắn chào mừng thành viên mới và tạm biệt khi rời server.
           </p>
@@ -573,19 +573,19 @@ export function WelcomeConfig() {
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Bật chào mừng</p>
+              <p className="font-medium">Enable welcome</p>
               <p className="text-sm text-muted-foreground">Kích hoạt tin nhắn chào mừng.</p>
             </div>
             <Switch checked={welcomeEnabled} onCheckedChange={setWelcomeEnabled} />
           </div>
 
           <div className="space-y-2">
-            <Label>Kênh chào mừng</Label>
+            <Label>Welcome channel</Label>
             <ChannelSelect
               value={welcomeChannelId}
               onChange={setWelcomeChannelId}
               filter="text"
-              placeholder="Chọn kênh..."
+              placeholder="Select channel..."
             />
           </div>
 
@@ -629,7 +629,7 @@ export function WelcomeConfig() {
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Bật chào mừng DM</p>
+              <p className="font-medium">Enable welcome DM</p>
               <p className="text-sm text-muted-foreground">Gửi tin nhắn riêng cho thành viên mới.</p>
             </div>
             <Switch checked={welcomeDmEnabled} onCheckedChange={setWelcomeDmEnabled} />
@@ -663,19 +663,19 @@ export function WelcomeConfig() {
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Bật tạm biệt</p>
+              <p className="font-medium">Enable goodbye</p>
               <p className="text-sm text-muted-foreground">Kích hoạt tin nhắn tạm biệt.</p>
             </div>
             <Switch checked={goodbyeEnabled} onCheckedChange={setGoodbyeEnabled} />
           </div>
 
           <div className="space-y-2">
-            <Label>Kênh tạm biệt</Label>
+            <Label>Goodbye channel</Label>
             <ChannelSelect
               value={goodbyeChannelId}
               onChange={setGoodbyeChannelId}
               filter="text"
-              placeholder="Chọn kênh..."
+              placeholder="Select channel..."
             />
           </div>
 
@@ -735,7 +735,7 @@ export function WelcomeConfig() {
         disabled={saveMutation.isPending}
         className="w-full"
       >
-        {saveMutation.isPending ? "Đang lưu..." : "Lưu cấu hình"}
+        {saveMutation.isPending ? "Saving..." : "Lưu cấu hình"}
       </Button>
     </div>
   );

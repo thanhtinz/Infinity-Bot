@@ -83,7 +83,7 @@ export function FeedbackManager() {
       setDeleteTarget(null);
       toast({ title: "Đã xóa feedback." });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const filtered = useMemo(() => {
@@ -107,7 +107,7 @@ export function FeedbackManager() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">Đang tải...</div>
+      <div className="flex items-center justify-center h-64 text-muted-foreground">Loading...</div>
     );
   }
 
@@ -164,7 +164,7 @@ export function FeedbackManager() {
         <Card>
           <CardContent className="p-8 text-center text-sm text-muted-foreground">
             {feedbacks.length === 0
-              ? "Chưa có feedback nào"
+              ? "No feedback yet"
               : "Không tìm thấy feedback phù hợp"}
           </CardContent>
         </Card>
@@ -233,13 +233,13 @@ export function FeedbackManager() {
             Xóa sẽ tự động xóa message trên Discord channel. <strong>Không thể hoàn tác.</strong>
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Hủy</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              {deleteMutation.isPending ? "Đang xóa..." : "Xóa"}
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

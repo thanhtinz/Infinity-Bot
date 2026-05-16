@@ -61,7 +61,7 @@ export function JsonEditorDialog({ open, onOpenChange, content, embeds, onApply 
           <Button variant="outline" onClick={() => { navigator.clipboard.writeText(jsonText); toast({ title: "Đã copy!" }); }}>
             <Copy className="h-4 w-4 mr-1" />Copy
           </Button>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={handleApply}>Áp dụng</Button>
         </DialogFooter>
       </DialogContent>

@@ -52,15 +52,15 @@ export function AutoRoleConfig() {
     mutationFn: () => saveAutoRole({ join_roles: joinRoles, bot_roles: botRoles }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["autorole"] });
-      toast({ title: "Đã lưu", description: "Cấu hình Auto Role đã được cập nhật." });
+      toast({ title: "Saved", description: "Cấu hình Auto Role đã được cập nhật." });
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể lưu cấu hình.", variant: "destructive" });
+      toast({ title: "Error", description: "Không thể lưu cấu hình.", variant: "destructive" });
     },
   });
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Đang tải...</p>;
+    return <p className="text-sm text-muted-foreground">Loading...</p>;
   }
 
   return (
@@ -113,7 +113,7 @@ export function AutoRoleConfig() {
 
       {/* Save button */}
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
-        {mutation.isPending ? "Đang lưu..." : "Lưu cấu hình"}
+        {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
       </Button>
     </div>
   );

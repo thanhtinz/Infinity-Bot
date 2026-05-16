@@ -5,6 +5,7 @@ import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
 import { GuildSelector } from "@/components/GuildSelector";
+import { I18nProvider, useT } from "@/i18n";
 
 // ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
 const DashboardHome = lazy(() => import("./pages/DashboardHome").then(m => ({ default: m.DashboardHome })));
@@ -13,6 +14,7 @@ const ConfigDiscord = lazy(() => import("./pages/ConfigDiscord").then(m => ({ de
 const ConfigPayOS = lazy(() => import("./pages/ConfigPayOS").then(m => ({ default: m.ConfigPayOS })));
 const ConfigChannels = lazy(() => import("./pages/ConfigChannels").then(m => ({ default: m.ConfigChannels })));
 const ConfigVoice = lazy(() => import("./pages/ConfigVoice").then(m => ({ default: m.ConfigVoice })));
+const BotSettings = lazy(() => import("./pages/BotSettings").then(m => ({ default: m.BotSettings })));
 const ProductsManager = lazy(() => import("./pages/ProductsManager").then(m => ({ default: m.ProductsManager })));
 const OrdersManager = lazy(() => import("./pages/OrdersManager").then(m => ({ default: m.OrdersManager })));
 const CouponsManager = lazy(() => import("./pages/CouponsManager").then(m => ({ default: m.CouponsManager })));
@@ -100,12 +102,13 @@ const navGroups: NavGroup[] = [
     label: "Shop",
     feature: "shop",
     items: [
-      { to: "/products", icon: Package, label: "Sản phẩm" },
-      { to: "/orders", icon: ShoppingCart, label: "Đơn hàng" },
-      { to: "/coupons", icon: Tag, label: "Coupon" },
-      { to: "/users", icon: Users, label: "Người dùng" },
-      { to: "/leaderboard", icon: Trophy, label: "Bảng xếp hạng" },
-      { to: "/feedback", icon: MessageSquare, label: "Feedback" },
+      { to: "/products", icon: Package, label: "nav_products" },
+      { to: "/orders", icon: ShoppingCart, label: "nav_orders" },
+      { to: "/coupons", icon: Tag, label: "nav_coupons" },
+      { to: "/users", icon: Users, label: "nav_users" },
+      { to: "/leaderboard", icon: Trophy, label: "nav_leaderboard" },
+      { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
+      { to: "/config/shop-channels", icon: Hash, label: "nav_shopChannels", feature: "shop" },
     ],
   },
   {
@@ -114,111 +117,124 @@ const navGroups: NavGroup[] = [
     label: "Ticket",
     feature: "ticket",
     items: [
-      { to: "/tickets", icon: Ticket, label: "Tickets" },
-      { to: "/ticket-panels", icon: Palette, label: "Panels" },
-      { to: "/ticket-forms", icon: ClipboardList, label: "Forms" },
-      { to: "/ticket-teams", icon: Users2, label: "Teams" },
-      { to: "/ticket-transcripts", icon: FileText, label: "Transcripts" },
-      { to: "/ticket-claiming", icon: UserCheck2, label: "Claiming" },
-      { to: "/ticket-feedback", icon: Star, label: "Feedback" },
-      { to: "/ticket-config", icon: Settings, label: "Cấu hình" },
+      { to: "/tickets", icon: Ticket, label: "nav_tickets" },
+      { to: "/ticket-panels", icon: Palette, label: "nav_panels" },
+      { to: "/ticket-forms", icon: ClipboardList, label: "nav_forms" },
+      { to: "/ticket-teams", icon: Users2, label: "nav_teams" },
+      { to: "/ticket-transcripts", icon: FileText, label: "nav_transcripts" },
+      { to: "/ticket-claiming", icon: UserCheck2, label: "nav_claiming" },
+      { to: "/ticket-feedback", icon: Star, label: "nav_feedback" },
+      { to: "/ticket-config", icon: Settings, label: "nav_ticketConfig" },
     ],
   },
   {
     key: "community",
     icon: Users,
-    label: "Cộng đồng",
+    label: "nav_community",
     items: [
-      { to: "/giveaways", icon: Gift, label: "Giveaway", feature: "giveaway" },
-      { to: "/invites", icon: Link2, label: "Invite", feature: "invite_tracking" },
-      { to: "/warnings", icon: ShieldAlert, label: "Cảnh cáo", feature: "moderation" },
-      { to: "/starboard", icon: Star, label: "Starboard", feature: "starboard" },
+      { to: "/giveaways", icon: Gift, label: "nav_giveaway", feature: "giveaway" },
+      { to: "/invites", icon: Link2, label: "nav_invite", feature: "invite_tracking" },
+      { to: "/warnings", icon: ShieldAlert, label: "nav_warnings", feature: "moderation" },
+      { to: "/starboard", icon: Star, label: "nav_starboard", feature: "starboard" },
     ],
   },
   {
     key: "leveling",
     icon: Trophy,
-    label: "Level",
+    label: "nav_level",
     feature: "leveling",
     items: [
-      { to: "/leveling/rank-card", icon: ImageIcon, label: "Rank Card" },
-      { to: "/leveling/config", icon: Settings, label: "Cấu hình XP" },
-      { to: "/leveling/filters", icon: Filter, label: "Filters" },
-      { to: "/leveling/leaderboard", icon: ListOrdered, label: "Leaderboard" },
-      { to: "/leveling/rewards", icon: Gift, label: "Rewards" },
-      { to: "/leveling/multipliers", icon: Zap, label: "Multipliers" },
+      { to: "/leveling/rank-card", icon: ImageIcon, label: "nav_rankCard" },
+      { to: "/leveling/config", icon: Settings, label: "nav_xpConfig" },
+      { to: "/leveling/filters", icon: Filter, label: "nav_filters" },
+      { to: "/leveling/leaderboard", icon: ListOrdered, label: "nav_leaderboard" },
+      { to: "/leveling/rewards", icon: Gift, label: "nav_rewards" },
+      { to: "/leveling/multipliers", icon: Zap, label: "nav_multipliers" },
     ],
   },
   {
     key: "welcome",
     icon: Hand,
-    label: "Chào mừng",
+    label: "nav_welcome",
     feature: "welcome",
     items: [
-      { to: "/welcome", icon: MessageSquare, label: "Welcome & Goodbye" },
+      { to: "/welcome", icon: MessageSquare, label: "nav_welcome" },
       { to: "/autorole", icon: UserPlus, label: "Auto Role" },
-      { to: "/button-roles", icon: ToggleLeft, label: "Button Roles" },
+      { to: "/button-roles", icon: ToggleLeft, label: "nav_panels" },
       { to: "/select-roles", icon: ListChecks, label: "Select Menu Roles" },
-      { to: "/reaction-roles", icon: Smile, label: "Reaction Roles" },
+      { to: "/reaction-roles", icon: Smile, label: "nav_rr" },
+    ],
+  },
+  {
+    key: "tempvoice",
+    icon: Mic,
+    label: "nav_tempVoice",
+    feature: "temp_voice",
+    items: [
+      { to: "/voice", icon: Activity, label: "nav_voiceOverview" },
+      { to: "/voice/setup", icon: Settings, label: "nav_voiceSetup" },
+      { to: "/voice/defaults", icon: Wrench, label: "nav_voiceDefaults" },
+      { to: "/voice/permissions", icon: Shield, label: "nav_voicePermissions" },
+      { to: "/voice/cleanup", icon: Filter, label: "nav_voiceCleanup" },
+      { to: "/voice/rooms", icon: Mic, label: "nav_voiceRooms" },
+      { to: "/voice/analytics", icon: ScrollText, label: "nav_voiceAnalytics" },
     ],
   },
   {
     key: "moderation",
     icon: Shield,
-    label: "Kiểm duyệt",
+    label: "nav_moderation",
     feature: "moderation",
     items: [
-      { to: "/automod", icon: Shield, label: "Auto Mod" },
-      { to: "/logging", icon: ScrollText, label: "Cấu hình Log" },
-      { to: "/logs", icon: Activity, label: "Nhật ký" },
+      { to: "/automod", icon: Shield, label: "nav_automod" },
+      { to: "/logs", icon: Activity, label: "nav_logging" },
     ],
   },
   {
     key: "utilities",
     icon: Wrench,
-    label: "Tiện ích",
+    label: "nav_utilities",
     items: [
-      { to: "/sticky", icon: Pin, label: "Sticky", feature: "sticky" },
-      { to: "/custom-commands", icon: Terminal, label: "Custom Commands", feature: "custom_commands" },
-      { to: "/autoresponder", icon: MessageCircleReply, label: "Auto Responder", feature: "autoresponder" },
-      { to: "/scheduled-messages", icon: Clock, label: "Tin nhắn hẹn giờ", feature: "scheduler" },
-      { to: "/embeds", icon: Palette, label: "Embeds" },
-      { to: "/emojis", icon: Smile, label: "Emoji & Sticker" },
+      { to: "/sticky", icon: Pin, label: "nav_sticky", feature: "sticky" },
+      { to: "/custom-commands", icon: Terminal, label: "nav_customCommands", feature: "custom_commands" },
+      { to: "/autoresponder", icon: MessageCircleReply, label: "nav_autoResponder", feature: "autoresponder" },
+      { to: "/scheduled-messages", icon: Clock, label: "nav_scheduledMessages", feature: "scheduler" },
+      { to: "/embeds", icon: Palette, label: "nav_embeds" },
+      { to: "/emojis", icon: Smile, label: "nav_emojis" },
     ],
   },
   {
     key: "config",
     icon: Settings,
-    label: "Cấu hình",
+    label: "nav_botSettings",
     items: [
-      { to: "/config/prefix", icon: Terminal, label: "Prefix lệnh" },
-      { to: "/config/payos", icon: CreditCard, label: "PayOS", feature: "shop" },
-      { to: "/config/channels", icon: Hash, label: "Kênh & Quyền" },
-      { to: "/config/voice", icon: Mic, label: "Temp Voice", feature: "temp_voice" },
+      { to: "/bot-settings", icon: Settings, label: "nav_botSettings" },
+      { to: "/config/payos", icon: CreditCard, label: "nav_payos", feature: "shop" },
     ],
   },
   {
     key: "bot_owner",
     icon: Activity,
-    label: "Quản lý Bot",
+    label: "nav_botOwner",
     ownerOnly: true,
     items: [
-      { to: "/bot-status", icon: Activity, label: "Trạng thái & Điều khiển" },
-      { to: "/config/discord", icon: Bot, label: "Discord Bot (Token)" },
-      { to: "/backup", icon: Database, label: "Sao lưu & Khôi phục" },
+      { to: "/bot-status", icon: Activity, label: "nav_botStatus" },
+      { to: "/config/discord", icon: Bot, label: "nav_discordBot" },
+      { to: "/backup", icon: Database, label: "nav_backup" },
     ],
   },
 ];
 
-const standaloneItems: NavItem[] = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/features", icon: ToggleRight, label: "Tính năng" },
+const standaloneItems = [
+  { to: "/", icon: LayoutDashboard, label: "nav_dashboard" as const },
+  { to: "/features", icon: ToggleRight, label: "nav_features" as const },
 ];
 
 const queryClient = new QueryClient();
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const location = useLocation();
+  const { t } = useT();
   const { data: user } = useQuery({
     queryKey: ["auth_me"],
     queryFn: () => fetch("/api/auth/me", { credentials: "include" }).then(res => {
@@ -302,7 +318,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {!selectedGuildId ? (
           <div className="text-center py-8">
-            <p className="text-sm text-muted-foreground">Chọn server để tiếp tục</p>
+            <p className="text-sm text-muted-foreground">Select a server to continue</p>
           </div>
         ) : (
         <>
@@ -320,7 +336,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               )}
             >
               <Icon className="w-4 h-4" />
-              {item.label}
+              {t(item.label as Parameters<typeof t>[0])}
             </Link>
           );
         })}
@@ -343,7 +359,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               >
                 <span className="flex items-center gap-2.5">
                   <GroupIcon className="w-4 h-4 shrink-0" />
-                  {group.label}
+                  {t(group.label as Parameters<typeof t>[0])}
                 </span>
                 {isOpen ? (
                   <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
@@ -369,7 +385,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                         )}
                       >
                         <ItemIcon className="w-3.5 h-3.5 shrink-0" />
-                        {item.label}
+                        {t(item.label as Parameters<typeof t>[0])}
                       </Link>
                     );
                   })}
@@ -379,7 +395,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           );
         })}
 
-        {/* Standalone: Tính năng */}
+        {/* Standalone: Features */}
         {standaloneItems.slice(1).map((item) => {
           const Icon = item.icon;
           return (
@@ -393,12 +409,12 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               )}
             >
               <Icon className="w-4 h-4" />
-              {item.label}
+              {t(item.label)}
             </Link>
           );
         })}
 
-        {/* Owner-only: Quản lý Bot — luôn ở cuối */}
+        {/* Owner-only: Bot Management — always at bottom */}
         {ownerGroups.map((group) => {
           const isOpen = openGroups.has(group.key);
           const isActive = group.items.some((item) => item.to === location.pathname);
@@ -416,7 +432,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               >
                 <span className="flex items-center gap-2.5">
                   <GroupIcon className="w-4 h-4 shrink-0" />
-                  {group.label}
+                  {t(group.label as Parameters<typeof t>[0])}
                 </span>
                 {isOpen ? (
                   <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
@@ -442,7 +458,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                         )}
                       >
                         <ItemIcon className="w-3.5 h-3.5 shrink-0" />
-                        {item.label}
+                        {t(item.label as Parameters<typeof t>[0])}
                       </Link>
                     );
                   })}
@@ -653,7 +669,11 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/leveling/rank-card" element={<LevelingManager section="rank-card" />} />
         <Route path="/features" element={<Features />} />
         <Route path="/config" element={<Navigate to="/config/discord" replace />} />
-        <Route path="/config/prefix" element={<ConfigPrefix />} />
+        <Route path="/config/prefix" element={<Navigate to="/bot-settings" replace />} />
+        <Route path="/config/channels" element={<Navigate to="/bot-settings" replace />} />
+        <Route path="/config/voice" element={<Navigate to="/bot-settings" replace />} />
+        <Route path="/logging" element={<Navigate to="/bot-settings" replace />} />
+        <Route path="/bot-settings" element={<BotSettings />} />
         <Route path="/config/discord" element={<OwnerRoute><ConfigDiscord /></OwnerRoute>} />
         <Route path="/config/payos" element={<ConfigPayOS />} />
         <Route path="/config/channels" element={<ConfigChannels />} />
@@ -731,10 +751,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <GuildProvider>
-          <SetupGate />
-          <Toaster />
-        </GuildProvider>
+        <I18nProvider>
+          <GuildProvider>
+            <SetupGate />
+            <Toaster />
+          </GuildProvider>
+        </I18nProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

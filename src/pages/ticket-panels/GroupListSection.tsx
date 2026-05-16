@@ -85,7 +85,7 @@ export function GroupListSection({
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Badge variant={g.is_sent ? "default" : "outline"} className="text-[10px]">
-                        {g.is_sent ? "Đã gửi" : "Chưa gửi"}
+                        {g.is_sent ? "Đã gửi" : "Not sent"}
                       </Badge>
                       {g.channel_id && (
                         <span className="flex items-center gap-1"><Hash className="h-3 w-3" />{g.channel_id}</span>

@@ -120,7 +120,7 @@ export function TicketClaiming() {
             <>
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-medium">Bật tính năng claiming</Label>
+                  <Label className="text-sm font-medium">Enable claiming</Label>
                   <p className="text-xs text-muted-foreground">Staff có thể claim ticket để phụ trách</p>
                 </div>
                 <Switch checked={cfgEnabled} onCheckedChange={setCfgEnabled} />

@@ -62,12 +62,12 @@ export function CouponsManager() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground text-sm">Đang tải...</p>
+        <p className="text-muted-foreground text-sm">Loading...</p>
       ) : coupons.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
           <Tag className="h-10 w-10 opacity-30" />
           <p className="text-sm">Chưa có coupon nào</p>
-          <Button variant="outline" size="sm" onClick={() => navigate('/coupons/new')}>Tạo ngay</Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/coupons/new')}>Create now</Button>
         </div>
       ) : (
         <div className="space-y-2">
@@ -103,7 +103,7 @@ export function CouponsManager() {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-xs text-muted-foreground">Đã dùng</p>
+                      <p className="text-xs text-muted-foreground">Used</p>
                       <p className={cn("font-semibold tabular-nums", usageColor(c))}>
                         {c.used_count}/{c.max_uses}
                       </p>
@@ -140,7 +140,7 @@ export function CouponsManager() {
             Mã <strong className="font-mono">{deleteTarget?.code}</strong> sẽ bị xóa vĩnh viễn.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Hủy</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}

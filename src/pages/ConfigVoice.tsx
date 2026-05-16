@@ -16,16 +16,16 @@ import { Mic, Server, Settings, Shield, Wrench } from "lucide-react";
 const VOICE_BUTTON_OPTIONS = [
   { key: "name", label: "Name", desc: "Đổi tên phòng", emoji: "✏️" },
   { key: "limit", label: "Limit", desc: "Giới hạn người", emoji: "👥" },
-  { key: "privacy", label: "Privacy", desc: "Bật/tắt riêng tư", emoji: "🔐" },
-  { key: "trust", label: "Trust", desc: "Cho phép user", emoji: "✅" },
+  { key: "privacy", label: "Privacy", desc: "Toggle privacy", emoji: "🔐" },
+  { key: "trust", label: "Trust", desc: "Allow user", emoji: "✅" },
   { key: "untrust", label: "Untrust", desc: "Gỡ quyền user", emoji: "➖" },
   { key: "invite", label: "Invite", desc: "Mời user", emoji: "📨" },
   { key: "kick", label: "Kick", desc: "Đuổi user", emoji: "👢" },
   { key: "region", label: "Region", desc: "Đặt region tự động", emoji: "🌍" },
-  { key: "block", label: "Block", desc: "Chặn user", emoji: "🚫" },
-  { key: "unblock", label: "Unblock", desc: "Bỏ chặn user", emoji: "🔓" },
+  { key: "block", label: "Block", desc: "Block user", emoji: "🚫" },
+  { key: "unblock", label: "Unblock", desc: "Unblock user", emoji: "🔓" },
   { key: "claim", label: "Claim", desc: "Nhận phòng vô chủ", emoji: "🙋" },
-  { key: "transfer", label: "Transfer", desc: "Chuyển chủ phòng", emoji: "👑" },
+  { key: "transfer", label: "Transfer", desc: "Transfer ownership", emoji: "👑" },
   { key: "delete", label: "Delete", desc: "Xóa phòng", emoji: "🗑️" },
 ];
 const DEFAULT_VOICE_BUTTONS = VOICE_BUTTON_OPTIONS.map((button) => button.key);
@@ -133,9 +133,9 @@ export function ConfigVoice() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tempvoice_config"] });
-      toast({ title: "Đã lưu", description: "Cấu hình Temp Voice đã được lưu." });
+      toast({ title: "Saved", description: "Cấu hình Temp Voice đã được lưu." });
     },
-    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." }),
   });
 
   return (
@@ -173,7 +173,7 @@ export function ConfigVoice() {
         <CardContent>
           <Select value={guildId || ""} onValueChange={setGuildId}>
             <SelectTrigger>
-              <SelectValue placeholder="Chọn server..." />
+              <SelectValue placeholder="Select server..." />
             </SelectTrigger>
             <SelectContent>
               {guilds.map((g) => (
@@ -204,7 +204,7 @@ export function ConfigVoice() {
           {/* Enable toggle */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Bật tính năng</p>
+              <p className="font-medium">Enable feature</p>
               <p className="text-sm text-muted-foreground">Kích hoạt tự động tạo voice room.</p>
             </div>
             <Switch checked={enabled} onCheckedChange={setEnabled} />
@@ -250,7 +250,7 @@ export function ConfigVoice() {
           {/* User Limit */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Giới hạn người</Label>
+              <Label>User limit</Label>
               <span className="text-sm text-muted-foreground">
                 {defaultUserLimit === 0 ? "Không giới hạn" : defaultUserLimit}
               </span>
@@ -262,7 +262,7 @@ export function ConfigVoice() {
               max={99}
               step={1}
             />
-            <p className="text-xs text-muted-foreground">0 = Không giới hạn số người trong kênh.</p>
+            <p className="text-xs text-muted-foreground">0 = No user limit.</p>
           </div>
 
           <Separator />
@@ -322,7 +322,7 @@ export function ConfigVoice() {
             </div>
             <div className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium">Giới hạn người</p>
+                <p className="font-medium">User limit</p>
                 <p className="text-sm text-muted-foreground">Cho phép thay đổi giới hạn người</p>
               </div>
               <Switch checked={allowLimit} onCheckedChange={setAllowLimit} />
@@ -424,7 +424,7 @@ export function ConfigVoice() {
 
       {/* Save button */}
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
-        {mutation.isPending ? "Đang lưu..." : "Lưu cấu hình"}
+        {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
       </Button>
     </div>
   );

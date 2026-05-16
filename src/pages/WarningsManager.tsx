@@ -116,14 +116,14 @@ export function WarningsManager() {
 
       {/* ── Loading ── */}
       {isLoading && (
-        <div className="text-center py-12 text-muted-foreground">Đang tải...</div>
+        <div className="text-center py-12 text-muted-foreground">Loading...</div>
       )}
 
       {/* ── Empty ── */}
       {!isLoading && filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <ShieldCheck className="h-12 w-12 mb-3 text-green-500/60" />
-          <p className="text-lg font-medium">Không có cảnh cáo nào</p>
+          <p className="text-lg font-medium">No warnings</p>
         </div>
       )}
 
@@ -183,13 +183,13 @@ export function WarningsManager() {
             Hành động này không thể hoàn tác.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Hủy</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              {deleteMutation.isPending ? "Đang xóa..." : "Xác nhận"}
+              {deleteMutation.isPending ? "Deleting..." : "Confirm"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -335,6 +335,7 @@ def read_config(request: Request, db=Depends(get_db)):
         has_payos_api_key=bool(config.payos_api_key),
         has_payos_checksum_key=bool(config.payos_checksum_key),
         bot_invisible=bool(config.bot_invisible),
+        language=config.language or "en",
     )
 
 
@@ -377,6 +378,7 @@ def update_config(config_in: SystemConfigBase, request: Request, db=Depends(get_
         has_payos_api_key=bool(config.payos_api_key),
         has_payos_checksum_key=bool(config.payos_checksum_key),
         bot_invisible=bool(config.bot_invisible),
+        language=config.language or "en",
     )
 
 

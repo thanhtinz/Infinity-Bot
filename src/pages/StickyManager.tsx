@@ -62,7 +62,7 @@ interface DiscordChannel {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatTime(s?: string) {
-  if (!s) return "Chưa gửi";
+  if (!s) return "Not sent";
   return new Date(s).toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",
@@ -381,7 +381,7 @@ export function StickyManager() {
 
                       {/* Preview */}
                       <span className="truncate text-sm text-muted-foreground">
-                        {preview || "(trống)"}
+                        {preview || "(empty)"}
                       </span>
                     </div>
 
@@ -445,7 +445,7 @@ export function StickyManager() {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => openEdit(s)}
-                        title="Chỉnh sửa"
+                        title="Edit"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -482,7 +482,7 @@ export function StickyManager() {
                           size="icon"
                           className="h-8 w-8 text-destructive hover:text-destructive"
                           onClick={() => setConfirmDeleteId(s.id)}
-                          title="Xóa"
+                          title="Delete"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

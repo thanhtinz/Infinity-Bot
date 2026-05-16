@@ -5,11 +5,11 @@ import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 /* ── Terminal typing animation ───────────────────────────────── */
 const COMMANDS = [
-  { cmd: "/shop", out: "→  Mở cửa hàng server..." },
-  { cmd: "/ticket open", out: "→  Đã tạo ticket #1042" },
-  { cmd: "/giveaway start", out: "→  Giveaway bắt đầu! 🎉" },
-  { cmd: "/ban @spam", out: "→  Đã cấm spam#0000" },
-  { cmd: "/voice rename", out: "→  Kênh đã đổi tên ✓" },
+  { cmd: "/shop", out: "→  Opening server shop..." },
+  { cmd: "/ticket open", out: "→  Ticket #1042 created" },
+  { cmd: "/giveaway start", out: "→  Giveaway started! 🎉" },
+  { cmd: "/ban @spam", out: "→  Banned spam#0000" },
+  { cmd: "/voice rename", out: "→  Channel renamed ✓" },
 ];
 
 function Terminal() {
@@ -114,12 +114,12 @@ function StatCard({ icon: Icon, value, label, suffix = "+" }: { icon: typeof Zap
 
 /* ── Feature cards ───────────────────────────────────────────── */
 const FEATURES = [
-  { icon: ShoppingBag, title: "Shop & Đơn hàng", desc: "Hệ thống bán hàng tích hợp PayOS, quản lý sản phẩm, theo dõi đơn hàng realtime.", color: "#5865F2" },
-  { icon: Ticket, title: "Ticket", desc: "Hệ thống ticket đa panel, claim, transcript, feedback, team phân quyền.", color: "#00d4aa" },
-  { icon: Gift, title: "Giveaway", desc: "Tổ chức giveaway chuyên nghiệp với yêu cầu tham gia, reroll, nhiều người thắng.", color: "#f59e0b" },
-  { icon: Shield, title: "Kiểm duyệt", desc: "Ban, kick, timeout, automod lọc nội dung, logging đầy đủ mọi hành động.", color: "#ef4444" },
-  { icon: Mic, title: "TempVoice", desc: "Kênh voice tạm thời, người dùng tự quản lý: rename, limit, lock, kick.", color: "#a855f7" },
-  { icon: Palette, title: "Embed Builder", desc: "Tùy chỉnh mọi thông báo bot với Embed Builder trực quan, preview Discord thật.", color: "#ec4899" },
+  { icon: ShoppingBag, title: "Shop & Orders", desc: "Integrated storefront with PayOS, product management, and real-time order tracking.", color: "#5865F2" },
+  { icon: Ticket, title: "Ticket System", desc: "Multi-panel tickets with claim, transcript, feedback, and role-based team support.", color: "#00d4aa" },
+  { icon: Gift, title: "Giveaway", desc: "Professional giveaways with entry requirements, reroll, and multiple winners.", color: "#f59e0b" },
+  { icon: Shield, title: "Moderation", desc: "Ban, kick, timeout, automod content filtering, and full action logging.", color: "#ef4444" },
+  { icon: Mic, title: "TempVoice", desc: "Temporary voice channels users manage themselves: rename, limit, lock, kick.", color: "#a855f7" },
+  { icon: Palette, title: "Embed Builder", desc: "Customize every bot notification with an intuitive Embed Builder and live Discord preview.", color: "#ec4899" },
 ];
 
 /* ── Main Landing Page ───────────────────────────────────────── */
@@ -157,38 +157,38 @@ export function LandingPage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#5865F2]/30 bg-[#5865F2]/10 text-[#818cf8] text-xs font-medium mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-[#00d4aa] animate-pulse" />
-              Bot Discord đa năng cho server của bạn
+              The all-in-one Discord bot for your server
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.08] mb-6 tracking-tight">
-              Quản lý server
+              Manage your server
               <br />
               <span style={{ background: "linear-gradient(135deg, #5865F2, #00d4aa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                đơn giản hơn
+                effortlessly
               </span>
             </h1>
 
             <p className="text-lg text-white/50 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Infinity Bot mang đến đầy đủ công cụ: shop, ticket, giveaway, moderation, và nhiều hơn nữa — tất cả trong một dashboard trực quan.
+              Infinity Bot brings everything you need: shop, tickets, giveaways, moderation, and more — all in one intuitive dashboard.
             </p>
 
             <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
               {inviteUrl && (
                 <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#5865F2] hover:bg-[#4752c4] text-white font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#5865F2]/25">
-                  <Zap className="w-4 h-4" /> Thêm vào Server
+                  <Zap className="w-4 h-4" /> Add to Server
                 </a>
               )}
               <Link to="/dashboard"
                 className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]">
-                Vào Dashboard <ChevronRight className="w-4 h-4" />
+                Go to Dashboard <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
 
             {/* Stats */}
             <div className="flex gap-8 mt-10 justify-center lg:justify-start">
               <StatCard icon={Server} value={500} label="Servers" />
-              <StatCard icon={Users} value={50000} label="Thành viên" />
+              <StatCard icon={Users} value={50000} label="Members" />
               <StatCard icon={Activity} value={99} label="Uptime" suffix="%" />
             </div>
           </div>
@@ -204,12 +204,12 @@ export function LandingPage() {
       <section className="relative px-4 py-24">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
-            <p className="text-[#5865F2] text-sm font-semibold tracking-widest uppercase mb-3">Tính năng</p>
+            <p className="text-[#5865F2] text-sm font-semibold tracking-widest uppercase mb-3">Features</p>
             <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
-              Mọi thứ bạn cần
+              Everything you need
             </h2>
             <p className="text-white/40 text-lg max-w-xl mx-auto">
-              Từ quản lý cộng đồng đến kinh doanh trong Discord — tất cả được tích hợp sẵn.
+              From community management to in-Discord commerce — all built-in and ready to go.
             </p>
           </div>
 
@@ -242,19 +242,19 @@ export function LandingPage() {
             <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 0%, rgba(88,101,242,0.2), transparent 70%)" }} />
             <div className="relative">
               <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
-                Sẵn sàng bắt đầu?
+                Ready to get started?
               </h2>
-              <p className="text-white/50 mb-8 text-lg">Thêm Infinity Bot vào server và trải nghiệm ngay hôm nay.</p>
+              <p className="text-white/50 mb-8 text-lg">Add Infinity Bot to your server and experience it today.</p>
               <div className="flex flex-wrap gap-3 justify-center">
                 {inviteUrl && (
                   <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#5865F2] hover:bg-[#4752c4] text-white font-bold text-sm transition-all hover:scale-[1.02] shadow-xl shadow-[#5865F2]/30">
-                    <Zap className="w-4 h-4" /> Thêm Bot miễn phí
+                    <Zap className="w-4 h-4" /> Add Bot for free
                   </a>
                 )}
                 <Link to="/commands"
                   className="flex items-center gap-2 px-8 py-3.5 rounded-xl border border-white/15 text-white font-bold text-sm hover:bg-white/5 transition-all hover:scale-[1.02]">
-                  Xem lệnh <ArrowRight className="w-4 h-4" />
+                  View commands <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
@@ -272,11 +272,11 @@ export function LandingPage() {
             <span>© 2025 Infinity Bot</span>
           </div>
           <div className="flex items-center gap-5 text-sm text-white/30">
-            <Link to="/commands" className="hover:text-white/60 transition-colors">Lệnh</Link>
-            <Link to="/pricing" className="hover:text-white/60 transition-colors">Giá</Link>
-            <Link to="/status" className="hover:text-white/60 transition-colors">Trạng thái</Link>
+            <Link to="/commands" className="hover:text-white/60 transition-colors">Commands</Link>
+            <Link to="/pricing" className="hover:text-white/60 transition-colors">Pricing</Link>
+            <Link to="/status" className="hover:text-white/60 transition-colors">Status</Link>
             {inviteUrl && (
-              <a href={inviteUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white/60 transition-colors">Hỗ trợ</a>
+              <a href={inviteUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white/60 transition-colors">Support</a>
             )}
           </div>
         </div>

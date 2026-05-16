@@ -86,9 +86,9 @@ export function ConfigDiscord() {
     mutationFn: (v: FormValues) => savePartial(v),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["config"] });
-      toast({ title: "Đã lưu", description: "Cấu hình Discord Bot đã được lưu." });
+      toast({ title: "Saved", description: "Cấu hình Discord Bot đã được lưu." });
     },
-    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." }),
   });
 
   const isConfigured = !!config?.has_discord_token;
@@ -194,7 +194,7 @@ export function ConfigDiscord() {
 
                 <div className="pt-1">
                   <Button type="submit" disabled={mutation.isPending}>
-                    {mutation.isPending ? "Đang lưu..." : "Lưu cấu hình"}
+                    {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
                   </Button>
                 </div>
               </CardContent>

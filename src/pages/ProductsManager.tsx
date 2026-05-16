@@ -32,7 +32,7 @@ export function ProductsManager() {
         body: JSON.stringify({ ...p, active: !p.active }),
       }).then((r) => r.json()),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
-    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Không thể cập nhật." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Không thể cập nhật." }),
   });
 
   const deleteMutation = useMutation({
@@ -58,7 +58,7 @@ export function ProductsManager() {
 
       {/* Product cards grid */}
       {isLoading ? (
-        <p className="text-muted-foreground text-sm">Đang tải...</p>
+        <p className="text-muted-foreground text-sm">Loading...</p>
       ) : products.length === 0 ? (
         <p className="text-muted-foreground text-sm">Chưa có sản phẩm nào.</p>
       ) : (
@@ -129,7 +129,7 @@ export function ProductsManager() {
             Sản phẩm <strong>{deleteTarget?.name}</strong> sẽ bị xóa vĩnh viễn.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Hủy</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
             <Button
               variant="destructive"
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}

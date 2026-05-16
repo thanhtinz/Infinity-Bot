@@ -51,7 +51,7 @@ export function GiveawaysManager() {
       setDeleteTarget(null);
       toast({ title: "Đã xóa giveaway." });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const filtered = giveaways.filter((g) => {
@@ -66,7 +66,7 @@ export function GiveawaysManager() {
   const totalEntries = giveaways.reduce((sum, g) => sum + g.entry_count, 0);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-64 text-muted-foreground">Đang tải...</div>;
+    return <div className="flex items-center justify-center h-64 text-muted-foreground">Loading...</div>;
   }
 
   return (
@@ -101,7 +101,7 @@ export function GiveawaysManager() {
               <Trophy className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Đang diễn ra</p>
+              <p className="text-xs text-muted-foreground">Active</p>
               <p className="text-xl font-bold">{activeGiveaways}</p>
             </div>
           </CardContent>
@@ -112,7 +112,7 @@ export function GiveawaysManager() {
               <Clock className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Đã kết thúc</p>
+              <p className="text-xs text-muted-foreground">Ended</p>
               <p className="text-xl font-bold">{endedGiveaways}</p>
             </div>
           </CardContent>
@@ -156,7 +156,7 @@ export function GiveawaysManager() {
                 <TableHead className="text-center">Entries</TableHead>
                 <TableHead>Channel ID</TableHead>
                 <TableHead>Kết thúc</TableHead>
-                <TableHead>Trạng thái</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -180,9 +180,9 @@ export function GiveawaysManager() {
                     <TableCell className="text-sm">{formatDate(g.ends_at)}</TableCell>
                     <TableCell>
                       {g.ended ? (
-                        <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30">Đã kết thúc</Badge>
+                        <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30">Ended</Badge>
                       ) : (
-                        <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Đang diễn ra</Badge>
+                        <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Active</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -213,7 +213,7 @@ export function GiveawaysManager() {
             Giveaway <strong>{deleteTarget?.title}</strong> sẽ bị xóa vĩnh viễn.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Hủy</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}

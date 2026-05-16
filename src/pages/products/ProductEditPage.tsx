@@ -143,7 +143,7 @@ export function ProductEditPage() {
   if (!isNew && isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -154,10 +154,10 @@ export function ProductEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Chỉnh sửa"}</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"}</h1>
         <div className="ml-auto">
           <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
-            {isPending ? "Đang lưu..." : "Lưu"}
+            {isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
@@ -179,7 +179,7 @@ export function ProductEditPage() {
             {/* Mô tả */}
             <FormField control={form.control} name="description" render={({ field }) => (
               <FormItem>
-                <FormLabel>Mô tả</FormLabel>
+                <FormLabel>Description</FormLabel>
                 <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                   <FormControl><Textarea {...field} rows={2} placeholder="Mô tả ngắn..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
                   <EmojiPicker onSelect={(em) => field.onChange((field.value || "") + em)} />
@@ -272,7 +272,7 @@ export function ProductEditPage() {
                   <Switch
                     checked={pkg.active}
                     onCheckedChange={(v) => updatePkg(i, "active", v)}
-                    title="Bật/tắt gói"
+                    title="Toggle package"
                   />
                   <Button
                     type="button"

@@ -156,11 +156,11 @@ export function TicketTranscripts() {
             <TableHeader>
               <TableRow>
                 <TableHead>Ticket ID</TableHead>
-                <TableHead>Kênh</TableHead>
+                <TableHead>Channel</TableHead>
                 <TableHead>Tin nhắn</TableHead>
                 <TableHead>Người tham gia</TableHead>
                 <TableHead>Ngày đóng</TableHead>
-                <TableHead className="text-right">Hành động</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

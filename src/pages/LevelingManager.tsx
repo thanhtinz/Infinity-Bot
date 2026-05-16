@@ -159,7 +159,7 @@ function IdListEditor({ value, onChange }: { value: string[]; onChange: (value: 
       )}
       <div className="flex gap-2">
         <Input value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }} placeholder="Discord user ID, cách nhau bằng dấu phẩy" />
-        <Button type="button" variant="secondary" onClick={add}>Thêm</Button>
+        <Button type="button" variant="secondary" onClick={add}>Add</Button>
       </div>
 
     </div>
@@ -399,19 +399,19 @@ export function LevelingManager({ section }: { section?: string } = {}) {
         return URL.createObjectURL(blob);
       });
     },
-    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Render preview từ bot thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Render preview từ bot thất bại." }),
   });
 
   const saveRankCard = useMutation({
     mutationFn: () => fetch("/api/leveling/rank-card/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(rankCard) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-    onSuccess: (data) => { setRankCard(data); setPreviewVersion((v) => v + 1); qc.invalidateQueries({ queryKey: ["leveling_rank_card_config"] }); toast({ title: "Đã lưu", description: "Ảnh rank card đã được cập nhật." }); },
-    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Lưu rank card thất bại." }),
+    onSuccess: (data) => { setRankCard(data); setPreviewVersion((v) => v + 1); qc.invalidateQueries({ queryKey: ["leveling_rank_card_config"] }); toast({ title: "Saved", description: "Ảnh rank card đã được cập nhật." }); },
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu rank card thất bại." }),
   });
 
   const saveConfig = useMutation({
     mutationFn: () => fetch("/api/leveling/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(form) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_config"] }); toast({ title: "Đã lưu", description: "Cấu hình Leveling đã được lưu." }); },
-    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Lưu cấu hình thất bại." }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_config"] }); toast({ title: "Saved", description: "Cấu hình Leveling đã được lưu." }); },
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu cấu hình thất bại." }),
   });
   const addReward = useMutation({
     mutationFn: () => fetch("/api/leveling/rewards", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(reward) }).then(r => r.json()),
@@ -426,10 +426,10 @@ export function LevelingManager({ section }: { section?: string } = {}) {
   const resetLeaderboard = useMutation({
     mutationFn: () => fetch("/api/leveling/leaderboard/reset", { method: "POST", credentials: "include" }).then(r => r.json()),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_leaderboard"] }); toast({ title: "Đã reset", description: "BXH level đã được reset." }); },
-    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Reset thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Reset thất bại." }),
   });
 
-  if (!form) return <div>Đang tải...</div>;
+  if (!form) return <div>Loading...</div>;
 
   const updateLayer = (id: string, patch: Partial<RankCardLayer>) => {
     if (!rankCard) return;
@@ -507,7 +507,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
 
   return <div className="space-y-4 sm:space-y-6">
     <Tabs value={section || "rank-card"} className="space-y-4">
-      {!section && <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 sm:flex sm:flex-wrap sm:justify-start"><TabsTrigger value="rank-card" className="text-xs sm:text-sm">Rank Card</TabsTrigger><TabsTrigger value="config" className="text-xs sm:text-sm">Cấu hình XP</TabsTrigger><TabsTrigger value="filters" className="text-xs sm:text-sm">Filters</TabsTrigger><TabsTrigger value="leaderboard" className="text-xs sm:text-sm">Leaderboard</TabsTrigger><TabsTrigger value="rewards" className="text-xs sm:text-sm">Rewards</TabsTrigger><TabsTrigger value="multipliers" className="text-xs sm:text-sm">Multipliers</TabsTrigger></TabsList>}
+      {!section && <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 sm:flex sm:flex-wrap sm:justify-start"><TabsTrigger value="rank-card" className="text-xs sm:text-sm">Rank Card</TabsTrigger><TabsTrigger value="config" className="text-xs sm:text-sm">XP Config</TabsTrigger><TabsTrigger value="filters" className="text-xs sm:text-sm">Filters</TabsTrigger><TabsTrigger value="leaderboard" className="text-xs sm:text-sm">Leaderboard</TabsTrigger><TabsTrigger value="rewards" className="text-xs sm:text-sm">Rewards</TabsTrigger><TabsTrigger value="multipliers" className="text-xs sm:text-sm">Multipliers</TabsTrigger></TabsList>}
 
       <TabsContent value="rank-card" className="space-y-4">
         {rankCard && (
@@ -519,7 +519,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                   <CardDescription>Tuỳ chỉnh màu sắc, nền và hiển thị. Preview tự cập nhật.</CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => saveRankCard.mutate()} disabled={saveRankCard.isPending}><Save className="mr-1.5 h-4 w-4" />{saveRankCard.isPending ? "Đang lưu..." : "Lưu"}</Button>
+                  <Button size="sm" variant="outline" onClick={() => saveRankCard.mutate()} disabled={saveRankCard.isPending}><Save className="mr-1.5 h-4 w-4" />{saveRankCard.isPending ? "Saving..." : "Save"}</Button>
                   <Button size="sm" variant="secondary" onClick={() => { setRankCard({ ...rankCard, layout_config: defaultLayout() }); }}><RotateCcw className="mr-1.5 h-4 w-4" />Reset</Button>
                 </div>
               </div>
@@ -534,11 +534,11 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="flex items-center gap-3">
                         <input type="color" value={rankCard.accent} onChange={e => setRankCard({ ...rankCard, accent: e.target.value })} className="h-10 w-12 cursor-pointer rounded-lg border bg-transparent p-0.5" />
-                        <div><Label className="text-xs">Accent chính</Label><p className="font-mono text-xs text-muted-foreground">{rankCard.accent}</p></div>
+                        <div><Label className="text-xs">Primary accent</Label><p className="font-mono text-xs text-muted-foreground">{rankCard.accent}</p></div>
                       </div>
                       <div className="flex items-center gap-3">
                         <input type="color" value={rankCard.secondary_accent} onChange={e => setRankCard({ ...rankCard, secondary_accent: e.target.value })} className="h-10 w-12 cursor-pointer rounded-lg border bg-transparent p-0.5" />
-                        <div><Label className="text-xs">Accent phụ (gradient bar)</Label><p className="font-mono text-xs text-muted-foreground">{rankCard.secondary_accent}</p></div>
+                        <div><Label className="text-xs">Secondary accent (gradient bar)</Label><p className="font-mono text-xs text-muted-foreground">{rankCard.secondary_accent}</p></div>
                       </div>
                     </div>
                   </div>
@@ -676,8 +676,8 @@ export function LevelingManager({ section }: { section?: string } = {}) {
         <div className="hidden">
             {rankCard && <div className="grid gap-3 rounded-2xl border bg-background/70 p-3 sm:rounded-3xl sm:p-4 xl:grid-cols-[1fr_1fr_auto]">
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <div><Label>Accent chính</Label><Input type="color" value={rankCard.accent} onChange={e => setRankCard({...rankCard, accent: e.target.value})} className="h-10" /></div>
-                <div><Label>Accent phụ</Label><Input type="color" value={rankCard.secondary_accent} onChange={e => setRankCard({...rankCard, secondary_accent: e.target.value})} className="h-10" /></div>
+                <div><Label>Primary accent</Label><Input type="color" value={rankCard.accent} onChange={e => setRankCard({...rankCard, accent: e.target.value})} className="h-10" /></div>
+                <div><Label>Secondary accent</Label><Input type="color" value={rankCard.secondary_accent} onChange={e => setRankCard({...rankCard, secondary_accent: e.target.value})} className="h-10" /></div>
                 <div><Label>Background</Label><Select value={rankCard.background} onValueChange={v => setRankCard({...rankCard, background: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="aurora">Aurora</SelectItem><SelectItem value="midnight">Midnight</SelectItem><SelectItem value="sunset">Sunset</SelectItem><SelectItem value="mono">Mono</SelectItem></SelectContent></Select></div>
                 <div><Label>Panel</Label><Select value={rankCard.panel_style} onValueChange={v => setRankCard({...rankCard, panel_style: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="glass">Glass</SelectItem><SelectItem value="solid">Solid</SelectItem></SelectContent></Select></div>
               </div>
@@ -806,7 +806,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
       </TabsContent>
 
       <TabsContent value="config"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Settings className="w-4 h-4" /> Cấu hình XP</CardTitle><CardDescription>Điều chỉnh tốc độ và thông báo level-up.</CardDescription></CardHeader><CardContent className="space-y-5">
-        <div className="flex items-center justify-between rounded-2xl border p-4"><div><p className="font-medium">Bật leveling</p><p className="text-sm text-muted-foreground">Tính XP từ tin nhắn.</p></div><Switch checked={form.enabled} onCheckedChange={v => setForm({...form, enabled: v})} /></div>
+        <div className="flex items-center justify-between rounded-2xl border p-4"><div><p className="font-medium">Enable leveling</p><p className="text-sm text-muted-foreground">Tính XP từ tin nhắn.</p></div><Switch checked={form.enabled} onCheckedChange={v => setForm({...form, enabled: v})} /></div>
         <div className="grid md:grid-cols-3 gap-4"><div><Label>XP tối thiểu</Label><Input type="number" value={form.xp_min} onChange={e => setForm({...form, xp_min: Number(e.target.value)})} /></div><div><Label>XP tối đa</Label><Input type="number" value={form.xp_max} onChange={e => setForm({...form, xp_max: Number(e.target.value)})} /></div><div><Label>Cooldown giây</Label><Input type="number" value={form.cooldown_seconds} onChange={e => setForm({...form, cooldown_seconds: Number(e.target.value)})} /></div></div>
         <div className="grid md:grid-cols-2 gap-4"><div><Label>Chế độ level-up</Label><Select value={form.level_up_mode} onValueChange={v => setForm({...form, level_up_mode: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="current">Kênh hiện tại</SelectItem><SelectItem value="fixed">Kênh cố định</SelectItem><SelectItem value="dm">DM user</SelectItem><SelectItem value="off">Tắt thông báo</SelectItem></SelectContent></Select></div><div><Label>Kênh level-up</Label><ChannelSelect value={form.level_up_channel_id || ""} onChange={v => setForm({...form, level_up_channel_id: v})} filter="text" /></div></div>
         <div className="rounded-2xl border bg-muted/20 p-4">
@@ -816,7 +816,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
           </div>
         </div>
         <div className="grid md:grid-cols-3 gap-3"><div className="flex items-center justify-between rounded-2xl border p-3"><Label>XP từ slash commands</Label><Switch checked={form.gain_xp_from_commands} onCheckedChange={v => setForm({...form, gain_xp_from_commands: v})} /></div><div className="flex items-center justify-between rounded-2xl border p-3"><Label>Whitelist channel mode</Label><Switch checked={form.use_channel_whitelist} onCheckedChange={v => setForm({...form, use_channel_whitelist: v})} /></div><div className="flex items-center justify-between rounded-2xl border p-3"><Label>Xoá reward role cũ</Label><Switch checked={form.remove_old_reward_roles} onCheckedChange={v => setForm({...form, remove_old_reward_roles: v})} /></div></div>
-        <Button onClick={() => saveConfig.mutate()} disabled={saveConfig.isPending}>Lưu cấu hình</Button>
+        <Button onClick={() => saveConfig.mutate()} disabled={saveConfig.isPending}>Save config</Button>
       </CardContent></Card></TabsContent>
 
       <TabsContent value="filters" className="space-y-4">
@@ -847,11 +847,11 @@ export function LevelingManager({ section }: { section?: string } = {}) {
         </Card>
       </TabsContent>
 
-      <TabsContent value="leaderboard"><Card><CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="flex items-center gap-2"><ListOrdered className="w-4 h-4" /> Leaderboard</CardTitle><AlertDialog><AlertDialogTrigger asChild><Button variant="destructive" size="sm"><RotateCcw className="h-3.5 w-3.5 mr-1.5" />Reset BXH</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Reset BXH Level?</AlertDialogTitle><AlertDialogDescription>BXH sẽ chỉ tính những member hoạt động sau thời điểm này. Dữ liệu XP vẫn được giữ nguyên.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Hủy</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => resetLeaderboard.mutate()}>Xác nhận reset</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></div>{leaderboard?.reset_at && <CardDescription>Reset lần cuối: {new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(leaderboard.reset_at))}</CardDescription>}</CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Rank</TableHead><TableHead>User</TableHead><TableHead>Level</TableHead><TableHead>XP</TableHead><TableHead>Tiến độ</TableHead><TableHead>Tin nhắn</TableHead></TableRow></TableHeader><TableBody>{leaderboard?.items?.map(i => <TableRow key={i.discord_id}><TableCell>#{i.rank}</TableCell><TableCell className="font-medium">{i.username || i.discord_id}</TableCell><TableCell>{i.level}</TableCell><TableCell>{i.xp.toLocaleString()}</TableCell><TableCell><Progress value={Math.min(100, ((i.xp || 0) % 10000) / 100)} className="h-2" /></TableCell><TableCell>{i.message_count}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
+      <TabsContent value="leaderboard"><Card><CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="flex items-center gap-2"><ListOrdered className="w-4 h-4" /> Leaderboard</CardTitle><AlertDialog><AlertDialogTrigger asChild><Button variant="destructive" size="sm"><RotateCcw className="h-3.5 w-3.5 mr-1.5" />Reset BXH</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Reset BXH Level?</AlertDialogTitle><AlertDialogDescription>BXH sẽ chỉ tính những member hoạt động sau thời điểm này. Dữ liệu XP vẫn được giữ nguyên.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => resetLeaderboard.mutate()}>Xác nhận reset</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></div>{leaderboard?.reset_at && <CardDescription>Reset lần cuối: {new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(leaderboard.reset_at))}</CardDescription>}</CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Rank</TableHead><TableHead>User</TableHead><TableHead>Level</TableHead><TableHead>XP</TableHead><TableHead>Tiến độ</TableHead><TableHead>Tin nhắn</TableHead></TableRow></TableHeader><TableBody>{leaderboard?.items?.map(i => <TableRow key={i.discord_id}><TableCell>#{i.rank}</TableCell><TableCell className="font-medium">{i.username || i.discord_id}</TableCell><TableCell>{i.level}</TableCell><TableCell>{i.xp.toLocaleString()}</TableCell><TableCell><Progress value={Math.min(100, ((i.xp || 0) % 10000) / 100)} className="h-2" /></TableCell><TableCell>{i.message_count}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
 
-      <TabsContent value="rewards"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Gift className="w-4 h-4" /> Role Rewards</CardTitle></CardHeader><CardContent className="space-y-4"><div className="grid md:grid-cols-[120px_1fr_120px] gap-3 items-end"><div><Label>Level</Label><Input type="number" value={reward.level} onChange={e => setReward({...reward, level: Number(e.target.value)})} /></div><div><Label>Role</Label><RoleSelect value={reward.role_id} onChange={v => setReward({...reward, role_id: v})} /></div><Button onClick={() => addReward.mutate()} disabled={!reward.role_id}>Thêm</Button></div><Table><TableHeader><TableRow><TableHead>Level</TableHead><TableHead>Role</TableHead><TableHead></TableHead></TableRow></TableHeader><TableBody>{rewards.map(r => <TableRow key={r.id}><TableCell>{r.level}</TableCell><TableCell>{r.role_name || r.role_id}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => delReward.mutate(r.id)}>Xoá</Button></TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
+      <TabsContent value="rewards"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Gift className="w-4 h-4" /> Role Rewards</CardTitle></CardHeader><CardContent className="space-y-4"><div className="grid md:grid-cols-[120px_1fr_120px] gap-3 items-end"><div><Label>Level</Label><Input type="number" value={reward.level} onChange={e => setReward({...reward, level: Number(e.target.value)})} /></div><div><Label>Role</Label><RoleSelect value={reward.role_id} onChange={v => setReward({...reward, role_id: v})} /></div><Button onClick={() => addReward.mutate()} disabled={!reward.role_id}>Add</Button></div><Table><TableHeader><TableRow><TableHead>Level</TableHead><TableHead>Role</TableHead><TableHead></TableHead></TableRow></TableHeader><TableBody>{rewards.map(r => <TableRow key={r.id}><TableCell>{r.level}</TableCell><TableCell>{r.role_name || r.role_id}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => delReward.mutate(r.id)}>Delete</Button></TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
 
-      <TabsContent value="multipliers"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Zap className="w-4 h-4" /> Multipliers</CardTitle><CardDescription>Global, channel hoặc role multiplier sẽ nhân XP nhận được.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="grid md:grid-cols-5 gap-3 items-end"><div><Label>Loại</Label><Select value={multi.type} onValueChange={v => setMulti({...multi, type: v, target_id: ""})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="global">Global</SelectItem><SelectItem value="channel">Channel</SelectItem><SelectItem value="role">Role</SelectItem></SelectContent></Select></div><div className="md:col-span-2"><Label>Target</Label>{multi.type === "channel" ? <ChannelSelect value={multi.target_id} onChange={v => setMulti({...multi, target_id: v})} filter="text" /> : multi.type === "role" ? <RoleSelect value={multi.target_id} onChange={v => setMulti({...multi, target_id: v})} /> : <Input disabled value="Toàn server" />}</div><div><Label>Multiplier</Label><Input type="number" step="0.1" value={multi.multiplier} onChange={e => setMulti({...multi, multiplier: Number(e.target.value)})} /></div><Button onClick={() => addMulti.mutate()}>Thêm</Button></div><Table><TableHeader><TableRow><TableHead>Loại</TableHead><TableHead>Target</TableHead><TableHead>Multiplier</TableHead><TableHead></TableHead></TableRow></TableHeader><TableBody>{multipliers.map(m => <TableRow key={m.id}><TableCell>{m.type}</TableCell><TableCell>{m.target_name || m.target_id || "Global"}</TableCell><TableCell>x{m.multiplier}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => delMulti.mutate(m.id)}>Xoá</Button></TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
+      <TabsContent value="multipliers"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Zap className="w-4 h-4" /> Multipliers</CardTitle><CardDescription>Global, channel hoặc role multiplier sẽ nhân XP nhận được.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="grid md:grid-cols-5 gap-3 items-end"><div><Label>Loại</Label><Select value={multi.type} onValueChange={v => setMulti({...multi, type: v, target_id: ""})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="global">Global</SelectItem><SelectItem value="channel">Channel</SelectItem><SelectItem value="role">Role</SelectItem></SelectContent></Select></div><div className="md:col-span-2"><Label>Target</Label>{multi.type === "channel" ? <ChannelSelect value={multi.target_id} onChange={v => setMulti({...multi, target_id: v})} filter="text" /> : multi.type === "role" ? <RoleSelect value={multi.target_id} onChange={v => setMulti({...multi, target_id: v})} /> : <Input disabled value="Toàn server" />}</div><div><Label>Multiplier</Label><Input type="number" step="0.1" value={multi.multiplier} onChange={e => setMulti({...multi, multiplier: Number(e.target.value)})} /></div><Button onClick={() => addMulti.mutate()}>Add</Button></div><Table><TableHeader><TableRow><TableHead>Loại</TableHead><TableHead>Target</TableHead><TableHead>Multiplier</TableHead><TableHead></TableHead></TableRow></TableHeader><TableBody>{multipliers.map(m => <TableRow key={m.id}><TableCell>{m.type}</TableCell><TableCell>{m.target_name || m.target_id || "Global"}</TableCell><TableCell>x{m.multiplier}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => delMulti.mutate(m.id)}>Delete</Button></TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
     </Tabs>
   </div>;
 }
@@ -884,8 +884,8 @@ export function RankCardEditor() {
   };
   const saveRankCard = useMutation({
     mutationFn: () => fetch("/api/leveling/rank-card/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(rankCard) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-    onSuccess: (data) => { setRankCard(data); qc.invalidateQueries({ queryKey: ["leveling_rank_card_config"] }); toast({ title: "Đã lưu", description: "Ảnh rank card đã được cập nhật." }); },
-    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Lưu rank card thất bại." }),
+    onSuccess: (data) => { setRankCard(data); qc.invalidateQueries({ queryKey: ["leveling_rank_card_config"] }); toast({ title: "Saved", description: "Ảnh rank card đã được cập nhật." }); },
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu rank card thất bại." }),
   });
 
   const startDragLayer = (event: PointerEvent<HTMLDivElement>, layer: RankCardLayer) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setSelectedLayerId(layer.id); setDragState({ id: layer.id, pointerId: event.pointerId, startClientX: event.clientX, startClientY: event.clientY, startX: layer.x, startY: layer.y, scale: 1 / zoom }); };
@@ -900,7 +900,7 @@ export function RankCardEditor() {
   return <div className="flex h-[100dvh] flex-col overflow-hidden bg-slate-950 text-white">
     <header className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-slate-950/95 px-3 py-2 backdrop-blur sm:px-4">
       <div className="flex min-w-0 items-center gap-2"><Button asChild size="sm" variant="ghost" className="text-white hover:bg-white/10 hover:text-white"><Link to="/leveling/rank-card"><ArrowLeft className="h-4 w-4" /></Link></Button><div className="min-w-0"><p className="truncate text-sm font-semibold">Rank Card Studio</p><p className="text-[11px] text-white/50">Canva-style fullscreen editor</p></div></div>
-      <div className="flex items-center gap-1"><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom((z) => Math.max(0.25, Number((z - 0.1).toFixed(2))))}><ZoomOut className="h-4 w-4" /></Button><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom(0.48)}>Fit</Button><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom((z) => Math.min(2.5, Number((z + 0.1).toFixed(2))))}><ZoomIn className="h-4 w-4" /></Button><Button size="sm" onClick={() => saveRankCard.mutate()} disabled={saveRankCard.isPending}><Save className="mr-1 h-4 w-4" />Lưu</Button></div>
+      <div className="flex items-center gap-1"><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom((z) => Math.max(0.25, Number((z - 0.1).toFixed(2))))}><ZoomOut className="h-4 w-4" /></Button><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom(0.48)}>Fit</Button><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom((z) => Math.min(2.5, Number((z + 0.1).toFixed(2))))}><ZoomIn className="h-4 w-4" /></Button><Button size="sm" onClick={() => saveRankCard.mutate()} disabled={saveRankCard.isPending}><Save className="mr-1 h-4 w-4" />Save</Button></div>
     </header>
     <div className="flex min-h-0 flex-1 flex-col md:flex-row">
       <aside className="order-2 max-h-[28dvh] shrink-0 overflow-y-auto border-t border-white/10 bg-slate-900/95 p-3 md:order-1 md:max-h-none md:w-64 md:border-r md:border-t-0">

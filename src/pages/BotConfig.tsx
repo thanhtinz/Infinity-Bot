@@ -170,8 +170,8 @@ export function BotConfig() {
 
   // ── Mutations ──
   const makeToast = (label: string) => ({
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["config"] }); toast({ title: "Đã lưu", description: `Cấu hình ${label} đã được lưu.` }); },
-    onError: () => { toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["config"] }); toast({ title: "Saved", description: `Cấu hình ${label} đã được lưu.` }); },
+    onError: () => { toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." }); },
   });
 
   const discordMutation = useMutation({ mutationFn: (v: DiscordValues) => savePartial(v), ...makeToast("Discord Bot") });
@@ -182,9 +182,9 @@ export function BotConfig() {
       queryClient.invalidateQueries({ queryKey: ["config"] });
       queryClient.invalidateQueries({ queryKey: ["discord_channels"] });
       queryClient.invalidateQueries({ queryKey: ["discord_roles"] });
-      toast({ title: "Đã lưu", description: "Cấu hình phân quyền & kênh đã được lưu." });
+      toast({ title: "Saved", description: "Cấu hình phân quyền & kênh đã được lưu." });
     },
-    onError: () => { toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }); },
+    onError: () => { toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." }); },
   });
 
   // ── Temp Voice ──
@@ -220,8 +220,8 @@ export function BotConfig() {
         credentials: "include",
         body: JSON.stringify({ enabled: tvEnabled, join_channel_id: tvJoinChannel, category_id: tvCategory }),
       }).then((r) => { if (!r.ok) throw new Error("Lưu thất bại"); return r.json(); }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tempvoice_config"] }); toast({ title: "Đã lưu", description: "Cấu hình Temp Voice đã được lưu." }); },
-    onError: () => { toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tempvoice_config"] }); toast({ title: "Saved", description: "Cấu hình Temp Voice đã được lưu." }); },
+    onError: () => { toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." }); },
   });
 
 
@@ -274,7 +274,7 @@ export function BotConfig() {
                 </FormItem>
               )} />
               <Button type="submit" disabled={discordMutation.isPending} size="sm">
-                {discordMutation.isPending ? "Đang lưu..." : "Lưu Discord"}
+                {discordMutation.isPending ? "Saving..." : "Lưu Discord"}
               </Button>
             </CardContent>
           </Card>
@@ -316,7 +316,7 @@ export function BotConfig() {
                 </FormItem>
               )} />
               <Button type="submit" disabled={payosMutation.isPending} size="sm">
-                {payosMutation.isPending ? "Đang lưu..." : "Lưu PayOS"}
+                {payosMutation.isPending ? "Saving..." : "Lưu PayOS"}
               </Button>
             </CardContent>
           </Card>
@@ -337,12 +337,12 @@ export function BotConfig() {
                   <FormLabel>Server (Guild)</FormLabel>
                   <FormControl>
                     {guilds.length > 0 ? (
-                      <DiscordSelect value={field.value} onChange={field.onChange} options={guilds} placeholder="Chọn server..." />
+                      <DiscordSelect value={field.value} onChange={field.onChange} options={guilds} placeholder="Select server..." />
                     ) : (
                       <Input placeholder="ID server..." {...field} value={field.value || ""} />
                     )}
                   </FormControl>
-                  <FormDescription>Bot phải có trong server này.</FormDescription>
+                  <FormDescription>Bot must be in this server.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -351,9 +351,9 @@ export function BotConfig() {
                   <FormLabel>Admin Role</FormLabel>
                   <FormControl>
                     {roles.length > 0 ? (
-                      <DiscordSelect value={field.value} onChange={field.onChange} options={roles} placeholder="Chọn role..." />
+                      <DiscordSelect value={field.value} onChange={field.onChange} options={roles} placeholder="Select role..." />
                     ) : (
-                      <Input placeholder={activeGuildId ? "Đang tải roles..." : "Chọn Server trước"} disabled={!activeGuildId} {...field} value={field.value || ""} />
+                      <Input placeholder={activeGuildId ? "Đang tải roles..." : "Select a server first"} disabled={!activeGuildId} {...field} value={field.value || ""} />
                     )}
                   </FormControl>
                   <FormDescription>User có role này sẽ được login.</FormDescription>
@@ -373,9 +373,9 @@ export function BotConfig() {
                       <FormLabel>{label}</FormLabel>
                       <FormControl>
                         {channels.length > 0 ? (
-                          <DiscordSelect value={field.value} onChange={field.onChange} options={channels.map((c) => ({ id: c.id, name: `#${c.name}` }))} placeholder="Chọn kênh..." />
+                          <DiscordSelect value={field.value} onChange={field.onChange} options={channels.map((c) => ({ id: c.id, name: `#${c.name}` }))} placeholder="Select channel..." />
                         ) : (
-                          <Input placeholder={activeGuildId ? "Đang tải kênh..." : "Chọn Server trước"} disabled={!activeGuildId} {...field} value={field.value || ""} />
+                          <Input placeholder={activeGuildId ? "Đang tải kênh..." : "Select a server first"} disabled={!activeGuildId} {...field} value={field.value || ""} />
                         )}
                       </FormControl>
                       <FormMessage />
@@ -384,7 +384,7 @@ export function BotConfig() {
                 ))}
               </div>
               <Button type="submit" disabled={serverMutation.isPending} size="sm">
-                {serverMutation.isPending ? "Đang lưu..." : "Lưu Phân quyền & Kênh"}
+                {serverMutation.isPending ? "Saving..." : "Lưu Phân quyền & Kênh"}
               </Button>
             </CardContent>
           </Card>
@@ -400,7 +400,7 @@ export function BotConfig() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Bật tính năng</p>
+              <p className="font-medium">Enable feature</p>
               <p className="text-sm text-muted-foreground">Kích hoạt tự động tạo voice room.</p>
             </div>
             <Switch checked={tvEnabled} onCheckedChange={setTvEnabled} />
@@ -410,7 +410,7 @@ export function BotConfig() {
             {allChannels.filter((c: { id: string; name: string; type: number }) => c.type === 4).length > 0 ? (
               <DiscordSelect value={tvCategory} onChange={setTvCategory} options={allChannels.filter((c: { id: string; name: string; type: number }) => c.type === 4).map((c: { id: string; name: string; type: number }) => ({ id: c.id, name: c.name }))} placeholder="Chọn category..." />
             ) : (
-              <Input placeholder={activeGuildId ? "Đang tải categories..." : "Chọn Server trước"} disabled={!activeGuildId} value={tvCategory} onChange={(e) => setTvCategory(e.target.value)} />
+              <Input placeholder={activeGuildId ? "Đang tải categories..." : "Select a server first"} disabled={!activeGuildId} value={tvCategory} onChange={(e) => setTvCategory(e.target.value)} />
             )}
             <p className="text-xs text-muted-foreground">Voice room sẽ được tạo trong category này.</p>
           </div>
@@ -419,12 +419,12 @@ export function BotConfig() {
             {tvVoiceChannels.length > 0 ? (
               <DiscordSelect value={tvJoinChannel} onChange={setTvJoinChannel} options={tvVoiceChannels.map((c) => ({ id: c.id, name: c.name }))} placeholder="Chọn kênh voice..." />
             ) : (
-              <Input placeholder={activeGuildId ? "Đang tải voice channels..." : "Chọn Server trước"} disabled={!activeGuildId} value={tvJoinChannel} onChange={(e) => setTvJoinChannel(e.target.value)} />
+              <Input placeholder={activeGuildId ? "Đang tải voice channels..." : "Select a server first"} disabled={!activeGuildId} value={tvJoinChannel} onChange={(e) => setTvJoinChannel(e.target.value)} />
             )}
             <p className="text-xs text-muted-foreground">User join kênh này → bot tạo room riêng.</p>
           </div>
           <Button onClick={() => tvMutation.mutate()} disabled={tvMutation.isPending} size="sm">
-            {tvMutation.isPending ? "Đang lưu..." : "Lưu Temp Voice"}
+            {tvMutation.isPending ? "Saving..." : "Lưu Temp Voice"}
           </Button>
         </CardContent>
       </Card>

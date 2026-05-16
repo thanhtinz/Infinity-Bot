@@ -209,7 +209,7 @@ export function ReactionRoleEditPage() {
   if (!isNew && isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -220,10 +220,10 @@ export function ReactionRoleEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Chỉnh sửa"} Panel Reaction Role</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"} Panel Reaction Role</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? "Đang lưu..." : "Lưu"}
+            {isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
@@ -240,7 +240,7 @@ export function ReactionRoleEditPage() {
 
         {/* Channel */}
         <div className="space-y-2">
-          <Label>Kênh</Label>
+          <Label>Channel</Label>
           <ChannelSelect
             value={form.channel_id}
             onChange={(v) => setForm((p) => ({ ...p, channel_id: v }))}
@@ -294,7 +294,7 @@ export function ReactionRoleEditPage() {
 
           {form.mappings.length === 0 && (
             <p className="text-xs text-muted-foreground text-center py-4">
-              Chưa có mapping nào. Nhấn "Thêm" để bắt đầu.
+              Chưa có mapping nào. Nhấn "Add" để bắt đầu.
             </p>
           )}
 

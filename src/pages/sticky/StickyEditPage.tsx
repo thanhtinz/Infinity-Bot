@@ -261,7 +261,7 @@ export function StickyEditPage() {
       toast({ title: "Đã tạo sticky." });
     },
     onError: (e: Error) =>
-      toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+      toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const updateMutation = useMutation({
@@ -282,7 +282,7 @@ export function StickyEditPage() {
       toast({ title: "Đã cập nhật sticky." });
     },
     onError: (e: Error) =>
-      toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+      toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -298,7 +298,7 @@ export function StickyEditPage() {
   if (!isNew && isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -310,14 +310,14 @@ export function StickyEditPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="font-semibold">
-          {isNew ? "Tạo Sticky" : "Chỉnh sửa Sticky"}
+          {isNew ? "Tạo Sticky" : "Edit Sticky"}
         </h1>
         <div className="ml-auto">
           <Button
             onClick={handleSave}
             disabled={!form.channel_id || isPending}
           >
-            {isPending ? "Đang lưu..." : "Lưu"}
+            {isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
@@ -354,7 +354,7 @@ export function StickyEditPage() {
         {/* Plain text mode */}
         {!form.embed_enabled && (
           <div className="space-y-2">
-            <Label>Nội dung</Label>
+            <Label>Content</Label>
             <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
               <Textarea
                 value={form.content}
@@ -374,7 +374,7 @@ export function StickyEditPage() {
         {form.embed_enabled && (
           <div className="space-y-3">
             <div className="space-y-2">
-              <Label>Tiêu đề</Label>
+              <Label>Title</Label>
               <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                 <Input
                   value={form.embed_title}
@@ -389,7 +389,7 @@ export function StickyEditPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Mô tả</Label>
+              <Label>Description</Label>
               <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                 <Textarea
                   value={form.embed_description}
@@ -408,7 +408,7 @@ export function StickyEditPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Màu embed</Label>
+              <Label>Embed color</Label>
               <div className="flex items-center gap-2">
                 {PRESET_COLORS.map((c) => (
                   <button

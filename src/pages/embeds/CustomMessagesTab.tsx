@@ -272,7 +272,7 @@ export function CustomMessagesTab() {
       <Dialog open={backupsOpen} onOpenChange={setBackupsOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Backups cục bộ</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Local backups</DialogTitle>
             <DialogDescription>Backup được lưu trong trình duyệt của bạn (tối đa 20).</DialogDescription>
           </DialogHeader>
           <BackupList getBackups={getBackups} loadBackup={loadBackup} deleteBackup={deleteBackup} />

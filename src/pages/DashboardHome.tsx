@@ -59,7 +59,7 @@ export function DashboardHome() {
     staleTime: 60_000,
   });
 
-  if (configLoading) return <div className="p-8 text-muted-foreground">Đang tải...</div>;
+  if (configLoading) return <div className="p-8 text-muted-foreground">Loading...</div>;
 
   const isRunning = config?.bot_status === "running";
 
@@ -72,7 +72,7 @@ export function DashboardHome() {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
-      <h1 className="text-xl font-semibold">Tổng quan</h1>
+      <h1 className="text-xl font-semibold">Overview</h1>
 
       {/* ── Stats grid ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -101,7 +101,7 @@ export function DashboardHome() {
           </CardHeader>
           <CardContent className="pt-0">
             {statsLoading || !stats ? (
-              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Đang tải...</div>
+              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
             ) : (
               <ResponsiveContainer width="100%" height={180}>
                 <AreaChart data={stats.chart} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -142,7 +142,7 @@ export function DashboardHome() {
           </CardHeader>
           <CardContent className="pt-0">
             {statsLoading || !stats ? (
-              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Đang tải...</div>
+              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
             ) : (
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={stats.chart} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>

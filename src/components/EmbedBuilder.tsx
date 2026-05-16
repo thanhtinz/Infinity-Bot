@@ -187,7 +187,7 @@ export function EmbedBuilder({
 
   const colorSection = (
     <div className="space-y-2">
-      <Label className="text-sm">Màu embed</Label>
+      <Label className="text-sm">Embed color</Label>
       <div className="flex items-center gap-2 flex-wrap">
         {PRESET_COLORS.map((c) => (
           <button
@@ -213,7 +213,7 @@ export function EmbedBuilder({
 
   const titleSection = (
     <div className="space-y-2">
-      <Label className="text-sm">Tiêu đề</Label>
+      <Label className="text-sm">Title</Label>
       <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
         <Input
           className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -228,7 +228,7 @@ export function EmbedBuilder({
 
   const descriptionSection = (
     <div className="space-y-2">
-      <Label className="text-sm">Mô tả</Label>
+      <Label className="text-sm">Description</Label>
       <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
         <Textarea
           value={data.description}

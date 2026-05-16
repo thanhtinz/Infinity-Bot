@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Zap, ArrowRight, ExternalLink, HeadphonesIcon } from "lucide-react";
+import { Zap, ArrowRight, ExternalLink } from "lucide-react";
 
 export function useLandingFonts() {
   useEffect(() => {
@@ -39,9 +39,9 @@ export function LandingNavbar() {
 
   const navLinks = [
     { to: "/", label: "Home" },
-    { to: "/commands", label: "Lệnh" },
-    { to: "/pricing", label: "Giá" },
-    { to: "/status", label: "Trạng thái" },
+    { to: "/commands", label: "Commands" },
+    { to: "/pricing", label: "Pricing" },
+    { to: "/status", label: "Status" },
   ];
 
   return (
@@ -68,7 +68,7 @@ export function LandingNavbar() {
           {inviteUrl && (
             <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
               className="hover:text-white transition-colors flex items-center gap-1">
-              <HeadphonesIcon className="w-3.5 h-3.5" /> Hỗ trợ
+              Support <ExternalLink className="w-3.5 h-3.5" />
             </a>
           )}
         </div>
@@ -76,12 +76,12 @@ export function LandingNavbar() {
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
           <Link to="/dashboard" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-            Đăng nhập
+            Login
           </Link>
           {inviteUrl && (
             <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#5865F2] hover:bg-[#4752c4] text-white text-sm font-semibold transition-colors">
-              Thêm Bot <ArrowRight className="w-3.5 h-3.5" />
+              Add Bot <ArrowRight className="w-3.5 h-3.5" />
             </a>
           )}
         </div>
@@ -109,7 +109,7 @@ export function LandingNavbar() {
             <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
               onClick={() => setMenuOpen(false)}
               className="flex items-center gap-2 text-sm text-white/70 hover:text-white py-2 transition-colors">
-              <HeadphonesIcon className="w-3.5 h-3.5" /> Hỗ trợ
+              Support <ExternalLink className="w-3.5 h-3.5" />
             </a>
           )}
         </div>

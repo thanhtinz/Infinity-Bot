@@ -146,7 +146,7 @@ export function TicketTeamEditPage() {
   if (!isNew && isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -157,10 +157,10 @@ export function TicketTeamEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Chỉnh sửa"}</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"}</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={!teamName.trim() || isPending}>
-            {isPending ? "Đang lưu..." : "Lưu"}
+            {isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
@@ -177,7 +177,7 @@ export function TicketTeamEditPage() {
 
         {/* Description */}
         <div className="space-y-2">
-          <Label>Mô tả</Label>
+          <Label>Description</Label>
           <Textarea
             value={teamDesc}
             onChange={(e) => setTeamDesc(e.target.value)}
@@ -188,7 +188,7 @@ export function TicketTeamEditPage() {
 
         {/* Color */}
         <div className="space-y-2">
-          <Label>Màu sắc</Label>
+          <Label>Colors</Label>
           <div className="flex gap-2">
             {DISCORD_COLORS.map((c) => (
               <button

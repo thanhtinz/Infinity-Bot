@@ -102,7 +102,7 @@ export function BotStatus() {
   const startMutation = useMutation({
     mutationFn: () =>
       fetch("/api/bot/start", { method: "POST", credentials: "include" }),
-    onSuccess: (res) => handleMutationResponse(res, "Bật Bot"),
+    onSuccess: (res) => handleMutationResponse(res, "Start Bot"),
     onError: () => toast({ variant: "destructive", title: "Lỗi kết nối" }),
   });
 
@@ -400,7 +400,7 @@ export function BotStatus() {
               <Users className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Thành viên</p>
+              <p className="text-xs text-muted-foreground">Members</p>
               {infoLoading ? (
                 <Skeleton className="h-6 w-16 mt-1" />
               ) : (
@@ -512,7 +512,7 @@ export function BotStatus() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Trạng thái</Label>
+              <Label>Status</Label>
               <Select
                 value={presenceStatus}
                 onValueChange={(v) =>

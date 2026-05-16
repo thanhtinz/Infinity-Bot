@@ -88,7 +88,7 @@ export function StarboardConfig() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20 text-muted-foreground">
-        Đang tải...
+        Loading...
       </div>
     );
   }
@@ -118,7 +118,7 @@ export function StarboardConfig() {
           {/* Enabled toggle */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Bật Starboard</p>
+              <p className="font-medium">Enable Starboard</p>
               <p className="text-sm text-muted-foreground">
                 Kích hoạt tính năng ghim tin nhắn nổi bật.
               </p>
@@ -135,7 +135,7 @@ export function StarboardConfig() {
             <ChannelSelect
               value={channelId}
               onChange={setChannelId}
-              placeholder="Chọn kênh..."
+              placeholder="Select channel..."
               filter="text"
             />
           </div>
@@ -190,7 +190,7 @@ export function StarboardConfig() {
         disabled={saveMutation.isPending}
         className="w-full"
       >
-        {saveMutation.isPending ? "Đang lưu..." : "Lưu cấu hình"}
+        {saveMutation.isPending ? "Saving..." : "Lưu cấu hình"}
       </Button>
     </div>
   );

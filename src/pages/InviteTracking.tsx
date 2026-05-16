@@ -57,7 +57,7 @@ export function InviteTracking() {
   const isLoading = tab === "leaderboard" ? invitesLoading : logsLoading;
 
   if (isLoading && invites.length === 0 && logs.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-muted-foreground">Đang tải...</div>;
+    return <div className="flex items-center justify-center h-64 text-muted-foreground">Loading...</div>;
   }
 
   return (
@@ -124,7 +124,7 @@ export function InviteTracking() {
       {/* ── Tabs ── */}
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="leaderboard">Bảng xếp hạng</TabsTrigger>
+          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           <TabsTrigger value="log">Nhật ký Invite</TabsTrigger>
         </TabsList>
 
@@ -181,7 +181,7 @@ export function InviteTracking() {
                     <TableHead>Invitee</TableHead>
                     <TableHead>Code</TableHead>
                     <TableHead>Ngày join</TableHead>
-                    <TableHead>Trạng thái</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Fake</TableHead>
                   </TableRow>
                 </TableHeader>

@@ -43,11 +43,11 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
             <TableHead className="w-16">#</TableHead>
             <TableHead>Subject</TableHead>
             <TableHead>Creator</TableHead>
-            <TableHead>Trạng thái</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>Mức ưu tiên</TableHead>
             <TableHead>Claimed</TableHead>
             <TableHead>Panel</TableHead>
-            <TableHead>Ngày tạo</TableHead>
+            <TableHead>Created</TableHead>
             <TableHead className="w-24 text-right">Thao tác</TableHead>
           </TableRow>
         </TableHeader>
@@ -150,7 +150,7 @@ export function BlacklistTable({ blacklist, isLoading, isRemoving, onRemove }: B
         <TableHeader>
           <TableRow>
             <TableHead>Discord ID</TableHead>
-            <TableHead>Lý do</TableHead>
+            <TableHead>Reason</TableHead>
             <TableHead>Thêm bởi</TableHead>
             <TableHead>Ngày thêm</TableHead>
             <TableHead className="w-24 text-right">Thao tác</TableHead>

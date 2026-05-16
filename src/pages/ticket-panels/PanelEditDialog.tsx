@@ -93,7 +93,7 @@ export function PanelEditDialog({
       <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {editingPanel ? "Chỉnh sửa Panel" : "Tạo Panel"}
+            {editingPanel ? "Edit Panel" : "Tạo Panel"}
           </DialogTitle>
           <DialogDescription>
             {editingPanel
@@ -125,7 +125,7 @@ export function PanelEditDialog({
               filter="text"
               value={form.channel_id}
               onChange={(v) => setField("channel_id", v === "__clear__" ? "" : v)}
-              placeholder="Chọn kênh..."
+              placeholder="Select channel..."
             />
           </div>
 
@@ -151,7 +151,7 @@ export function PanelEditDialog({
             {/* ── Embed Tab ── */}
             <TabsContent value="embed" className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <Label>Tiêu đề</Label>
+                <Label>Title</Label>
                 <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                   <Input
                     placeholder="Ví dụ: Tạo Ticket"
@@ -164,7 +164,7 @@ export function PanelEditDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label>Mô tả</Label>
+                <Label>Description</Label>
                 <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                   <Textarea
                     placeholder="Mô tả hiển thị trong embed..."
@@ -317,7 +317,7 @@ export function PanelEditDialog({
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">
                       {editingBtnIdx < form.buttons.length
-                        ? "Chỉnh sửa button"
+                        ? "Edit button"
                         : "Thêm button"}
                     </span>
                     <Button
@@ -430,7 +430,7 @@ export function PanelEditDialog({
                     >
                       {editingBtnIdx < form.buttons.length
                         ? "Cập nhật"
-                        : "Thêm"}
+                        : "Add"}
                     </Button>
                   </div>
                 </div>
@@ -480,7 +480,7 @@ export function PanelEditDialog({
               >
                 <div className="space-y-3">
                   <div className="space-y-1.5">
-                    <Label>Tiêu đề</Label>
+                    <Label>Title</Label>
                     <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Input
                         placeholder="Mặc định từ cài đặt chung"
@@ -492,7 +492,7 @@ export function PanelEditDialog({
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Nội dung</Label>
+                    <Label>Content</Label>
                     <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Textarea
                         placeholder="Mặc định từ cài đặt chung"
@@ -514,7 +514,7 @@ export function PanelEditDialog({
               >
                 <div className="space-y-3">
                   <div className="space-y-1.5">
-                    <Label>Tiêu đề</Label>
+                    <Label>Title</Label>
                     <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Input
                         placeholder="Mặc định từ cài đặt chung"
@@ -526,7 +526,7 @@ export function PanelEditDialog({
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Nội dung</Label>
+                    <Label>Content</Label>
                     <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Textarea
                         placeholder="Mặc định từ cài đặt chung"
@@ -548,7 +548,7 @@ export function PanelEditDialog({
               >
                 <div className="space-y-3">
                   <div className="space-y-1.5">
-                    <Label>Tiêu đề</Label>
+                    <Label>Title</Label>
                     <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Input
                         placeholder="Mặc định từ cài đặt chung"
@@ -560,7 +560,7 @@ export function PanelEditDialog({
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Nội dung</Label>
+                    <Label>Content</Label>
                     <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Textarea
                         placeholder="Mặc định từ cài đặt chung"
@@ -592,7 +592,7 @@ export function PanelEditDialog({
               onClick={onSave}
             >
               {isSaving
-                ? "Đang lưu..."
+                ? "Saving..."
                 : editingPanel
                   ? "Cập nhật"
                   : "Tạo"}

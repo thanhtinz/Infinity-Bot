@@ -93,7 +93,7 @@ export function ScheduledMessagesEditPage() {
       toast({ title: "Đã tạo lịch gửi tin nhắn." });
     },
     onError: (e: Error) =>
-      toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+      toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const updateMutation = useMutation({
@@ -113,7 +113,7 @@ export function ScheduledMessagesEditPage() {
       toast({ title: "Đã cập nhật lịch gửi." });
     },
     onError: (e: Error) =>
-      toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+      toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -171,7 +171,7 @@ export function ScheduledMessagesEditPage() {
   if (!isNew && isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -182,10 +182,10 @@ export function ScheduledMessagesEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Chỉnh sửa"} lịch gửi</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"} lịch gửi</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={!form.channel_id || !form.send_at || isPending}>
-            {isPending ? "Đang lưu..." : "Lưu"}
+            {isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
@@ -252,7 +252,7 @@ export function ScheduledMessagesEditPage() {
 
             {/* Enabled toggle — card style */}
             <div className="space-y-2">
-              <Label>Trạng thái</Label>
+              <Label>Status</Label>
               <div
                 className={cn(
                   "flex items-center justify-between rounded-lg border p-3 transition-colors cursor-pointer select-none",

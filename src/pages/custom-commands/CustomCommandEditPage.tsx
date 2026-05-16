@@ -269,7 +269,7 @@ export function CustomCommandEditPage() {
   if (!isNew && isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -281,11 +281,11 @@ export function CustomCommandEditPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="font-semibold">
-          {isNew ? "Tạo Custom Command" : "Chỉnh sửa Command"}
+          {isNew ? "Tạo Custom Command" : "Edit Command"}
         </h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? "Đang lưu..." : "Lưu"}
+            {isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
@@ -325,7 +325,7 @@ export function CustomCommandEditPage() {
 
           {/* Description */}
           <div className="space-y-2">
-            <Label>Mô tả</Label>
+            <Label>Description</Label>
             <Input
               value={form.description}
               onChange={(e) =>

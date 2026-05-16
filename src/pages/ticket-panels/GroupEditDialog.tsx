@@ -48,7 +48,7 @@ export function GroupEditDialog({
     <Dialog open={open} onOpenChange={(v) => { if (!v) onOpenChange(false); }}>
       <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{editingGroup ? "Chỉnh sửa Nhóm" : "Tạo Nhóm"}</DialogTitle>
+          <DialogTitle>{editingGroup ? "Edit Group" : "Tạo Nhóm"}</DialogTitle>
           <DialogDescription>Gộp nhiều panel vào 1 embed message</DialogDescription>
         </DialogHeader>
         <div className="mt-6 space-y-4">
@@ -58,7 +58,7 @@ export function GroupEditDialog({
           </div>
           <div className="space-y-1.5">
             <Label>Kênh gửi</Label>
-            <ChannelSelect value={groupForm.channel_id} onChange={v => setGroupForm(f => ({...f, channel_id: v === "__clear__" ? "" : v}))} placeholder="Chọn kênh..." filter="text" />
+            <ChannelSelect value={groupForm.channel_id} onChange={v => setGroupForm(f => ({...f, channel_id: v === "__clear__" ? "" : v}))} placeholder="Select channel..." filter="text" />
           </div>
 
           <Separator />
@@ -68,7 +68,7 @@ export function GroupEditDialog({
             <Input value={groupForm.title} onChange={e => setGroupForm(f => ({...f, title: e.target.value}))} placeholder="Hỗ trợ" />
           </div>
           <div className="space-y-1.5">
-            <Label>Mô tả</Label>
+            <Label>Description</Label>
             <Textarea value={groupForm.description} onChange={e => setGroupForm(f => ({...f, description: e.target.value}))} placeholder="Mô tả embed..." rows={3} />
           </div>
           <div className="space-y-1.5">
@@ -126,9 +126,9 @@ export function GroupEditDialog({
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button variant="outline" className="flex-1" onClick={onCancel}>Hủy</Button>
+            <Button variant="outline" className="flex-1" onClick={onCancel}>Cancel</Button>
             <Button className="flex-1" disabled={!groupForm.name.trim() || isSaving} onClick={onSave}>
-              {isSaving ? "Đang lưu..." : editingGroup ? "Cập nhật" : "Tạo"}
+              {isSaving ? "Saving..." : editingGroup ? "Cập nhật" : "Tạo"}
             </Button>
           </div>
         </div>

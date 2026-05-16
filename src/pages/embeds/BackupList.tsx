@@ -19,7 +19,7 @@ export function BackupList({ getBackups, loadBackup, deleteBackup }: {
             <div className="text-xs text-muted-foreground">{new Date(b.timestamp).toLocaleString("vi-VN")}</div>
           </div>
           <Button size="sm" variant="outline" className="h-7 text-xs"
-            onClick={() => loadBackup(b.data as Record<string, unknown>)}>Tải</Button>
+            onClick={() => loadBackup(b.data as Record<string, unknown>)}>Load</Button>
           <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive"
             onClick={() => { deleteBackup(b.id); refresh(); }}>
             <Trash2 className="h-3.5 w-3.5" />

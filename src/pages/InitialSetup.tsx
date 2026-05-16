@@ -136,7 +136,7 @@ export function InitialSetup() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={mutation.isPending}>
-                {mutation.isPending ? "Đang lưu..." : "Lưu và tiếp tục"}
+                {mutation.isPending ? "Saving..." : "Lưu và tiếp tục"}
               </Button>
             </form>
           </Form>

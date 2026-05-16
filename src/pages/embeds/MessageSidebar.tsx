@@ -69,7 +69,7 @@ export function MessageSidebar({
       </div>
       <div className="flex-1 overflow-y-auto">
         {listLoading ? (
-          <div className="p-4 text-center text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />Đang tải...</div>
+          <div className="p-4 text-center text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />Loading...</div>
         ) : customEmbeds.length === 0 ? (
           <div className="p-4 text-center text-sm text-muted-foreground">Chưa có tin nhắn nào</div>
         ) : (

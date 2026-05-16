@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDiscordRoles } from "@/hooks/useDiscordData";
+import { useT } from "@/i18n";
 
 interface RoleSelectProps {
   value: string;
@@ -23,15 +24,16 @@ function intToHex(color: number): string {
   return `#${color.toString(16).padStart(6, "0")}`;
 }
 
-export function RoleSelect({ value, onChange, placeholder = "Chọn role...", guildId, disabled }: RoleSelectProps) {
+export function RoleSelect({ value, onChange, placeholder = "Select role...", guildId, disabled }: RoleSelectProps) {
   const { data: roles = [], isLoading } = useDiscordRoles(guildId);
+  const { t } = useT();
 
   const sorted = useMemo(() => [...roles].sort((a, b) => a.name.localeCompare(b.name)), [roles]);
 
   if (!sorted.length && !isLoading) {
     return (
       <Input
-        placeholder={isLoading ? "Đang tải..." : placeholder}
+        placeholder={isLoading ? t("loading") : placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
@@ -42,7 +44,7 @@ export function RoleSelect({ value, onChange, placeholder = "Chọn role...", gu
   return (
     <Select value={value || ""} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger>
-        <SelectValue placeholder={isLoading ? "Đang tải..." : placeholder} />
+        <SelectValue placeholder={isLoading ? t("loading") : placeholder} />
       </SelectTrigger>
       <SelectContent>
         {sorted.map((r) => (
@@ -69,8 +71,9 @@ interface MultiRoleSelectProps {
   disabled?: boolean;
 }
 
-export function MultiRoleSelect({ value, onChange, placeholder = "Chọn roles...", guildId, disabled }: MultiRoleSelectProps) {
+export function MultiRoleSelect({ value, onChange, placeholder = "Select roles...", guildId, disabled }: MultiRoleSelectProps) {
   const { data: roles = [], isLoading } = useDiscordRoles(guildId);
+  const { t } = useT();
   const sorted = useMemo(() => [...roles].sort((a, b) => a.name.localeCompare(b.name)), [roles]);
   const roleMap = useMemo(() => new Map(roles.map((r) => [r.id, r])), [roles]);
 
@@ -121,7 +124,7 @@ export function MultiRoleSelect({ value, onChange, placeholder = "Chọn roles..
       )}
       <Select value="" onValueChange={addRole} disabled={disabled || !available.length}>
         <SelectTrigger>
-          <SelectValue placeholder={isLoading ? "Đang tải..." : available.length ? placeholder : "Đã chọn hết"} />
+          <SelectValue placeholder={isLoading ? t("loading") : available.length ? placeholder : "All selected"} />
         </SelectTrigger>
         <SelectContent>
           {available.map((r) => (

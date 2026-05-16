@@ -89,7 +89,7 @@ export function BackupRestore() {
       }
     },
     onError: (err: Error) =>
-      toast({ title: "Lỗi", description: err.message, variant: "destructive" }),
+      toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
   // ── Handlers ──
@@ -109,7 +109,7 @@ export function BackupRestore() {
       toast({ title: "Backup đã được tải xuống" });
     } catch (err) {
       toast({
-        title: "Lỗi",
+        title: "Error",
         description: err instanceof Error ? err.message : "Tải backup thất bại",
         variant: "destructive",
       });

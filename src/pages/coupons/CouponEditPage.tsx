@@ -70,7 +70,7 @@ export function CouponEditPage() {
       navigate(-1);
       toast({ title: "Đã tạo coupon." });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const updateMutation = useMutation({
@@ -86,7 +86,7 @@ export function CouponEditPage() {
       navigate(-1);
       toast({ title: "Đã cập nhật coupon." });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Lỗi", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -113,7 +113,7 @@ export function CouponEditPage() {
   if (!isNew && isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-muted-foreground">Đang tải...</p>
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -124,10 +124,10 @@ export function CouponEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Chỉnh sửa"}</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"}</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? "Đang lưu..." : "Lưu"}
+            {isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>

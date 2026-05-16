@@ -77,7 +77,7 @@ export function Leaderboard() {
       qc.invalidateQueries({ queryKey: ["leaderboard"] });
       toast({ title: "Đã reset", description: "BXH chi tiêu & mua hàng đã được reset." });
     },
-    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Reset thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Reset thất bại." }),
   });
 
   return (
@@ -111,7 +111,7 @@ export function Leaderboard() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Hủy</AlertDialogCancel>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 onClick={() => resetMutation.mutate()}
@@ -166,7 +166,7 @@ export function Leaderboard() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="30days">30 ngày</SelectItem>
             <SelectItem value="7days">7 ngày</SelectItem>
             <SelectItem value="daily">Hôm nay</SelectItem>

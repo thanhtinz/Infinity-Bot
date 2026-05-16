@@ -118,7 +118,7 @@ export function EmbedEditorSection({
           <div className="px-4 pb-4 space-y-4">
             {/* Title */}
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Tiêu đề</Label>
+              <Label className="text-xs text-muted-foreground">Title</Label>
               <Input
                 value={embedData.title}
                 onChange={(e) =>
@@ -134,7 +134,7 @@ export function EmbedEditorSection({
             {/* Description */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">Mô tả</Label>
+                <Label className="text-xs text-muted-foreground">Description</Label>
                 <span className="text-[11px] text-muted-foreground">
                   {embedData.description.length}/4096
                 </span>
@@ -157,7 +157,7 @@ export function EmbedEditorSection({
 
             {/* Color */}
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Màu sắc</Label>
+              <Label className="text-xs text-muted-foreground">Colors</Label>
               <div className="flex items-center gap-2">
                 {PRESET_COLORS.map((c) => (
                   <button
@@ -304,7 +304,7 @@ export function EmbedEditorSection({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Tên</Label>
+                    <Label className="text-xs">Name</Label>
                     <Input
                       value={field.name}
                       onChange={(e) =>

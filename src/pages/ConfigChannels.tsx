@@ -112,9 +112,9 @@ export function ConfigChannels() {
       qc.invalidateQueries({ queryKey: ["config", selectedGuildId] });
       qc.invalidateQueries({ queryKey: ["discord_channels"] });
       qc.invalidateQueries({ queryKey: ["discord_roles"] });
-      toast({ title: "Đã lưu", description: "Cấu hình kênh & quyền đã được lưu." });
+      toast({ title: "Saved", description: "Cấu hình kênh & quyền đã được lưu." });
     },
-    onError: () => toast({ variant: "destructive", title: "Lỗi", description: "Lưu thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." }),
   });
 
   const channelFields: { name: keyof FormValues; label: string }[] = [
@@ -125,7 +125,7 @@ export function ConfigChannels() {
     { name: "welcome_channel_id", label: "Kênh Welcome" },
   ];
 
-  if (isLoading) return <div className="text-muted-foreground text-sm">Đang tải...</div>;
+  if (isLoading) return <div className="text-muted-foreground text-sm">Loading...</div>;
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -163,11 +163,11 @@ export function ConfigChannels() {
                           value={field.value}
                           onChange={field.onChange}
                           options={roles}
-                          placeholder="Chọn role..."
+                          placeholder="Select role..."
                         />
                       ) : (
                         <Input
-                          placeholder={activeGuildId ? "Đang tải roles..." : "Chọn Server trước"}
+                          placeholder={activeGuildId ? "Đang tải roles..." : "Select a server first"}
                           disabled={!activeGuildId}
                           {...field}
                           value={field.value || ""}
@@ -188,7 +188,7 @@ export function ConfigChannels() {
               <CardTitle className="flex items-center gap-2 text-base">
                 <Hash className="w-4 h-4" /> Kênh thông báo
               </CardTitle>
-              <CardDescription>Bot sẽ gửi thông báo vào các kênh này.</CardDescription>
+              <CardDescription>Bot will send notifications to these channels.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -206,11 +206,11 @@ export function ConfigChannels() {
                               value={field.value}
                               onChange={field.onChange}
                               options={channels.map((c) => ({ id: c.id, name: `#${c.name}` }))}
-                              placeholder="Chọn kênh..."
+                              placeholder="Select channel..."
                             />
                           ) : (
                             <Input
-                              placeholder={activeGuildId ? "Đang tải kênh..." : "Chọn Server trước"}
+                              placeholder={activeGuildId ? "Đang tải kênh..." : "Select a server first"}
                               disabled={!activeGuildId}
                               {...field}
                               value={field.value || ""}
@@ -227,7 +227,7 @@ export function ConfigChannels() {
           </Card>
 
           <Button type="submit" disabled={mutation.isPending}>
-            {mutation.isPending ? "Đang lưu..." : "Lưu cấu hình"}
+            {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
           </Button>
         </form>
       </Form>

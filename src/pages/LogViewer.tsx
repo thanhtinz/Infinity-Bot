@@ -202,7 +202,7 @@ export function LogViewer() {
       {/* ── Header ── */}
       <div className="flex items-center gap-2">
         <ScrollText className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">Nhật ký hoạt động</h2>
+        <h2 className="text-2xl font-bold">Activity Log</h2>
       </div>
 
       {/* ── Stats Cards ── */}
@@ -253,10 +253,10 @@ export function LogViewer() {
             <SelectValue placeholder="Danh mục" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="message">Tin nhắn</SelectItem>
             <SelectItem value="voice">Voice</SelectItem>
-            <SelectItem value="member">Thành viên</SelectItem>
+            <SelectItem value="member">Members</SelectItem>
             <SelectItem value="server">Server</SelectItem>
           </SelectContent>
         </Select>
@@ -295,7 +295,7 @@ export function LogViewer() {
         <Card>
           <CardContent className="py-16 flex flex-col items-center gap-3 text-muted-foreground">
             <Inbox className="h-10 w-10" />
-            <p className="text-sm font-medium">Chưa có nhật ký</p>
+            <p className="text-sm font-medium">No logs yet</p>
             <p className="text-xs">
               Các hoạt động trong server sẽ được ghi lại tại đây.
             </p>

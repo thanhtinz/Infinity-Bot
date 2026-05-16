@@ -28,6 +28,7 @@ class SystemConfig(Base):
     guild_icon = Column(String, nullable=True)
     shard_count = Column(Integer, nullable=True)  # None = auto
     shop_leaderboard_reset_at = Column(DateTime, nullable=True)
+    language = Column(String, default="en")
 
 class User(Base):
     __tablename__ = "users"

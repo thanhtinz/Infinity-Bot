@@ -70,7 +70,7 @@ export const PRIORITY_CONFIG: Record<
     iconCls: "text-green-500",
   },
   normal: {
-    label: "Bình thường",
+    label: "Normal",
     cls: "bg-blue-500/15 text-blue-600 border-blue-500/30",
     iconCls: "text-blue-500",
   },

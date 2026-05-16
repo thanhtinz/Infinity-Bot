@@ -133,7 +133,7 @@ def create_bot():
         "src.bot.cogs.custom_commands", "src.bot.cogs.reaction_roles",
         "src.bot.cogs.scheduler", "src.bot.cogs.autoresponder",
         "src.bot.cogs.interactions", "src.bot.cogs.leveling", "src.bot.cogs.help_cog",
-        "src.bot.cogs.channel_admin",
+        "src.bot.cogs.channel_admin", "src.bot.cogs.onboarding",
         "src.bot.prefix_commands", "src.bot.embed_utils",
     ]
     for _mod_name in _cog_modules:
@@ -166,6 +166,7 @@ def create_bot():
     from src.bot.cogs.leveling import LevelingCog
     from src.bot.cogs.help_cog import HelpCog
     from src.bot.cogs.channel_admin import ChannelAdminCog
+    from src.bot.cogs.onboarding import OnboardingCog
     from src.bot.prefix_commands import PrefixCommandsCog
 
     # Tag cogs with feature keys for runtime check
@@ -204,6 +205,7 @@ def create_bot():
         LevelingCog(bot_client),
         ChannelAdminCog(bot_client),
         HelpCog(bot_client),
+        OnboardingCog(bot_client),
         PrefixCommandsCog(bot_client),
     ]
     for cog in cogs:
@@ -344,6 +346,12 @@ def create_bot():
             bot_client.add_view(BangGiaView())
         except Exception as _pv_err:
             logger.warning(f"Persistent view register failed: {_pv_err}")
+        # Register language select persistent view
+        try:
+            from src.bot.cogs.onboarding import LanguageSelectView
+            bot_client.add_view(LanguageSelectView())
+        except Exception as _lv_err:
+            logger.warning(f"LanguageSelectView register failed: {_lv_err}")
         # Sync slash commands so new/updated commands register with Discord
         try:
             await bot_client.sync_commands()

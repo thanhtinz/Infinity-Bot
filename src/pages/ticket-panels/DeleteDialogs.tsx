@@ -35,7 +35,7 @@ export function DeletePanelDialog({ target, onClose, onConfirm, isPending }: Del
             Hủy
           </Button>
           <Button variant="destructive" disabled={isPending} onClick={onConfirm}>
-            {isPending ? "Đang xóa..." : "Xóa"}
+            {isPending ? "Deleting..." : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -63,9 +63,9 @@ export function DeleteGroupDialog({ target, onClose, onConfirm, isPending }: Del
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Hủy</Button>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button variant="destructive" disabled={isPending} onClick={onConfirm}>
-            {isPending ? "Đang xóa..." : "Xóa"}
+            {isPending ? "Deleting..." : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>
