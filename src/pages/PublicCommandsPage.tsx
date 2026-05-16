@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bot, Info, Mic, Package, Search, Shield, Smile, Tags, TerminalSquare, Trophy, Wrench, Zap } from "lucide-react";
+import { Bot, ClipboardList, Hash, Heart, Info, Mic, Package, Pin, Search, Shield, Smile, Tags, TerminalSquare, Ticket, Trophy, Wrench, Zap } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 interface Command { name: string; description: string; usage?: string; admin?: boolean; }
@@ -8,12 +8,18 @@ interface Category { key?: string; name: string; count?: number; commands: Comma
 type FilterKey = "all" | string;
 
 const categoryIcons = {
-  fun: Smile,
+  interaction: Heart,
+  expression: Smile,
+  fun: Zap,
   info: Info,
   level: Trophy,
   manager: Wrench,
+  ticket: Ticket,
   misc: Package,
+  sticky: Pin,
   moderator: Shield,
+  modlog: ClipboardList,
+  modtools: Hash,
   role: Tags,
   tempvoice: Mic,
   other: Bot,
