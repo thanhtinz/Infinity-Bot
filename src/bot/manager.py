@@ -386,7 +386,8 @@ async def start_bot():
         await asyncio.wait_for(bot_ready_event.wait(), timeout=12)
         return True
     except asyncio.TimeoutError:
-        if bot_task.done():
+        current_task = bot_task  # snapshot before callback may null it
+        if current_task is not None and current_task.done():
             return False
         logger.info("Bot start still connecting; leaving task running")
         return True
