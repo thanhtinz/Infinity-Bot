@@ -101,8 +101,24 @@ def create_bot():
     intents.message_content = True
     intents.members = True
 
-    # Multi-guild: không dùng debug_guilds → slash commands global
-    bot_client = discord.Bot(intents=intents)
+    # Đọc shard_count từ DB (None = auto)
+    _shard_count = None
+    try:
+        _s = get_session()
+        try:
+            _cfg = _s.execute(select(SystemConfig).limit(1)).scalars().first()
+            if _cfg and _cfg.shard_count and _cfg.shard_count > 0:
+                _shard_count = _cfg.shard_count
+        finally:
+            _s.close()
+    except Exception:
+        pass
+
+    # Multi-guild: dùng AutoShardedBot để hỗ trợ nhiều shard tự động
+    bot_client = discord.AutoShardedBot(
+        intents=intents,
+        shard_count=_shard_count,  # None = Discord tự quyết
+    )
 
     # ── Load cogs (reload modules to pick up code changes on restart) ─────────
     import importlib

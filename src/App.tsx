@@ -66,6 +66,10 @@ const Features = lazy(() => import("./pages/Features"));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const InitialSetup = lazy(() => import("./pages/InitialSetup").then(m => ({ default: m.InitialSetup })));
 const BotStatus = lazy(() => import("./pages/BotStatus").then(m => ({ default: m.BotStatus })));
+const LandingPage = lazy(() => import("./pages/LandingPage").then(m => ({ default: m.LandingPage })));
+const PublicCommandsPage = lazy(() => import("./pages/PublicCommandsPage").then(m => ({ default: m.PublicCommandsPage })));
+const PublicPricingPage = lazy(() => import("./pages/PublicPricingPage").then(m => ({ default: m.PublicPricingPage })));
+const PublicStatusPage = lazy(() => import("./pages/PublicStatusPage").then(m => ({ default: m.PublicStatusPage })));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -290,7 +294,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     <div className="flex flex-col h-full">
       <div className="p-6 border-b flex items-center gap-2">
         <Bot className="w-6 h-6 text-primary" />
-        <h1 className="font-bold text-lg">Infinity Mall</h1>
+        <h1 className="font-bold text-lg">Infinity Bot</h1>
       </div>
 
       <GuildSelector />
@@ -491,7 +495,7 @@ function MobileNav() {
     <div className="md:hidden border-b bg-card p-4 flex items-center justify-between sticky top-0 z-10">
       <div className="flex items-center gap-2">
         <Bot className="w-6 h-6 text-primary" />
-        <h1 className="font-bold text-lg">Infinity Mall</h1>
+        <h1 className="font-bold text-lg">Infinity Bot</h1>
       </div>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
@@ -598,7 +602,14 @@ function SetupGate() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
+        {/* ── Public routes (không cần auth) ── */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/commands" element={<PublicCommandsPage />} />
+        <Route path="/pricing" element={<PublicPricingPage />} />
+        <Route path="/status" element={<PublicStatusPage />} />
         <Route path="/login" element={<Login />} />
+        {/* ── Dashboard (cần auth) ── */}
+        <Route path="/dashboard" element={<ProtectedAppRoutes root />} />
         <Route path="/*" element={<ProtectedAppRoutes />} />
       </Routes>
     </Suspense>
@@ -621,7 +632,17 @@ function RouteLoader() {
   );
 }
 
-function ProtectedAppRoutes() {
+function ProtectedAppRoutes({ root }: { root?: boolean }) {
+  if (root) {
+    // /dashboard → redirect vào trang chủ dashboard thật
+    return (
+      <ProtectedRoute>
+        <Suspense fallback={<RouteLoader />}>
+          <DashboardHome />
+        </Suspense>
+      </ProtectedRoute>
+    );
+  }
   return (
     <ProtectedRoute>
       <Suspense fallback={<RouteLoader />}>

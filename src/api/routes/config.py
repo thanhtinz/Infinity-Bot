@@ -423,6 +423,20 @@ async def api_bot_info():
         uptime_s = int((_dt.datetime.utcnow() - bot_start_time).total_seconds())
     user = _bot.user
     avatar_url = str(user.display_avatar.url) if user and user.display_avatar else None
+
+    # Shard info
+    shard_info = []
+    if hasattr(_bot, "shards") and _bot.shards:
+        for shard_id, shard in _bot.shards.items():
+            lat = shard.latency
+            shard_info.append({
+                "id": shard_id,
+                "latency_ms": round(lat * 1000, 1) if lat and lat == lat else None,
+                "guild_count": sum(1 for g in guilds if g.shard_id == shard_id),
+            })
+    else:
+        shard_info = [{"id": 0, "latency_ms": round(_bot.latency * 1000, 1), "guild_count": len(guilds)}]
+
     return {
         "online": True,
         "username": user.name if user else None,
@@ -433,6 +447,8 @@ async def api_bot_info():
         "guild_count": len(guilds),
         "member_count": member_count,
         "uptime_seconds": uptime_s,
+        "shard_count": _bot.shard_count or 1,
+        "shards": shard_info,
     }
 
 
