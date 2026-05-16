@@ -880,11 +880,10 @@ class TempVoiceCog(discord.Cog):
         await ch.edit(slowmode_delay=giay)
         await ctx.respond(f"⏱ Slowmode: **{giay}s**.", ephemeral=True)
 
-    # ── Admin commands ───────────────────────────────────────
+    # ── Admin commands (using same tempvoice group) ────────────
 
-    admin_voice = discord.SlashCommandGroup("tempvoice", "Admin: quản lý temp voice", default_member_permissions=discord.Permissions(manage_channels=True))
-
-    @admin_voice.command(name="delete", description="Admin: xóa phòng temp voice")
+    @tempvoice.command(name="delete", description="Admin: xóa phòng temp voice")
+    @discord.default_permissions(manage_channels=True)
     async def admin_delete(self, ctx, channel: discord.Option(discord.VoiceChannel, "Phòng cần xóa")):
         await ctx.defer(ephemeral=True)
         session = get_session()
@@ -911,7 +910,7 @@ class TempVoiceCog(discord.Cog):
         finally:
             session.close()
 
-    @admin_voice.command(name="rename", description="Admin: đổi tên phòng temp voice")
+    @tempvoice.command(name="rename", description="Admin: đổi tên phòng temp voice")
     async def admin_rename(self, ctx, channel: discord.Option(discord.VoiceChannel, "Phòng"), name: discord.Option(str, "Tên mới")):
         await ctx.defer(ephemeral=True)
         session = get_session()
@@ -930,7 +929,7 @@ class TempVoiceCog(discord.Cog):
         finally:
             session.close()
 
-    @admin_voice.command(name="transfer", description="Admin: chuyển chủ phòng")
+    @tempvoice.command(name="transfer", description="Admin: chuyển chủ phòng")
     async def admin_transfer(self, ctx, channel: discord.Option(discord.VoiceChannel, "Phòng"), user: discord.Option(discord.Member, "Chủ mới")):
         await ctx.defer(ephemeral=True)
         session = get_session()
@@ -948,7 +947,7 @@ class TempVoiceCog(discord.Cog):
         finally:
             session.close()
 
-    @admin_voice.command(name="cleanup", description="Admin: xóa tất cả phòng trống")
+    @tempvoice.command(name="cleanup", description="Admin: xóa tất cả phòng trống")
     async def admin_cleanup(self, ctx):
         await ctx.defer(ephemeral=True)
         session = get_session()
@@ -974,7 +973,7 @@ class TempVoiceCog(discord.Cog):
         finally:
             session.close()
 
-    @admin_voice.command(name="stats", description="Xem thống kê temp voice")
+    @tempvoice.command(name="stats", description="Xem thống kê temp voice")
     async def admin_stats(self, ctx):
         await ctx.defer(ephemeral=True)
         session = get_session()
