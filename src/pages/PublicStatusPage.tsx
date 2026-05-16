@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Zap, Server, Users, Activity, Wifi, WifiOff } from "lucide-react";
+import { Zap, Server, Users, Activity, Wifi, WifiOff } from "lucide-react";
+import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 interface ShardInfo { id: number; latency_ms: number | null; guild_count: number; }
 interface BotStatus {
@@ -15,6 +15,7 @@ interface BotStatus {
 }
 
 export function PublicStatusPage() {
+  useLandingFonts();
   const [status, setStatus] = useState<BotStatus | null>(null);
 
   useEffect(() => {
@@ -30,16 +31,9 @@ export function PublicStatusPage() {
 
   return (
     <div style={{ background: "#0d0f14", minHeight: "100vh", fontFamily: "'Syne', sans-serif" }}>
-      <div className="border-b border-white/5 px-4 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-white/50 hover:text-white text-sm transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Infinity Bot
-          </Link>
-          <Link to="/dashboard" className="text-sm text-[#5865F2] hover:text-[#818cf8] transition-colors font-medium">Dashboard →</Link>
-        </div>
-      </div>
+      <LandingNavbar />
 
-      <div className="max-w-3xl mx-auto px-4 py-12">
+      <div className="max-w-3xl mx-auto px-4 pt-28 pb-16">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-extrabold text-white mb-2">Trạng thái Bot</h1>
           <p className="text-white/40 text-sm">Cập nhật mỗi 15 giây</p>
@@ -52,11 +46,13 @@ export function PublicStatusPage() {
             : <WifiOff className="w-5 h-5 text-red-400" />}
           <div className="flex-1">
             <p className={`font-bold ${online ? "text-[#00d4aa]" : "text-red-400"}`}>
-              {online ? "Đang hoạt động" : "Ngoại tuyến"}
+              {status === null ? "Đang kiểm tra..." : online ? "Đang hoạt động" : "Ngoại tuyến"}
             </p>
             {status?.username && <p className="text-white/40 text-sm">{status.username}</p>}
           </div>
-          <div className={`w-2.5 h-2.5 rounded-full ${online ? "bg-[#00d4aa] animate-pulse" : "bg-red-400"}`} />
+          {status !== null && (
+            <div className={`w-2.5 h-2.5 rounded-full ${online ? "bg-[#00d4aa] animate-pulse" : "bg-red-400"}`} />
+          )}
         </div>
 
         {/* Stats */}
@@ -104,10 +100,6 @@ export function PublicStatusPage() {
               ))}
             </div>
           </div>
-        )}
-
-        {!status && (
-          <div className="text-center py-20 text-white/30">Đang tải...</div>
         )}
       </div>
     </div>

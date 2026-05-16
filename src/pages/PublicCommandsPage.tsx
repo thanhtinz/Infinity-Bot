@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Zap, ArrowLeft } from "lucide-react";
+import { Search, Zap, } from "lucide-react";
+import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 interface Command { name: string; description: string; }
 interface Category { name: string; commands: Command[]; }
 
 export function PublicCommandsPage() {
+  useLandingFonts();
   const [cats, setCats] = useState<Category[]>([]);
   const [q, setQ] = useState("");
 
@@ -24,20 +26,11 @@ export function PublicCommandsPage() {
 
   return (
     <div style={{ background: "#0d0f14", minHeight: "100vh", fontFamily: "'Syne', sans-serif" }}>
-      {/* Header */}
-      <div className="border-b border-white/5 px-4 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-white/50 hover:text-white text-sm transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Infinity Bot
-          </Link>
-          <Link to="/dashboard" className="text-sm text-[#5865F2] hover:text-[#818cf8] transition-colors font-medium">Dashboard →</Link>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <LandingNavbar />
+      <div className="max-w-4xl mx-auto px-4 pt-28 pb-16">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 w-8 h-8 rounded-lg bg-[#5865F2] justify-center mx-auto mb-4">
-            <Zap className="w-4 h-4 text-white" />
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#5865F2]/20 border border-[#5865F2]/30 mb-4 mx-auto">
+            <Zap className="w-5 h-5 text-[#5865F2]" />
           </div>
           <h1 className="text-4xl font-extrabold text-white mb-3">Danh sách lệnh</h1>
           <p className="text-white/40">Tất cả slash commands của Infinity Bot</p>
@@ -53,7 +46,6 @@ export function PublicCommandsPage() {
           />
         </div>
 
-        {/* Categories */}
         <div className="space-y-8">
           {filtered.map((cat, i) => (
             <div key={i}>

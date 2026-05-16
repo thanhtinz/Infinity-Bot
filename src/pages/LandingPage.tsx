@@ -1,17 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBag, Ticket, Gift, Shield, Mic, Palette, ArrowRight, ExternalLink, Zap, Server, Users, Activity, ChevronRight } from "lucide-react";
-
-/* ── Google Fonts injected dynamically ───────────────────────── */
-function useFonts() {
-  useEffect(() => {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap";
-    document.head.appendChild(link);
-    return () => document.head.removeChild(link);
-  }, []);
-}
+import { ShoppingBag, Ticket, Gift, Shield, Mic, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight } from "lucide-react";
+import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 /* ── Terminal typing animation ───────────────────────────────── */
 const COMMANDS = [
@@ -132,92 +122,9 @@ const FEATURES = [
   { icon: Palette, title: "Embed Builder", desc: "Tùy chỉnh mọi thông báo bot với Embed Builder trực quan, preview Discord thật.", color: "#ec4899" },
 ];
 
-/* ── Navbar ──────────────────────────────────────────────────── */
-function Navbar({ inviteUrl }: { inviteUrl: string | null }) {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", fn);
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
-
-  return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#0d0f14]/90 backdrop-blur-xl border-b border-white/5 shadow-lg" : ""}`}>
-      <div className="max-w-6xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" style={{ fontFamily: "'Syne', sans-serif" }} className="flex items-center gap-2.5 font-bold text-xl text-white hover:opacity-90 transition-opacity">
-          <div className="w-8 h-8 rounded-lg bg-[#5865F2] flex items-center justify-center">
-            <Zap className="w-4.5 h-4.5 text-white" />
-          </div>
-          Infinity Bot
-        </Link>
-
-        {/* Desktop links */}
-        <div style={{ fontFamily: "'Syne', sans-serif" }} className="hidden md:flex items-center gap-7 text-sm font-medium text-white/60">
-          {[
-            { to: "/", label: "Home" },
-            { to: "/commands", label: "Lệnh" },
-            { to: "/pricing", label: "Giá" },
-            { to: "/status", label: "Trạng thái" },
-          ].map(l => (
-            <Link key={l.to} to={l.to} className="hover:text-white transition-colors">{l.label}</Link>
-          ))}
-          {inviteUrl && (
-            <a href={inviteUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
-              Hỗ trợ <ExternalLink className="w-3 h-3" />
-            </a>
-          )}
-        </div>
-
-        {/* CTA */}
-        <div className="hidden md:flex items-center gap-3">
-          <Link to="/dashboard" className="text-sm font-medium text-white/70 hover:text-white transition-colors" style={{ fontFamily: "'Syne', sans-serif" }}>
-            Đăng nhập
-          </Link>
-          {inviteUrl && (
-            <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#5865F2] hover:bg-[#4752c4] text-white text-sm font-semibold transition-colors"
-              style={{ fontFamily: "'Syne', sans-serif" }}>
-              Thêm Bot <ArrowRight className="w-3.5 h-3.5" />
-            </a>
-          )}
-        </div>
-
-        {/* Mobile menu toggle */}
-        <button className="md:hidden text-white/70 hover:text-white p-2" onClick={() => setMenuOpen(v => !v)}>
-          <div className="space-y-1.5">
-            <span className={`block w-5 h-0.5 bg-current transition-all ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
-            <span className={`block w-5 h-0.5 bg-current transition-all ${menuOpen ? "opacity-0" : ""}`} />
-            <span className={`block w-5 h-0.5 bg-current transition-all ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
-          </div>
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-[#0d0f14]/95 backdrop-blur-xl border-b border-white/10 px-4 pb-4 space-y-3">
-          {[
-            { to: "/", label: "Home" },
-            { to: "/commands", label: "Lệnh bot" },
-            { to: "/pricing", label: "Bảng giá" },
-            { to: "/status", label: "Trạng thái" },
-            { to: "/dashboard", label: "Dashboard" },
-          ].map(l => (
-            <Link key={l.to} to={l.to} onClick={() => setMenuOpen(false)}
-              className="block text-sm text-white/70 hover:text-white py-1.5 transition-colors" style={{ fontFamily: "'Syne', sans-serif" }}>
-              {l.label}
-            </Link>
-          ))}
-        </div>
-      )}
-    </nav>
-  );
-}
-
 /* ── Main Landing Page ───────────────────────────────────────── */
 export function LandingPage() {
-  useFonts();
+  useLandingFonts();
   const navigate = useNavigate();
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
 
@@ -234,7 +141,7 @@ export function LandingPage() {
 
   return (
     <div style={{ background: "#0d0f14", fontFamily: "'Syne', sans-serif", minHeight: "100vh" }}>
-      <Navbar inviteUrl={inviteUrl} />
+      <LandingNavbar />
 
       {/* ── Hero ──────────────────────────────────────────── */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-12 overflow-hidden">
