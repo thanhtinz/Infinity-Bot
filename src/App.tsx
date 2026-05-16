@@ -192,16 +192,16 @@ const navGroups: NavGroup[] = [
       { to: "/config/payos", icon: CreditCard, label: "PayOS", feature: "shop" },
       { to: "/config/channels", icon: Hash, label: "Kênh & Quyền" },
       { to: "/config/voice", icon: Mic, label: "Temp Voice", feature: "temp_voice" },
-      { to: "/backup", icon: Database, label: "Sao lưu & Khôi phục" },
     ],
   },
   {
     key: "bot_owner",
     icon: Activity,
-    label: "Tình trạng Bot",
+    label: "Quản lý Bot",
     ownerOnly: true,
     items: [
       { to: "/bot-status", icon: Activity, label: "Trạng thái & Điều khiển" },
+      { to: "/backup", icon: Database, label: "Sao lưu & Khôi phục" },
     ],
   },
 ];
@@ -468,7 +468,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (isError) return <Navigate to="/login" replace />;
 
   // Một số route owner không cần guild
-  const guildFreeRoutes = ["/bot-status"];
+  const guildFreeRoutes = ["/bot-status", "/backup"];
   if (!selectedGuildId && !guildFreeRoutes.includes(location.pathname)) {
     return <Navigate to="/select-guild" replace />;
   }
@@ -640,7 +640,7 @@ function ProtectedAppRoutes() {
         <Route path="/scheduled-messages" element={<ScheduledMessages />} />
         <Route path="/scheduled-messages/new" element={<ScheduledMessagesEditPage />} />
         <Route path="/scheduled-messages/:id/edit" element={<ScheduledMessagesEditPage />} />
-        <Route path="/backup" element={<BackupRestore />} />
+        <Route path="/backup" element={<OwnerRoute><BackupRestore /></OwnerRoute>} />
       </Routes>
       </Suspense>
     </ProtectedRoute>
