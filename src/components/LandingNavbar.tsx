@@ -65,6 +65,12 @@ export function LandingNavbar() {
           {navLinks.map(l => (
             <Link key={l.to} to={l.to} className="hover:text-white transition-colors">{l.label}</Link>
           ))}
+          {inviteUrl && (
+            <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
+              className="hover:text-white transition-colors flex items-center gap-1">
+              Invite Bot <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          )}
           {supportUrl && (
             <a href={supportUrl} target="_blank" rel="noopener noreferrer"
               className="hover:text-white transition-colors flex items-center gap-1">
@@ -105,6 +111,13 @@ export function LandingNavbar() {
               {l.label}
             </Link>
           ))}
+          {inviteUrl && (
+            <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-2 text-sm text-white/70 hover:text-white py-2 transition-colors">
+              Invite Bot <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          )}
           {supportUrl && (
             <a href={supportUrl} target="_blank" rel="noopener noreferrer"
               onClick={() => setMenuOpen(false)}
