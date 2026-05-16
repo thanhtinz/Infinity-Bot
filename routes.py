@@ -14,10 +14,7 @@ async def lifespan(app: FastAPI):
     await init_db()
     
     yield
-    
-    # Gracefully stop the bot if it's running
-    from src.bot.manager import stop_bot
-    await stop_bot()
+    # Bot runs independently — no forced stop on shutdown
 
 def create_app(static_dir: str) -> FastAPI:
     api = APIRouter()
