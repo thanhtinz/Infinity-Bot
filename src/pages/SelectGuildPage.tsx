@@ -67,9 +67,9 @@ export function SelectGuildPage() {
               >
                 {guild.icon ? (
                   <img
-                    src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+                    src={guild.icon}
                     alt=""
-                    className="w-10 h-10 rounded-full shrink-0"
+                    className="w-10 h-10 rounded-full shrink-0 object-cover"
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
