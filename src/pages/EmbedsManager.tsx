@@ -32,10 +32,6 @@ import { EMBED_EVENTS, EVENT_GROUPS, VARIABLES } from "./embeds/embedEvents";
 import { DiscordPreview, defaultForm } from "./embeds/DiscordPreview";
 import { CustomMessagesTab } from "./embeds/CustomMessagesTab";
 
-export function LevelEmbedsManager() {
-  return <EmbedsManager eventKeys={["level_up", "rank_card", "level_leaderboard", "level_reward"]} />;
-}
-
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsManagerProps = {}) {

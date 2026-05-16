@@ -15,7 +15,6 @@ const ProductsManager = lazy(() => import("./pages/ProductsManager").then(m => (
 const OrdersManager = lazy(() => import("./pages/OrdersManager").then(m => ({ default: m.OrdersManager })));
 const CouponsManager = lazy(() => import("./pages/CouponsManager").then(m => ({ default: m.CouponsManager })));
 const EmbedsManager = lazy(() => import("./pages/EmbedsManager").then(m => ({ default: m.EmbedsManager })));
-const LevelEmbedsManager = lazy(() => import("./pages/EmbedsManager").then(m => ({ default: m.LevelEmbedsManager })));
 const EmojiManager = lazy(() => import("./pages/EmojiManager").then(m => ({ default: m.EmojiManager })));
 const FeedbackManager = lazy(() => import("./pages/FeedbackManager").then(m => ({ default: m.FeedbackManager })));
 const UsersManager = lazy(() => import("./pages/UsersManager").then(m => ({ default: m.UsersManager })));
@@ -135,7 +134,6 @@ const navGroups: NavGroup[] = [
     feature: "leveling",
     items: [
       { to: "/leveling/rank-card", icon: ImageIcon, label: "Rank Card" },
-      { to: "/leveling/embeds", icon: Palette, label: "Embed Builder" },
       { to: "/leveling/config", icon: Settings, label: "Cấu hình XP" },
       { to: "/leveling/filters", icon: Filter, label: "Filters" },
       { to: "/leveling/leaderboard", icon: ListOrdered, label: "Leaderboard" },
@@ -548,7 +546,6 @@ function ProtectedAppRoutes() {
         <Route path="/sticky/:id/edit" element={<StickyEditPage />} />
         <Route path="/leveling" element={<Navigate to="/leveling/rank-card" replace />} />
         <Route path="/leveling/rank-card-editor" element={<RankCardEditor />} />
-        <Route path="/leveling/embeds" element={<LevelEmbedsManager />} />
         <Route path="/leveling/config" element={<LevelingManager section="config" />} />
         <Route path="/leveling/filters" element={<LevelingManager section="filters" />} />
         <Route path="/leveling/leaderboard" element={<LevelingManager section="leaderboard" />} />

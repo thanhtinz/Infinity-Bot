@@ -806,7 +806,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
         <div className="rounded-2xl border bg-muted/20 p-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div><p className="flex items-center gap-2 font-medium"><MessageSquareText className="h-4 w-4" /> Nội dung thông báo level-up</p><p className="text-sm text-muted-foreground">Tiêu đề, mô tả, màu, text fallback và biến như {'{user.mention}'}, {'{level}'} nằm trong Embed Builder event Level Up.</p></div>
-            <Button className="w-full md:w-auto" type="button" variant="secondary" onClick={() => { window.location.href = "/leveling/embeds?event=level_up"; }}>Mở Level Embed Builder</Button>
+            <Button className="w-full md:w-auto" type="button" variant="secondary" onClick={() => { window.location.href = "/embeds?event=level_up"; }}>Mở Embed Builder</Button>
           </div>
         </div>
         <div className="grid md:grid-cols-3 gap-3"><div className="flex items-center justify-between rounded-2xl border p-3"><Label>XP từ slash commands</Label><Switch checked={form.gain_xp_from_commands} onCheckedChange={v => setForm({...form, gain_xp_from_commands: v})} /></div><div className="flex items-center justify-between rounded-2xl border p-3"><Label>Whitelist channel mode</Label><Switch checked={form.use_channel_whitelist} onCheckedChange={v => setForm({...form, use_channel_whitelist: v})} /></div><div className="flex items-center justify-between rounded-2xl border p-3"><Label>Xoá reward role cũ</Label><Switch checked={form.remove_old_reward_roles} onCheckedChange={v => setForm({...form, remove_old_reward_roles: v})} /></div></div>
