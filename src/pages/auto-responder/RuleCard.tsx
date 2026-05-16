@@ -94,10 +94,10 @@ export function RuleCard({
               />
               <div className="p-2.5 flex-1 min-w-0 bg-muted/30">
                 <p className="font-semibold text-xs leading-tight">
-                  {rule.response_embed.title || "Tiêu đề"}
+                  {rule.response_embed.title || "Title"}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
-                  {rule.response_embed.description || "Mô tả..."}
+                  {rule.response_embed.description || "Description..."}
                 </p>
               </div>
             </div>
@@ -129,12 +129,12 @@ export function RuleCard({
           )}
           {(rule.allowed_channels?.length ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-blue-600">
-              📌 {rule.allowed_channels.length} kênh
+              📌 {rule.allowed_channels.length} channel
             </span>
           )}
           {(rule.blocked_channels?.length ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-red-600">
-              🚫 {rule.blocked_channels.length} kênh
+              🚫 {rule.blocked_channels.length} channel
             </span>
           )}
           {(rule.allowed_roles?.length ?? 0) > 0 && (
@@ -159,7 +159,7 @@ export function RuleCard({
             </span>
           )}
           {rule.delete_trigger && (
-            <span className="text-rose-600">Xóa tin nhắn gốc</span>
+            <span className="text-rose-600">Delete original message</span>
           )}
           {rule.send_dm && (
             <span className="flex items-center gap-1">
@@ -170,7 +170,7 @@ export function RuleCard({
           {rule.ignore_bots && (
             <span className="flex items-center gap-1">
               <Bot className="h-3 w-3" />
-              Bỏ qua bot
+              Ignore bots
             </span>
           )}
         </div>
@@ -195,7 +195,7 @@ export function RuleCard({
               onClick={onEdit}
             >
               <Pencil className="h-3.5 w-3.5 mr-1" />
-              Sửa
+              Edit
             </Button>
             <Button
               variant="ghost"
@@ -204,7 +204,7 @@ export function RuleCard({
               onClick={onDelete}
             >
               <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Xóa
+              Delete
             </Button>
           </div>
         </div>

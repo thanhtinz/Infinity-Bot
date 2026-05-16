@@ -50,7 +50,7 @@ export function GiveawaysManager() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["giveaways"] });
       setDeleteTarget(null);
-      toast({ title: "Đã xóa giveaway." });
+      toast({ title: "Giveaway deleted." });
     },
     onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
@@ -80,7 +80,7 @@ export function GiveawaysManager() {
       {/* ── Note ── */}
       <div className="flex items-start gap-2 rounded-lg border border-blue-500/30 bg-blue-500/5 p-3 text-sm text-blue-700 dark:text-blue-400">
         <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-        <p>Giveaway được tạo và quản lý trực tiếp qua lệnh bot Discord (<code className="font-mono bg-blue-500/10 px-1 rounded">/giveaway</code>)</p>
+        <p>Giveaways are created and managed directly via the Discord bot command (<code className="font-mono bg-blue-500/10 px-1 rounded">/giveaway</code>)</p>
       </div>
 
       {/* ── Stat Cards ── */}
@@ -91,7 +91,7 @@ export function GiveawaysManager() {
               <Gift className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Tổng giveaway</p>
+              <p className="text-xs text-muted-foreground">Total giveaways</p>
               <p className="text-xl font-bold">{totalGiveaways}</p>
             </div>
           </CardContent>
@@ -124,7 +124,7 @@ export function GiveawaysManager() {
               <Users className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Tổng người tham gia</p>
+              <p className="text-xs text-muted-foreground">Total participants</p>
               <p className="text-xl font-bold">{totalEntries.toLocaleString("vi-VN")}</p>
             </div>
           </CardContent>
@@ -140,7 +140,7 @@ export function GiveawaysManager() {
             variant={filter === f ? "default" : "outline"}
             onClick={() => setFilter(f)}
           >
-            {f === "all" ? "Tất cả" : f === "active" ? "Đang diễn ra" : "Đã kết thúc"}
+            {f === "all" ? "All" : f === "active" ? "Active" : "Ended"}
           </Button>
         ))}
       </div>
@@ -156,7 +156,7 @@ export function GiveawaysManager() {
                 <TableHead className="text-center">Winners</TableHead>
                 <TableHead className="text-center">Entries</TableHead>
                 <TableHead>Channel ID</TableHead>
-                <TableHead>Kết thúc</TableHead>
+                <TableHead>Ends</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -165,7 +165,7 @@ export function GiveawaysManager() {
               {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                    Không có giveaway nào.
+                    No giveaways found.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -204,14 +204,14 @@ export function GiveawaysManager() {
         </CardContent>
       </Card>
 
-      {/* ── Confirm xóa ── */}
+      {/* ── Confirm delete ── */}
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent className="max-w-xs">
           <DialogHeader>
-            <DialogTitle>Xóa giveaway?</DialogTitle>
+            <DialogTitle>Delete giveaway?</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Giveaway <strong>{deleteTarget?.title}</strong> sẽ bị xóa vĩnh viễn.
+            Giveaway <strong>{deleteTarget?.title}</strong> will be permanently deleted.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
@@ -220,7 +220,7 @@ export function GiveawaysManager() {
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              Xóa
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

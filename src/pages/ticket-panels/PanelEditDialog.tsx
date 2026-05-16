@@ -93,12 +93,12 @@ export function PanelEditDialog({
       <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {editingPanel ? "Edit Panel" : "Tạo Panel"}
+            {editingPanel ? "Edit Panel" : "Create Panel"}
           </DialogTitle>
           <DialogDescription>
             {editingPanel
-              ? "Cập nhật cấu hình panel ticket"
-              : "Tạo panel ticket mới cho server"}
+              ? "Update ticket panel configuration"
+              : "Create a new ticket panel for the server"}
           </DialogDescription>
         </DialogHeader>
 
@@ -106,21 +106,21 @@ export function PanelEditDialog({
           {/* Panel name */}
           <div className="space-y-1.5">
             <Label>
-              Tên Panel <span className="text-destructive">*</span>
+              Name Panel <span className="text-destructive">*</span>
             </Label>
             <Input
-              placeholder="Ví dụ: Hỗ trợ chung"
+              placeholder="e.g. General Support"
               value={form.name}
               onChange={(e) => setField("name", e.target.value)}
             />
             <p className="text-[11px] text-muted-foreground">
-              Tên nội bộ, không hiển thị trên Discord
+              Internal name, not shown on Discord
             </p>
           </div>
 
           {/* Channel ID */}
           <div className="space-y-1.5">
-            <Label>Kênh Discord</Label>
+            <Label>Channel Discord</Label>
             <ChannelSelect
               filter="text"
               value={form.channel_id}
@@ -140,11 +140,11 @@ export function PanelEditDialog({
               </TabsTrigger>
               <TabsTrigger value="buttons" className="flex-1 gap-1.5">
                 <MousePointerClick className="h-3.5 w-3.5" />
-                Nút bấm
+                Buttons
               </TabsTrigger>
               <TabsTrigger value="config" className="flex-1 gap-1.5">
                 <Settings className="h-3.5 w-3.5" />
-                Cấu hình
+                Config
               </TabsTrigger>
             </TabsList>
 
@@ -154,7 +154,7 @@ export function PanelEditDialog({
                 <Label>Title</Label>
                 <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                   <Input
-                    placeholder="Ví dụ: Tạo Ticket"
+                    placeholder="e.g. Create Ticket"
                     value={form.title}
                     onChange={(e) => setField("title", e.target.value)}
                     className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -167,7 +167,7 @@ export function PanelEditDialog({
                 <Label>Description</Label>
                 <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                   <Textarea
-                    placeholder="Mô tả hiển thị trong embed..."
+                    placeholder="Description shown in embed..."
                     value={form.description}
                     onChange={(e) => setField("description", e.target.value)}
                     rows={3}
@@ -178,7 +178,7 @@ export function PanelEditDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label>Màu</Label>
+                <Label>Color</Label>
                 <div className="flex gap-2 items-center">
                   <input
                     type="color"
@@ -216,18 +216,18 @@ export function PanelEditDialog({
               <div className="rounded-lg border bg-muted/40 p-3 flex gap-2.5">
                 <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Sau khi tạo, dùng{" "}
+                  After creating, use{" "}
                   <code className="bg-muted px-1 py-0.5 rounded font-mono text-[11px]">
                     /panel send
                   </code>{" "}
-                  để gửi panel vào channel Discord
+                  to send the panel to a Discord channel
                 </p>
               </div>
 
               {/* Discord Live Preview */}
               <div className="space-y-2">
                 <Label className="text-muted-foreground text-xs">
-                  Xem trước trên Discord
+                  Preview on Discord
                 </Label>
                 <DiscordPreview form={form} buttons={form.buttons} />
               </div>
@@ -240,10 +240,10 @@ export function PanelEditDialog({
                 <div className="rounded-lg border border-dashed p-6 text-center">
                   <MousePointerClick className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">
-                    Chưa có button nào
+                    No buttons yet
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Thêm button để người dùng chọn loại ticket
+                    Add buttons for users to select ticket type
                   </p>
                 </div>
               ) : (
@@ -265,7 +265,7 @@ export function PanelEditDialog({
                           {btn.emoji && (
                             <span className="mr-1">{btn.emoji}</span>
                           )}
-                          {btn.label || "Nút"}
+                          {btn.label || "Button"}
                         </span>
                         {/* Style badge */}
                         <Badge
@@ -307,7 +307,7 @@ export function PanelEditDialog({
                   onClick={startAddButton}
                 >
                   <Plus className="h-4 w-4 mr-1.5" />
-                  Thêm button
+                  Add button
                 </Button>
               )}
 
@@ -318,7 +318,7 @@ export function PanelEditDialog({
                     <span className="text-sm font-medium">
                       {editingBtnIdx < form.buttons.length
                         ? "Edit button"
-                        : "Thêm button"}
+                        : "Add button"}
                     </span>
                     <Button
                       variant="ghost"
@@ -331,10 +331,10 @@ export function PanelEditDialog({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label>Nhãn</Label>
+                    <Label>Label</Label>
                     <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Input
-                        placeholder="Ví dụ: Hỗ trợ chung"
+                        placeholder="e.g. General Support"
                         value={btnForm.label}
                         onChange={(e) => setBtnField("label", e.target.value)}
                         className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -347,7 +347,7 @@ export function PanelEditDialog({
                     <Label>Emoji</Label>
                     <div className="flex items-center gap-1">
                       <Input
-                        placeholder="Nhập emoji..."
+                        placeholder="Enter emoji..."
                         value={btnForm.emoji}
                         onChange={(e) => setBtnField("emoji", e.target.value)}
                         className="w-24"
@@ -358,7 +358,7 @@ export function PanelEditDialog({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label>Kiểu nút</Label>
+                    <Label>Button style</Label>
                     <ButtonStylePicker
                       value={btnForm.style}
                       onChange={(v) => setBtnField("style", v)}
@@ -373,15 +373,15 @@ export function PanelEditDialog({
                       onChange={(v) =>
                         setBtnField("category_id", v === "__clear__" ? "" : v)
                       }
-                      placeholder="Chọn category cho ticket..."
+                      placeholder="Select ticket category..."
                     />
                     <p className="text-[11px] text-muted-foreground">
-                      Mỗi nút có thể tạo ticket vào category khác nhau
+                      Each button can create tickets in different categories
                     </p>
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label>Form ID (tùy chọn)</Label>
+                    <Label>Form ID (optional)</Label>
                     <Input
                       placeholder="Form ID..."
                       value={btnForm.form_id}
@@ -392,7 +392,7 @@ export function PanelEditDialog({
                   {/* Inline preview */}
                   <div className="space-y-1.5">
                     <Label className="text-muted-foreground text-xs">
-                      Xem trước
+                      Preview
                     </Label>
                     <div className="flex items-center gap-2">
                       {(() => {
@@ -406,7 +406,7 @@ export function PanelEditDialog({
                             }}
                           >
                             {btnForm.emoji && <span>{btnForm.emoji}</span>}
-                            {btnForm.label || "Nút"}
+                            {btnForm.label || "Button"}
                           </div>
                         );
                       })()}
@@ -420,7 +420,7 @@ export function PanelEditDialog({
                       className="flex-1"
                       onClick={cancelButtonEdit}
                     >
-                      Hủy
+                      Cancel
                     </Button>
                     <Button
                       size="sm"
@@ -429,7 +429,7 @@ export function PanelEditDialog({
                       onClick={confirmButton}
                     >
                       {editingBtnIdx < form.buttons.length
-                        ? "Cập nhật"
+                        ? "Update"
                         : "Add"}
                     </Button>
                   </div>
@@ -439,7 +439,7 @@ export function PanelEditDialog({
               {/* Discord preview at bottom of buttons tab */}
               <div className="space-y-2">
                 <Label className="text-muted-foreground text-xs">
-                  Xem trước trên Discord
+                  Preview on Discord
                 </Label>
                 <DiscordPreview form={form} buttons={form.buttons} />
               </div>
@@ -450,13 +450,13 @@ export function PanelEditDialog({
               <div className="rounded-lg border bg-muted/40 p-3 flex gap-2.5">
                 <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Để trống các trường = sử dụng cấu hình chung từ Ticket Config
+                  Leave blank to use global settings from Ticket Config
                 </p>
               </div>
 
               {/* Naming format */}
               <div className="space-y-1.5">
-                <Label>Định dạng tên ticket</Label>
+                <Label>Ticket name format</Label>
                 <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                   <Input
                     placeholder="ticket-{number}"
@@ -467,7 +467,7 @@ export function PanelEditDialog({
                   <EmojiPicker onSelect={(em) => setField("naming_format", form.naming_format + em)} />
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Để trống = dùng cấu hình chung. Biến: {"{number}"}, {"{username}"}, {"{displayname}"}
+                  Leave blank to use global config. Variables: {"{number}"}, {"{username}"}, {"{displayname}"}
                 </p>
               </div>
 
@@ -475,7 +475,7 @@ export function PanelEditDialog({
 
               {/* Open message - Collapsible */}
               <CollapsibleSection
-                title="Tin nhắn mở ticket"
+                title="Ticket open messages"
                 hasContent={!!(form.open_message_title || form.open_message_body)}
               >
                 <div className="space-y-3">
@@ -483,7 +483,7 @@ export function PanelEditDialog({
                     <Label>Title</Label>
                     <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Input
-                        placeholder="Mặc định từ cài đặt chung"
+                        placeholder="Default from global settings"
                         value={form.open_message_title}
                         onChange={(e) => setField("open_message_title", e.target.value)}
                         className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -495,7 +495,7 @@ export function PanelEditDialog({
                     <Label>Content</Label>
                     <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Textarea
-                        placeholder="Mặc định từ cài đặt chung"
+                        placeholder="Default from global settings"
                         value={form.open_message_body}
                         onChange={(e) => setField("open_message_body", e.target.value)}
                         rows={3}
@@ -509,7 +509,7 @@ export function PanelEditDialog({
 
               {/* Close message - Collapsible */}
               <CollapsibleSection
-                title="Tin nhắn đóng ticket"
+                title="Ticket close messages"
                 hasContent={!!(form.close_message_title || form.close_message_body)}
               >
                 <div className="space-y-3">
@@ -517,7 +517,7 @@ export function PanelEditDialog({
                     <Label>Title</Label>
                     <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Input
-                        placeholder="Mặc định từ cài đặt chung"
+                        placeholder="Default from global settings"
                         value={form.close_message_title}
                         onChange={(e) => setField("close_message_title", e.target.value)}
                         className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -529,7 +529,7 @@ export function PanelEditDialog({
                     <Label>Content</Label>
                     <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Textarea
-                        placeholder="Mặc định từ cài đặt chung"
+                        placeholder="Default from global settings"
                         value={form.close_message_body}
                         onChange={(e) => setField("close_message_body", e.target.value)}
                         rows={3}
@@ -543,7 +543,7 @@ export function PanelEditDialog({
 
               {/* Claim message - Collapsible */}
               <CollapsibleSection
-                title="Tin nhắn claim ticket"
+                title="Messages claim ticket"
                 hasContent={!!(form.claim_message_title || form.claim_message_body)}
               >
                 <div className="space-y-3">
@@ -551,7 +551,7 @@ export function PanelEditDialog({
                     <Label>Title</Label>
                     <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Input
-                        placeholder="Mặc định từ cài đặt chung"
+                        placeholder="Default from global settings"
                         value={form.claim_message_title}
                         onChange={(e) => setField("claim_message_title", e.target.value)}
                         className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -563,7 +563,7 @@ export function PanelEditDialog({
                     <Label>Content</Label>
                     <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Textarea
-                        placeholder="Mặc định từ cài đặt chung"
+                        placeholder="Default from global settings"
                         value={form.claim_message_body}
                         onChange={(e) => setField("claim_message_body", e.target.value)}
                         rows={3}
@@ -584,7 +584,7 @@ export function PanelEditDialog({
               className="flex-1"
               onClick={onCancel}
             >
-              Hủy
+              Cancel
             </Button>
             <Button
               className="flex-1"
@@ -594,8 +594,8 @@ export function PanelEditDialog({
               {isSaving
                 ? "Saving..."
                 : editingPanel
-                  ? "Cập nhật"
-                  : "Tạo"}
+                  ? "Update"
+                  : "Create"}
             </Button>
           </div>
         </div>

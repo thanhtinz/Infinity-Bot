@@ -63,7 +63,7 @@ export function TicketFormEditPage() {
   const qc = useQueryClient();
   const isNew = !id;
 
-  const [formName, setFormName] = useState("Form mặc định");
+  const [formName, setFormName] = useState("Default form");
   const [formPanelId, setFormPanelId] = useState<string>("none");
   const [questions, setQuestions] = useState<FormQuestion[]>([]);
 
@@ -105,9 +105,9 @@ export function TicketFormEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-forms"] });
       navigate(-1);
-      toast({ title: "Đã tạo form thành công" });
+      toast({ title: "Form created" });
     },
-    onError: () => toast({ title: "Lỗi khi tạo form", variant: "destructive" }),
+    onError: () => toast({ title: "Error creating form", variant: "destructive" }),
   });
 
   const updateMutation = useMutation({
@@ -123,9 +123,9 @@ export function TicketFormEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-forms"] });
       navigate(-1);
-      toast({ title: "Đã cập nhật form" });
+      toast({ title: "Form updated" });
     },
-    onError: () => toast({ title: "Lỗi khi cập nhật", variant: "destructive" }),
+    onError: () => toast({ title: "Error updating", variant: "destructive" }),
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -172,7 +172,7 @@ export function TicketFormEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"}</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Create" : "Edit"}</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={!formName.trim() || isPending}>
             {isPending ? "Saving..." : "Save"}
@@ -183,27 +183,27 @@ export function TicketFormEditPage() {
         <Tabs defaultValue="form">
           <TabsList className="w-full">
             <TabsTrigger value="form" className="flex-1">Form</TabsTrigger>
-            <TabsTrigger value="questions" className="flex-1">Câu hỏi</TabsTrigger>
+            <TabsTrigger value="questions" className="flex-1">Question</TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Form info */}
           <TabsContent value="form" className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label>Tên form</Label>
+              <Label>Name form</Label>
               <Input
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                placeholder="Form mặc định"
+                placeholder="Default form"
               />
             </div>
             <div className="space-y-2">
-              <Label>Panel gắn với</Label>
+              <Label>Attached to panel</Label>
               <Select value={formPanelId} onValueChange={setFormPanelId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Chọn panel" />
+                  <SelectValue placeholder="Select panel" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Không gắn panel</SelectItem>
+                  <SelectItem value="none">No panel</SelectItem>
                   {((panels as TicketPanel[] | undefined) ?? []).map((p) => (
                     <SelectItem key={p.id} value={String(p.id)}>
                       {p.name}
@@ -213,8 +213,8 @@ export function TicketFormEditPage() {
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline">{questions.length} câu hỏi</Badge>
-              <span className="text-xs text-muted-foreground">(tối đa {MAX_QUESTIONS})</span>
+              <Badge variant="outline">{questions.length} questions</Badge>
+              <span className="text-xs text-muted-foreground">(max {MAX_QUESTIONS})</span>
             </div>
           </TabsContent>
 
@@ -222,7 +222,7 @@ export function TicketFormEditPage() {
           <TabsContent value="questions" className="space-y-3 mt-4">
             {questions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-sm">
-                Chưa có câu hỏi nào. Nhấn nút bên dưới để thêm.
+                No questions yet. Click the button below to add one.
               </div>
             ) : (
               questions.map((q, idx) => (
@@ -233,7 +233,7 @@ export function TicketFormEditPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <GripVertical className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Câu {idx + 1}</span>
+                      <span className="text-sm font-medium">Question {idx + 1}</span>
                     </div>
                     <Button
                       variant="ghost"
@@ -247,7 +247,7 @@ export function TicketFormEditPage() {
                   <div className="space-y-2">
                     <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Input
-                        placeholder="Nhãn câu hỏi"
+                        placeholder="Label questions"
                         value={q.label}
                         onChange={(e) => updateQuestion(idx, "label", e.target.value)}
                         className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -260,14 +260,14 @@ export function TicketFormEditPage() {
                       onChange={(e) => updateQuestion(idx, "placeholder", e.target.value)}
                     />
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm">Bắt buộc</Label>
+                      <Label className="text-sm">Required</Label>
                       <Switch
                         checked={q.required}
                         onCheckedChange={(v) => updateQuestion(idx, "required", v)}
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-sm">Kiểu nhập</Label>
+                      <Label className="text-sm">Input type</Label>
                       <Select
                         value={q.style}
                         onValueChange={(v) => updateQuestion(idx, "style", v)}
@@ -276,8 +276,8 @@ export function TicketFormEditPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="short">Ngắn (1 dòng)</SelectItem>
-                          <SelectItem value="paragraph">Đoạn văn (nhiều dòng)</SelectItem>
+                          <SelectItem value="short">Short (1 line)</SelectItem>
+                          <SelectItem value="paragraph">Paragraph (multi-line)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -292,7 +292,7 @@ export function TicketFormEditPage() {
                 onClick={addQuestion}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Thêm câu hỏi
+                Add question
               </Button>
             )}
           </TabsContent>

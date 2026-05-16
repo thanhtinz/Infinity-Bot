@@ -56,12 +56,12 @@ export function AutoResponder() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["auto-responders"] });
       setDeleteTarget(null);
-      toast({ title: "Đã xóa rule" });
+      toast({ title: "Rule deleted" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi xóa rule",
+        title: "Error deleting rule",
         description: e.message,
       }),
   });
@@ -81,7 +81,7 @@ export function AutoResponder() {
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi toggle",
+        title: "Toggle error",
         description: e.message,
       }),
   });
@@ -108,12 +108,12 @@ export function AutoResponder() {
             Auto Responder
           </h2>
           <p className="text-muted-foreground mt-1">
-            Tự động phản hồi khi tin nhắn khớp với điều kiện
+            Automatically respond when messages match conditions
           </p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4 mr-1.5" />
-          Tạo rule
+          Add Rule
         </Button>
       </div>
 
@@ -127,13 +127,13 @@ export function AutoResponder() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <MessageCircleReply className="h-10 w-10 text-muted-foreground/50 mb-3" />
-            <p className="text-sm font-medium">Chưa có auto responder nào</p>
+            <p className="text-sm font-medium">No auto responders yet</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Tạo rule để bot tự động phản hồi khi tin nhắn khớp điều kiện.
+              Add a Rule to auto-respond when messages match conditions.
             </p>
             <Button variant="outline" size="sm" className="mt-4" onClick={openCreate}>
               <Plus className="h-4 w-4 mr-1.5" />
-              Tạo rule
+              Add Rule
             </Button>
           </CardContent>
         </Card>
@@ -162,14 +162,14 @@ export function AutoResponder() {
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Xóa rule?</DialogTitle>
+            <DialogTitle>Delete rule?</DialogTitle>
             <DialogDescription>
-              Rule <strong>{deleteTarget?.name}</strong> sẽ bị xóa vĩnh viễn.
+              Rule <strong>{deleteTarget?.name}</strong> will be permanently deleted.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Hủy
+              Cancel
             </Button>
             <Button
               variant="destructive"

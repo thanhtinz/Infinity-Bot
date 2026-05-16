@@ -106,7 +106,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
           credentials: "include",
           body: JSON.stringify(body),
         });
-        if (!res.ok) throw new Error("Lưu thất bại");
+        if (!res.ok) throw new Error("Save failed");
         return res.json();
       } else {
         const res = await apiFetch("/api/embeds", {
@@ -115,17 +115,17 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
           credentials: "include",
           body: JSON.stringify(body),
         });
-        if (!res.ok) throw new Error("Lưu thất bại");
+        if (!res.ok) throw new Error("Save failed");
         return res.json();
       }
     },
     onSuccess: (data) => {
-      toast({ title: "Saved", description: "Embed đã được lưu thành công." });
+      toast({ title: "Saved", description: "Embed saved successfully." });
       queryClient.invalidateQueries({ queryKey: ["embeds"] });
       setForm((f) => ({ ...f, existingId: data.id ?? f.existingId }));
     },
     onError: () => {
-      toast({ title: "Error", description: "Không thể lưu embed. Vui lòng thử lại.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not save embed. Please try again.", variant: "destructive" });
     },
   });
 
@@ -224,7 +224,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
           )}
         >
           <MessageSquare className="h-3.5 w-3.5" />
-          Tin nhắn
+          Messages
         </button>
       </div>
 
@@ -239,7 +239,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
         <div className="w-full sm:w-64 shrink-0">
           <Select value={selectedKey} onValueChange={(v) => selectEvent(v)}>
             <SelectTrigger className="h-9">
-              <SelectValue placeholder="Chọn event...">
+              <SelectValue placeholder="Select event...">
                 {currentEvent && (() => {
                   const Icon = currentEvent.icon;
                   return (
@@ -248,7 +248,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                       {currentEvent.label}
                       {savedMap.has(selectedKey) && (
                         <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0 text-[10px] px-1.5 py-0 h-4">
-                          Tùy chỉnh
+                          Customize
                         </Badge>
                       )}
                     </span>
@@ -296,7 +296,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             onClick={() => saveMutation.mutate(form)}
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "..." : "Lưu"}
+            {saveMutation.isPending ? "..." : "Save"}
           </Button>
         </div>
       </div>
@@ -340,10 +340,10 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             <div className="rounded-lg border overflow-hidden" style={{ borderLeftWidth: 4, borderLeftColor: form.color || "#5865F2" }}>
               <div className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold">Nội dung Text</span>
+                  <span className="text-sm font-semibold">Content Text</span>
                   <div className="flex items-center gap-2">
                     <Label htmlFor="text-enabled" className="text-xs text-muted-foreground cursor-pointer">
-                      {form.enabled ? "Bật" : "Tắt"}
+                      {form.enabled ? "Enable" : "Disable"}
                     </Label>
                     <Switch
                       id="text-enabled"
@@ -355,12 +355,12 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                 <Textarea
                   value={form.text_template}
                   onChange={(e) => setForm((f) => ({ ...f, text_template: e.target.value }))}
-                  placeholder="Nội dung tin nhắn text với {biến}...&#10;&#10;VD: **Đơn hàng #{order.id}** của {user.mention} đã được tạo!"
+                  placeholder="Message content text with {variable}...&#10;&#10;E.g. **Order #{order.id}** by {user.mention} has been created!"
                   rows={8}
                   className="font-mono text-sm"
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  Hỗ trợ Markdown Discord: **bold**, *italic*, __underline__, ~~strikethrough~~, `code`, ```code block```
+                  Support Markdown Discord: **bold**, *italic*, __underline__, ~~strikethrough~~, `code`, ```code block```
                 </p>
                 {/* Text Preview */}
                 <div className="rounded-lg bg-[#313338] p-4 font-sans text-sm">
@@ -374,7 +374,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                         <span className="bg-[#5865F2] text-white text-[10px] font-medium px-1 py-0.5 rounded leading-none">BOT</span>
                       </div>
                       <p className="text-[#DBDEE1] mt-1 whitespace-pre-wrap text-sm">
-                        {form.text_template || "Nhập nội dung..."}
+                        {form.text_template || "Enter content..."}
                       </p>
                     </div>
                   </div>
@@ -395,11 +395,11 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             >
               <span className="flex items-center gap-2">
                 <ChevronDown className={cn("h-4 w-4 transition-transform", embedOpen && "rotate-180")} />
-                Embed — {form.title || "Không có tiêu đề"}
+                Embed — {form.title || "No title"}
               </span>
               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 <Label htmlFor="embed-enabled" className="text-xs text-muted-foreground cursor-pointer">
-                  {form.enabled ? "Bật" : "Tắt"}
+                  {form.enabled ? "Enable" : "Disable"}
                 </Label>
                 <Switch
                   id="embed-enabled"
@@ -416,7 +416,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                   <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
                       className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder="Nhập tiêu đề embed..."
+                      placeholder="Enter embed title..."
                       value={form.title}
                       onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                     />
@@ -431,7 +431,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                   </div>
                   <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Textarea
-                      placeholder="Nhập mô tả embed..."
+                      placeholder="Enter embed description..."
                       value={form.description}
                       onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                       rows={5}
@@ -461,13 +461,13 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                 {/* Footer with char count */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Chân trang</Label>
+                    <Label className="text-xs text-muted-foreground">Footer</Label>
                     <span className="text-[11px] text-muted-foreground">{form.footer.length}/2048</span>
                   </div>
                   <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
                       className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder="Nội dung chân trang"
+                      placeholder="Footer content"
                       value={form.footer}
                       onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
                     />
@@ -487,17 +487,17 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             >
               <span className="flex items-center gap-2">
                 <ChevronDown className={cn("h-4 w-4 transition-transform", authorOpen && "rotate-180")} />
-                Tác giả
+                Author
               </span>
             </button>
             {authorOpen && (
               <div className="px-4 pb-4 space-y-3">
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Tên tác giả</Label>
+                  <Label className="text-xs text-muted-foreground">Author name</Label>
                   <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
                       className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
+                      placeholder="Author name (shown above title)"
                       value={form.author}
                       onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
                     />
@@ -525,7 +525,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             >
               <span className="flex items-center gap-2">
                 <ChevronDown className={cn("h-4 w-4 transition-transform", imagesOpen && "rotate-180")} />
-                Hình ảnh
+                Image
               </span>
             </button>
             {imagesOpen && (
@@ -580,7 +580,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                         <Input
-                          placeholder="Tên field"
+                          placeholder="Name field"
                           value={field.name}
                           onChange={(e) => updateField(i, "name", e.target.value)}
                           className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -589,7 +589,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                       </div>
                       <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                         <Input
-                          placeholder="Giá trị"
+                          placeholder="Value"
                           value={field.value}
                           onChange={(e) => updateField(i, "value", e.target.value)}
                           className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -604,7 +604,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                         onChange={(e) => updateField(i, "inline", e.target.checked)}
                         className="rounded border-input"
                       />
-                      Inline (hiển thị cùng dòng)
+                      Inline (display side by side)
                     </label>
                   </div>
                 ))}
@@ -616,11 +616,11 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                     className="w-full border-dashed"
                   >
                     <Plus className="h-3.5 w-3.5 mr-1.5" />
-                    Thêm field
+                    Add field
                   </Button>
                 )}
                 {form.fields.length >= 25 && (
-                  <p className="text-xs text-muted-foreground text-center">Đã đạt giới hạn 25 fields</p>
+                  <p className="text-xs text-muted-foreground text-center">25 fields limit reached</p>
                 )}
               </div>
             )}
@@ -636,7 +636,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             >
               <span className="flex items-center gap-2">
                 <ChevronDown className={cn("h-4 w-4 transition-transform", varsOpen && "rotate-180")} />
-                Biến hỗ trợ
+                Available variables
                 <span className="text-xs text-muted-foreground font-normal">({VARIABLES.length})</span>
               </span>
             </button>
@@ -666,13 +666,13 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             >
               <span className="flex items-center gap-2">
                 <ChevronDown className={cn("h-4 w-4 transition-transform", showPreview && "rotate-180")} />
-                Xem trước Discord
+                Preview Discord
               </span>
             </button>
             {showPreview && (
               <div className="p-4">
                 <DiscordPreview form={form} />
-                <p className="text-[11px] text-muted-foreground italic mt-3">* Preview sử dụng dữ liệu giả</p>
+                <p className="text-[11px] text-muted-foreground italic mt-3">* Preview uses sample data</p>
               </div>
             )}
           </div>
@@ -685,13 +685,13 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
       <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Reset về mặc định?</AlertDialogTitle>
+            <AlertDialogTitle>Reset to default?</AlertDialogTitle>
             <AlertDialogDescription>
-              Embed &quot;{currentEvent?.label}&quot; sẽ được đặt lại về nội dung mặc định. Các thay đổi chưa lưu sẽ bị mất.
+              Embed &quot;{currentEvent?.label}&quot; will be reset to default content. Unsaved changes will be lost.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleReset} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Reset
             </AlertDialogAction>

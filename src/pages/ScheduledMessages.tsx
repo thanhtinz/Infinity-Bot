@@ -55,11 +55,11 @@ interface ScheduledMessage {
 const DEFAULT_COLOR = "#5865F2";
 
 const REPEAT_LABELS: Record<ScheduledMessage["repeat_type"], string> = {
-  none: "Không lặp",
-  hourly: "Mỗi giờ",
-  daily: "Mỗi ngày",
-  weekly: "Mỗi tuần",
-  monthly: "Mỗi tháng",
+  none: "No repeat",
+  hourly: "Every hour",
+  daily: "Every day",
+  weekly: "Every week",
+  monthly: "Every month",
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -90,10 +90,10 @@ function relativeTime(s: string): string {
   const hours = Math.floor(absDiff / 3_600_000);
   const days = Math.floor(absDiff / 86_400_000);
 
-  if (minutes < 1) return isFuture ? "ngay bây giờ" : "vừa xong";
-  if (minutes < 60) return isFuture ? `trong ${minutes} phút` : `${minutes} phút trước`;
-  if (hours < 24) return isFuture ? `trong ${hours} giờ` : `${hours} giờ trước`;
-  if (days < 30) return isFuture ? `trong ${days} ngày` : `${days} ngày trước`;
+  if (minutes < 1) return isFuture ? "right now" : "just now";
+  if (minutes < 60) return isFuture ? `in ${minutes}m` : `${minutes}m ago`;
+  if (hours < 24) return isFuture ? `in ${hours}h` : `${hours}h ago`;
+  if (days < 30) return isFuture ? `in ${days}d` : `${days}d ago`;
 
   return formatDate(s);
 }
@@ -130,10 +130,10 @@ export function ScheduledMessages() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["scheduled-messages"] });
       setConfirmDeleteId(null);
-      toast({ title: "Đã xóa lịch gửi." });
+      toast({ title: "Schedule deleted." });
     },
     onError: () =>
-      toast({ variant: "destructive", title: "Lỗi khi xóa lịch gửi." }),
+      toast({ variant: "destructive", title: "Error deleting schedule." }),
   });
 
   const toggleMutation = useMutation({
@@ -157,7 +157,7 @@ export function ScheduledMessages() {
     },
     onError: (_err, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(["scheduled-messages"], ctx.prev);
-      toast({ variant: "destructive", title: "Lỗi khi chuyển trạng thái." });
+      toast({ variant: "destructive", title: "Error toggling status." });
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["scheduled-messages"] });
@@ -177,13 +177,13 @@ export function ScheduledMessages() {
               Scheduled Messages
             </h2>
             <p className="text-sm text-muted-foreground">
-              Hẹn giờ gửi tin nhắn / embed
+              Schedule messages / embeds
             </p>
           </div>
         </div>
         <Button onClick={() => navigate('/scheduled-messages/new')} size="sm">
           <Plus className="mr-1.5 h-4 w-4" />
-          Tạo lịch
+          New Schedule
         </Button>
       </div>
 
@@ -213,13 +213,13 @@ export function ScheduledMessages() {
                 <Send className="h-3 w-3 text-primary/60" />
               </div>
             </div>
-            <p className="text-sm font-medium">Chưa có lịch gửi nào</p>
+            <p className="text-sm font-medium">No schedules yet</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Tạo lịch gửi tin nhắn tự động để bot gửi đúng thời gian.
+              Create scheduled messages for the bot to send at the right time.
             </p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate('/scheduled-messages/new')}>
               <Plus className="h-4 w-4 mr-1.5" />
-              Tạo lịch
+              New Schedule
             </Button>
           </CardContent>
         </Card>
@@ -266,7 +266,7 @@ export function ScheduledMessages() {
                               )}
                             />
                             <span className="text-xs font-medium">
-                              {m.sent ? "Đã gửi" : m.enabled ? "Chờ gửi" : "Tắt"}
+                              {m.sent ? "Sent" : m.enabled ? "Pending" : "Disabled"}
                             </span>
                           </div>
 
@@ -334,7 +334,7 @@ export function ScheduledMessages() {
                               });
                             }}
                             disabled={toggleMutation.isPending}
-                            title={m.enabled ? "Tắt" : "Bật"}
+                            title={m.enabled ? "Disable" : "Enable"}
                           >
                             {m.enabled ? (
                               <CheckCircle className="h-4 w-4 text-green-500" />
@@ -369,7 +369,7 @@ export function ScheduledMessages() {
                               }}
                               disabled={deleteMutation.isPending}
                             >
-                              Xác nhận?
+                              Confirm?
                             </Button>
                           ) : (
                             <Button

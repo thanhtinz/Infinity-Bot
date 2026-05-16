@@ -36,7 +36,7 @@ export function CommandOptionsSection({ form, onFormChange, open, onOpenChange }
           />
           <div className="flex-1 space-y-0.5">
             <Label className="text-sm font-medium">Delete Command</Label>
-            <p className="text-[11px] text-muted-foreground">Xóa tin nhắn !command của user sau khi bot phản hồi</p>
+            <p className="text-[11px] text-muted-foreground">Delete the user's !command message after the bot responds</p>
           </div>
         </div>
 
@@ -48,7 +48,7 @@ export function CommandOptionsSection({ form, onFormChange, open, onOpenChange }
           />
           <div className="flex-1 space-y-0.5">
             <Label className="text-sm font-medium">Silent Command</Label>
-            <p className="text-[11px] text-muted-foreground">Chỉ thực thi lệnh, không gửi phản hồi cho user</p>
+            <p className="text-[11px] text-muted-foreground">Execute the command silently without sending a response</p>
           </div>
         </div>
 
@@ -60,7 +60,7 @@ export function CommandOptionsSection({ form, onFormChange, open, onOpenChange }
           />
           <div className="flex-1 space-y-0.5">
             <Label className="text-sm font-medium">DM Response</Label>
-            <p className="text-[11px] text-muted-foreground">Gửi phản hồi qua DM thay vì channel</p>
+            <p className="text-[11px] text-muted-foreground">Send the response via DM instead of the channel</p>
           </div>
         </div>
 
@@ -72,7 +72,7 @@ export function CommandOptionsSection({ form, onFormChange, open, onOpenChange }
           />
           <div className="flex-1 space-y-0.5">
             <Label className="text-sm font-medium">Disable @everyone, @here and role pings</Label>
-            <p className="text-[11px] text-muted-foreground">Vô hiệu hóa các ping trong phản hồi</p>
+            <p className="text-[11px] text-muted-foreground">Suppress all pings in the response</p>
           </div>
         </div>
       </CollapsibleContent>

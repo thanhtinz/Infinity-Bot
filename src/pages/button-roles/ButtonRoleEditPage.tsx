@@ -151,12 +151,12 @@ export function ButtonRoleEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["button-roles"] });
       navigate(-1);
-      toast({ title: "Đã tạo panel thành công" });
+      toast({ title: "Panel created" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi tạo panel",
+        title: "Error creating panel",
         description: e.message,
       }),
   });
@@ -175,12 +175,12 @@ export function ButtonRoleEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["button-roles"] });
       navigate(-1);
-      toast({ title: "Đã cập nhật panel" });
+      toast({ title: "Panel updated" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi cập nhật",
+        title: "Update error",
         description: e.message,
       }),
   });
@@ -242,7 +242,7 @@ export function ButtonRoleEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"} Panel Button Role</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Create" : "Edit"} Panel Button Role</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
             {isPending ? "Saving..." : "Save"}
@@ -252,11 +252,11 @@ export function ButtonRoleEditPage() {
       <div className="max-w-2xl mx-auto p-6 space-y-6">
         {/* Name */}
         <div className="space-y-2">
-          <Label>Tên panel</Label>
+          <Label>Name panel</Label>
           <Input
             value={form.name}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-            placeholder="VD: Chọn màu sắc"
+            placeholder="e.g. Choose a color"
           />
         </div>
 
@@ -264,7 +264,7 @@ export function ButtonRoleEditPage() {
 
         {/* Embed settings */}
         <div className="space-y-4">
-          <p className="text-sm font-medium">Cài đặt Embed</p>
+          <p className="text-sm font-medium">Settings Embed</p>
           <EmbedBuilder
             data={{
               title: form.embed_title,
@@ -296,16 +296,16 @@ export function ButtonRoleEditPage() {
         {/* Buttons builder */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Nút Role</p>
+            <p className="text-sm font-medium">Role Buttons</p>
             <Button variant="outline" size="sm" onClick={addButton}>
               <Plus className="h-3.5 w-3.5 mr-1" />
-              Thêm nút
+              Add button
             </Button>
           </div>
 
           {form.buttons.length === 0 && (
             <p className="text-xs text-muted-foreground text-center py-4">
-              Chưa có nút nào. Nhấn "Thêm nút" để bắt đầu.
+              No buttons yet. Click "Add button" to get started.
             </p>
           )}
 
@@ -318,7 +318,7 @@ export function ButtonRoleEditPage() {
                 {/* Button header */}
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-muted-foreground">
-                    Nút #{idx + 1}
+                    Button #{idx + 1}
                   </span>
                   <Button
                     variant="ghost"
@@ -333,13 +333,13 @@ export function ButtonRoleEditPage() {
                 {/* Label + Emoji */}
                 <div className="grid grid-cols-[1fr_80px] gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Nhãn</Label>
+                    <Label className="text-xs">Label</Label>
                     <Input
                       value={btn.label}
                       onChange={(e) =>
                         updateButton(idx, { label: e.target.value })
                       }
-                      placeholder="VD: Đỏ"
+                      placeholder="e.g. Red"
                       className="h-8 text-sm"
                     />
                   </div>
@@ -371,7 +371,7 @@ export function ButtonRoleEditPage() {
                 {/* Style + Row */}
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Kiểu nút</Label>
+                    <Label className="text-xs">Button style</Label>
                     <Select
                       value={btn.style}
                       onValueChange={(v) => updateButton(idx, { style: v })}
@@ -395,7 +395,7 @@ export function ButtonRoleEditPage() {
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Hàng</Label>
+                    <Label className="text-xs">Row</Label>
                     <Select
                       value={String(btn.row)}
                       onValueChange={(v) =>
@@ -408,7 +408,7 @@ export function ButtonRoleEditPage() {
                       <SelectContent>
                         {[0, 1, 2, 3, 4].map((r) => (
                           <SelectItem key={r} value={String(r)}>
-                            Hàng {r}
+                            Row {r}
                           </SelectItem>
                         ))}
                       </SelectContent>

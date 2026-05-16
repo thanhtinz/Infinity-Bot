@@ -17,24 +17,24 @@ export function TriggerSection({ form, setForm }: TriggerSectionProps) {
     <div className="space-y-4">
       <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
         <Zap className="h-3.5 w-3.5" />
-        Điều kiện kích hoạt
+        Trigger condition
       </p>
 
       {/* Name */}
       <div className="space-y-2">
-        <Label>Tên rule</Label>
+        <Label>Name rule</Label>
         <Input
           value={form.name}
           onChange={(e) =>
             setForm((p) => ({ ...p, name: e.target.value }))
           }
-          placeholder="VD: Chào hỏi tự động"
+          placeholder="e.g. Auto greeting"
         />
       </div>
 
       {/* Trigger type */}
       <div className="space-y-2">
-        <Label>Loại điều kiện</Label>
+        <Label>Condition type</Label>
         <div className="flex flex-wrap gap-2">
           {(Object.keys(TRIGGER_TYPE_CONFIG) as AutoResponderRule["trigger_type"][]).map((type) => {
             const cfg = TRIGGER_TYPE_CONFIG[type];
@@ -63,7 +63,7 @@ export function TriggerSection({ form, setForm }: TriggerSectionProps) {
 
       {/* Trigger text */}
       <div className="space-y-2">
-        <Label>Nội dung điều kiện</Label>
+        <Label>Condition content</Label>
         <Input
           value={form.trigger_text}
           onChange={(e) =>
@@ -75,8 +75,8 @@ export function TriggerSection({ form, setForm }: TriggerSectionProps) {
               : form.trigger_type === "wildcard"
                 ? "VD: hello*world"
                 : form.trigger_type === "exact"
-                  ? "VD: xin chào"
-                  : "VD: chào"
+                  ? "e.g. hello"
+                  : "e.g. hi"
           }
         />
         <p className="text-[11px] text-muted-foreground">
@@ -87,9 +87,9 @@ export function TriggerSection({ form, setForm }: TriggerSectionProps) {
       {/* Ignore case */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>Bỏ qua hoa/thường</Label>
+          <Label>Case-insensitive</Label>
           <p className="text-[11px] text-muted-foreground">
-            Không phân biệt chữ hoa và chữ thường
+            Ignore letter case
           </p>
         </div>
         <Switch

@@ -9,10 +9,10 @@ interface CommandSettingsSectionProps {
   form: CommandForm;
   onFormChange: React.Dispatch<React.SetStateAction<CommandForm>>;
   aliasInput: string;
-  onAliasInputChange: (v: string) => void;
-  onAliasKeyDown: (e: React.KeyboardEvent) => void;
-  onAddAlias: () => void;
-  onRemoveAlias: (alias: string) => void;
+  onAliasesInputChange: (v: string) => void;
+  onAliasesKeyDown: (e: React.KeyboardEvent) => void;
+  onAddAliases: () => void;
+  onRemoveAliases: (alias: string) => void;
   onAddChannel: (chId: string) => void;
   onRemoveChannel: (chId: string) => void;
   advancedOpen: boolean;
@@ -23,10 +23,10 @@ export function CommandSettingsSection({
   form,
   onFormChange,
   aliasInput,
-  onAliasInputChange,
-  onAliasKeyDown,
-  onAddAlias,
-  onRemoveAlias,
+  onAliasesInputChange,
+  onAliasesKeyDown,
+  onAddAliases,
+  onRemoveAliases,
   onAddChannel,
   onRemoveChannel,
   advancedOpen,
@@ -36,15 +36,15 @@ export function CommandSettingsSection({
     <div className="space-y-4">
       <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
         <Variable className="h-3.5 w-3.5" />
-        Cài đặt
+        Settings
       </p>
 
       {/* Ephemeral toggle */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>Ẩn (Ephemeral)</Label>
+          <Label>Hidden (Ephemeral)</Label>
           <p className="text-[11px] text-muted-foreground">
-            Chỉ người dùng lệnh mới thấy phản hồi.
+            Only the command user can see the response.
           </p>
         </div>
         <Switch
@@ -58,9 +58,9 @@ export function CommandSettingsSection({
       {/* Enabled toggle */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>Kích hoạt</Label>
+          <Label>Activate</Label>
           <p className="text-[11px] text-muted-foreground">
-            Bật/tắt command này.
+            Enable/disable this command.
           </p>
         </div>
         <Switch
@@ -73,27 +73,27 @@ export function CommandSettingsSection({
 
       {/* Required roles */}
       <div className="space-y-2">
-        <Label>Role yêu cầu</Label>
+        <Label>Required role</Label>
         <MultiRoleSelect
           value={form.required_roles}
           onChange={(roles) =>
             onFormChange((p) => ({ ...p, required_roles: roles }))
           }
-          placeholder="Chọn role yêu cầu..."
+          placeholder="Select required role..."
         />
       </div>
 
       <div className="border-t my-2" />
 
-      {/* ── Cài đặt nâng cao (collapsible) ── */}
+      {/* ── Advanced settings (collapsible) ── */}
       <CommandSettingsAdvanced
         form={form}
         onFormChange={onFormChange}
         aliasInput={aliasInput}
-        onAliasInputChange={onAliasInputChange}
-        onAliasKeyDown={onAliasKeyDown}
-        onAddAlias={onAddAlias}
-        onRemoveAlias={onRemoveAlias}
+        onAliasesInputChange={onAliasesInputChange}
+        onAliasesKeyDown={onAliasesKeyDown}
+        onAddAliases={onAddAliases}
+        onRemoveAliases={onRemoveAliases}
         onAddChannel={onAddChannel}
         onRemoveChannel={onRemoveChannel}
         open={advancedOpen}

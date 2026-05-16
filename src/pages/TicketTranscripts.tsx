@@ -113,13 +113,13 @@ export function TicketTranscripts() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Transcripts</h1>
           <p className="text-muted-foreground text-sm">
-            Lịch sử chat của các ticket đã đóng
+            Chat history of closed tickets
           </p>
         </div>
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <FileText className="h-12 w-12 mb-3 opacity-40" />
-          <p className="text-lg font-medium">Chưa có transcript nào</p>
-          <p className="text-sm">Transcript sẽ được lưu tự động khi ticket đóng</p>
+          <p className="text-lg font-medium">No transcripts yet</p>
+          <p className="text-sm">Transcripts are saved automatically when a ticket is closed</p>
         </div>
       </div>
     );
@@ -132,7 +132,7 @@ export function TicketTranscripts() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Transcripts</h1>
           <p className="text-muted-foreground text-sm">
-            Lịch sử chat của các ticket đã đóng
+            Chat history of closed tickets
           </p>
         </div>
       </div>
@@ -142,7 +142,7 @@ export function TicketTranscripts() {
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Tìm theo Ticket ID, kênh, hoặc người tham gia..."
+            placeholder="Search by Ticket ID, channel, or participant..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -158,9 +158,9 @@ export function TicketTranscripts() {
               <TableRow>
                 <TableHead>Ticket ID</TableHead>
                 <TableHead>Channel</TableHead>
-                <TableHead>Tin nhắn</TableHead>
-                <TableHead>Người tham gia</TableHead>
-                <TableHead>Ngày đóng</TableHead>
+                <TableHead>Messages</TableHead>
+                <TableHead>Participants</TableHead>
+                <TableHead>Closed at</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -196,7 +196,7 @@ export function TicketTranscripts() {
                       onClick={() => setViewTranscript(t)}
                     >
                       <Eye className="h-4 w-4 mr-1" />
-                      Xem
+                      View
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -204,7 +204,7 @@ export function TicketTranscripts() {
               {filtered.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Không tìm thấy transcript
+                    Not found transcript
                   </TableCell>
                 </TableRow>
               )}
@@ -224,8 +224,8 @@ export function TicketTranscripts() {
               Transcript — Ticket #{viewTranscript?.ticket_id}
             </DialogTitle>
             <DialogDescription>
-              {viewTranscript?.channel_name && `Kênh: ${viewTranscript.channel_name}`}
-              {viewTranscript?.message_count != null && ` • ${viewTranscript.message_count} tin nhắn`}
+              {viewTranscript?.channel_name && `Channel: ${viewTranscript.channel_name}`}
+              {viewTranscript?.message_count != null && ` • ${viewTranscript.message_count} message${viewTranscript.message_count !== 1 ? "s" : ""}`}
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh] mt-2">
@@ -237,7 +237,7 @@ export function TicketTranscripts() {
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <FileText className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                <p>Không có nội dung transcript</p>
+                <p>No transcript content</p>
               </div>
             )}
           </ScrollArea>
@@ -249,7 +249,7 @@ export function TicketTranscripts() {
               </Button>
             )}
             <Button variant="outline" onClick={() => setViewTranscript(null)}>
-              Đóng
+              Closed
             </Button>
           </div>
         </DialogContent>

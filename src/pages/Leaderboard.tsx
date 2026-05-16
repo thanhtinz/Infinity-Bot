@@ -76,9 +76,9 @@ export function Leaderboard() {
       apiFetch("/api/leaderboard/reset", { method: "POST", credentials: "include" }).then((r) => r.json()),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leaderboard"] });
-      toast({ title: "Đã reset", description: "BXH chi tiêu & mua hàng đã được reset." });
+      toast({ title: "Reset", description: "Spending & purchase leaderboard has been reset." });
     },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Reset thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Reset failed." }),
   });
 
   return (
@@ -86,15 +86,15 @@ export function Leaderboard() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Trophy className="h-6 w-6" /> Bảng xếp hạng
+            <Trophy className="h-6 w-6" /> Leaderboard
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Bảng xếp hạng cũng xem được trên Discord qua lệnh{" "}
+            Leaderboard is also accessible on Discord via the command{" "}
             <code className="bg-muted px-1.5 py-0.5 rounded text-xs">/bxh</code>
           </p>
           {resetAt && (
             <p className="text-xs text-muted-foreground mt-1">
-              Reset lần cuối: {formatDate(resetAt)}
+              Last reset: {formatDate(resetAt)}
             </p>
           )}
         </div>
@@ -106,9 +106,9 @@ export function Leaderboard() {
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Reset bảng xếp hạng?</AlertDialogTitle>
+              <AlertDialogTitle>Reset leaderboard?</AlertDialogTitle>
               <AlertDialogDescription>
-                BXH chi tiêu & mua hàng sẽ bắt đầu tính lại từ thời điểm này. Dữ liệu đơn hàng cũ vẫn được giữ nguyên, chỉ không hiển thị trên BXH nữa.
+                The spending & purchase leaderboard will reset from this point. Old order data is preserved; it just won't appear on the leaderboard anymore.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -117,7 +117,7 @@ export function Leaderboard() {
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 onClick={() => resetMutation.mutate()}
               >
-                Xác nhận reset
+                Confirm reset
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -133,7 +133,7 @@ export function Leaderboard() {
             </div>
             <div>
               <p className="text-2xl font-bold">{totalBuyers}</p>
-              <p className="text-xs text-muted-foreground">Người mua</p>
+              <p className="text-xs text-muted-foreground">Buyer</p>
             </div>
           </CardContent>
         </Card>
@@ -144,7 +144,7 @@ export function Leaderboard() {
             </div>
             <div>
               <p className="text-2xl font-bold">{formatVND(totalRevenue)}</p>
-              <p className="text-xs text-muted-foreground">Tổng chi tiêu</p>
+              <p className="text-xs text-muted-foreground">Total spent</p>
             </div>
           </CardContent>
         </Card>
@@ -158,8 +158,8 @@ export function Leaderboard() {
           onValueChange={(v) => v && setLoai(v as typeof loai)}
           className="border rounded-lg p-1"
         >
-          <ToggleGroupItem value="chi_tieu" className="text-sm">Chi tiêu</ToggleGroupItem>
-          <ToggleGroupItem value="don_hang" className="text-sm">Mua hàng</ToggleGroupItem>
+          <ToggleGroupItem value="chi_tieu" className="text-sm">Spending</ToggleGroupItem>
+          <ToggleGroupItem value="don_hang" className="text-sm">Orders</ToggleGroupItem>
         </ToggleGroup>
 
         <Select value={time} onValueChange={(v) => setTime(v as typeof time)}>
@@ -168,9 +168,9 @@ export function Leaderboard() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
-            <SelectItem value="30days">30 ngày</SelectItem>
-            <SelectItem value="7days">7 ngày</SelectItem>
-            <SelectItem value="daily">Hôm nay</SelectItem>
+            <SelectItem value="30days">30 days</SelectItem>
+            <SelectItem value="7days">7 days</SelectItem>
+            <SelectItem value="daily">Today</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -185,18 +185,18 @@ export function Leaderboard() {
       ) : rows.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Trophy className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p>Chưa có dữ liệu</p>
+          <p>No data yet</p>
         </div>
       ) : (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px]">Hạng</TableHead>
+                <TableHead className="w-[80px]">Rank</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Discord ID</TableHead>
-                <TableHead className="text-right">Tổng chi tiêu</TableHead>
-                <TableHead className="text-right">Số đơn</TableHead>
+                <TableHead className="text-right">Total spent</TableHead>
+                <TableHead className="text-right">Orders</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -71,7 +71,7 @@ export function InviteTracking() {
       {/* ── Note ── */}
       <div className="flex items-start gap-2 rounded-lg border border-blue-500/30 bg-blue-500/5 p-3 text-sm text-blue-700 dark:text-blue-400">
         <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-        <p>Invite tracking hoạt động khi bot online và có quyền Manage Guild</p>
+        <p>Invite tracking works when the bot is online and has Manage Guild permission</p>
       </div>
 
       {/* ── Stat Cards ── */}
@@ -82,7 +82,7 @@ export function InviteTracking() {
               <Link2 className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Tổng invite</p>
+              <p className="text-xs text-muted-foreground">Total invites</p>
               <p className="text-xl font-bold">{totalInvites.toLocaleString("vi-VN")}</p>
             </div>
           </CardContent>
@@ -126,7 +126,7 @@ export function InviteTracking() {
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-          <TabsTrigger value="log">Nhật ký Invite</TabsTrigger>
+          <TabsTrigger value="log">Logs Invite</TabsTrigger>
         </TabsList>
 
         {/* ── Tab 1: Leaderboard ── */}
@@ -138,7 +138,7 @@ export function InviteTracking() {
                   <TableRow>
                     <TableHead className="w-12">#</TableHead>
                     <TableHead>Inviter ID</TableHead>
-                    <TableHead className="text-center">Tổng invite</TableHead>
+                    <TableHead className="text-center">Total Invites</TableHead>
                     <TableHead className="text-center">Active</TableHead>
                     <TableHead className="text-center">Left</TableHead>
                     <TableHead className="text-center">Fake</TableHead>
@@ -148,7 +148,7 @@ export function InviteTracking() {
                   {sortedInvites.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                        Chưa có dữ liệu invite.
+                        No data yet invite.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -181,7 +181,7 @@ export function InviteTracking() {
                     <TableHead>Inviter</TableHead>
                     <TableHead>Invitee</TableHead>
                     <TableHead>Code</TableHead>
-                    <TableHead>Ngày join</TableHead>
+                    <TableHead>Date join</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Fake</TableHead>
                   </TableRow>
@@ -190,7 +190,7 @@ export function InviteTracking() {
                   {logs.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                        Chưa có nhật ký invite.
+                        No invite logs yet.
                       </TableCell>
                     </TableRow>
                   ) : (

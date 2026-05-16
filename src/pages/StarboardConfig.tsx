@@ -25,7 +25,7 @@ interface StarboardConfigData {
 
 async function fetchStarboardConfig(): Promise<StarboardConfigData> {
   const res = await apiFetch("/api/starboard/config");
-  if (!res.ok) throw new Error("Tải cấu hình thất bại");
+  if (!res.ok) throw new Error("Failed to load config");
   return res.json();
 }
 
@@ -36,7 +36,7 @@ async function saveStarboardConfig(data: StarboardConfigData): Promise<{ ok: boo
     credentials: "include",
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Lưu thất bại");
+  if (!res.ok) throw new Error("Save failed");
   return res.json();
 }
 
@@ -79,10 +79,10 @@ export function StarboardConfig() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["starboard-config"] });
-      toast({ title: "Đã lưu cấu hình Starboard" });
+      toast({ title: "Starboard configuration saved" });
     },
     onError: () => {
-      toast({ title: "Lưu thất bại", variant: "destructive" });
+      toast({ title: "Save failed", variant: "destructive" });
     },
   });
 
@@ -103,16 +103,16 @@ export function StarboardConfig() {
           Starboard
         </h1>
         <p className="text-sm text-muted-foreground">
-          Ghim tin nhắn được react nhiều vào kênh riêng
+          Pin highly-reacted messages to a dedicated channel
         </p>
       </div>
 
       {/* Config Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Cấu hình chung</CardTitle>
+          <CardTitle className="text-base">Config chung</CardTitle>
           <CardDescription>
-            Thiết lập kênh và điều kiện để tin nhắn xuất hiện trên Starboard.
+            Configure the channel and conditions for messages to appear on Starboard.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -121,7 +121,7 @@ export function StarboardConfig() {
             <div>
               <p className="font-medium">Enable Starboard</p>
               <p className="text-sm text-muted-foreground">
-                Kích hoạt tính năng ghim tin nhắn nổi bật.
+                Enable the highlighted message pinning feature.
               </p>
             </div>
             <Switch checked={enabled} onCheckedChange={setEnabled} />
@@ -129,9 +129,9 @@ export function StarboardConfig() {
 
           {/* Channel */}
           <div className="space-y-2">
-            <Label>Kênh Starboard</Label>
+            <Label>Channel Starboard</Label>
             <p className="text-xs text-muted-foreground">
-              Kênh nơi tin nhắn nổi bật sẽ được ghim.
+              Channel where highlighted messages will be pinned.
             </p>
             <ChannelSelect
               value={channelId}
@@ -145,7 +145,7 @@ export function StarboardConfig() {
           <div className="space-y-2">
             <Label>Emoji</Label>
             <p className="text-xs text-muted-foreground">
-              Emoji dùng để vote cho tin nhắn.
+              Emoji used to vote on messages.
             </p>
             <Input
               value={emoji}
@@ -156,9 +156,9 @@ export function StarboardConfig() {
 
           {/* Threshold */}
           <div className="space-y-2">
-            <Label>Số reaction tối thiểu</Label>
+            <Label>Min reactions</Label>
             <p className="text-xs text-muted-foreground">
-              Số lượng reaction cần thiết để tin nhắn lên Starboard.
+              Number of reactions required for a message to reach Starboard.
             </p>
             <Input
               type="number"
@@ -175,9 +175,9 @@ export function StarboardConfig() {
           {/* Self-star toggle */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Cho phép tự react</p>
+              <p className="font-medium">Allow self-react</p>
               <p className="text-sm text-muted-foreground">
-                Đếm reaction từ chính người gửi tin nhắn.
+                Count reactions from the message author.
               </p>
             </div>
             <Switch checked={selfStar} onCheckedChange={setSelfStar} />
@@ -191,7 +191,7 @@ export function StarboardConfig() {
         disabled={saveMutation.isPending}
         className="w-full"
       >
-        {saveMutation.isPending ? "Saving..." : "Lưu cấu hình"}
+        {saveMutation.isPending ? "Saving..." : "Save Config"}
       </Button>
     </div>
   );

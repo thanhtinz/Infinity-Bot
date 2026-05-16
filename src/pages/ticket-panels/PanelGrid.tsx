@@ -44,13 +44,13 @@ export function PanelGrid({ panels, groups, isLoading, onCreate, onEdit, onDelet
           <div className="rounded-full bg-muted p-4 mb-4">
             <LayoutGrid className="h-8 w-8 text-muted-foreground" />
           </div>
-          <p className="text-lg font-medium">Chưa có panel nào</p>
+          <p className="text-lg font-medium">No panels yet</p>
           <p className="text-sm text-muted-foreground mt-1 mb-4">
-            Tạo panel đầu tiên để bắt đầu quản lý ticket
+            Create your first Panel to start managing tickets
           </p>
           <Button onClick={onCreate}>
             <Plus className="h-4 w-4 mr-1.5" />
-            Tạo Panel
+            Create Panel
           </Button>
         </CardContent>
       </Card>

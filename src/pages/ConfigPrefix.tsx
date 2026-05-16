@@ -36,17 +36,17 @@ export function ConfigPrefix() {
       },
       credentials: "include",
       body: JSON.stringify({ command_prefix: cmdPrefix }),
-    }).then(r => { if (!r.ok) throw new Error("Lưu thất bại"); return r.json(); }),
+    }).then(r => { if (!r.ok) throw new Error("Save failed"); return r.json(); }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["config", selectedGuildId] });
-      toast({ title: "Saved", description: `Prefix đã đổi thành "${cmdPrefix}"` });
+      toast({ title: "Saved", description: `Prefix changed to "${cmdPrefix}"` });
     },
     onError: () => {
-      toast({ variant: "destructive", title: "Error", description: "Lưu prefix thất bại." });
+      toast({ variant: "destructive", title: "Error", description: "Failed to save prefix." });
     },
   });
 
-  if (isLoading) return <div>Đang tải cấu hình...</div>;
+  if (isLoading) return <div>Loading config...</div>;
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -56,8 +56,8 @@ export function ConfigPrefix() {
             <Terminal className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Prefix lệnh</h1>
-            <p className="text-muted-foreground">Cấu hình prefix riêng cho các lệnh dạng tin nhắn.</p>
+            <h1 className="text-3xl font-bold tracking-tight">Command Prefix</h1>
+            <p className="text-muted-foreground">Configure a custom prefix for message-based commands.</p>
           </div>
         </div>
       </div>
@@ -65,7 +65,7 @@ export function ConfigPrefix() {
       <Card>
         <CardHeader>
           <CardTitle>Command Prefix</CardTitle>
-          <CardDescription>Ví dụ: !hug @user, .kiss @user. Slash command vẫn dùng bình thường.</CardDescription>
+          <CardDescription>Example: !hug @user, .kiss @user. Slash commands still work normally.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-end gap-3">
@@ -79,11 +79,11 @@ export function ConfigPrefix() {
               />
             </div>
             <Button onClick={() => prefixMutation.mutate()} disabled={prefixMutation.isPending} size="sm">
-              {prefixMutation.isPending ? "Saving..." : "Lưu Prefix"}
+              {prefixMutation.isPending ? "Saving..." : "Save Prefix"}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Với prefix <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}</code>, user gõ <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}hug @user</code> để chạy lệnh prefix.
+            With prefix <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}</code>, users type <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}hug @user</code> to run the prefix command.
           </p>
         </CardContent>
       </Card>

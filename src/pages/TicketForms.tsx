@@ -74,10 +74,10 @@ export function TicketForms() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-forms"] });
-      toast({ title: "Đã xóa form" });
+      toast({ title: "Deleted form" });
       setDeleteTarget(null);
     },
-    onError: () => toast({ title: "Lỗi khi xóa", variant: "destructive" }),
+    onError: () => toast({ title: "Delete failed", variant: "destructive" }),
   });
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -112,12 +112,12 @@ export function TicketForms() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Ticket Forms</h1>
           <p className="text-muted-foreground text-sm">
-            Tạo form câu hỏi người dùng phải điền trước khi mở ticket
+            Create form questions users must fill out before opening a ticket
           </p>
         </div>
         <Button onClick={() => navigate('/ticket-forms/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          Tạo form mới
+          New Form
         </Button>
       </div>
 
@@ -125,8 +125,8 @@ export function TicketForms() {
       {formList.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <FileQuestion className="h-12 w-12 mb-3 opacity-40" />
-          <p className="text-lg font-medium">Chưa có form nào</p>
-          <p className="text-sm">Tạo form để yêu cầu người dùng điền thông tin trước khi mở ticket</p>
+          <p className="text-lg font-medium">No forms yet</p>
+          <p className="text-sm">Create forms to require users to fill in information before opening a ticket</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -144,7 +144,7 @@ export function TicketForms() {
                       Panel: {getPanelName(f.panel_id)}
                     </p>
                   </div>
-                  <Badge variant="secondary">{f.questions?.length ?? 0} câu hỏi</Badge>
+                  <Badge variant="secondary">{f.questions?.length ?? 0} questions</Badge>
                 </div>
                 <div className="flex gap-1.5">
                   <Button
@@ -180,21 +180,21 @@ export function TicketForms() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Xóa form?</DialogTitle>
+            <DialogTitle>Delete form?</DialogTitle>
             <DialogDescription>
-              Form <strong className="text-foreground">{deleteTarget?.name}</strong> sẽ bị xóa vĩnh viễn.
+              Form <strong className="text-foreground">{deleteTarget?.name}</strong> will be permanently deleted.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Hủy
+              Cancel
             </Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              {deleteMutation.isPending ? "Đang xóa..." : "Xóa"}
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -64,8 +64,8 @@ interface AutoModConfigData {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const ACTION_OPTIONS = [
-  { value: "warn", label: "Cảnh cáo" },
-  { value: "mute", label: "Mute 5 phút" },
+  { value: "warn", label: "Warn" },
+  { value: "mute", label: "Mute 5 min" },
   { value: "kick", label: "Kick" },
 ] as const;
 
@@ -73,7 +73,7 @@ const ACTION_OPTIONS = [
 
 async function fetchAutoModConfig(): Promise<AutoModConfigData> {
   const res = await apiFetch("/api/automod/config");
-  if (!res.ok) throw new Error("Tải cấu hình thất bại");
+  if (!res.ok) throw new Error("Failed to load config");
   return res.json();
 }
 
@@ -84,7 +84,7 @@ async function saveAutoModConfig(data: AutoModConfigData): Promise<{ ok: boolean
     credentials: "include",
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Lưu thất bại");
+  if (!res.ok) throw new Error("Save failed");
   return res.json();
 }
 
@@ -200,7 +200,7 @@ export function AutoModConfig() {
         log_channel_id: logChannelId,
       }),
     onSuccess: () => {
-      toast({ title: "Saved", description: "Cấu hình Auto Mod đã được cập nhật." });
+      toast({ title: "Saved", description: "Auto Mod config updated." });
       qc.invalidateQueries({ queryKey: ["automod_config"] });
     },
     onError: (err: Error) => {
@@ -216,7 +216,7 @@ export function AutoModConfig() {
           <Shield className="w-5 h-5" />
           <h2 className="text-2xl font-bold tracking-tight">Auto Mod</h2>
         </div>
-        <p className="text-muted-foreground mt-1">Tự động kiểm duyệt tin nhắn</p>
+        <p className="text-muted-foreground mt-1">Automatically moderate messages</p>
       </div>
 
       {/* ── Anti-Spam ── */}
@@ -225,7 +225,7 @@ export function AutoModConfig() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <MessageSquareOff className="w-4 h-4" /> Chống Spam
+                <MessageSquareOff className="w-4 h-4" /> Anti Spam
               </CardTitle>
               <div className="flex items-center gap-3">
                 <Switch
@@ -249,7 +249,7 @@ export function AutoModConfig() {
             <CardContent className="space-y-4 pt-0">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Số tin nhắn tối đa</Label>
+                  <Label>Max messages</Label>
                   <Input
                     type="number"
                     min={1}
@@ -258,7 +258,7 @@ export function AutoModConfig() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Khoảng thời gian (giây)</Label>
+                  <Label>Interval (seconds)</Label>
                   <Input
                     type="number"
                     min={1}
@@ -293,7 +293,7 @@ export function AutoModConfig() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <Link2Off className="w-4 h-4" /> Chống Link
+                <Link2Off className="w-4 h-4" /> Anti Link
               </CardTitle>
               <div className="flex items-center gap-3">
                 <Switch
@@ -316,7 +316,7 @@ export function AutoModConfig() {
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-0">
               <div className="space-y-2">
-                <Label>Whitelist (mỗi dòng một domain)</Label>
+                <Label>Whitelist (one domain per line)</Label>
                 <Textarea
                   value={antiLinkWhitelist}
                   onChange={(e) => setAntiLinkWhitelist(e.target.value)}
@@ -335,7 +335,7 @@ export function AutoModConfig() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <Ban className="w-4 h-4" /> Từ cấm
+                <Ban className="w-4 h-4" /> Bad Words
               </CardTitle>
               <div className="flex items-center gap-3">
                 <Switch
@@ -358,7 +358,7 @@ export function AutoModConfig() {
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-0">
               <div className="space-y-2">
-                <Label>Danh sách từ cấm (mỗi dòng một từ)</Label>
+                <Label>Bad words list (one word per line)</Label>
                 <Textarea
                   value={badWordsList}
                   onChange={(e) => setBadWordsList(e.target.value)}
@@ -377,7 +377,7 @@ export function AutoModConfig() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <CaseSensitive className="w-4 h-4" /> Chống Viết Hoa
+                <CaseSensitive className="w-4 h-4" /> Anti Caps
               </CardTitle>
               <div className="flex items-center gap-3">
                 <Switch
@@ -400,7 +400,7 @@ export function AutoModConfig() {
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-0">
               <div className="space-y-2">
-                <Label>Độ dài tối thiểu</Label>
+                <Label>Min length</Label>
                 <Input
                   type="number"
                   min={1}
@@ -408,11 +408,11 @@ export function AutoModConfig() {
                   onChange={(e) => setCapsLockMinLength(Number(e.target.value))}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Chỉ kiểm tra tin nhắn dài hơn giá trị này.
+                  Only check messages longer than this value.
                 </p>
               </div>
               <div className="space-y-2">
-                <Label>Phần trăm viết hoa: {capsLockPercentage}%</Label>
+                <Label>Caps percentage: {capsLockPercentage}%</Label>
                 <Slider
                   value={[capsLockPercentage]}
                   onValueChange={([v]) => setCapsLockPercentage(v)}
@@ -432,7 +432,7 @@ export function AutoModConfig() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <AtSign className="w-4 h-4" /> Chống Tag Hàng Loạt
+                <AtSign className="w-4 h-4" /> Anti Mass Mention
               </CardTitle>
               <div className="flex items-center gap-3">
                 <Switch
@@ -455,7 +455,7 @@ export function AutoModConfig() {
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-0">
               <div className="space-y-2">
-                <Label>Số tag tối đa</Label>
+                <Label>Max mentions</Label>
                 <Input
                   type="number"
                   min={1}
@@ -483,17 +483,17 @@ export function AutoModConfig() {
         </Collapsible>
       </Card>
 
-      {/* ── Bộ lọc ── */}
+      {/* ── Filters ── */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Bộ lọc</CardTitle>
+          <CardTitle className="text-base">Filters</CardTitle>
           <CardDescription>
-            Các kênh và role sẽ bị bỏ qua bởi tất cả bộ lọc.
+            Channels and roles ignored by all filters.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-2">
-            <Label>Kênh bỏ qua</Label>
+            <Label>Ignored channels</Label>
             <ChannelSelect
               value={ignoredChannels[0] ?? ""}
               onChange={(v) => setIgnoredChannels(v ? [v] : [])}
@@ -501,16 +501,16 @@ export function AutoModConfig() {
               filter="text"
             />
             <p className="text-xs text-muted-foreground">
-              Kênh sẽ không bị kiểm tra bởi Auto Mod.
+              These channels will not be checked by Auto Mod.
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Role bỏ qua</Label>
+            <Label>Ignored roles</Label>
             <MultiRoleSelect
               value={ignoredRoles}
               onChange={setIgnoredRoles}
-              placeholder="Chọn roles..."
+              placeholder="Select roles..."
             />
           </div>
 
@@ -523,7 +523,7 @@ export function AutoModConfig() {
               filter="text"
             />
             <p className="text-xs text-muted-foreground">
-              Kênh ghi lại các hành động của Auto Mod.
+              Channel for logging Auto Mod actions.
             </p>
           </div>
         </CardContent>
@@ -531,7 +531,7 @@ export function AutoModConfig() {
 
       {/* Save */}
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
-        {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
+        {mutation.isPending ? "Saving..." : "Save Config"}
       </Button>
     </div>
   );

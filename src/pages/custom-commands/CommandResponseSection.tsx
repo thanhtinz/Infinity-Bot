@@ -33,12 +33,12 @@ export function CommandResponseSection({
     <div className="space-y-4">
       <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
         <Layout className="h-3.5 w-3.5" />
-        Phản hồi
+        Response
       </p>
 
       {/* Response type toggle */}
       <div className="space-y-2">
-        <Label>Loại phản hồi</Label>
+        <Label>Response type</Label>
         <div className="flex gap-2">
           <button
             type="button"
@@ -53,7 +53,7 @@ export function CommandResponseSection({
             )}
           >
             <Type className="h-4 w-4" />
-            Văn bản
+            Text
           </button>
           <button
             type="button"
@@ -82,7 +82,7 @@ export function CommandResponseSection({
         >
           <span className="flex items-center gap-2">
             <Variable className="h-4 w-4 text-indigo-500" />
-            Biến số (Variables)
+            Available variables
           </span>
           {varsOpen ? (
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -93,7 +93,7 @@ export function CommandResponseSection({
         {varsOpen && (
           <div className="px-3 pb-3 space-y-3">
             <p className="text-[11px] text-muted-foreground">
-              Nhấn vào biến để chèn vào nội dung. Click vào ô văn bản trước để chọn vị trí chèn.
+              Click a variable to insert it. Click the text field first to set the insertion point.
             </p>
             {VARIABLE_GROUPS.map((group) => {
               const Icon = group.icon;
@@ -132,7 +132,7 @@ export function CommandResponseSection({
             onChange={(e) =>
               onFormChange((p) => ({ ...p, response_text: e.target.value }))
             }
-            placeholder="Nội dung bot sẽ gửi khi dùng lệnh..."
+            placeholder="Content bot will send when the command is used..."
             rows={5}
           />
         </div>

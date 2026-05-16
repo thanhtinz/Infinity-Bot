@@ -34,7 +34,7 @@ function MaskedField({
     <div className="space-y-1">
       <Input
         type="password"
-        placeholder={isConfigured ? "••••••••  (đã cấu hình)" : placeholder}
+        placeholder={isConfigured ? "••••••••  (configured)" : placeholder}
         value={field.value || ""}
         onChange={(e) => field.onChange(e.target.value)}
         onBlur={field.onBlur}
@@ -43,7 +43,7 @@ function MaskedField({
         autoComplete="new-password"
       />
       {isConfigured && !field.value && (
-        <p className="text-xs text-green-600 dark:text-green-400">✓ Đã cấu hình</p>
+        <p className="text-xs text-green-600 dark:text-green-400">✓ Configured</p>
       )}
     </div>
   );
@@ -85,12 +85,12 @@ export function ConfigPayOS() {
       headers: { "Content-Type": "application/json", "X-Guild-ID": selectedGuildId! },
       credentials: "include",
       body: JSON.stringify(v),
-    }).then(r => { if (!r.ok) throw new Error("Lưu thất bại"); return r.json(); }),
+    }).then(r => { if (!r.ok) throw new Error("Save failed"); return r.json(); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["payos_config", selectedGuildId] });
-      toast({ title: "Saved", description: "Cấu hình PayOS đã được lưu." });
+      toast({ title: "Saved", description: "PayOS config saved." });
     },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Save failed." }),
   });
 
   const isConfigured = !!config?.has_payos_api_key;
@@ -104,11 +104,11 @@ export function ConfigPayOS() {
         headers: { "X-Guild-ID": selectedGuildId! },
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Lỗi không xác định");
-      toast({ title: "Kết nối thành công", description: data.message });
+      if (!res.ok) throw new Error(data.detail || "Unknown error");
+      toast({ title: "Connection successful", description: data.message });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Lỗi kết nối";
-      toast({ variant: "destructive", title: "Test thất bại", description: msg });
+      const msg = e instanceof Error ? e.message : "Connection error";
+      toast({ variant: "destructive", title: "Test failed", description: msg });
     } finally {
       setTesting(false);
     }
@@ -123,11 +123,11 @@ export function ConfigPayOS() {
         </div>
         <div>
           <h1 className="text-xl font-bold">PayOS</h1>
-          <p className="text-sm text-muted-foreground">Cổng thanh toán tạo mã QR cho đơn hàng.</p>
+          <p className="text-sm text-muted-foreground">Payment gateway for generating QR codes for orders.</p>
         </div>
         {isConfigured && (
           <Badge className="ml-auto bg-green-500/15 text-green-600 border-green-500/30">
-            ✓ Đã cấu hình
+            ✓ Configured
           </Badge>
         )}
       </div>
@@ -137,9 +137,9 @@ export function ConfigPayOS() {
           <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))}>
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Thông tin API</CardTitle>
+                <CardTitle className="text-base">Info API</CardTitle>
                 <CardDescription className="flex items-center gap-1">
-                  Lấy từ{" "}
+                  Get from{" "}
                   <a
                     href="https://my.payos.vn"
                     target="_blank"
@@ -201,12 +201,12 @@ export function ConfigPayOS() {
 
                 <div className="pt-1 flex items-center gap-2">
                   <Button type="submit" disabled={mutation.isPending}>
-                    {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
+                    {mutation.isPending ? "Saving..." : "Save Config"}
                   </Button>
                   {isConfigured && (
                     <Button type="button" variant="outline" disabled={testing} onClick={handleTest}>
                       {testing ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Zap className="mr-1.5 h-3.5 w-3.5" />}
-                      {testing ? "Đang test..." : "Test kết nối"}
+                      {testing ? "Testing..." : "Test connection"}
                     </Button>
                   )}
                 </div>

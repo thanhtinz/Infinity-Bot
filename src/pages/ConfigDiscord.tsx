@@ -25,7 +25,7 @@ async function savePartial(partial: Record<string, unknown>) {
     credentials: "include",
     body: JSON.stringify(partial),
   });
-  if (!res.ok) throw new Error("Lưu thất bại");
+  if (!res.ok) throw new Error("Save failed");
   return res.json();
 }
 
@@ -43,7 +43,7 @@ function MaskedField({
     <div className="space-y-1">
       <Input
         type="password"
-        placeholder={isConfigured ? "••••••••  (đã cấu hình)" : placeholder}
+        placeholder={isConfigured ? "••••••••  (configured)" : placeholder}
         value={field.value || ""}
         onChange={(e) => field.onChange(e.target.value)}
         onBlur={field.onBlur}
@@ -52,7 +52,7 @@ function MaskedField({
         autoComplete="new-password"
       />
       {isConfigured && !field.value && (
-        <p className="text-xs text-green-600 dark:text-green-400">✓ Đã cấu hình — để trống nếu không muốn thay đổi</p>
+        <p className="text-xs text-green-600 dark:text-green-400">✓ Configured — leave blank to keep unchanged</p>
       )}
     </div>
   );
@@ -86,9 +86,9 @@ export function ConfigDiscord() {
     mutationFn: (v: FormValues) => savePartial(v),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["config"] });
-      toast({ title: "Saved", description: "Cấu hình Discord Bot đã được lưu." });
+      toast({ title: "Saved", description: "Discord Bot config saved." });
     },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Save failed." }),
   });
 
   const isConfigured = !!config?.has_discord_token;
@@ -102,11 +102,11 @@ export function ConfigDiscord() {
         </div>
         <div>
           <h1 className="text-xl font-bold">Discord Bot</h1>
-          <p className="text-sm text-muted-foreground">Token và OAuth để kết nối bot với Discord.</p>
+          <p className="text-sm text-muted-foreground">Token and OAuth to connect the bot with Discord.</p>
         </div>
         {isConfigured && (
           <Badge className="ml-auto bg-green-500/15 text-green-600 border-green-500/30">
-            ✓ Đã kết nối
+            ✓ Connected
           </Badge>
         )}
       </div>
@@ -117,10 +117,10 @@ export function ConfigDiscord() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <KeyRound className="w-4 h-4" /> Thông tin xác thực
+                  <KeyRound className="w-4 h-4" /> Auth info
                 </CardTitle>
                 <CardDescription>
-                  Lấy từ{" "}
+                  Get from{" "}
                   <a
                     href="https://discord.com/developers/applications"
                     target="_blank"
@@ -142,7 +142,7 @@ export function ConfigDiscord() {
                         <MaskedField field={field} placeholder="MTc..." savedValue={config?.has_discord_token} />
                       </FormControl>
                       <FormDescription>
-                        Bot → Token → Reset Token. Không chia sẻ token này với ai.
+                        Bot → Token → Reset Token. Never share this token.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -163,7 +163,7 @@ export function ConfigDiscord() {
                             placeholder={
                               config?.discord_client_id
                                 ? `${String(config.discord_client_id).slice(0, 8)}...`
-                                : "ID ứng dụng"
+                                : "Application ID"
                             }
                           />
                         </FormControl>
@@ -194,7 +194,7 @@ export function ConfigDiscord() {
 
                 <div className="pt-1">
                   <Button type="submit" disabled={mutation.isPending}>
-                    {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
+                    {mutation.isPending ? "Saving..." : "Save Config"}
                   </Button>
                 </div>
               </CardContent>

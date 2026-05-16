@@ -101,12 +101,12 @@ export function AutoResponderEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["auto-responders"] });
       navigate("/autoresponder");
-      toast({ title: "Đã tạo rule thành công" });
+      toast({ title: "Rule created successfully" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi tạo rule",
+        title: "Failed to create rule",
         description: e.message,
       }),
   });
@@ -125,12 +125,12 @@ export function AutoResponderEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["auto-responders"] });
       navigate("/autoresponder");
-      toast({ title: "Đã cập nhật rule" });
+      toast({ title: "Rule updated" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi cập nhật",
+        title: "Update error",
         description: e.message,
       }),
   });
@@ -275,7 +275,7 @@ export function AutoResponderEditPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="font-semibold">
-          {isNew ? "Tạo Auto Responder" : "Edit Auto Responder"}
+          {isNew ? "Create Auto Responder" : "Edit Auto Responder"}
         </h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>

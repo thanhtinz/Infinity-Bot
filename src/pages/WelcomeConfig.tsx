@@ -62,28 +62,28 @@ interface EmbedFormState {
 // ─── Defaults ────────────────────────────────────────────────────────────────
 
 const WELCOME_DEFAULT: EmbedFormState = {
-  title: "👋 Chào mừng đến với {server}!",
+  title: "👋 Welcome to {server}!",
   description:
-    "Xin chào {user.mention}! Chúc bạn có thời gian vui vẻ tại server.\n\nDùng `/help` để xem danh sách lệnh bot.",
+    "Hello {user.mention}! Hope you enjoy your time in the server.\n\nUse `/help` to see the command listd bot.",
   color: "#5865F2",
   footer: "Infinity Mall",
-  fields: [{ name: "Thành viên thứ", value: "{member_count}", inline: true }],
+  fields: [{ name: "Member #", value: "{member_count}", inline: true }],
 };
 
 const GOODBYE_DEFAULT: EmbedFormState = {
-  title: "👋 Tạm biệt",
-  description: "**{user}** đã rời khỏi server.",
+  title: "👋 Goodbye",
+  description: "**{user}** has left the server.",
   color: "#95A5A6",
-  footer: "Còn lại {member_count} thành viên",
+  footer: "{member_count} members remaining",
   fields: [],
 };
 
 // ─── Variable substitution ───────────────────────────────────────────────────
 
 const VAR_MAP: Record<string, string> = {
-  "{user.mention}": "@Người dùng",
-  "{user}": "Người dùng",
-  "{server}": "Tên Server",
+  "{user.mention}": "@Users",
+  "{user}": "Users",
+  "{server}": "Name Server",
   "{member_count}": "1,234",
   "{user.id}": "123456789",
 };
@@ -100,7 +100,7 @@ function substituteVars(text: string): string {
 
 async function fetchConfig(): Promise<WelcomeConfigData> {
   const res = await apiFetch("/api/welcome/config");
-  if (!res.ok) throw new Error("Tải cấu hình thất bại");
+  if (!res.ok) throw new Error("Failed to load config");
   return res.json();
 }
 
@@ -111,7 +111,7 @@ async function saveConfig(data: WelcomeConfigData): Promise<{ ok: boolean }> {
     credentials: "include",
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Lưu thất bại");
+  if (!res.ok) throw new Error("Save failed");
   return res.json();
 }
 
@@ -140,7 +140,7 @@ async function saveEmbed(
       credentials: "include",
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error("Lưu embed thất bại");
+    if (!res.ok) throw new Error("Save embed failed");
     return res.json();
   } else {
     const res = await apiFetch("/api/embeds", {
@@ -149,7 +149,7 @@ async function saveEmbed(
       credentials: "include",
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error("Lưu embed thất bại");
+    if (!res.ok) throw new Error("Save embed failed");
     return res.json();
   }
 }
@@ -279,7 +279,7 @@ function EmbedEditor({
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange((prev) => ({ ...prev, title: e.target.value }))
             }
-            placeholder="Tiêu đề embed"
+            placeholder="Title embed"
           />
           <EmojiPicker onSelect={(em) => onChange((prev) => ({ ...prev, title: prev.title + em }))} />
         </div>
@@ -294,14 +294,14 @@ function EmbedEditor({
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
               onChange((prev) => ({ ...prev, description: e.target.value }))
             }
-            placeholder="Nội dung embed..."
+            placeholder="Content embed..."
             rows={3}
             className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           <EmojiPicker onSelect={(em) => onChange((prev) => ({ ...prev, description: prev.description + em }))} />
         </div>
         <p className="text-xs text-muted-foreground">
-          Biến: {"{user.mention}"}, {"{user}"}, {"{server}"}, {"{member_count}"}, {"{user.id}"}
+          Variables: {"{user.mention}"}, {"{user}"}, {"{server}"}, {"{member_count}"}, {"{user.id}"}
         </p>
       </div>
 
@@ -315,7 +315,7 @@ function EmbedEditor({
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange((prev) => ({ ...prev, footer: e.target.value }))
             }
-            placeholder="Chữ footer..."
+            placeholder="Footer text..."
           />
           <EmojiPicker onSelect={(em) => onChange((prev) => ({ ...prev, footer: prev.footer + em }))} />
         </div>
@@ -332,11 +332,11 @@ function EmbedEditor({
             onClick={addField}
             disabled={form.fields.length >= 10}
           >
-            <Plus className="w-3 h-3 mr-1" /> Thêm field
+            <Plus className="w-3 h-3 mr-1" /> Add field
           </Button>
         </div>
         {form.fields.length === 0 && (
-          <p className="text-xs text-muted-foreground">Chưa có field nào.</p>
+          <p className="text-xs text-muted-foreground">No fields yet.</p>
         )}
         <div className="space-y-3">
           {form.fields.map((field, idx) => (
@@ -364,7 +364,7 @@ function EmbedEditor({
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     updateField(idx, "name", e.target.value)
                   }
-                  placeholder="Tên field"
+                  placeholder="Name field"
                   className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <EmojiPicker onSelect={(em) => updateField(idx, "name", field.name + em)} />
@@ -375,7 +375,7 @@ function EmbedEditor({
                   onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
                     updateField(idx, "value", e.target.value)
                   }
-                  placeholder="Giá trị field"
+                  placeholder="Value field"
                   rows={2}
                   className="text-sm flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
@@ -397,7 +397,7 @@ function EmbedEditor({
 
       {/* Preview */}
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Xem trước</Label>
+        <Label className="text-xs text-muted-foreground">Preview</Label>
         <DiscordEmbedPreview form={form} />
       </div>
     </div>
@@ -534,7 +534,7 @@ export function WelcomeConfig() {
       toast({ title: "Saved" });
     },
     onError: () => {
-      toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." });
+      toast({ variant: "destructive", title: "Error", description: "Save failed." });
     },
   });
 
@@ -556,7 +556,7 @@ export function WelcomeConfig() {
         <div>
           <h1 className="text-xl font-bold">Welcome & Goodbye</h1>
           <p className="text-sm text-muted-foreground">
-            Cấu hình tin nhắn chào mừng thành viên mới và tạm biệt khi rời server.
+            Configure welcome messages for new members and goodbye messages when they leave.
           </p>
         </div>
       </div>
@@ -565,17 +565,17 @@ export function WelcomeConfig() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <MessageSquare className="w-4 h-4" /> Chào mừng
+            <MessageSquare className="w-4 h-4" /> Welcome
           </CardTitle>
           <CardDescription>
-            Gửi tin nhắn chào mừng khi có thành viên mới tham gia server.
+            Send a welcome message when new members join the server.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
               <p className="font-medium">Enable welcome</p>
-              <p className="text-sm text-muted-foreground">Kích hoạt tin nhắn chào mừng.</p>
+              <p className="text-sm text-muted-foreground">Enable the welcome message.</p>
             </div>
             <Switch checked={welcomeEnabled} onCheckedChange={setWelcomeEnabled} />
           </div>
@@ -592,8 +592,8 @@ export function WelcomeConfig() {
 
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Chế độ Embed</p>
-              <p className="text-sm text-muted-foreground">Hiển thị tin nhắn dưới dạng embed.</p>
+              <p className="font-medium">Embed mode</p>
+              <p className="text-sm text-muted-foreground">Display the message as an embed.</p>
             </div>
             <Switch checked={welcomeEmbedEnabled} onCheckedChange={setWelcomeEmbedEnabled} />
           </div>
@@ -602,15 +602,15 @@ export function WelcomeConfig() {
             <EmbedEditor form={welcomeEmbedForm} onChange={setWelcomeEmbedForm} />
           ) : (
             <div className="space-y-2">
-              <Label>Tin nhắn chào mừng</Label>
+              <Label>Welcome message</Label>
               <Textarea
                 value={welcomeMessage}
                 onChange={(e) => setWelcomeMessage(e.target.value)}
-                placeholder="Chào mừng {username} đã tham gia {server}! 🎉"
+                placeholder="Welcome {username} to {server}! 🎉"
                 rows={3}
               />
               <p className="text-xs text-muted-foreground">
-                Có dùng: {"{username}"}, {"{server}"}, {"{mention}"}
+                Available: {"{username}"}, {"{server}"}, {"{mention}"}
               </p>
             </div>
           )}
@@ -621,31 +621,31 @@ export function WelcomeConfig() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <MessageSquare className="w-4 h-4" /> Chào mừng DM
+            <MessageSquare className="w-4 h-4" /> Welcome DM
           </CardTitle>
           <CardDescription>
-            Gửi tin nhắn chào mừng trực tiếp (DM) cho thành viên mới.
+            Send a direct message (DM) to new members.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
               <p className="font-medium">Enable welcome DM</p>
-              <p className="text-sm text-muted-foreground">Gửi tin nhắn riêng cho thành viên mới.</p>
+              <p className="text-sm text-muted-foreground">Send a private message to new members.</p>
             </div>
             <Switch checked={welcomeDmEnabled} onCheckedChange={setWelcomeDmEnabled} />
           </div>
 
           <div className="space-y-2">
-            <Label>Tin nhắn DM</Label>
+            <Label>Messages DM</Label>
             <Textarea
               value={welcomeDmMessage}
               onChange={(e) => setWelcomeDmMessage(e.target.value)}
-              placeholder="Chào {username}, cảm ơn bạn đã tham gia {server}!"
+              placeholder="Hi {username}, welcome to {server}!"
               rows={3}
             />
             <p className="text-xs text-muted-foreground">
-              Có dùng: {"{username}"}, {"{server}"}, {"{mention}"}
+              Available: {"{username}"}, {"{server}"}, {"{mention}"}
             </p>
           </div>
         </CardContent>
@@ -655,17 +655,17 @@ export function WelcomeConfig() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <LogOut className="w-4 h-4" /> Tạm biệt
+            <LogOut className="w-4 h-4" /> Goodbye
           </CardTitle>
           <CardDescription>
-            Gửi tin nhắn tạm biệt khi thành viên rời server.
+            Send a goodbye message when members leave the server.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
               <p className="font-medium">Enable goodbye</p>
-              <p className="text-sm text-muted-foreground">Kích hoạt tin nhắn tạm biệt.</p>
+              <p className="text-sm text-muted-foreground">Enable the goodbye message.</p>
             </div>
             <Switch checked={goodbyeEnabled} onCheckedChange={setGoodbyeEnabled} />
           </div>
@@ -682,8 +682,8 @@ export function WelcomeConfig() {
 
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Chế độ Embed</p>
-              <p className="text-sm text-muted-foreground">Hiển thị tin nhắn dưới dạng embed.</p>
+              <p className="font-medium">Embed mode</p>
+              <p className="text-sm text-muted-foreground">Display the message as an embed.</p>
             </div>
             <Switch checked={goodbyeEmbedEnabled} onCheckedChange={setGoodbyeEmbedEnabled} />
           </div>
@@ -692,15 +692,15 @@ export function WelcomeConfig() {
             <EmbedEditor form={goodbyeEmbedForm} onChange={setGoodbyeEmbedForm} />
           ) : (
             <div className="space-y-2">
-              <Label>Tin nhắn tạm biệt</Label>
+              <Label>Goodbye message</Label>
               <Textarea
                 value={goodbyeMessage}
                 onChange={(e) => setGoodbyeMessage(e.target.value)}
-                placeholder="{username} đã rời khỏi {server}. 👋"
+                placeholder="{username} has left {server}. 👋"
                 rows={3}
               />
               <p className="text-xs text-muted-foreground">
-                Có dùng: {"{username}"}, {"{server}"}, {"{member_count}"}
+                Available: {"{username}"}, {"{server}"}, {"{member_count}"}
               </p>
             </div>
           )}
@@ -711,21 +711,21 @@ export function WelcomeConfig() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <UserCog className="w-4 h-4" /> Tự động đặt biệt danh
+            <UserCog className="w-4 h-4" /> Auto-nickname
           </CardTitle>
           <CardDescription>
-            Tự động đổi biệt danh cho thành viên khi tham gia server.
+            Automatically set a nickname for members when they join the server.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          <Label>Mẫu biệt danh</Label>
+          <Label>Nickname template</Label>
           <Input
             value={autoNicknameTemplate}
             onChange={(e) => setAutoNicknameTemplate(e.target.value)}
-            placeholder="Để trống để tắt"
+            placeholder="Leave blank to disable"
           />
           <p className="text-xs text-muted-foreground">
-            Các biến có sẵn: {"{username}"}, {"{server}"}, {"{discriminator}"}
+            Available: {"{username}"}, {"{server}"}, {"{discriminator}"}
           </p>
         </CardContent>
       </Card>
@@ -736,7 +736,7 @@ export function WelcomeConfig() {
         disabled={saveMutation.isPending}
         className="w-full"
       >
-        {saveMutation.isPending ? "Saving..." : "Lưu cấu hình"}
+        {saveMutation.isPending ? "Saving..." : "Save Config"}
       </Button>
     </div>
   );

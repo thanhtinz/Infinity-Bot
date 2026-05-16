@@ -82,7 +82,7 @@ export function FeedbackManager() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["feedback"] });
       setDeleteTarget(null);
-      toast({ title: "Đã xóa feedback." });
+      toast({ title: "Deleted feedback." });
     },
     onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
@@ -124,7 +124,7 @@ export function FeedbackManager() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold">{stats.total}</p>
-            <p className="text-xs text-muted-foreground">Tổng feedback</p>
+            <p className="text-xs text-muted-foreground">Total feedback</p>
           </CardContent>
         </Card>
         <Card>
@@ -132,7 +132,7 @@ export function FeedbackManager() {
             <p className="text-2xl font-bold flex items-center justify-center gap-1">
               <StarIcon className="h-5 w-5 text-yellow-400 fill-yellow-400" /> {stats.avg.toFixed(1)}
             </p>
-            <p className="text-xs text-muted-foreground">Trung bình sao</p>
+            <p className="text-xs text-muted-foreground">Medium sao</p>
           </CardContent>
         </Card>
         <Card>
@@ -153,7 +153,7 @@ export function FeedbackManager() {
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Tìm theo username, nội dung..."
+          placeholder="Search by username, content..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -166,7 +166,7 @@ export function FeedbackManager() {
           <CardContent className="p-8 text-center text-sm text-muted-foreground">
             {feedbacks.length === 0
               ? "No feedback yet"
-              : "Không tìm thấy feedback phù hợp"}
+              : "No matching feedback found"}
           </CardContent>
         </Card>
       ) : (
@@ -228,10 +228,10 @@ export function FeedbackManager() {
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Xóa feedback?</DialogTitle>
+            <DialogTitle>Delete feedback?</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Xóa sẽ tự động xóa message trên Discord channel. <strong>Không thể hoàn tác.</strong>
+            This will permanently delete the message from the Discord channel. <strong>This cannot be undone.</strong>
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>

@@ -41,7 +41,7 @@ interface RestoreResult {
 
 async function fetchPreview(): Promise<BackupPreview> {
   const res = await fetch("/api/backup/preview", { credentials: "include" });
-  if (!res.ok) throw new Error("Tải xem trước thất bại");
+  if (!res.ok) throw new Error("Failed to load preview");
   return res.json();
 }
 
@@ -52,7 +52,7 @@ async function restoreBackup(data: unknown): Promise<RestoreResult> {
     credentials: "include",
     body: JSON.stringify({ data }),
   });
-  if (!res.ok) throw new Error("Khôi phục thất bại");
+  if (!res.ok) throw new Error("Restore failed");
   return res.json();
 }
 
@@ -83,9 +83,9 @@ export function BackupRestore() {
       setRestoreResult(data);
       setConfirmOpen(false);
       if (data.ok) {
-        toast({ title: "Khôi phục thành công" });
+        toast({ title: "Restore successful" });
       } else {
-        toast({ title: "Khôi phục có lỗi", variant: "destructive" });
+        toast({ title: "Restore failed", variant: "destructive" });
       }
     },
     onError: (err: Error) =>
@@ -97,7 +97,7 @@ export function BackupRestore() {
   const handleBackup = async () => {
     try {
       const res = await fetch("/api/backup", { credentials: "include" });
-      if (!res.ok) throw new Error("Tải backup thất bại");
+      if (!res.ok) throw new Error("Failed to load backup");
       const data = await res.json();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -106,11 +106,11 @@ export function BackupRestore() {
       a.download = `backup_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast({ title: "Backup đã được tải xuống" });
+      toast({ title: "Backup downloaded" });
     } catch (err) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Tải backup thất bại",
+        description: err instanceof Error ? err.message : "Failed to load backup",
         variant: "destructive",
       });
     }
@@ -142,8 +142,8 @@ export function BackupRestore() {
         setFilePreview(preview);
       } catch {
         toast({
-          title: "File không hợp lệ",
-          description: "Vui lòng chọn file JSON hợp lệ",
+          title: "Invalid file",
+          description: "Please select a valid JSON file",
           variant: "destructive",
         });
       }
@@ -181,27 +181,27 @@ export function BackupRestore() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Backup & Restore</h1>
           <p className="text-sm text-muted-foreground">
-            Sao lưu và khôi phục cấu hình server
+            Backup and restore server configuration
           </p>
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* ── Card: Tạo Backup ── */}
+        {/* ── Card: Create Backup ── */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Download className="h-5 w-5 text-blue-500" />
-              Tạo Backup
+              Create Backup
             </CardTitle>
             <CardDescription>
-              Tạo bản sao lưu toàn bộ cấu hình server dưới dạng file JSON.
+              Create a full backup of the server configuration as a JSON file.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button onClick={handleBackup} className="w-full">
               <Download className="mr-2 h-4 w-4" />
-              Tạo Backup
+              Create Backup
             </Button>
 
             <Separator />
@@ -209,7 +209,7 @@ export function BackupRestore() {
             {/* Preview summary from API */}
             <div className="space-y-2">
               <p className="text-sm font-medium text-muted-foreground">
-                Dữ liệu sẽ được sao lưu:
+                Data that will be backed up:
               </p>
               {previewQuery.isLoading ? (
                 <div className="flex flex-wrap gap-1.5">
@@ -230,22 +230,22 @@ export function BackupRestore() {
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Không thể tải xem trước
+                  Could not load preview
                 </p>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* ── Card: Khôi phục ── */}
+        {/* ── Card: Restore ── */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Upload className="h-5 w-5 text-orange-500" />
-              Khôi phục
+              Restore
             </CardTitle>
             <CardDescription>
-              Tải lên file backup JSON để khôi phục cấu hình server.
+              Upload a backup JSON file to restore server config.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -260,10 +260,10 @@ export function BackupRestore() {
               ) : (
                 <>
                   <span className="text-sm text-muted-foreground">
-                    Tải lên file backup
+                    Upload backup file
                   </span>
                   <span className="text-xs text-muted-foreground/60 mt-1">
-                    Chỉ chấp nhận file .json
+                    Only .json files accepted
                   </span>
                 </>
               )}
@@ -282,12 +282,12 @@ export function BackupRestore() {
               <div className="rounded-lg border p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <FileJson className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Nội dung backup</span>
+                  <span className="text-sm font-medium">Content backup</span>
                 </div>
                 <Separator />
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium text-muted-foreground">
-                    Số lượng bản ghi:
+                    Records:
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {Object.entries(filePreview).map(([key, count]) => (
@@ -306,12 +306,12 @@ export function BackupRestore() {
                 {restoreResult.ok ? (
                   <div className="flex items-center gap-2 text-green-500">
                     <CheckCircle2 className="h-4 w-4" />
-                    <span className="text-sm font-medium">Khôi phục thành công</span>
+                    <span className="text-sm font-medium">Restore successful</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 text-destructive">
                     <XCircle className="h-4 w-4" />
-                    <span className="text-sm font-medium">Khôi phục có lỗi</span>
+                    <span className="text-sm font-medium">Restore failed</span>
                   </div>
                 )}
                 {Object.keys(restoreResult.restored).length > 0 && (
@@ -343,7 +343,7 @@ export function BackupRestore() {
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
                   <p className="text-xs text-destructive">
-                    Thao tác này sẽ thay thế toàn bộ cấu hình hiện tại.
+                    This will replace the entire current configuration.
                   </p>
                 </div>
               </div>
@@ -357,17 +357,17 @@ export function BackupRestore() {
                 onClick={handleRestore}
               >
                 {restoreMutation.isPending ? (
-                  "Đang khôi phục..."
+                  "Restoring..."
                 ) : (
                   <>
                     <Upload className="mr-2 h-4 w-4" />
-                    Khôi phục
+                    Restore
                   </>
                 )}
               </Button>
               {backupData != null && (
                 <Button variant="outline" onClick={resetRestore}>
-                  Xóa
+                  Delete
                 </Button>
               )}
             </div>
@@ -381,17 +381,17 @@ export function BackupRestore() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
-              Xác nhận khôi phục
+              Confirm Restore
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Thao tác này sẽ thay thế toàn bộ cấu hình hiện tại. Bạn chắc chứ?
+              This will replace the entire current configuration. Are you sure?
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           {/* Show what will be restored inside the dialog */}
           {filePreview && (
             <div className="space-y-2 py-2">
-              <p className="text-sm font-medium">Dữ liệu sẽ được khôi phục:</p>
+              <p className="text-sm font-medium">Data to be restored:</p>
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(filePreview).map(([key, count]) => (
                   <Badge key={key} variant="outline" className="text-xs">
@@ -404,14 +404,14 @@ export function BackupRestore() {
 
           <AlertDialogFooter>
             <AlertDialogCancel disabled={restoreMutation.isPending}>
-              Hủy
+              Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={restoreMutation.isPending}
               onClick={confirmRestore}
             >
-              {restoreMutation.isPending ? "Đang khôi phục..." : "Khôi phục"}
+              {restoreMutation.isPending ? "Restoring..." : "Restore"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -48,31 +48,31 @@ export function GroupEditDialog({
     <Dialog open={open} onOpenChange={(v) => { if (!v) onOpenChange(false); }}>
       <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{editingGroup ? "Edit Group" : "Tạo Nhóm"}</DialogTitle>
-          <DialogDescription>Gộp nhiều panel vào 1 embed message</DialogDescription>
+          <DialogTitle>{editingGroup ? "Edit Group" : "Create Group"}</DialogTitle>
+          <DialogDescription>Combine multiple panels into one embed message</DialogDescription>
         </DialogHeader>
         <div className="mt-6 space-y-4">
           <div className="space-y-1.5">
-            <Label>Tên nhóm <span className="text-destructive">*</span></Label>
-            <Input value={groupForm.name} onChange={e => setGroupForm(f => ({...f, name: e.target.value}))} placeholder="Ví dụ: Hỗ trợ chung" />
+            <Label>Group name <span className="text-destructive">*</span></Label>
+            <Input value={groupForm.name} onChange={e => setGroupForm(f => ({...f, name: e.target.value}))} placeholder="e.g. General Support" />
           </div>
           <div className="space-y-1.5">
-            <Label>Kênh gửi</Label>
+            <Label>Send channel</Label>
             <ChannelSelect value={groupForm.channel_id} onChange={v => setGroupForm(f => ({...f, channel_id: v === "__clear__" ? "" : v}))} placeholder="Select channel..." filter="text" />
           </div>
 
           <Separator />
 
           <div className="space-y-1.5">
-            <Label>Tiêu đề embed</Label>
-            <Input value={groupForm.title} onChange={e => setGroupForm(f => ({...f, title: e.target.value}))} placeholder="Hỗ trợ" />
+            <Label>Title embed</Label>
+            <Input value={groupForm.title} onChange={e => setGroupForm(f => ({...f, title: e.target.value}))} placeholder="Support" />
           </div>
           <div className="space-y-1.5">
             <Label>Description</Label>
-            <Textarea value={groupForm.description} onChange={e => setGroupForm(f => ({...f, description: e.target.value}))} placeholder="Mô tả embed..." rows={3} />
+            <Textarea value={groupForm.description} onChange={e => setGroupForm(f => ({...f, description: e.target.value}))} placeholder="Description embed..." rows={3} />
           </div>
           <div className="space-y-1.5">
-            <Label>Màu</Label>
+            <Label>Color</Label>
             <div className="flex gap-2 items-center">
               <input type="color" value={groupForm.color} onChange={e => setGroupForm(f => ({...f, color: e.target.value}))} className="h-9 w-12 rounded border cursor-pointer shrink-0" />
               <Input value={groupForm.color} onChange={e => setGroupForm(f => ({...f, color: e.target.value}))} className="w-28 font-mono" />
@@ -82,8 +82,8 @@ export function GroupEditDialog({
           <Separator />
 
           <div className="space-y-2">
-            <Label>Chọn panels trong nhóm</Label>
-            <p className="text-xs text-muted-foreground">Các panel được chọn sẽ gộp buttons vào 1 message</p>
+            <Label>Select panels in this group</Label>
+            <p className="text-xs text-muted-foreground">Selected panels will be combined into one message</p>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {panels.map(p => {
                 const isInGroup = groupForm.panel_ids.includes(p.id);
@@ -118,7 +118,7 @@ export function GroupEditDialog({
                     {p.buttons.length > 0 && (
                       <Badge variant="secondary" className="text-[10px] shrink-0">{p.buttons.length} btn</Badge>
                     )}
-                    {isInOtherGroup && <span className="text-xs text-muted-foreground shrink-0">Đã trong nhóm khác</span>}
+                    {isInOtherGroup && <span className="text-xs text-muted-foreground shrink-0">Already in another group</span>}
                   </label>
                 );
               })}
@@ -128,7 +128,7 @@ export function GroupEditDialog({
           <div className="flex gap-2 pt-4">
             <Button variant="outline" className="flex-1" onClick={onCancel}>Cancel</Button>
             <Button className="flex-1" disabled={!groupForm.name.trim() || isSaving} onClick={onSave}>
-              {isSaving ? "Saving..." : editingGroup ? "Cập nhật" : "Tạo"}
+              {isSaving ? "Saving..." : editingGroup ? "Update" : "Create"}
             </Button>
           </div>
         </div>

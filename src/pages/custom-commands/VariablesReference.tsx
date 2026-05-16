@@ -34,13 +34,13 @@ export function VariablesReference() {
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
           <Variable className="h-3.5 w-3.5" />
-          Biến số
+          Variables
         </p>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
               <Variable className="h-3 w-3" />
-              Xem tất cả
+              View all
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80 p-0" align="end">
@@ -83,7 +83,7 @@ export function VariablesReference() {
         </Popover>
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Sử dụng biến như <code className="text-primary">{"{user}"}</code>, <code className="text-primary">{"{server}"}</code> trong nội dung để hiển thị thông tin động.
+        Use variables like <code className="text-primary">{"{user}"}</code>, <code className="text-primary">{"{server}"}</code> in the content to display dynamic information.
       </p>
       {/* Quick inline expandable groups */}
       <div className="space-y-1">

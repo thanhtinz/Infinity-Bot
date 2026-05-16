@@ -56,7 +56,7 @@ export function FilterSection({
 }: FilterSectionProps) {
   return (
     <>
-      {/* ═══════ Section 3: Cài đặt (Collapsible) ═══════ */}
+      {/* ═══════ Section 3: Settings (Collapsible) ═══════ */}
       <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
         <CollapsibleTrigger asChild>
           <button
@@ -69,7 +69,7 @@ export function FilterSection({
               <ChevronRight className="h-3.5 w-3.5" />
             )}
             <Settings2 className="h-3.5 w-3.5" />
-            Cài đặt
+            Settings
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-4 pt-3">
@@ -78,10 +78,10 @@ export function FilterSection({
             <div className="space-y-0.5">
               <Label className="flex items-center gap-1.5">
                 <Reply className="h-3.5 w-3.5" />
-                Reply tin nhắn
+                Reply to message
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Phản hồi dưới dạng reply tin nhắn gốc
+                Send response as a reply to the original message
               </p>
             </div>
             <Switch
@@ -97,10 +97,10 @@ export function FilterSection({
             <div className="space-y-0.5">
               <Label className="flex items-center gap-1.5">
                 <Trash2 className="h-3.5 w-3.5" />
-                Xóa tin nhắn gốc
+                Delete original message
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Xóa tin nhắn kích hoạt sau khi phản hồi
+                Delete the trigger message after responding
               </p>
             </div>
             <Switch
@@ -116,10 +116,10 @@ export function FilterSection({
             <div className="space-y-0.5">
               <Label className="flex items-center gap-1.5">
                 <Mail className="h-3.5 w-3.5" />
-                Gửi DM
+                Send DM
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Gửi phản hồi qua tin nhắn riêng thay vì kênh
+                Send the response via DM instead of the channel
               </p>
             </div>
             <Switch
@@ -152,7 +152,7 @@ export function FilterSection({
                 placeholder="0 = unlimited"
                 className="w-28"
               />
-              <span className="text-sm text-muted-foreground">giây</span>
+              <span className="text-sm text-muted-foreground">seconds</span>
             </div>
             <div className="flex gap-2 mt-1">
               {(["per_user", "per_channel", "global"] as const).map((ct) => (
@@ -194,7 +194,7 @@ export function FilterSection({
                 className="w-28"
               />
               <span className="text-[11px] text-muted-foreground">
-                Cao hơn = ưu tiên hơn
+                Higher = higher priority
               </span>
             </div>
           </div>
@@ -202,9 +202,9 @@ export function FilterSection({
           {/* Enabled */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Kích hoạt</Label>
+              <Label>Activate</Label>
               <p className="text-[11px] text-muted-foreground">
-                Bật/tắt rule này
+                Enable/disable this rule
               </p>
             </div>
             <Switch
@@ -219,7 +219,7 @@ export function FilterSection({
 
       <Separator />
 
-      {/* ═══════ Section 4: Giới hạn (Collapsible) ═══════ */}
+      {/* ═══════ Section 4: Limits (Collapsible) ═══════ */}
       <Collapsible open={restrictionsOpen} onOpenChange={setRestrictionsOpen}>
         <CollapsibleTrigger asChild>
           <button
@@ -232,13 +232,13 @@ export function FilterSection({
               <ChevronRight className="h-3.5 w-3.5" />
             )}
             <Filter className="h-3.5 w-3.5" />
-            Giới hạn
+            Limits
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-4 pt-3">
           {/* Allowed channels */}
           <div className="space-y-2">
-            <Label>Kênh cho phép</Label>
+            <Label>Allowed channels</Label>
             {form.allowed_channels.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {form.allowed_channels.map((chId) => (
@@ -264,16 +264,16 @@ export function FilterSection({
               filter="text"
               value=""
               onChange={addAllowedChannel}
-              placeholder="Chọn kênh cho phép..."
+              placeholder="Select allowed channels..."
             />
             <p className="text-[11px] text-muted-foreground">
-              Để trống = cho phép tất cả kênh
+              Leave empty to allow all channels
             </p>
           </div>
 
           {/* Blocked channels */}
           <div className="space-y-2">
-            <Label>Kênh chặn</Label>
+            <Label>Blocked channels</Label>
             {form.blocked_channels.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {form.blocked_channels.map((chId) => (
@@ -299,7 +299,7 @@ export function FilterSection({
               filter="text"
               value=""
               onChange={addBlockedChannel}
-              placeholder="Chọn kênh chặn..."
+              placeholder="Select blocked channels..."
             />
           </div>
 
@@ -307,25 +307,25 @@ export function FilterSection({
 
           {/* Allowed roles */}
           <div className="space-y-2">
-            <Label>Role cho phép</Label>
+            <Label>Allowed roles</Label>
             <MultiRoleSelect
               value={form.allowed_roles}
               onChange={(roles) =>
                 setForm((p) => ({ ...p, allowed_roles: roles }))
               }
-              placeholder="Chọn role cho phép..."
+              placeholder="Select allowed roles..."
             />
           </div>
 
           {/* Blocked roles */}
           <div className="space-y-2">
-            <Label>Role chặn</Label>
+            <Label>Blocked roles</Label>
             <MultiRoleSelect
               value={form.blocked_roles}
               onChange={(roles) =>
                 setForm((p) => ({ ...p, blocked_roles: roles }))
               }
-              placeholder="Chọn role chặn..."
+              placeholder="Select blocked roles..."
             />
           </div>
 
@@ -336,10 +336,10 @@ export function FilterSection({
             <div className="space-y-0.5">
               <Label className="flex items-center gap-1.5">
                 <Bot className="h-3.5 w-3.5" />
-                Bỏ qua bot
+                Ignore bots
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Không kích hoạt khi tin nhắn từ bot
+                Do not trigger on messages from bots
               </p>
             </div>
             <Switch

@@ -69,7 +69,7 @@ export function CouponEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["coupons"] });
       navigate(-1);
-      toast({ title: "Đã tạo coupon." });
+      toast({ title: "Coupon created." });
     },
     onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
@@ -85,7 +85,7 @@ export function CouponEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["coupons"] });
       navigate(-1);
-      toast({ title: "Đã cập nhật coupon." });
+      toast({ title: "Coupon updated." });
     },
     onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
@@ -94,7 +94,7 @@ export function CouponEditPage() {
 
   const handleSave = () => {
     if (!form.code.trim()) {
-      toast({ variant: "destructive", title: "Nhập mã coupon" });
+      toast({ variant: "destructive", title: "Enter coupon code" });
       return;
     }
     const payload = {
@@ -125,7 +125,7 @@ export function CouponEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"}</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Create" : "Edit"}</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
             {isPending ? "Saving..." : "Save"}
@@ -133,9 +133,9 @@ export function CouponEditPage() {
         </div>
       </div>
       <div className="max-w-2xl mx-auto p-6 space-y-6">
-        {/* Mã */}
+        {/* Code */}
         <div className="space-y-1.5">
-          <Label>Mã coupon <span className="text-destructive">*</span></Label>
+          <Label>Coupon code <span className="text-destructive">*</span></Label>
           <Input
             placeholder="VD: SUMMER30"
             value={form.code}
@@ -145,9 +145,9 @@ export function CouponEditPage() {
           />
         </div>
         <Separator />
-        {/* Giảm theo % */}
+        {/* Percent discount */}
         <div className="space-y-1.5">
-          <Label>Giảm theo % (để trống nếu dùng số tiền)</Label>
+          <Label>% discount (leave empty if using fixed amount)</Label>
           <Input
             type="number"
             placeholder="VD: 20"
@@ -161,9 +161,9 @@ export function CouponEditPage() {
             }
           />
         </div>
-        {/* Giảm theo số tiền */}
+        {/* Fixed discount */}
         <div className="space-y-1.5">
-          <Label>Giảm theo số tiền (để trống nếu dùng %)</Label>
+          <Label>Fixed discount (leave empty if using %)</Label>
           <Input
             type="number"
             placeholder="VD: 50000"
@@ -178,9 +178,9 @@ export function CouponEditPage() {
           />
         </div>
         <Separator />
-        {/* Giới hạn dùng */}
+        {/* Usage limit */}
         <div className="space-y-1.5">
-          <Label>Giới hạn số lượt dùng</Label>
+          <Label>Usage limit</Label>
           <Input
             type="number"
             min={1}
@@ -191,8 +191,8 @@ export function CouponEditPage() {
         {/* Public */}
         <div className="flex items-center justify-between rounded-lg border p-3">
           <div>
-            <Label className="cursor-pointer">Công khai</Label>
-            <p className="text-xs text-muted-foreground">Bot có thể hiển thị mã này cho user</p>
+            <Label className="cursor-pointer">Public</Label>
+            <p className="text-xs text-muted-foreground">The bot can display this code to users</p>
           </div>
           <Switch
             checked={form.is_public}

@@ -68,7 +68,7 @@ export function EmbedEditorSection({
     <div className="space-y-3">
       <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
         <Type className="h-3.5 w-3.5" />
-        🎨 Cấu hình Embed
+        🎨 Config Embed
       </p>
 
       {/* ── Embed Preview — collapsible ── */}
@@ -80,7 +80,7 @@ export function EmbedEditorSection({
         >
           <span className="flex items-center gap-2">
             <ChevronDown className={cn("h-4 w-4 transition-transform", embedPreviewOpen && "rotate-180")} />
-            Xem trước
+            Preview
           </span>
         </button>
         {embedPreviewOpen && (
@@ -106,7 +106,7 @@ export function EmbedEditorSection({
           <span className="flex items-center gap-2">
             <ChevronDown className={cn("h-4 w-4 transition-transform", embedBodyOpen && "rotate-180")} />
             <Type className="h-3.5 w-3.5 text-muted-foreground" />
-            Nội dung chính
+            Main content
             {embedData.title && (
               <span className="text-xs font-normal text-muted-foreground truncate max-w-[200px]">
                 — {embedData.title}
@@ -127,7 +127,7 @@ export function EmbedEditorSection({
                     embed_data: { ...f.embed_data, title: e.target.value },
                   }))
                 }
-                placeholder="Tiêu đề embed"
+                placeholder="Title embed"
               />
             </div>
 
@@ -150,7 +150,7 @@ export function EmbedEditorSection({
                     },
                   }))
                 }
-                placeholder="Mô tả embed..."
+                placeholder="Description embed..."
                 rows={4}
               />
             </div>
@@ -176,7 +176,7 @@ export function EmbedEditorSection({
                         : "border-transparent hover:scale-105"
                     )}
                     style={{ backgroundColor: c }}
-                    aria-label={`Chọn màu ${c}`}
+                    aria-label={`Select color ${c}`}
                   />
                 ))}
                 <div className="flex items-center gap-1.5 ml-1">
@@ -220,7 +220,7 @@ export function EmbedEditorSection({
           <span className="flex items-center gap-2">
             <ChevronDown className={cn("h-4 w-4 transition-transform", embedAuthorOpen && "rotate-180")} />
             <User className="h-3.5 w-3.5 text-muted-foreground" />
-            Tác giả
+            Author
           </span>
           {embedData.author_name && !embedAuthorOpen && (
             <span className="text-xs font-normal text-muted-foreground truncate max-w-[200px]">
@@ -231,7 +231,7 @@ export function EmbedEditorSection({
         {embedAuthorOpen && (
           <div className="px-4 pb-4 space-y-3">
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Tên tác giả</Label>
+              <Label className="text-xs text-muted-foreground">Author name</Label>
               <Input
                 value={embedData.author_name}
                 onChange={(e) =>
@@ -240,7 +240,7 @@ export function EmbedEditorSection({
                     embed_data: { ...f.embed_data, author_name: e.target.value },
                   }))
                 }
-                placeholder="Tên tác giả (hiển thị phía trên tiêu đề)"
+                placeholder="Author name (shown above title)"
               />
             </div>
             <div className="space-y-1">
@@ -280,7 +280,7 @@ export function EmbedEditorSection({
           <div className="px-4 pb-4 space-y-3">
             {embedData.fields.length === 0 && (
               <p className="text-xs text-muted-foreground text-center py-3">
-                Chưa có field nào. Nhấn nút bên dưới để thêm.
+                No fields yet. Click the button below to add one.
               </p>
             )}
             {embedData.fields.map((field, idx) => (
@@ -310,18 +310,18 @@ export function EmbedEditorSection({
                       onChange={(e) =>
                         updateEmbedField(idx, { name: e.target.value })
                       }
-                      placeholder="Tên field"
+                      placeholder="Name field"
                       className="h-8 text-sm"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Giá trị</Label>
+                    <Label className="text-xs">Value</Label>
                     <Input
                       value={field.value}
                       onChange={(e) =>
                         updateEmbedField(idx, { value: e.target.value })
                       }
-                      placeholder="Nội dung"
+                      placeholder="Content"
                       className="h-8 text-sm"
                     />
                   </div>
@@ -335,7 +335,7 @@ export function EmbedEditorSection({
                     }
                     className="rounded border-input"
                   />
-                  Inline (hiển thị cùng dòng)
+                  Inline (display side by side)
                 </label>
               </div>
             ))}
@@ -347,12 +347,12 @@ export function EmbedEditorSection({
                 className="w-full border-dashed"
               >
                 <Plus className="h-3.5 w-3.5 mr-1.5" />
-                Thêm field
+                Add field
               </Button>
             )}
             {embedData.fields.length >= 25 && (
               <p className="text-xs text-muted-foreground text-center">
-                Đã đạt giới hạn 25 fields
+                25 fields limit reached
               </p>
             )}
           </div>
@@ -369,7 +369,7 @@ export function EmbedEditorSection({
           <span className="flex items-center gap-2">
             <ChevronDown className={cn("h-4 w-4 transition-transform", embedImagesOpen && "rotate-180")} />
             <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
-            Hình ảnh
+            Image
           </span>
         </button>
         {embedImagesOpen && (
@@ -391,7 +391,7 @@ export function EmbedEditorSection({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Ảnh lớn URL</Label>
+              <Label className="text-xs text-muted-foreground">Large image URL</Label>
               <Input
                 value={embedData.image_url}
                 onChange={(e) =>
@@ -420,7 +420,7 @@ export function EmbedEditorSection({
           <span className="flex items-center gap-2">
             <ChevronDown className={cn("h-4 w-4 transition-transform", embedFooterOpen && "rotate-180")} />
             <Footprints className="h-3.5 w-3.5 text-muted-foreground" />
-            Chân trang
+            Footer
           </span>
           {embedData.footer && !embedFooterOpen && (
             <span className="text-xs font-normal text-muted-foreground truncate max-w-[200px]">
@@ -432,7 +432,7 @@ export function EmbedEditorSection({
           <div className="px-4 pb-4 space-y-3">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">Nội dung chân trang</Label>
+                <Label className="text-xs text-muted-foreground">Footer content</Label>
                 <span className="text-[11px] text-muted-foreground">
                   {embedData.footer.length}/2048
                 </span>
@@ -448,7 +448,7 @@ export function EmbedEditorSection({
                     },
                   }))
                 }
-                placeholder="Chân trang embed"
+                placeholder="Embed footer"
               />
             </div>
           </div>

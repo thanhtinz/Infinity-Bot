@@ -85,7 +85,7 @@ export function TicketDetailDialog({
                     —
                   </span>
                   <span className="truncate">
-                    {detail.subject || "Không có chủ đề"}
+                    {detail.subject || "No subject"}
                   </span>
                 </DialogTitle>
                 <DialogDescription className="flex items-center gap-2 mt-1">
@@ -122,7 +122,7 @@ export function TicketDetailDialog({
                 <TabsList className="w-full">
                   <TabsTrigger value="info" className="flex-1 gap-1.5">
                     <Ticket className="h-3.5 w-3.5" />
-                    Thông tin
+                    Info
                   </TabsTrigger>
                   <TabsTrigger value="notes" className="flex-1 gap-1.5">
                     <StickyNote className="h-3.5 w-3.5" />
@@ -138,7 +138,7 @@ export function TicketDetailDialog({
 
             {/* Sheet body — scrollable */}
             <ScrollArea className="flex-1 px-6 py-4">
-              {/* ── Tab: Thông tin ── */}
+              {/* ── Tab: Info ── */}
               {detailTab === "info" && (
                 <div className="space-y-4">
                   {/* Channel ID */}
@@ -170,7 +170,7 @@ export function TicketDetailDialog({
                       <CopyableId value={detail.claimed_by} />
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        Chưa ai nhận
+                        Unclaimed
                       </p>
                     )}
                   </div>
@@ -180,7 +180,7 @@ export function TicketDetailDialog({
                   {/* Status selector */}
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium text-muted-foreground">
-                      Trạng thái
+                      Status
                     </p>
                     <Select
                       value={detail.status}
@@ -205,7 +205,7 @@ export function TicketDetailDialog({
                   {/* Priority selector */}
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium text-muted-foreground">
-                      Mức ưu tiên
+                      Priority
                     </p>
                     <Select
                       value={detail.priority}
@@ -222,7 +222,7 @@ export function TicketDetailDialog({
                       <SelectContent>
                         <SelectItem value="low">Low</SelectItem>
                         <SelectItem value="normal">
-                          Bình thường
+                          Normal
                         </SelectItem>
                         <SelectItem value="high">High</SelectItem>
                         <SelectItem value="urgent">Urgent</SelectItem>
@@ -236,12 +236,12 @@ export function TicketDetailDialog({
                   {detail.status === "closed" && (
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground">
-                        Lý do đóng
+                        Close reason
                       </p>
                       <p className="text-sm">
                         {detail.close_reason || (
                           <span className="text-muted-foreground italic">
-                            Không có lý do
+                            No reason
                           </span>
                         )}
                       </p>
@@ -252,7 +252,7 @@ export function TicketDetailDialog({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground">
-                        Ngày tạo
+                        Created
                       </p>
                       <p className="text-sm">
                         {formatDate(detail.created_at)}
@@ -261,7 +261,7 @@ export function TicketDetailDialog({
                     {detail.closed_at && (
                       <div className="space-y-1">
                         <p className="text-xs font-medium text-muted-foreground">
-                          Ngày đóng
+                          Closed at
                         </p>
                         <p className="text-sm">
                           {formatDate(detail.closed_at)}
@@ -299,7 +299,7 @@ export function TicketDetailDialog({
                   {!detail.notes || detail.notes.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                       <StickyNote className="h-10 w-10 mb-2 opacity-40" />
-                      <p className="text-sm">Chưa có ghi chú nào</p>
+                      <p className="text-sm">No notes yet</p>
                     </div>
                   ) : (
                     detail.notes.map((note) => (
@@ -330,7 +330,7 @@ export function TicketDetailDialog({
                   {detail.members.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                       <UserPlus className="h-10 w-10 mb-2 opacity-40" />
-                      <p className="text-sm">Chưa có thành viên nào</p>
+                      <p className="text-sm">No members yet</p>
                     </div>
                   ) : (
                     detail.members.map((memberId, i) => (
@@ -366,7 +366,7 @@ export function TicketDetailDialog({
                     }
                   >
                     <CheckCircle className="h-4 w-4" />
-                    Đóng Ticket
+                    Closed Ticket
                   </Button>
                 )}
                 {detail.status === "closed" && (
@@ -383,7 +383,7 @@ export function TicketDetailDialog({
                     }
                   >
                     <ArrowLeftRight className="h-4 w-4" />
-                    Mở lại
+                    Reopen
                   </Button>
                 )}
                 {detail.status !== "deleted" && (
@@ -400,7 +400,7 @@ export function TicketDetailDialog({
                     }
                   >
                     <XCircle className="h-4 w-4" />
-                    Xóa
+                    Delete
                   </Button>
                 )}
               </div>

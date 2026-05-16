@@ -38,12 +38,12 @@ export function GroupListSection({
           <div className="space-y-1">
             <h2 className="text-lg font-semibold tracking-tight">Multi-Panel Groups</h2>
             <p className="text-sm text-muted-foreground">
-              Gộp nhiều panel vào 1 embed message trên Discord
+              Combine multiple panels into one embed message on Discord
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={onCreateGroup}>
             <Plus className="h-3.5 w-3.5 mr-1" />
-            Tạo Nhóm
+            Create Group
           </Button>
         </div>
 
@@ -51,7 +51,7 @@ export function GroupListSection({
           <div className="rounded-lg border border-dashed p-6 text-center">
             <LayoutGrid className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
-              Chưa có nhóm nào. Tạo nhóm để gộp nhiều panel buttons vào 1 message.
+              No groups yet. Create a group to combine multiple panel buttons into one message.
             </p>
           </div>
         ) : (
@@ -80,12 +80,12 @@ export function GroupListSection({
                       {memberPanels.length > 0 ? memberPanels.map(p => (
                         <Badge key={p.id} variant="secondary" className="text-xs">{p.name}</Badge>
                       )) : (
-                        <span className="text-xs text-muted-foreground italic">Chưa có panel nào trong nhóm</span>
+                        <span className="text-xs text-muted-foreground italic">No panels in this group yet</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Badge variant={g.is_sent ? "default" : "outline"} className="text-[10px]">
-                        {g.is_sent ? "Đã gửi" : "Not sent"}
+                        {g.is_sent ? "Sent" : "Not sent"}
                       </Badge>
                       {g.channel_id && (
                         <span className="flex items-center gap-1"><Hash className="h-3 w-3" />{g.channel_id}</span>

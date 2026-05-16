@@ -23,16 +23,16 @@ export function DeletePanelDialog({ target, onClose, onConfirm, isPending }: Del
     <Dialog open={!!target} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Xóa panel?</DialogTitle>
+          <DialogTitle>Delete panel?</DialogTitle>
           <DialogDescription>
             Panel{" "}
             <strong className="text-foreground">{target?.name}</strong>{" "}
-            sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.
+            will be permanently deleted. This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Hủy
+            Cancel
           </Button>
           <Button variant="destructive" disabled={isPending} onClick={onConfirm}>
             {isPending ? "Deleting..." : "Delete"}
@@ -57,9 +57,9 @@ export function DeleteGroupDialog({ target, onClose, onConfirm, isPending }: Del
     <Dialog open={!!target} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Xóa nhóm panel?</DialogTitle>
+          <DialogTitle>Delete panel group?</DialogTitle>
           <DialogDescription>
-            Nhóm <strong className="text-foreground">{target?.name}</strong> sẽ bị xóa. Các panel bên trong sẽ trở thành panel độc lập.
+            Group <strong className="text-foreground">{target?.name}</strong> will be deleted. Panels inside will become standalone panels.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

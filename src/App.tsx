@@ -9,7 +9,6 @@ import { I18nProvider, useT } from "@/i18n";
 
 // ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
 const DashboardHome = lazy(() => import("./pages/DashboardHome").then(m => ({ default: m.DashboardHome })));
-const ConfigPrefix = lazy(() => import("./pages/ConfigPrefix").then(m => ({ default: m.ConfigPrefix })));
 const ConfigDiscord = lazy(() => import("./pages/ConfigDiscord").then(m => ({ default: m.ConfigDiscord })));
 const ConfigPayOS = lazy(() => import("./pages/ConfigPayOS").then(m => ({ default: m.ConfigPayOS })));
 const ConfigChannels = lazy(() => import("./pages/ConfigChannels").then(m => ({ default: m.ConfigChannels })));

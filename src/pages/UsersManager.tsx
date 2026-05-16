@@ -35,12 +35,12 @@ interface UserOrder {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  PAID: { label: "Đã thanh toán", cls: "bg-green-500/15 text-green-600 border-green-500/30" },
-  PENDING: { label: "Chờ thanh toán", cls: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30" },
+  PAID: { label: "Paid", cls: "bg-green-500/15 text-green-600 border-green-500/30" },
+  PENDING: { label: "Pending payment", cls: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30" },
   DELIVERING: { label: "Đang giao", cls: "bg-blue-500/15 text-blue-600 border-blue-500/30" },
-  DELIVERED: { label: "Đã giao", cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30" },
-  CANCELLED: { label: "Đã hủy", cls: "bg-red-500/15 text-red-600 border-red-500/30" },
-  ERROR: { label: "Lỗi", cls: "bg-gray-500/15 text-gray-600 border-gray-500/30" },
+  DELIVERED: { label: "Delivered", cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30" },
+  CANCELLED: { label: "Cancelled", cls: "bg-red-500/15 text-red-600 border-red-500/30" },
+  ERROR: { label: "Error", cls: "bg-gray-500/15 text-gray-600 border-gray-500/30" },
 };
 
 function formatVND(n: number) {
@@ -82,7 +82,7 @@ export function UsersManager() {
       qc.invalidateQueries({ queryKey: ["users"] });
       setBanTarget(null);
       setBanReason("");
-      toast({ title: "Đã ban user." });
+      toast({ title: "User banned." });
     },
     onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
@@ -95,7 +95,7 @@ export function UsersManager() {
       }).then(async (r) => { if (!r.ok) throw new Error(await r.text()); return r.json(); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["users"] });
-      toast({ title: "Đã unban user." });
+      toast({ title: "User unbanned." });
     },
     onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
@@ -130,7 +130,7 @@ export function UsersManager() {
               <Users className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Tổng users</p>
+              <p className="text-xs text-muted-foreground">Total users</p>
               <p className="text-xl font-bold">{totalUsers}</p>
             </div>
           </CardContent>
@@ -152,7 +152,7 @@ export function UsersManager() {
               <Ban className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Bị ban</p>
+              <p className="text-xs text-muted-foreground">Banned</p>
               <p className="text-xl font-bold">{bannedUsers}</p>
             </div>
           </CardContent>
@@ -163,7 +163,7 @@ export function UsersManager() {
               <DollarSign className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Tổng doanh thu</p>
+              <p className="text-xs text-muted-foreground">Total revenue</p>
               <p className="text-xl font-bold">{formatVND(totalRevenue)}</p>
             </div>
           </CardContent>
@@ -174,7 +174,7 @@ export function UsersManager() {
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Tìm username hoặc Discord ID..."
+          placeholder="Search username or Discord ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -189,9 +189,9 @@ export function UsersManager() {
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead>Discord ID</TableHead>
-                <TableHead className="text-right">Tổng chi tiêu</TableHead>
-                <TableHead className="text-center">Số đơn</TableHead>
-                <TableHead>Ngày đăng ký</TableHead>
+                <TableHead className="text-right">Total spent</TableHead>
+                <TableHead className="text-center">Orders</TableHead>
+                <TableHead>Registered</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -200,7 +200,7 @@ export function UsersManager() {
               {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    Không tìm thấy user nào.
+                    No users found.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -222,9 +222,9 @@ export function UsersManager() {
                     <TableCell className="text-sm">{formatDate(user.created_at)}</TableCell>
                     <TableCell>
                       {user.is_banned ? (
-                        <Badge className="bg-red-500/15 text-red-600 border-red-500/30">Bị ban</Badge>
+                        <Badge className="bg-red-500/15 text-red-600 border-red-500/30">Banned</Badge>
                       ) : (
-                        <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Hoạt động</Badge>
+                        <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Active</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -234,7 +234,7 @@ export function UsersManager() {
                           variant="ghost"
                           onClick={() => setOrderSheetUser(user)}
                         >
-                          <FileText className="h-3.5 w-3.5 mr-1" /> Đơn hàng
+                          <FileText className="h-3.5 w-3.5 mr-1" /> Orders
                         </Button>
                         {user.is_banned ? (
                           <Button
@@ -268,21 +268,21 @@ export function UsersManager() {
       <Dialog open={!!orderSheetUser} onOpenChange={(o) => { if (!o) setOrderSheetUser(null); }}>
         <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Đơn hàng của {orderSheetUser?.username}</DialogTitle>
+            <DialogTitle>Orders of {orderSheetUser?.username}</DialogTitle>
           </DialogHeader>
           <Separator className="my-4" />
           {userOrders.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">Chưa có đơn hàng nào.</p>
+            <p className="text-sm text-muted-foreground text-center py-8">No orders yet.</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Sản phẩm</TableHead>
-                  <TableHead>Gói</TableHead>
+                  <TableHead>Products</TableHead>
+                  <TableHead>Package</TableHead>
                   <TableHead className="text-center">SL</TableHead>
-                  <TableHead className="text-right">Tổng</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Ngày</TableHead>
+                  <TableHead>Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -314,9 +314,9 @@ export function UsersManager() {
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Lý do ban</Label>
+              <Label>Reason ban</Label>
               <Textarea
-                placeholder="Nhập lý do ban..."
+                placeholder="Enter ban reason..."
                 value={banReason}
                 onChange={(e) => setBanReason(e.target.value)}
                 rows={3}

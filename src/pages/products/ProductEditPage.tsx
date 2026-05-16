@@ -17,7 +17,7 @@ import type { Product, ProductPackage } from "../../types";
 import { apiFetch } from "@/hooks/useApi";
 
 const productSchema = z.object({
-  name: z.string().min(1, "Tên không được để trống"),
+  name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   note: z.string().optional(),
   image_url: z.string().optional(),
@@ -67,7 +67,7 @@ export function ProductEditPage() {
     }
   }, [item?.id]);
 
-  // ── Upload ảnh ──────────────────────────────────────────────
+  // ── Upload image ──────────────────────────────────────────────
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -83,7 +83,7 @@ export function ProductEditPage() {
       const data = await res.json();
       form.setValue("image_url", data.url);
     } catch {
-      toast({ variant: "destructive", title: "Upload thất bại" });
+      toast({ variant: "destructive", title: "Upload failed" });
     } finally {
       setUploading(false);
     }
@@ -108,9 +108,9 @@ export function ProductEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["products"] });
       navigate(-1);
-      toast({ title: "Đã thêm sản phẩm." });
+      toast({ title: "Product added." });
     },
-    onError: () => toast({ variant: "destructive", title: "Lỗi lưu sản phẩm." }),
+    onError: () => toast({ variant: "destructive", title: "Error saving product." }),
   });
 
   const updateMutation = useMutation({
@@ -124,9 +124,9 @@ export function ProductEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["products"] });
       navigate(-1);
-      toast({ title: "Đã cập nhật sản phẩm." });
+      toast({ title: "Product updated." });
     },
-    onError: () => toast({ variant: "destructive", title: "Lỗi lưu sản phẩm." }),
+    onError: () => toast({ variant: "destructive", title: "Error saving product." }),
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -155,7 +155,7 @@ export function ProductEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"}</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Create" : "Edit"}</h1>
         <div className="ml-auto">
           <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
             {isPending ? "Saving..." : "Save"}
@@ -165,10 +165,10 @@ export function ProductEditPage() {
       <div className="max-w-2xl mx-auto p-6 space-y-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Tên */}
+            {/* Name */}
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem>
-                <FormLabel>Tên sản phẩm</FormLabel>
+                <FormLabel>Product name</FormLabel>
                 <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                   <FormControl><Input {...field} placeholder="VD: VIP Discord" className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0" /></FormControl>
                   <EmojiPicker onSelect={(em) => field.onChange(field.value + em)} />
@@ -177,24 +177,24 @@ export function ProductEditPage() {
               </FormItem>
             )} />
 
-            {/* Mô tả */}
+            {/* Description */}
             <FormField control={form.control} name="description" render={({ field }) => (
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                  <FormControl><Textarea {...field} rows={2} placeholder="Mô tả ngắn..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
+                  <FormControl><Textarea {...field} rows={2} placeholder="Short description..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
                   <EmojiPicker onSelect={(em) => field.onChange((field.value || "") + em)} />
                 </div>
                 <FormMessage />
               </FormItem>
             )} />
 
-            {/* Ghi chú */}
+            {/* Note */}
             <FormField control={form.control} name="note" render={({ field }) => (
               <FormItem>
-                <FormLabel>Ghi chú <span className="text-xs text-muted-foreground font-normal">(nội bộ / hướng dẫn sau mua)</span></FormLabel>
+                <FormLabel>Note <span className="text-xs text-muted-foreground font-normal">(internal / post-purchase instructions)</span></FormLabel>
                 <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                  <FormControl><Textarea {...field} rows={3} placeholder="VD: Hướng dẫn nhận hàng, link tải, thông tin kích hoạt..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
+                  <FormControl><Textarea {...field} rows={3} placeholder="e.g. Delivery instructions, download links, activation info..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
                   <EmojiPicker onSelect={(em) => field.onChange((field.value || "") + em)} />
                 </div>
                 <FormMessage />
@@ -204,7 +204,7 @@ export function ProductEditPage() {
             {/* Ảnh */}
             <FormField control={form.control} name="image_url" render={({ field }) => (
               <FormItem>
-                <FormLabel>Ảnh sản phẩm</FormLabel>
+                <FormLabel>Product image</FormLabel>
                 <div className="flex gap-2 items-start">
                   <div
                     className="w-24 h-20 rounded border bg-muted flex items-center justify-center cursor-pointer overflow-hidden shrink-0"
@@ -225,7 +225,7 @@ export function ProductEditPage() {
                       disabled={uploading}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      {uploading ? "Đang upload..." : "Chọn ảnh"}
+                      {uploading ? "Uploading..." : "Choose image"}
                     </Button>
                     <input
                       ref={fileInputRef}
@@ -236,7 +236,7 @@ export function ProductEditPage() {
                     />
                     <Input
                       {...field}
-                      placeholder="hoặc nhập URL ảnh"
+                      placeholder="or enter Image URL"
                       className="text-xs h-8"
                     />
                   </div>
@@ -247,25 +247,25 @@ export function ProductEditPage() {
 
             <Separator />
 
-            {/* Gói giá */}
+            {/* Package price */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <FormLabel>Gói sản phẩm</FormLabel>
+                <FormLabel>Package product</FormLabel>
                 <Button type="button" variant="outline" size="sm" onClick={addPkg}>
-                  <PackagePlus className="mr-1 h-3.5 w-3.5" /> Thêm gói
+                  <PackagePlus className="mr-1 h-3.5 w-3.5" /> Add Package
                 </Button>
               </div>
               {packages.map((pkg, i) => (
                 <div key={i} className="flex items-center gap-2 p-2 rounded-md border bg-muted/30">
                   <Input
-                    placeholder="Tên gói"
+                    placeholder="Name package"
                     value={pkg.name}
                     onChange={(e) => updatePkg(i, "name", e.target.value)}
                     className="flex-1 h-8 text-sm"
                   />
                   <Input
                     type="number"
-                    placeholder="Giá"
+                    placeholder="Price"
                     value={pkg.price || ""}
                     onChange={(e) => updatePkg(i, "price", parseFloat(e.target.value) || 0)}
                     className="w-28 h-8 text-sm"
@@ -291,10 +291,10 @@ export function ProductEditPage() {
 
             <Separator />
 
-            {/* Toggle sản phẩm */}
+            {/* Toggle product */}
             <FormField control={form.control} name="active" render={({ field }) => (
               <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                <FormLabel className="cursor-pointer">Đang bán</FormLabel>
+                <FormLabel className="cursor-pointer">Active</FormLabel>
                 <FormControl>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>

@@ -77,7 +77,7 @@ export function DiscordPreview({
                 TicketBot
               </span>
               <span className="text-[10px]" style={{ color: DISCORD_MUTED }}>
-                Hôm nay lúc 12:00
+                Today at 12:00
               </span>
             </div>
 
@@ -124,7 +124,7 @@ export function DiscordPreview({
                       style={{ backgroundColor: s.bg, color: s.text }}
                     >
                       {btn.emoji && <span>{btn.emoji}</span>}
-                      {btn.label || "Nút"}
+                      {btn.label || "Button"}
                     </div>
                   );
                 })}
@@ -230,14 +230,14 @@ export function PanelCard({
           {isSent ? (
             <Badge className="bg-green-500/15 text-green-600 border border-green-500/30 shrink-0 text-[10px] px-1.5">
               <CheckCircle2 className="h-3 w-3 mr-0.5" />
-              Đã gửi
+              Sent
             </Badge>
           ) : (
             <Badge
               variant="outline"
               className="text-muted-foreground shrink-0 text-[10px] px-1.5"
             >
-              Chưa gửi
+              Not sent
             </Badge>
           )}
         </div>
@@ -251,10 +251,10 @@ export function PanelCard({
             />
             <div className="p-2.5 flex-1 min-w-0 bg-muted/30">
               <p className="font-semibold text-xs leading-tight">
-                {panel.title || "Tiêu đề"}
+                {panel.title || "Title"}
               </p>
               <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
-                {panel.description || "Mô tả..."}
+                {panel.description || "Description..."}
               </p>
             </div>
           </div>
@@ -271,7 +271,7 @@ export function PanelCard({
                 style={{ backgroundColor: s.bg, color: s.text }}
               >
                 {btn.emoji && <span>{btn.emoji}</span>}
-                {btn.label || "Nút"}
+                {btn.label || "Button"}
               </span>
             );
           })}
@@ -281,7 +281,7 @@ export function PanelCard({
             </span>
           )}
           <Badge variant="secondary" className="text-[10px] px-1.5 shrink-0">
-            {btns.length} nút
+            {btns.length} buttons
           </Badge>
         </div>
 
@@ -293,7 +293,7 @@ export function PanelCard({
               {panel.channel_id}
             </code>
           ) : (
-            <span>Chưa gửi</span>
+            <span>Not sent</span>
           )}
         </div>
 
@@ -317,7 +317,7 @@ export function PanelCard({
               onClick={onEdit}
             >
               <Pencil className="h-3.5 w-3.5 mr-1" />
-              Sửa
+              Edit
             </Button>
             <Button
               variant="ghost"
@@ -326,7 +326,7 @@ export function PanelCard({
               onClick={onDelete}
             >
               <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Xóa
+              Delete
             </Button>
           </div>
         </div>
@@ -354,7 +354,7 @@ export function CollapsibleSection({
           <span className="text-sm font-medium">{title}</span>
           {hasContent && (
             <Badge variant="secondary" className="text-[10px] px-1.5">
-              Tùy chỉnh
+              Customize
             </Badge>
           )}
         </div>

@@ -38,14 +38,14 @@ export function SelectGuildPage() {
         {/* Header */}
         <div className="text-center mb-6">
           <Server className="w-10 h-10 mx-auto mb-3 text-primary" />
-          <h1 className="text-xl font-bold">Chọn server</h1>
-          <p className="text-muted-foreground text-sm mt-1">Chọn server Discord để tiếp tục quản lý</p>
+          <h1 className="text-xl font-bold">Select server</h1>
+          <p className="text-muted-foreground text-sm mt-1">Select a Discord server to manage</p>
         </div>
 
         {guilds.length === 0 ? (
           <div className="text-center py-8 space-y-4">
             <p className="text-muted-foreground">
-              Bot chưa ở trong server nào. Vui lòng thêm bot vào server trước.
+              The bot is not in any server yet. Please invite the bot to a server first.
             </p>
             {inviteUrl && (
               <a
@@ -55,7 +55,7 @@ export function SelectGuildPage() {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors"
               >
                 <ExternalLink className="w-4 h-4" />
-                Mời bot vào server
+                Invite bot to server
               </a>
             )}
           </div>

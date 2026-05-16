@@ -71,25 +71,25 @@ const CATEGORY_META: Record<
   string,
   { label: string; icon: React.ElementType; color: string }
 > = {
-  message: { label: "Tin nhắn", icon: MessageSquare, color: "text-blue-500" },
+  message: { label: "Messages", icon: MessageSquare, color: "text-blue-500" },
   voice: { label: "Voice", icon: Mic, color: "text-green-500" },
-  member: { label: "Thành viên", icon: Users, color: "text-purple-500" },
+  member: { label: "Members", icon: Users, color: "text-purple-500" },
   server: { label: "Server", icon: Server, color: "text-orange-500" },
 };
 
 const EVENT_BADGE: Record<string, { label: string; variant: string }> = {
-  log_message_delete: { label: "Xóa tin", variant: "destructive" },
-  log_message_edit: { label: "Sửa tin", variant: "amber" },
-  log_message_bulk_delete: { label: "Xóa hàng loạt", variant: "destructive" },
-  log_voice_join: { label: "Vào voice", variant: "green" },
-  log_voice_leave: { label: "Rời voice", variant: "gray" },
-  log_voice_move: { label: "Chuyển voice", variant: "amber" },
-  log_member_join: { label: "Vào server", variant: "green" },
-  log_member_leave: { label: "Rời server", variant: "gray" },
-  log_nickname_change: { label: "Đổi nick", variant: "amber" },
-  log_role_update: { label: "Đổi role", variant: "amber" },
-  log_channel_create: { label: "Tạo kênh", variant: "green" },
-  log_channel_delete: { label: "Xóa kênh", variant: "destructive" },
+  log_message_delete: { label: "Delete tin", variant: "destructive" },
+  log_message_edit: { label: "Edit tin", variant: "amber" },
+  log_message_bulk_delete: { label: "Bulk delete", variant: "destructive" },
+  log_voice_join: { label: "Voice join", variant: "green" },
+  log_voice_leave: { label: "Voice leave", variant: "gray" },
+  log_voice_move: { label: "Voice move", variant: "amber" },
+  log_member_join: { label: "Member join", variant: "green" },
+  log_member_leave: { label: "Member leave", variant: "gray" },
+  log_nickname_change: { label: "Nick change", variant: "amber" },
+  log_role_update: { label: "Role update", variant: "amber" },
+  log_channel_create: { label: "Channel create", variant: "green" },
+  log_channel_delete: { label: "Delete channel", variant: "destructive" },
 };
 
 const EVENT_ICON: Record<string, React.ElementType> = {
@@ -118,10 +118,10 @@ function relativeTime(dateStr: string): string {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (seconds < 60) return "vừa xong";
-  if (minutes < 60) return `${minutes} phút trước`;
-  if (hours < 24) return `${hours} giờ trước`;
-  if (days < 30) return `${days} ngày trước`;
+  if (seconds < 60) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 30) return `${days}d ago`;
   return new Date(dateStr).toLocaleDateString("vi-VN");
 }
 
@@ -214,7 +214,7 @@ export function LogViewer() {
               <ScrollText className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Tổng cộng</p>
+              <p className="text-xs text-muted-foreground">Total</p>
               {statsLoading ? (
                 <Skeleton className="h-5 w-10" />
               ) : (
@@ -251,11 +251,11 @@ export function LogViewer() {
       <div className="flex flex-col sm:flex-row gap-3">
         <Select value={category} onValueChange={handleCategoryChange}>
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Danh mục" />
+            <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
-            <SelectItem value="message">Tin nhắn</SelectItem>
+            <SelectItem value="message">Messages</SelectItem>
             <SelectItem value="voice">Voice</SelectItem>
             <SelectItem value="member">Members</SelectItem>
             <SelectItem value="server">Server</SelectItem>
@@ -265,7 +265,7 @@ export function LogViewer() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Tìm kiếm nhật ký..."
+            placeholder="Search logs..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -298,7 +298,7 @@ export function LogViewer() {
             <Inbox className="h-10 w-10" />
             <p className="text-sm font-medium">No logs yet</p>
             <p className="text-xs">
-              Các hoạt động trong server sẽ được ghi lại tại đây.
+              Server activities will be recorded here.
             </p>
           </CardContent>
         </Card>
@@ -357,7 +357,7 @@ export function LogViewer() {
                           {hasBefore && (
                             <div className="rounded-md bg-red-500/10 border border-red-500/20 px-3 py-2 text-xs whitespace-pre-wrap break-words font-mono overflow-x-auto text-red-400">
                               <span className="font-semibold text-red-500 mr-1.5">
-                                Trước:
+                                Previous:
                               </span>
                               {String(details.before)}
                             </div>
@@ -397,7 +397,7 @@ export function LogViewer() {
       {!entriesLoading && entries.length > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Trang {page} / {totalPages}
+            Page {page} / {totalPages}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -407,7 +407,7 @@ export function LogViewer() {
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
-              Trước
+              Previous
             </Button>
             <Button
               variant="outline"

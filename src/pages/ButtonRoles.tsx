@@ -108,14 +108,14 @@ function PanelCard({
           {isDeployed ? (
             <Badge className="bg-green-500/15 text-green-600 border border-green-500/30 shrink-0 text-[10px] px-1.5">
               <CheckCircle2 className="h-3 w-3 mr-0.5" />
-              Đã triển khai
+              Deployed
             </Badge>
           ) : (
             <Badge
               variant="outline"
               className="text-muted-foreground shrink-0 text-[10px] px-1.5"
             >
-              Chưa triển khai
+              Not deployed
             </Badge>
           )}
         </div>
@@ -129,10 +129,10 @@ function PanelCard({
             />
             <div className="p-2.5 flex-1 min-w-0 bg-muted/30">
               <p className="font-semibold text-xs leading-tight">
-                {panel.embed_title || "Tiêu đề"}
+                {panel.embed_title || "Title"}
               </p>
               <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
-                {panel.embed_description || "Mô tả..."}
+                {panel.embed_description || "Description..."}
               </p>
             </div>
           </div>
@@ -149,7 +149,7 @@ function PanelCard({
                 style={{ backgroundColor: s.bg, color: s.text }}
               >
                 {btn.emoji && <span>{btn.emoji}</span>}
-                {btn.label || "Nút"}
+                {btn.label || "Button"}
               </span>
             );
           })}
@@ -159,7 +159,7 @@ function PanelCard({
             </span>
           )}
           <Badge variant="secondary" className="text-[10px] px-1.5 shrink-0">
-            {btns.length} nút
+            {btns.length} buttons
           </Badge>
         </div>
 
@@ -171,7 +171,7 @@ function PanelCard({
               {panel.channel_id}
             </code>
           ) : (
-            <span>Chưa gửi</span>
+            <span>Not sent</span>
           )}
         </div>
 
@@ -195,7 +195,7 @@ function PanelCard({
               onClick={onEdit}
             >
               <Pencil className="h-3.5 w-3.5 mr-1" />
-              Sửa
+              Edit
             </Button>
             <Button
               variant="ghost"
@@ -204,7 +204,7 @@ function PanelCard({
               onClick={onDelete}
             >
               <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Xóa
+              Delete
             </Button>
           </div>
         </div>
@@ -247,12 +247,12 @@ export function ButtonRoles() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["button-roles"] });
       setDeleteTarget(null);
-      toast({ title: "Đã xóa panel" });
+      toast({ title: "Deleted panel" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi xóa panel",
+        title: "Delete error panel",
         description: e.message,
       }),
   });
@@ -269,12 +269,12 @@ export function ButtonRoles() {
             Button Roles
           </h2>
           <p className="text-muted-foreground mt-1">
-            Tạo panel với các nút để thành viên tự chọn role.
+            Create a panel with buttons for members to self-assign roles.
           </p>
         </div>
         <Button onClick={() => navigate('/button-roles/new')}>
           <Plus className="h-4 w-4 mr-1.5" />
-          Tạo Panel
+          Create Panel
         </Button>
       </div>
 
@@ -288,13 +288,13 @@ export function ButtonRoles() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <MousePointerClick className="h-10 w-10 text-muted-foreground/50 mb-3" />
-            <p className="text-sm font-medium">Chưa có panel nào</p>
+            <p className="text-sm font-medium">No panels yet</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Tạo panel button role để thành viên tự chọn role.
+              Create a button role panel for members to self-assign roles.
             </p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate('/button-roles/new')}>
               <Plus className="h-4 w-4 mr-1.5" />
-              Tạo Panel
+              Create Panel
             </Button>
           </CardContent>
         </Card>
@@ -321,14 +321,14 @@ export function ButtonRoles() {
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Xóa panel?</DialogTitle>
+            <DialogTitle>Delete panel?</DialogTitle>
             <DialogDescription>
-              Panel <strong>{deleteTarget?.name}</strong> sẽ bị xóa vĩnh viễn.
+              Panel <strong>{deleteTarget?.name}</strong> will be permanently deleted.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Hủy
+              Cancel
             </Button>
             <Button
               variant="destructive"

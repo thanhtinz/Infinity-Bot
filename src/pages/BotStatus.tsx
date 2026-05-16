@@ -49,10 +49,10 @@ function formatUptime(seconds: number): string {
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const parts: string[] = [];
-  if (days > 0) parts.push(`${days} ngày`);
-  if (hours > 0) parts.push(`${hours} giờ`);
-  if (minutes > 0) parts.push(`${minutes} phút`);
-  if (parts.length === 0) parts.push("Vài giây");
+  if (days > 0) parts.push(`${days} days`);
+  if (hours > 0) parts.push(`${hours} hours`);
+  if (minutes > 0) parts.push(`${minutes} min`);
+  if (parts.length === 0) parts.push("Just now");
   return parts.join(" ");
 }
 
@@ -86,14 +86,14 @@ export function BotStatus() {
 
   const handleMutationResponse = async (res: Response, label: string) => {
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Lỗi không xác định" }));
+      const err = await res.json().catch(() => ({ detail: "Unknown error" }));
       toast({
         variant: "destructive",
-        title: `${label} thất bại`,
+        title: `${label} failed`,
         description: err.detail || String(err),
       });
     } else {
-      toast({ title: label, description: "Thành công." });
+      toast({ title: label, description: "Success." });
       queryClient.invalidateQueries({ queryKey: ["bot_info"] });
       queryClient.invalidateQueries({ queryKey: ["config"] });
     }
@@ -103,21 +103,21 @@ export function BotStatus() {
     mutationFn: () =>
       fetch("/api/bot/start", { method: "POST", credentials: "include" }),
     onSuccess: (res) => handleMutationResponse(res, "Start Bot"),
-    onError: () => toast({ variant: "destructive", title: "Lỗi kết nối" }),
+    onError: () => toast({ variant: "destructive", title: "Connection error" }),
   });
 
   const stopMutation = useMutation({
     mutationFn: () =>
       fetch("/api/bot/stop", { method: "POST", credentials: "include" }),
-    onSuccess: (res) => handleMutationResponse(res, "Tắt Bot"),
-    onError: () => toast({ variant: "destructive", title: "Lỗi kết nối" }),
+    onSuccess: (res) => handleMutationResponse(res, "Disable Bot"),
+    onError: () => toast({ variant: "destructive", title: "Connection error" }),
   });
 
   const restartMutation = useMutation({
     mutationFn: () =>
       fetch("/api/bot/restart", { method: "POST", credentials: "include" }),
-    onSuccess: (res) => handleMutationResponse(res, "Khởi động lại"),
-    onError: () => toast({ variant: "destructive", title: "Lỗi kết nối" }),
+    onSuccess: (res) => handleMutationResponse(res, "Restart"),
+    onError: () => toast({ variant: "destructive", title: "Connection error" }),
   });
 
   const profileMutation = useMutation({
@@ -128,8 +128,8 @@ export function BotStatus() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       }),
-    onSuccess: (res) => handleMutationResponse(res, "Cập nhật hồ sơ"),
-    onError: () => toast({ variant: "destructive", title: "Lỗi kết nối" }),
+    onSuccess: (res) => handleMutationResponse(res, "Update profile"),
+    onError: () => toast({ variant: "destructive", title: "Connection error" }),
   });
 
   const presenceMutation = useMutation({
@@ -145,8 +145,8 @@ export function BotStatus() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       }),
-    onSuccess: (res) => handleMutationResponse(res, "Cập nhật trạng thái"),
-    onError: () => toast({ variant: "destructive", title: "Lỗi kết nối" }),
+    onSuccess: (res) => handleMutationResponse(res, "Update status"),
+    onError: () => toast({ variant: "destructive", title: "Connection error" }),
   });
 
   const invisibleMutation = useMutation({
@@ -159,7 +159,7 @@ export function BotStatus() {
       }),
     onSuccess: async (res, invisible) => {
       if (res.ok) {
-        toast({ title: invisible ? "Đã bật chế độ ẩn" : "Đã tắt chế độ ẩn" });
+        toast({ title: invisible ? "Invisible mode enabled" : "Invisible mode disabled" });
         queryClient.invalidateQueries({ queryKey: ["config"] });
         // Apply immediately if bot is running
         if (isRunning) {
@@ -176,7 +176,7 @@ export function BotStatus() {
         }
       }
     },
-    onError: () => toast({ variant: "destructive", title: "Lỗi kết nối" }),
+    onError: () => toast({ variant: "destructive", title: "Connection error" }),
   });
 
   // Profile form state
@@ -201,7 +201,7 @@ export function BotStatus() {
     if (profileUsername.trim()) body.username = profileUsername.trim();
     if (avatarBase64) body.avatar_base64 = avatarBase64;
     if (Object.keys(body).length === 0) {
-      toast({ description: "Không có thay đổi nào." });
+      toast({ description: "No changes." });
       return;
     }
     profileMutation.mutate(body);
@@ -236,13 +236,13 @@ export function BotStatus() {
   const copyBotId = () => {
     if (botInfo?.bot_id) {
       navigator.clipboard.writeText(botInfo.bot_id);
-      toast({ title: "Đã sao chép Bot ID" });
+      toast({ title: "Bot ID copied" });
     }
   };
 
   return (
     <div className="space-y-6 max-w-4xl w-full">
-      <h1 className="text-xl font-semibold">Trạng thái Bot</h1>
+      <h1 className="text-xl font-semibold">Status Bot</h1>
 
       {/* ── Row 1: Bot Identity Card ── */}
       <Card>
@@ -311,7 +311,7 @@ export function BotStatus() {
                 disabled={isRunning || startMutation.isPending}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                <Play className="mr-1 h-3.5 w-3.5" /> Bật Bot
+                <Play className="mr-1 h-3.5 w-3.5" /> Enable Bot
               </Button>
               <Button
                 size="sm"
@@ -319,7 +319,7 @@ export function BotStatus() {
                 disabled={!isRunning || stopMutation.isPending}
                 variant="destructive"
               >
-                <Square className="mr-1 h-3.5 w-3.5" /> Tắt Bot
+                <Square className="mr-1 h-3.5 w-3.5" /> Disable Bot
               </Button>
               <Button
                 size="sm"
@@ -332,12 +332,12 @@ export function BotStatus() {
                     restartMutation.isPending ? "animate-spin" : ""
                   }`}
                 />{" "}
-                Khởi động lại
+                Restart
               </Button>
               {inviteUrl && (
                 <Button size="sm" variant="secondary" asChild>
                   <a href={inviteUrl} target="_blank" rel="noopener noreferrer">
-                    <UserPlus className="mr-1 h-3.5 w-3.5" /> Mời Bot
+                    <UserPlus className="mr-1 h-3.5 w-3.5" /> Invite Bot
                   </a>
                 </Button>
               )}
@@ -355,7 +355,7 @@ export function BotStatus() {
               <Wifi className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Độ trễ</p>
+              <p className="text-xs text-muted-foreground">Latency</p>
               {infoLoading ? (
                 <Skeleton className="h-6 w-16 mt-1" />
               ) : (
@@ -443,7 +443,7 @@ export function BotStatus() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">
-              Chỉnh sửa Bot
+              Edit Bot
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -451,7 +451,7 @@ export function BotStatus() {
               <Label htmlFor="bot-username">Username</Label>
               <Input
                 id="bot-username"
-                placeholder={botInfo?.username ?? "Tên bot"}
+                placeholder={botInfo?.username ?? "Name bot"}
                 value={profileUsername}
                 onChange={(e) => setProfileUsername(e.target.value)}
               />
@@ -490,7 +490,7 @@ export function BotStatus() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Discord giới hạn đổi tên 2 lần/giờ
+              Discord limits renames to 2/hour
             </p>
 
             <Button
@@ -498,7 +498,7 @@ export function BotStatus() {
               onClick={handleProfileSubmit}
               disabled={profileMutation.isPending}
             >
-              Lưu thay đổi
+              Save changes
             </Button>
           </CardContent>
         </Card>
@@ -507,7 +507,7 @@ export function BotStatus() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">
-              Trạng thái &amp; Hoạt động
+              Status &amp; Active
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -538,13 +538,13 @@ export function BotStatus() {
                   <SelectItem value="dnd">
                     <span className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
-                      Không làm phiền
+                      Do Not Disturb
                     </span>
                   </SelectItem>
                   <SelectItem value="invisible">
                     <span className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-gray-400 inline-block" />
-                      Ẩn
+                      Hidden
                     </span>
                   </SelectItem>
                 </SelectContent>
@@ -552,7 +552,7 @@ export function BotStatus() {
             </div>
 
             <div className="space-y-2">
-              <Label>Loại hoạt động</Label>
+              <Label>Activity type</Label>
               <Select
                 value={activityType}
                 onValueChange={(v) =>
@@ -563,17 +563,17 @@ export function BotStatus() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="playing">Đang chơi</SelectItem>
-                  <SelectItem value="watching">Đang xem</SelectItem>
-                  <SelectItem value="listening">Đang nghe</SelectItem>
-                  <SelectItem value="competing">Đang thi đấu</SelectItem>
-                  <SelectItem value="streaming">Đang stream</SelectItem>
+                  <SelectItem value="playing">Playing</SelectItem>
+                  <SelectItem value="watching">Watching</SelectItem>
+                  <SelectItem value="listening">Listening to</SelectItem>
+                  <SelectItem value="competing">Competing</SelectItem>
+                  <SelectItem value="streaming">Streaming</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="activity-name">Tên hoạt động</Label>
+              <Label htmlFor="activity-name">Activity name</Label>
               <Input
                 id="activity-name"
                 placeholder="Minecraft"
@@ -599,7 +599,7 @@ export function BotStatus() {
               onClick={handlePresenceSubmit}
               disabled={presenceMutation.isPending}
             >
-              Cập nhật
+              Update
             </Button>
           </CardContent>
         </Card>
@@ -613,9 +613,9 @@ export function BotStatus() {
               <EyeOff className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-sm font-medium">Ẩn tình trạng bot</p>
+              <p className="text-sm font-medium">Hide bot status</p>
               <p className="text-xs text-muted-foreground">
-                Bot hiển thị offline với tất cả mọi người trên Discord. Chỉ bạn thấy trạng thái thực qua dashboard này.
+                Bot appears offline to everyone on Discord. Only you see the real status via this dashboard.
               </p>
             </div>
           </div>

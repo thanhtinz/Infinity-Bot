@@ -14,19 +14,19 @@ import { ChannelSelect } from "@/components/ChannelSelect";
 import { Mic, Server, Settings, Shield, Wrench } from "lucide-react";
 
 const VOICE_BUTTON_OPTIONS = [
-  { key: "name", label: "Name", desc: "Đổi tên phòng", emoji: "✏️" },
-  { key: "limit", label: "Limit", desc: "Giới hạn người", emoji: "👥" },
+  { key: "name", label: "Name", desc: "Rename room", emoji: "✏️" },
+  { key: "limit", label: "Limit", desc: "User limit", emoji: "👥" },
   { key: "privacy", label: "Privacy", desc: "Toggle privacy", emoji: "🔐" },
   { key: "trust", label: "Trust", desc: "Allow user", emoji: "✅" },
-  { key: "untrust", label: "Untrust", desc: "Gỡ quyền user", emoji: "➖" },
-  { key: "invite", label: "Invite", desc: "Mời user", emoji: "📨" },
-  { key: "kick", label: "Kick", desc: "Đuổi user", emoji: "👢" },
-  { key: "region", label: "Region", desc: "Đặt region tự động", emoji: "🌍" },
+  { key: "untrust", label: "Untrust", desc: "Remove user trust", emoji: "➖" },
+  { key: "invite", label: "Invite", desc: "Invite user", emoji: "📨" },
+  { key: "kick", label: "Kick", desc: "Kick user", emoji: "👢" },
+  { key: "region", label: "Region", desc: "Set automatic region", emoji: "🌍" },
   { key: "block", label: "Block", desc: "Block user", emoji: "🚫" },
   { key: "unblock", label: "Unblock", desc: "Unblock user", emoji: "🔓" },
-  { key: "claim", label: "Claim", desc: "Nhận phòng vô chủ", emoji: "🙋" },
+  { key: "claim", label: "Claim", desc: "Claim ownerless room", emoji: "🙋" },
   { key: "transfer", label: "Transfer", desc: "Transfer ownership", emoji: "👑" },
-  { key: "delete", label: "Delete", desc: "Xóa phòng", emoji: "🗑️" },
+  { key: "delete", label: "Delete", desc: "Delete room", emoji: "🗑️" },
 ];
 const DEFAULT_VOICE_BUTTONS = VOICE_BUTTON_OPTIONS.map((button) => button.key);
 
@@ -133,9 +133,9 @@ export function ConfigVoice() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tempvoice_config"] });
-      toast({ title: "Saved", description: "Cấu hình Temp Voice đã được lưu." });
+      toast({ title: "Saved", description: "TempVoice config saved." });
     },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Save failed." }),
   });
 
   return (
@@ -148,7 +148,7 @@ export function ConfigVoice() {
         <div>
           <h1 className="text-xl font-bold">Temp Voice</h1>
           <p className="text-sm text-muted-foreground">
-            Khi user join kênh "Join to Create", bot tự tạo voice room riêng cho họ.
+            When users join the "Join to Create" channel, the bot creates a private voice room.
           </p>
         </div>
         <Badge
@@ -158,7 +158,7 @@ export function ConfigVoice() {
               : "ml-auto bg-gray-500/15 text-gray-500 border-gray-500/30"
           }
         >
-          {enabled ? "Đang bật" : "Đang tắt"}
+          {enabled ? "Active" : "Inactive"}
         </Badge>
       </div>
 
@@ -168,7 +168,7 @@ export function ConfigVoice() {
           <CardTitle className="flex items-center gap-2 text-base">
             <Server className="w-4 h-4" /> Server Discord
           </CardTitle>
-          <CardDescription>Chọn server để tải danh sách kênh voice và category.</CardDescription>
+          <CardDescription>Select a server to load voice channels and categories.</CardDescription>
         </CardHeader>
         <CardContent>
           <Select value={guildId || ""} onValueChange={setGuildId}>
@@ -184,7 +184,7 @@ export function ConfigVoice() {
           {guilds.length === 0 && (
             <Input
               className="mt-2"
-              placeholder="ID server Discord (cần cấu hình Bot Token trước)"
+              placeholder="Discord server ID (Bot Token required first)"
               value={guildId}
               onChange={(e) => setGuildId(e.target.value)}
             />
@@ -196,44 +196,44 @@ export function ConfigVoice() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Settings className="w-4 h-4" /> Cấu hình cơ bản
+            <Settings className="w-4 h-4" /> Basic Config
           </CardTitle>
-          <CardDescription>Thiết lập kênh và category cho voice room tạm thời.</CardDescription>
+          <CardDescription>Set up the channel and category for temporary voice rooms.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* Enable toggle */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
               <p className="font-medium">Enable feature</p>
-              <p className="text-sm text-muted-foreground">Kích hoạt tự động tạo voice room.</p>
+              <p className="text-sm text-muted-foreground">Automatically creates voice rooms.</p>
             </div>
             <Switch checked={enabled} onCheckedChange={setEnabled} />
           </div>
 
           {/* Category */}
           <div className="space-y-2">
-            <Label>Category chứa voice room</Label>
+            <Label>Voice room category</Label>
             <ChannelSelect
               value={category}
               onChange={setCategory}
               filter="category"
-              placeholder="Chọn category..."
+              placeholder="Select category..."
               guildId={activeGuildId}
             />
-            <p className="text-xs text-muted-foreground">Voice room tạm thời sẽ được tạo trong category này.</p>
+            <p className="text-xs text-muted-foreground">Temporary voice rooms will be created in this category.</p>
           </div>
 
           {/* Join to Create channel */}
           <div className="space-y-2">
-            <Label>Kênh "Join to Create"</Label>
+            <Label>Channel "Join to Create"</Label>
             <ChannelSelect
               value={joinChannel}
               onChange={setJoinChannel}
               filter="voice"
-              placeholder="Chọn kênh voice..."
+              placeholder="Select voice channel..."
               guildId={activeGuildId}
             />
-            <p className="text-xs text-muted-foreground">User join kênh này → bot tạo voice room riêng.</p>
+            <p className="text-xs text-muted-foreground">User joins this channel → bot creates a private voice room.</p>
           </div>
         </CardContent>
       </Card>
@@ -242,9 +242,9 @@ export function ConfigVoice() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Mic className="w-4 h-4" /> Mặc định kênh thoại
+            <Mic className="w-4 h-4" /> Voice Channel Defaults
           </CardTitle>
-          <CardDescription>Thiết lập giá trị mặc định cho voice room mới tạo.</CardDescription>
+          <CardDescription>Set default values for newly created voice rooms.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* User Limit */}
@@ -252,7 +252,7 @@ export function ConfigVoice() {
             <div className="flex items-center justify-between">
               <Label>User limit</Label>
               <span className="text-sm text-muted-foreground">
-                {defaultUserLimit === 0 ? "Không giới hạn" : defaultUserLimit}
+                {defaultUserLimit === 0 ? "Unlimited" : defaultUserLimit}
               </span>
             </div>
             <Slider
@@ -272,7 +272,7 @@ export function ConfigVoice() {
             <Label>Bitrate</Label>
             <Select value={String(defaultBitrate)} onValueChange={(v) => setDefaultBitrate(Number(v))}>
               <SelectTrigger>
-                <SelectValue placeholder="Chọn bitrate..." />
+                <SelectValue placeholder="Select bitrate..." />
               </SelectTrigger>
               <SelectContent>
                 {BITRATE_OPTIONS.map((opt) => (
@@ -288,14 +288,14 @@ export function ConfigVoice() {
 
           {/* Naming Format */}
           <div className="space-y-2">
-            <Label>Định dạng tên kênh</Label>
+            <Label>Channel name format</Label>
             <Input
               value={namingFormat}
               onChange={(e) => setNamingFormat(e.target.value)}
               placeholder="{user}'s Channel"
             />
             <p className="text-xs text-muted-foreground">
-              Biến: <code className="rounded bg-muted px-1 py-0.5 text-xs">{`{user}`}</code>{" "}
+              Variables: <code className="rounded bg-muted px-1 py-0.5 text-xs">{`{user}`}</code>{" "}
               <code className="rounded bg-muted px-1 py-0.5 text-xs">{`{count}`}</code>{" "}
               <code className="rounded bg-muted px-1 py-0.5 text-xs">{`{game}`}</code>
             </p>
@@ -307,37 +307,37 @@ export function ConfigVoice() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Shield className="w-4 h-4" /> Quyền người dùng
+            <Shield className="w-4 h-4" /> Permission user
           </CardTitle>
-          <CardDescription>Cho phép người dùng tự quản lý voice room của họ.</CardDescription>
+          <CardDescription>Allow users to manage their own voice rooms.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border divide-y">
             <div className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium">Đổi tên kênh</p>
-                <p className="text-sm text-muted-foreground">Cho phép đổi tên voice room</p>
+                <p className="font-medium">Rename channel</p>
+                <p className="text-sm text-muted-foreground">Allow rename voice room</p>
               </div>
               <Switch checked={allowRename} onCheckedChange={setAllowRename} />
             </div>
             <div className="flex items-center justify-between p-4">
               <div>
                 <p className="font-medium">User limit</p>
-                <p className="text-sm text-muted-foreground">Cho phép thay đổi giới hạn người</p>
+                <p className="text-sm text-muted-foreground">Allow changing user limit</p>
               </div>
               <Switch checked={allowLimit} onCheckedChange={setAllowLimit} />
             </div>
             <div className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium">Khóa kênh</p>
-                <p className="text-sm text-muted-foreground">Cho phép khóa/mở khóa kênh</p>
+                <p className="font-medium">Lock channel</p>
+                <p className="text-sm text-muted-foreground">Allow lock/unlock channel</p>
               </div>
               <Switch checked={allowLock} onCheckedChange={setAllowLock} />
             </div>
             <div className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium">Ẩn kênh</p>
-                <p className="text-sm text-muted-foreground">Cho phép ẩn/hiện kênh</p>
+                <p className="font-medium">Hidden channel</p>
+                <p className="text-sm text-muted-foreground">Allow hide/show channel</p>
               </div>
               <Switch checked={allowHide} onCheckedChange={setAllowHide} />
             </div>
@@ -349,22 +349,22 @@ export function ConfigVoice() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Wrench className="w-4 h-4" /> Nâng cao
+            <Wrench className="w-4 h-4" /> Advanced
           </CardTitle>
-          <CardDescription>Cấu hình nâng cao cho hệ thống Temp Voice.</CardDescription>
+          <CardDescription>Advanced config for the TempVoice system.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* Interface Channel */}
           <div className="space-y-2">
-            <Label>Kênh giao diện điều khiển</Label>
+            <Label>Control panel channel</Label>
             <ChannelSelect
               value={interfaceChannel}
               onChange={setInterfaceChannel}
               filter="text"
-              placeholder="Chọn kênh text..."
+              placeholder="Select text channel..."
               guildId={activeGuildId}
             />
-            <p className="text-xs text-muted-foreground">Kênh chứa nút điều khiển voice room.</p>
+            <p className="text-xs text-muted-foreground">Channel containing voice room control buttons.</p>
           </div>
 
           <Separator />
@@ -373,13 +373,13 @@ export function ConfigVoice() {
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label>Nút panel tuỳ chỉnh</Label>
+                <Label>Custom panel buttons</Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Chọn các nút sẽ hiển thị trong embed điều khiển phòng voice.
+                  Select buttons to show in the voice room control embed.
                 </p>
               </div>
               <Button type="button" variant="outline" size="sm" onClick={() => setVoiceButtons(DEFAULT_VOICE_BUTTONS)}>
-                Chọn đủ
+                Select all
               </Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -397,7 +397,7 @@ export function ConfigVoice() {
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              Đang bật {voiceButtons.length}/{VOICE_BUTTON_OPTIONS.length} nút: {voiceButtons.join(", ")}
+              Active {voiceButtons.length}/{VOICE_BUTTON_OPTIONS.length} buttons: {voiceButtons.join(", ")}
             </p>
           </div>
 
@@ -405,7 +405,7 @@ export function ConfigVoice() {
 
           {/* Auto Delete */}
           <div className="space-y-2">
-            <Label>Tự động xóa (giây)</Label>
+            <Label>Auto-delete (seconds)</Label>
             <Input
               type="number"
               min={0}
@@ -415,8 +415,8 @@ export function ConfigVoice() {
             />
             <p className="text-xs text-muted-foreground">
               {autoDeleteSeconds === 0
-                ? "Xóa ngay khi trống"
-                : `Xóa sau ${autoDeleteSeconds} giây khi không còn người trong kênh.`}
+                ? "Delete immediately when empty"
+                : `Delete after ${autoDeleteSeconds}s when the channel is empty.`}
             </p>
           </div>
         </CardContent>
@@ -424,7 +424,7 @@ export function ConfigVoice() {
 
       {/* Save button */}
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
-        {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
+        {mutation.isPending ? "Saving..." : "Save Config"}
       </Button>
     </div>
   );

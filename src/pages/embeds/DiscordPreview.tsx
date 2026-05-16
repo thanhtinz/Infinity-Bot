@@ -4,34 +4,34 @@ import { EMBED_EVENTS } from "./embedEvents";
 import { DEFAULTS } from "./embedDefaults";
 
 export const DUMMY: Record<string, string> = {
-  "{user}": "Nguyễn Văn A",
-  "{user.mention}": "@NguyễnVănA",
+  "{user}": "John Doe",
+  "{user.mention}": "@JohnDoe",
   "{user.id}": "123456789012345678",
   "{order.id}": "#12345",
   "{order.total}": "100,000",
-  "{product.name}": "Gói VIP 30 ngày",
-  "{package}": "VIP 30 ngày + Bonus",
+  "{product.name}": "Package VIP 30 days",
+  "{package}": "VIP 30 days + Bonus",
   "{date}": "14/05/2026 15:30",
   "{server}": "Shop ABC",
   "{member_count}": "1,234",
-  "{prize}": "Nitro 3 tháng",
+  "{prize}": "3-month Nitro",
   "{ends_at}": "14/05/2026 20:00",
   "{host}": "@Admin",
   "{winners_count}": "2",
   "{winners}": "@User1, @User2",
-  "{reason}": "Vi phạm nội quy",
+  "{reason}": "Violation of rules",
   "{warn_count}": "3",
   "{stars}": "⭐⭐⭐⭐⭐",
-  "{content}": "Sản phẩm rất tốt, giao hàng nhanh!",
+  "{content}": "Great product, fast delivery!",
   "{ticket_id}": "42",
-  "{close_reason}": "Đã giải quyết",
+  "{close_reason}": "Resolved",
   "{staff.mention}": "@ModTran",
-  "{duration}": "10 phút",
-  "{mod}": "Mod Trần",
+  "{duration}": "10 min",
+  "{mod}": "Mod Alex",
   "{invite_code}": "abc123",
   "{inviter}": "@Admin",
-  "{time_label}": "Tất cả",
-  "{leaderboard_lines}": "🥇 **Nguyễn Văn A** — 500,000đ\n🥈 **Trần Văn B** — 300,000đ\n🥉 **Lê Thị C** — 150,000đ",
+  "{time_label}": "All time",
+  "{leaderboard_lines}": "🥇 **John Doe** — $500\n🥈 **Jane Smith** — $300\n🥉 **Alex Lee** — $150",
   "{updated_at}": "15:30 14/05/2026",
 };
 
@@ -98,7 +98,7 @@ export function DiscordPreview({ form }: { form: FormState }) {
               BOT
             </span>
             <span className="text-xs text-[#949BA4] ml-1">
-              Hôm nay lúc {timeStr}
+              Today at {timeStr}
             </span>
           </div>
         </div>
@@ -196,7 +196,7 @@ export function DiscordPreview({ form }: { form: FormState }) {
                 <div className="flex items-center gap-2 pt-1 text-xs text-[#B5BAC1]">
                   <span>{replaceVars(form.footer)}</span>
                   <span>•</span>
-                  <span>Hôm nay lúc {timeStr}</span>
+                  <span>Today at {timeStr}</span>
                 </div>
               )}
             </div>

@@ -17,10 +17,10 @@ interface CommandSettingsAdvancedProps {
   form: CommandForm;
   onFormChange: React.Dispatch<React.SetStateAction<CommandForm>>;
   aliasInput: string;
-  onAliasInputChange: (v: string) => void;
-  onAliasKeyDown: (e: React.KeyboardEvent) => void;
-  onAddAlias: () => void;
-  onRemoveAlias: (alias: string) => void;
+  onAliasesInputChange: (v: string) => void;
+  onAliasesKeyDown: (e: React.KeyboardEvent) => void;
+  onAddAliases: () => void;
+  onRemoveAliases: (alias: string) => void;
   onAddChannel: (chId: string) => void;
   onRemoveChannel: (chId: string) => void;
   open: boolean;
@@ -31,10 +31,10 @@ export function CommandSettingsAdvanced({
   form,
   onFormChange,
   aliasInput,
-  onAliasInputChange,
-  onAliasKeyDown,
-  onAddAlias,
-  onRemoveAlias,
+  onAliasesInputChange,
+  onAliasesKeyDown,
+  onAddAliases,
+  onRemoveAliases,
   onAddChannel,
   onRemoveChannel,
   open,
@@ -52,13 +52,13 @@ export function CommandSettingsAdvanced({
           ) : (
             <ChevronRight className="h-3.5 w-3.5" />
           )}
-          Cài đặt nâng cao
+          Advanced settings
         </button>
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-4 pt-3">
-        {/* Aliases */}
+        {/* Aliaseses */}
         <div className="space-y-2">
-          <Label>Tên thay thế (Aliases)</Label>
+          <Label>Aliases</Label>
           <div className="flex flex-wrap gap-1.5 min-h-[28px] p-2 rounded-md border bg-background">
             {form.aliases.map((alias) => (
               <Badge
@@ -69,7 +69,7 @@ export function CommandSettingsAdvanced({
                 !{alias}
                 <button
                   type="button"
-                  onClick={() => onRemoveAlias(alias)}
+                  onClick={() => onRemoveAliases(alias)}
                   className="ml-0.5 rounded-full hover:bg-foreground/10 p-0.5"
                 >
                   <X className="h-2.5 w-2.5" />
@@ -78,15 +78,15 @@ export function CommandSettingsAdvanced({
             ))}
             <input
               value={aliasInput}
-              onChange={(e) => onAliasInputChange(e.target.value)}
-              onKeyDown={onAliasKeyDown}
-              onBlur={aliasInput.trim() ? onAddAlias : undefined}
-              placeholder={form.aliases.length === 0 ? "Nhập alias rồi nhấn Enter..." : "Thêm..."}
+              onChange={(e) => onAliasesInputChange(e.target.value)}
+              onKeyDown={onAliasesKeyDown}
+              onBlur={aliasInput.trim() ? onAddAliases : undefined}
+              placeholder={form.aliases.length === 0 ? "Type an alias and press Enter..." : "Add..."}
               className="flex-1 min-w-[80px] bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
             />
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Tên gọi khác cho lệnh này. VD: thêm "hi" để !hi cũng hoạt động như !{form.name || "command"}
+            Alternative names for this command. e.g. add "hi" so !hi also works like !{form.name || "command"}
           </p>
         </div>
 
@@ -107,16 +107,16 @@ export function CommandSettingsAdvanced({
               placeholder="0 = unlimited"
               className="w-28"
             />
-            <span className="text-sm text-muted-foreground">giây</span>
+            <span className="text-sm text-muted-foreground">seconds</span>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Thời gian chờ giữa mỗi lần dùng (0 = không giới hạn)
+            Cooldown between uses (0 = unlimited)
           </p>
         </div>
 
         {/* Allowed Channels */}
         <div className="space-y-2">
-          <Label>Giới hạn kênh</Label>
+          <Label>Channel restriction</Label>
           {form.allowed_channels.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {form.allowed_channels.map((chId) => (
@@ -142,19 +142,19 @@ export function CommandSettingsAdvanced({
             filter="text"
             value=""
             onChange={onAddChannel}
-            placeholder="Chọn kênh để thêm..."
+            placeholder="Select channels..."
           />
           <p className="text-[11px] text-muted-foreground">
-            Để trống = cho phép tất cả kênh
+            Empty = allow all channels
           </p>
         </div>
 
         {/* Delete Trigger */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label>Xóa tin nhắn lệnh</Label>
+            <Label>Delete command message</Label>
             <p className="text-[11px] text-muted-foreground">
-              Xóa tin nhắn !command sau khi phản hồi
+              Delete the !command message after responding
             </p>
           </div>
           <Switch
@@ -167,7 +167,7 @@ export function CommandSettingsAdvanced({
 
         {/* Auto React */}
         <div className="space-y-2">
-          <Label>Tự động react</Label>
+          <Label>Auto react</Label>
           <div className="flex items-center gap-2">
             <EmojiPicker
               onSelect={(emoji) =>
@@ -192,7 +192,7 @@ export function CommandSettingsAdvanced({
             )}
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Emoji react vào tin nhắn phản hồi
+            Emoji to react to the response message
           </p>
         </div>
       </CollapsibleContent>

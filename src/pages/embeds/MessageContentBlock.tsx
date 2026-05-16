@@ -39,7 +39,7 @@ export function MessageContentBlock({
             <span className="text-[11px] text-muted-foreground">{form.content.length}/2000</span>
           </div>
           <Textarea
-            placeholder="Nội dung tin nhắn (plain text, hỗ trợ markdown Discord)"
+            placeholder="Message content (plain text, supports Discord markdown)"
             value={form.content}
             onChange={(e) => onFormChange((f) => ({ ...f, content: e.target.value }))}
             rows={3}
@@ -57,7 +57,7 @@ export function MessageContentBlock({
           </button>
           {threadOpen && (
             <div className="px-4 pb-4">
-              <Input placeholder="Tên thread..." value={form.thread_name}
+              <Input placeholder="Name thread..." value={form.thread_name}
                 onChange={(e) => onFormChange((f) => ({ ...f, thread_name: e.target.value }))} className="text-sm" />
             </div>
           )}
@@ -74,7 +74,7 @@ export function MessageContentBlock({
             <div className="px-4 pb-4 space-y-2">
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Webhook Username</Label>
-                <Input placeholder="Tên hiển thị..." value={form.webhook_username}
+                <Input placeholder="Display name..." value={form.webhook_username}
                   onChange={(e) => onFormChange((f) => ({ ...f, webhook_username: e.target.value }))} className="text-sm" />
               </div>
               <div className="space-y-1">
@@ -102,7 +102,7 @@ export function MessageContentBlock({
               <div className="flex items-center gap-2">
                 <Switch id="flag-suppress" checked={!!form.flags.suppress_embeds}
                   onCheckedChange={(v) => onFormChange(f => ({ ...f, flags: { ...f.flags, suppress_embeds: v } }))} />
-                <Label htmlFor="flag-suppress" className="text-xs">Suppress Embeds (ẩn embed)</Label>
+                <Label htmlFor="flag-suppress" className="text-xs">Suppress Embeds</Label>
               </div>
             </div>
             {/* Allowed Mentions */}

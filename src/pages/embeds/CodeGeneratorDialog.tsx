@@ -114,7 +114,7 @@ export function CodeGeneratorDialog({ open, onOpenChange, form }: CodeGeneratorD
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><Code2 className="h-5 w-5" />Code Generator</DialogTitle>
-          <DialogDescription>Sinh code từ tin nhắn hiện tại để dùng trong bot.</DialogDescription>
+          <DialogDescription>Generate code from the current message to use in the bot.</DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="python">
           <TabsList className="mb-2">
@@ -125,7 +125,7 @@ export function CodeGeneratorDialog({ open, onOpenChange, form }: CodeGeneratorD
             <div className="relative">
               <Textarea value={pythonCode} readOnly rows={20} className="font-mono text-xs resize-y bg-muted" />
               <Button size="sm" variant="outline" className="absolute top-2 right-2"
-                onClick={() => { navigator.clipboard.writeText(pythonCode); toast({ title: "Đã copy!" }); }}>
+                onClick={() => { navigator.clipboard.writeText(pythonCode); toast({ title: "Copied!" }); }}>
                 <Copy className="h-3.5 w-3.5 mr-1" />Copy
               </Button>
             </div>
@@ -134,7 +134,7 @@ export function CodeGeneratorDialog({ open, onOpenChange, form }: CodeGeneratorD
             <div className="relative">
               <Textarea value={jsCode} readOnly rows={20} className="font-mono text-xs resize-y bg-muted" />
               <Button size="sm" variant="outline" className="absolute top-2 right-2"
-                onClick={() => { navigator.clipboard.writeText(jsCode); toast({ title: "Đã copy!" }); }}>
+                onClick={() => { navigator.clipboard.writeText(jsCode); toast({ title: "Copied!" }); }}>
                 <Copy className="h-3.5 w-3.5 mr-1" />Copy
               </Button>
             </div>

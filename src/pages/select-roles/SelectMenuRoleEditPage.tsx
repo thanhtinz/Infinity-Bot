@@ -67,7 +67,7 @@ interface OptionForm {
 
 const emptyPanelForm = (): PanelForm => ({
   name: "",
-  placeholder: "Chọn role...",
+  placeholder: "Select role...",
   min_values: 1,
   max_values: 1,
   embed_title: "",
@@ -116,7 +116,7 @@ export function SelectMenuRoleEditPage() {
     if (item) {
       setForm({
         name: item.name,
-        placeholder: item.placeholder ?? "Chọn role...",
+        placeholder: item.placeholder ?? "Select role...",
         min_values: item.min_values ?? 1,
         max_values: item.max_values ?? 1,
         embed_title: item.embed_title ?? "",
@@ -146,12 +146,12 @@ export function SelectMenuRoleEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["select-roles"] });
       navigate(-1);
-      toast({ title: "Đã tạo panel thành công" });
+      toast({ title: "Panel created" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi tạo panel",
+        title: "Error creating panel",
         description: e.message,
       }),
   });
@@ -170,12 +170,12 @@ export function SelectMenuRoleEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["select-roles"] });
       navigate(-1);
-      toast({ title: "Đã cập nhật panel" });
+      toast({ title: "Panel updated" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi cập nhật",
+        title: "Update error",
         description: e.message,
       }),
   });
@@ -240,7 +240,7 @@ export function SelectMenuRoleEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"} Panel Select Menu Role</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Create" : "Edit"} Panel Select Menu Role</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
             {isPending ? "Saving..." : "Save"}
@@ -250,11 +250,11 @@ export function SelectMenuRoleEditPage() {
       <div className="max-w-2xl mx-auto p-6 space-y-6">
         {/* Name */}
         <div className="space-y-2">
-          <Label>Tên panel</Label>
+          <Label>Name panel</Label>
           <Input
             value={form.name}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-            placeholder="VD: Chọn màu sắc"
+            placeholder="e.g. Choose a color"
           />
         </div>
 
@@ -264,14 +264,14 @@ export function SelectMenuRoleEditPage() {
           <Input
             value={form.placeholder}
             onChange={(e) => setForm((p) => ({ ...p, placeholder: e.target.value }))}
-            placeholder="VD: Chọn role bạn muốn..."
+            placeholder="e.g. Choose your role..."
           />
         </div>
 
         {/* Min / Max values */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Giá trị tối thiểu</Label>
+            <Label>Min values</Label>
             <Input
               type="number"
               min={0}
@@ -284,7 +284,7 @@ export function SelectMenuRoleEditPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label>Giá trị tối đa</Label>
+            <Label>Value max</Label>
             <Input
               type="number"
               min={1}
@@ -302,7 +302,7 @@ export function SelectMenuRoleEditPage() {
 
         {/* Embed settings */}
         <div className="space-y-4">
-          <p className="text-sm font-medium">Cài đặt Embed</p>
+          <p className="text-sm font-medium">Settings Embed</p>
           <EmbedBuilder
             data={{
               title: form.embed_title,
@@ -334,16 +334,16 @@ export function SelectMenuRoleEditPage() {
         {/* Options builder */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Lựa chọn Menu</p>
+            <p className="text-sm font-medium">Menu Options</p>
             <Button variant="outline" size="sm" onClick={addOption}>
               <Plus className="h-3.5 w-3.5 mr-1" />
-              Thêm lựa chọn
+              Add option
             </Button>
           </div>
 
           {form.options.length === 0 && (
             <p className="text-xs text-muted-foreground text-center py-4">
-              Chưa có lựa chọn nào. Nhấn "Thêm lựa chọn" để bắt đầu.
+              No options yet. Click "Add option" to get started.
             </p>
           )}
 
@@ -356,7 +356,7 @@ export function SelectMenuRoleEditPage() {
                 {/* Option header */}
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-muted-foreground">
-                    Lựa chọn #{idx + 1}
+                    Option #{idx + 1}
                   </span>
                   <Button
                     variant="ghost"
@@ -371,13 +371,13 @@ export function SelectMenuRoleEditPage() {
                 {/* Label + Emoji */}
                 <div className="grid grid-cols-[1fr_80px] gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Nhãn</Label>
+                    <Label className="text-xs">Label</Label>
                     <Input
                       value={opt.label}
                       onChange={(e) =>
                         updateOption(idx, { label: e.target.value })
                       }
-                      placeholder="VD: Đỏ"
+                      placeholder="e.g. Red"
                       className="h-8 text-sm"
                     />
                   </div>
@@ -414,7 +414,7 @@ export function SelectMenuRoleEditPage() {
                     onChange={(e) =>
                       updateOption(idx, { description: e.target.value })
                     }
-                    placeholder="Mô tả ngắn cho lựa chọn này"
+                    placeholder="Short description for this option"
                     className="h-8 text-sm"
                   />
                 </div>

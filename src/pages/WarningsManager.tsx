@@ -31,14 +31,14 @@ export function WarningsManager() {
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
       fetch(`/api/warnings/${id}`, { method: "DELETE", credentials: "include" }).then((r) => {
-        if (!r.ok) throw new Error("Xóa thất bại");
+        if (!r.ok) throw new Error("Delete failed");
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["warnings"] });
       setDeleteTarget(null);
-      toast({ title: "Đã xóa cảnh cáo" });
+      toast({ title: "Warning deleted" });
     },
-    onError: () => toast({ title: "Lỗi khi xóa", variant: "destructive" }),
+    onError: () => toast({ title: "Delete failed", variant: "destructive" }),
   });
 
   const filtered = useMemo(() => {
@@ -60,10 +60,10 @@ export function WarningsManager() {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <ShieldAlert className="h-6 w-6 text-orange-500" />
-          Quản lý cảnh cáo
+          Manage warnings
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Cảnh cáo được tạo bởi Admin qua lệnh bot <code className="bg-muted px-1 rounded text-xs">/warn</code>. Xóa tại đây không DM người dùng.
+          Warnings are created by admins via the bot command <code className="bg-muted px-1 rounded text-xs">/warn</code>. Deleting here does not DM the user.
         </p>
       </div>
 
@@ -76,7 +76,7 @@ export function WarningsManager() {
             </div>
             <div>
               <p className="text-2xl font-bold">{totalWarnings}</p>
-              <p className="text-xs text-muted-foreground">Tổng cảnh cáo</p>
+              <p className="text-xs text-muted-foreground">Total warnings</p>
             </div>
           </CardContent>
         </Card>
@@ -87,7 +87,7 @@ export function WarningsManager() {
             </div>
             <div>
               <p className="text-2xl font-bold">{uniqueUsers}</p>
-              <p className="text-xs text-muted-foreground">Người bị cảnh cáo</p>
+              <p className="text-xs text-muted-foreground">Warned user</p>
             </div>
           </CardContent>
         </Card>
@@ -98,7 +98,7 @@ export function WarningsManager() {
             </div>
             <div>
               <p className="text-2xl font-bold">{uniqueMods}</p>
-              <p className="text-xs text-muted-foreground">Mod đã tạo</p>
+              <p className="text-xs text-muted-foreground">Issued by mod</p>
             </div>
           </CardContent>
         </Card>
@@ -108,7 +108,7 @@ export function WarningsManager() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Tìm theo Discord ID hoặc lý do..."
+          placeholder="Search by Discord ID or reason..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -152,7 +152,7 @@ export function WarningsManager() {
                   {w.reason ? (
                     <p className="text-sm text-muted-foreground italic truncate">{w.reason}</p>
                   ) : (
-                    <p className="text-sm text-muted-foreground/40 italic">Không có lý do</p>
+                    <p className="text-sm text-muted-foreground/40 italic">No reason</p>
                   )}
                 </div>
 
@@ -178,10 +178,10 @@ export function WarningsManager() {
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Xóa cảnh cáo này?</DialogTitle>
+            <DialogTitle>Delete this warning?</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Hành động này không thể hoàn tác.
+            This action cannot be undone.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>

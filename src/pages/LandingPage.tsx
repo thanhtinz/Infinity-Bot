@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ShoppingBag, Ticket, Gift, Shield, Mic, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
@@ -125,7 +125,7 @@ const FEATURES = [
 /* ── Main Landing Page ───────────────────────────────────────── */
 export function LandingPage() {
   useLandingFonts();
-  const navigate = useNavigate();
+
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
 
   useEffect(() => {

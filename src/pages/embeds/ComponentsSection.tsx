@@ -28,14 +28,14 @@ export function ComponentsSection({ components, onChange }: ComponentsSectionPro
         <div key={rowIdx} className="rounded-lg border bg-card overflow-hidden">
           <div className="flex items-center gap-2 px-3 py-2 bg-muted/30">
             <span className="text-xs font-semibold flex-1">Row {rowIdx + 1}</span>
-            <Button size="icon" variant="ghost" className="h-6 w-6" title="Thêm button"
+            <Button size="icon" variant="ghost" className="h-6 w-6" title="Add button"
               disabled={row.components.length >= 5}
               onClick={() => {
                 updateRows(rows => rows.map((r, i) => i === rowIdx ? { ...r, components: [...r.components, emptyButton()] } : r));
               }}>
               <Plus className="h-3.5 w-3.5" />
             </Button>
-            <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive" title="Xóa row"
+            <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive" title="Delete row"
               onClick={() => updateRows(rows => rows.filter((_, i) => i !== rowIdx))}>
               <Trash2 className="h-3.5 w-3.5" />
             </Button>

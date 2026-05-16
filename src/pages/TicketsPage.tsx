@@ -136,7 +136,7 @@ export function TicketsPage() {
       qc.invalidateQueries({ queryKey: ["tickets"] });
       qc.invalidateQueries({ queryKey: ["ticket-stats"] });
       qc.invalidateQueries({ queryKey: ["ticket", selectedTicketId] });
-      toast({ title: "Đã cập nhật ticket" });
+      toast({ title: "Ticket updated" });
     },
     onError: (e: Error) =>
       toast({ variant: "destructive", title: "Error", description: e.message }),
@@ -148,14 +148,14 @@ export function TicketsPage() {
         method: "DELETE",
         credentials: "include",
       }).then(async (r) => {
-        if (!r.ok) throw new Error("Xóa thất bại");
+        if (!r.ok) throw new Error("Delete failed");
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-blacklist"] });
-      toast({ title: "Đã xóa khỏi blacklist" });
+      toast({ title: "Removed from blacklist" });
     },
     onError: () =>
-      toast({ variant: "destructive", title: "Lỗi khi xóa khỏi blacklist" }),
+      toast({ variant: "destructive", title: "Failed to remove from blacklist" }),
   });
 
   /* ── Derived data ── */
@@ -194,28 +194,28 @@ export function TicketsPage() {
 
   const statCards = [
     {
-      label: "Tổng ticket",
+      label: "Total tickets",
       value: stats?.total ?? 0,
       icon: Ticket,
       iconBg: "bg-blue-500/10",
       iconColor: "text-blue-500",
     },
     {
-      label: "Đang mở",
+      label: "Open",
       value: stats?.open ?? 0,
       icon: Inbox,
       iconBg: "bg-green-500/10",
       iconColor: "text-green-500",
     },
     {
-      label: "Đã đóng",
+      label: "Closed",
       value: stats?.closed ?? 0,
       icon: CheckCircle,
       iconBg: "bg-gray-500/10",
       iconColor: "text-gray-500",
     },
     {
-      label: "TB đóng (giờ)",
+      label: "Avg close (hrs)",
       value: stats?.avg_close_hours?.toFixed(1) ?? "—",
       icon: Clock,
       iconBg: "bg-amber-500/10",
@@ -234,17 +234,17 @@ export function TicketsPage() {
           Tickets
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Quản lý ticket hệ thống
+          Manage ticket system
         </p>
       </div>
 
-      {/* ── Page-level tabs: Danh sách | Blacklist ── */}
+      {/* ── Page-level tabs: List | Blacklist ── */}
       <Tabs
         value={pageTab}
         onValueChange={(v) => setPageTab(v as "list" | "blacklist")}
       >
         <TabsList>
-          <TabsTrigger value="list">Danh sách</TabsTrigger>
+          <TabsTrigger value="list">List</TabsTrigger>
           <TabsTrigger value="blacklist" className="gap-1.5">
             <Shield className="h-3.5 w-3.5" />
             Blacklist
@@ -292,7 +292,7 @@ export function TicketsPage() {
               <div className="relative flex-1 min-w-[200px] lg:w-64">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Tìm subject, creator, channel..."
+                  placeholder="Search subject, creator, channel..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
@@ -304,10 +304,10 @@ export function TicketsPage() {
                 onValueChange={setPriorityFilter}
               >
                 <SelectTrigger className="w-[140px] h-9">
-                  <SelectValue placeholder="Mức ưu tiên" />
+                  <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả mức</SelectItem>
+                  <SelectItem value="all">All levels</SelectItem>
                   <SelectItem value="low">Low</SelectItem>
                   <SelectItem value="normal">Normal</SelectItem>
                   <SelectItem value="high">High</SelectItem>
@@ -320,7 +320,7 @@ export function TicketsPage() {
                   <SelectValue placeholder="Panel" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả panel</SelectItem>
+                  <SelectItem value="all">All panels</SelectItem>
                   {panels.map((p) => (
                     <SelectItem key={p.id} value={String(p.id)}>
                       {p.name}

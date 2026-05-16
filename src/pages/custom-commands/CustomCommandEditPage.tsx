@@ -36,7 +36,7 @@ export function CustomCommandEditPage() {
 
   // ── Form state ──
   const [form, setForm] = useState<CommandForm>(emptyForm());
-  const [aliasInput, setAliasInput] = useState("");
+  const [aliasInput, setAliasesInput] = useState("");
   const [varsOpen, setVarsOpen] = useState(false);
   const [focusedInput, setFocusedInput] = useState<"text" | "embed_desc" | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -117,12 +117,12 @@ export function CustomCommandEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["custom-commands"] });
       navigate("/custom-commands");
-      toast({ title: "Đã tạo command thành công" });
+      toast({ title: "Command created successfully" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi tạo command",
+        title: "Error creating command",
         description: e.message,
       }),
   });
@@ -141,12 +141,12 @@ export function CustomCommandEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["custom-commands"] });
       navigate("/custom-commands");
-      toast({ title: "Đã cập nhật command" });
+      toast({ title: "Command updated" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi cập nhật",
+        title: "Update error",
         description: e.message,
       }),
   });
@@ -221,23 +221,23 @@ export function CustomCommandEditPage() {
     }));
   };
 
-  // ── Alias helpers ──
-  const addAlias = () => {
+  // ── Aliases helpers ──
+  const addAliases = () => {
     const trimmed = aliasInput.trim().toLowerCase().replace(/\s/g, "");
     if (trimmed && !form.aliases.includes(trimmed)) {
       setForm((p) => ({ ...p, aliases: [...p.aliases, trimmed] }));
     }
-    setAliasInput("");
+    setAliasesInput("");
   };
 
-  const removeAlias = (alias: string) => {
+  const removeAliases = (alias: string) => {
     setForm((p) => ({ ...p, aliases: p.aliases.filter((a) => a !== alias) }));
   };
 
-  const handleAliasKeyDown = (e: React.KeyboardEvent) => {
+  const handleAliasesKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
-      addAlias();
+      addAliases();
     }
   };
 
@@ -282,7 +282,7 @@ export function CustomCommandEditPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="font-semibold">
-          {isNew ? "Tạo Custom Command" : "Edit Command"}
+          {isNew ? "Create Custom Command" : "Edit Command"}
         </h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
@@ -295,12 +295,12 @@ export function CustomCommandEditPage() {
         <div className="space-y-4">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
             <Terminal className="h-3.5 w-3.5" />
-            Thông tin cơ bản
+            Basic info
           </p>
 
           {/* Name */}
           <div className="space-y-2">
-            <Label>Tên Command</Label>
+            <Label>Name Command</Label>
             <div className="flex items-center gap-0">
               <span className="inline-flex items-center rounded-l-md border border-r-0 border-input bg-muted px-3 h-9 text-sm font-mono text-muted-foreground">
                 !
@@ -313,7 +313,7 @@ export function CustomCommandEditPage() {
                     name: e.target.value.replace(/\s/g, "").toLowerCase(),
                   }))
                 }
-                placeholder="tên_command"
+                placeholder="command_name"
                 className="rounded-l-none"
               />
             </div>
@@ -332,7 +332,7 @@ export function CustomCommandEditPage() {
               onChange={(e) =>
                 setForm((p) => ({ ...p, description: e.target.value }))
               }
-              placeholder="Mô tả ngắn về lệnh này"
+              placeholder="Short description of this command"
             />
           </div>
         </div>
@@ -364,10 +364,10 @@ export function CustomCommandEditPage() {
           form={form}
           onFormChange={setForm}
           aliasInput={aliasInput}
-          onAliasInputChange={setAliasInput}
-          onAliasKeyDown={handleAliasKeyDown}
-          onAddAlias={addAlias}
-          onRemoveAlias={removeAlias}
+          onAliasesInputChange={setAliasesInput}
+          onAliasesKeyDown={handleAliasesKeyDown}
+          onAddAliases={addAliases}
+          onRemoveAliases={removeAliases}
           onAddChannel={addChannel}
           onRemoveChannel={removeChannel}
           advancedOpen={advancedOpen}

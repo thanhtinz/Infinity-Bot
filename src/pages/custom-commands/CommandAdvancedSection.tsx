@@ -61,7 +61,7 @@ export function CommandAdvancedSection({ form, onFormChange, open, onOpenChange 
               onChange={(e) => onFormChange((p) => ({ ...p, required_args: Math.max(0, parseInt(e.target.value) || 0) }))}
               placeholder="1"
             />
-            <p className="text-[11px] text-muted-foreground">Số $N tối thiểu</p>
+            <p className="text-[11px] text-muted-foreground">Min $N count</p>
           </div>
         </div>
       </CollapsibleContent>

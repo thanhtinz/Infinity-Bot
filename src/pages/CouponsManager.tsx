@@ -36,13 +36,13 @@ export function CouponsManager() {
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
       fetch(`/api/coupons/${id}`, { method: "DELETE", credentials: "include" }).then((r) => r.json()),
-    onSuccess: () => { invalidate(); setDeleteTarget(null); toast({ title: "Đã xóa coupon." }); },
-    onError: () => toast({ variant: "destructive", title: "Lỗi xóa." }),
+    onSuccess: () => { invalidate(); setDeleteTarget(null); toast({ title: "Coupon deleted." }); },
+    onError: () => toast({ variant: "destructive", title: "Delete error." }),
   });
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast({ title: "Đã copy: " + code });
+    toast({ title: "Copied: " + code });
   };
 
   const usageColor = (c: Coupon) => {
@@ -58,7 +58,7 @@ export function CouponsManager() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Coupon</h1>
         <Button size="sm" onClick={() => navigate('/coupons/new')}>
-          <Plus className="mr-2 h-4 w-4" /> Tạo coupon
+          <Plus className="mr-2 h-4 w-4" /> Add Coupon
         </Button>
       </div>
 
@@ -67,7 +67,7 @@ export function CouponsManager() {
       ) : coupons.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
           <Tag className="h-10 w-10 opacity-30" />
-          <p className="text-sm">Chưa có coupon nào</p>
+          <p className="text-sm">No coupons yet</p>
           <Button variant="outline" size="sm" onClick={() => navigate('/coupons/new')}>Create now</Button>
         </div>
       ) : (
@@ -82,24 +82,24 @@ export function CouponsManager() {
                     <button
                       onClick={() => copyCode(c.code)}
                       className="font-mono font-bold text-base tracking-widest hover:text-primary transition-colors flex items-center gap-1"
-                      title="Click để copy"
+                      title="Click to copy"
                     >
                       {c.code}
                       <Copy className="h-3 w-3 opacity-50" />
                     </button>
-                    {c.is_public && <Badge variant="secondary" className="text-xs">Công khai</Badge>}
-                    {exhausted && <Badge variant="destructive" className="text-xs">Hết lượt</Badge>}
+                    {c.is_public && <Badge variant="secondary" className="text-xs">Public</Badge>}
+                    {exhausted && <Badge variant="destructive" className="text-xs">Exhausted</Badge>}
                   </div>
 
                   {/* Discount info */}
                   <div className="flex items-center gap-4 text-sm flex-wrap">
                     <div className="text-center">
-                      <p className="text-xs text-muted-foreground">Giảm</p>
+                      <p className="text-xs text-muted-foreground">Discount</p>
                       <p className="font-semibold">
                         {c.discount_percent
                           ? `${c.discount_percent}%`
                           : c.discount_amount
-                          ? `${c.discount_amount.toLocaleString("vi-VN")} đ`
+                          ? `${c.discount_amount.toLocaleString()} đ`
                           : "—"}
                       </p>
                     </div>
@@ -131,14 +131,14 @@ export function CouponsManager() {
         </div>
       )}
 
-      {/* ── Confirm xóa ── */}
+      {/* ── Confirm delete ── */}
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent className="max-w-xs">
           <DialogHeader>
-            <DialogTitle>Xóa coupon?</DialogTitle>
+            <DialogTitle>Delete coupon?</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Mã <strong className="font-mono">{deleteTarget?.code}</strong> sẽ bị xóa vĩnh viễn.
+            Code <strong className="font-mono">{deleteTarget?.code}</strong> will be permanently deleted.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
@@ -147,7 +147,7 @@ export function CouponsManager() {
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              Xóa
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

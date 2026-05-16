@@ -117,7 +117,7 @@ function DiscordPreview({ form }: { form: FormState }) {
                 Bot
               </span>
               <span className="text-[10px]" style={{ color: DISCORD_MUTED }}>
-                Hôm nay lúc 12:00
+                Today at 12:00
               </span>
             </div>
 
@@ -259,7 +259,7 @@ export function StickyEditPage() {
       qc.invalidateQueries({ queryKey: ["sticky"] });
       qc.invalidateQueries({ queryKey: ["sticky-stats"] });
       navigate("/sticky");
-      toast({ title: "Đã tạo sticky." });
+      toast({ title: "Sticky created." });
     },
     onError: (e: Error) =>
       toast({ variant: "destructive", title: "Error", description: e.message }),
@@ -280,7 +280,7 @@ export function StickyEditPage() {
       qc.invalidateQueries({ queryKey: ["sticky"] });
       qc.invalidateQueries({ queryKey: ["sticky-stats"] });
       navigate("/sticky");
-      toast({ title: "Đã cập nhật sticky." });
+      toast({ title: "Sticky updated." });
     },
     onError: (e: Error) =>
       toast({ variant: "destructive", title: "Error", description: e.message }),
@@ -311,7 +311,7 @@ export function StickyEditPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="font-semibold">
-          {isNew ? "Tạo Sticky" : "Edit Sticky"}
+          {isNew ? "Create Sticky" : "Edit Sticky"}
         </h1>
         <div className="ml-auto">
           <Button
@@ -332,17 +332,17 @@ export function StickyEditPage() {
             onChange={(v) =>
               setForm((f) => ({ ...f, channel_id: v === "__clear__" ? "" : v }))
             }
-            placeholder="Chọn channel..."
+            placeholder="Select channel..."
             disabled={!isNew}
           />
           <p className="text-xs text-muted-foreground">
-            Channel Discord để đăng sticky message
+            Discord channel for sticky message
           </p>
         </div>
 
         {/* Embed toggle */}
         <div className="flex items-center justify-between">
-          <Label htmlFor="embed-toggle">Dùng Embed</Label>
+          <Label htmlFor="embed-toggle">Use Embed</Label>
           <Switch
             id="embed-toggle"
             checked={form.embed_enabled}
@@ -362,7 +362,7 @@ export function StickyEditPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, content: e.target.value }))
                 }
-                placeholder="Nội dung tin nhắn sticky..."
+                placeholder="Sticky message content..."
                 rows={4}
                 className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
               />
@@ -382,7 +382,7 @@ export function StickyEditPage() {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, embed_title: e.target.value }))
                   }
-                  placeholder="Tiêu đề embed"
+                  placeholder="Title embed"
                   className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, embed_title: f.embed_title + em }))} />
@@ -400,7 +400,7 @@ export function StickyEditPage() {
                       embed_description: e.target.value,
                     }))
                   }
-                  placeholder="Mô tả embed..."
+                  placeholder="Description embed..."
                   rows={4}
                   className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
                 />
@@ -425,7 +425,7 @@ export function StickyEditPage() {
                         : "border-transparent hover:scale-105"
                     )}
                     style={{ backgroundColor: c }}
-                    aria-label={`Chọn màu ${c}`}
+                    aria-label={`Select color ${c}`}
                   />
                 ))}
                 <Input
@@ -447,7 +447,7 @@ export function StickyEditPage() {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, embed_footer: e.target.value }))
                   }
-                  placeholder="Chân trang embed"
+                  placeholder="Embed footer"
                   className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, embed_footer: f.embed_footer + em }))} />
@@ -484,7 +484,7 @@ export function StickyEditPage() {
 
             {/* Live Discord embed preview */}
             <div className="space-y-2">
-              <Label className="text-muted-foreground text-xs">Xem trước trên Discord</Label>
+              <Label className="text-muted-foreground text-xs">Preview on Discord</Label>
               <DiscordPreview form={form} />
             </div>
           </div>
@@ -493,11 +493,11 @@ export function StickyEditPage() {
         <Separator />
 
         {/* Resend settings */}
-        <p className="text-sm font-medium">Cài đặt gửi lại</p>
+        <p className="text-sm font-medium">Resend settings</p>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Gửi lại sau X tin nhắn</Label>
+            <Label>Resend after X messages</Label>
             <Input
               type="number"
               min={1}
@@ -515,7 +515,7 @@ export function StickyEditPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label>Interval (phút, 0=tắt)</Label>
+            <Label>Interval (minutes, 0=off)</Label>
             <Input
               type="number"
               min={0}
@@ -536,7 +536,7 @@ export function StickyEditPage() {
 
         {/* Pin toggle */}
         <div className="flex items-center justify-between">
-          <Label htmlFor="pin-toggle">Ghim tin nhắn</Label>
+          <Label htmlFor="pin-toggle">Pin message</Label>
           <Switch
             id="pin-toggle"
             checked={form.is_pinned}

@@ -58,12 +58,12 @@ export function ResponseSection({
     <div className="space-y-4">
       <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
         <Layout className="h-3.5 w-3.5" />
-        Phản hồi
+        Response
       </p>
 
       {/* Response type toggles */}
       <div className="space-y-2">
-        <Label>Loại phản hồi</Label>
+        <Label>Response type</Label>
         <div className="flex flex-wrap gap-3">
           {([
             { key: "text" as const, label: "Text", icon: Type },
@@ -111,7 +111,7 @@ export function ResponseSection({
           })}
         </div>
         <p className="text-[11px] text-muted-foreground">
-          Chọn nhiều loại cùng lúc. Text và Embed không thể bật đồng thời.
+          Multiple types can be selected. Text and Embed cannot be active at the same time.
         </p>
       </div>
 
@@ -124,7 +124,7 @@ export function ResponseSection({
         >
           <span className="flex items-center gap-2">
             <Variable className="h-4 w-4 text-indigo-500" />
-            Biến số (Variables)
+            Available variables
           </span>
           {varsOpen ? (
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -135,7 +135,7 @@ export function ResponseSection({
         {varsOpen && (
           <div className="px-3 pb-3 space-y-3">
             <p className="text-[11px] text-muted-foreground">
-              Nhấn vào biến để chèn vào nội dung. Click vào ô văn bản trước để chọn vị trí chèn.
+              Click a variable to insert it. Click the text field first to set the insertion point.
             </p>
             {VARIABLE_GROUPS.map((group) => {
               const Icon = group.icon;
@@ -168,14 +168,14 @@ export function ResponseSection({
       {/* Text response */}
       {hasText && (
         <div className="space-y-2">
-          <Label>Nội dung phản hồi</Label>
+          <Label>Response content</Label>
           <Textarea
             value={form.response_text}
             onChange={(e) =>
               setForm((p) => ({ ...p, response_text: e.target.value }))
             }
             onFocus={() => setFocusedInput("text")}
-            placeholder="Nội dung bot sẽ gửi khi tin nhắn khớp điều kiện..."
+            placeholder="Content the bot will send when a message matches..."
             rows={5}
           />
         </div>
@@ -185,7 +185,7 @@ export function ResponseSection({
       {hasEmbed && (
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Tiêu đề Embed</Label>
+            <Label>Title Embed</Label>
             <Input
               value={form.response_embed.title}
               onChange={(e) =>
@@ -197,7 +197,7 @@ export function ResponseSection({
                   },
                 }))
               }
-              placeholder="Tiêu đề embed"
+              placeholder="Title embed"
             />
           </div>
 
@@ -215,13 +215,13 @@ export function ResponseSection({
                 }))
               }
               onFocus={() => setFocusedInput("embed_desc")}
-              placeholder="Nội dung embed"
+              placeholder="Content embed"
               rows={4}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Màu</Label>
+            <Label>Color</Label>
             <div className="flex items-center gap-2">
               <div className="flex gap-1.5">
                 {PRESET_COLORS.map((c) => (
@@ -265,7 +265,7 @@ export function ResponseSection({
 
           {/* Embed extras */}
           <div className="space-y-3">
-            <p className="text-sm font-medium">Tùy chọn thêm</p>
+            <p className="text-sm font-medium">Additional options</p>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -281,7 +281,7 @@ export function ResponseSection({
                       },
                     }))
                   }
-                  placeholder="Tên tác giả"
+                  placeholder="Author name"
                   className="h-8 text-sm"
                 />
               </div>
@@ -371,13 +371,13 @@ export function ResponseSection({
               <p className="text-sm font-medium">Fields</p>
               <Button variant="outline" size="sm" onClick={addField}>
                 <Plus className="h-3.5 w-3.5 mr-1" />
-                Thêm field
+                Add field
               </Button>
             </div>
 
             {form.response_embed.fields.length === 0 && (
               <p className="text-xs text-muted-foreground text-center py-4">
-                Chưa có field nào. Nhấn "Thêm field" để bắt đầu.
+                No fields yet. Click "Add field" to get started.
               </p>
             )}
 
@@ -409,18 +409,18 @@ export function ResponseSection({
                         onChange={(e) =>
                           updateField(idx, { name: e.target.value })
                         }
-                        placeholder="Tên field"
+                        placeholder="Name field"
                         className="h-8 text-sm"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Giá trị</Label>
+                      <Label className="text-xs">Value</Label>
                       <Input
                         value={field.value}
                         onChange={(e) =>
                           updateField(idx, { value: e.target.value })
                         }
-                        placeholder="Nội dung"
+                        placeholder="Content"
                         className="h-8 text-sm"
                       />
                     </div>
@@ -474,12 +474,12 @@ export function ResponseSection({
                 className="h-6 text-xs gap-1"
               >
                 <Plus className="h-3 w-3" />
-                Thêm
+                Add
               </Button>
             </EmojiPicker>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Chọn emoji để react vào tin nhắn gốc
+            Select an emoji to react to the original message
           </p>
         </div>
       )}

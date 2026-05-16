@@ -79,18 +79,18 @@ export function DashboardHome() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           icon={TrendingUp}
-          label="Doanh thu"
+          label="Revenue"
           value={stats ? fmtMoney(stats.total_revenue) : "—"}
           highlight
         />
         <StatCard
           icon={ShoppingCart}
-          label="Tổng đơn"
+          label="Total Orders"
           value={stats?.total_orders ?? "—"}
-          sub={stats ? `${stats.pending_orders} chờ TT` : undefined}
+          sub={stats ? `${stats.pending_orders} pending` : undefined}
         />
-        <StatCard icon={Users} label="Người dùng" value={stats?.total_users ?? "—"} />
-        <StatCard icon={Package} label="Sản phẩm" value={stats?.total_products ?? "—"} />
+        <StatCard icon={Users} label="Users" value={stats?.total_users ?? "—"} />
+        <StatCard icon={Package} label="Products" value={stats?.total_products ?? "—"} />
       </div>
 
       {/* ── Charts ── */}
@@ -98,7 +98,7 @@ export function DashboardHome() {
         {/* Doanh thu */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Doanh thu 14 ngày</CardTitle>
+            <CardTitle className="text-sm font-medium">Doanh thu 14 days</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {statsLoading || !stats ? (
@@ -120,7 +120,7 @@ export function DashboardHome() {
                     tickFormatter={(v) => v >= 1000 ? `${v / 1000}K` : v}
                   />
                   <Tooltip
-                    formatter={(v: unknown) => [(v as number).toLocaleString("vi-VN") + " đ", "Doanh thu"]}
+                    formatter={(v: unknown) => [(v as number).toLocaleString("vi-VN") + " đ", "Revenue"]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Area
@@ -136,10 +136,10 @@ export function DashboardHome() {
           </CardContent>
         </Card>
 
-        {/* Số đơn */}
+        {/* Orders */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Số đơn hàng 14 ngày</CardTitle>
+            <CardTitle className="text-sm font-medium">Orders (14 days)</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {statsLoading || !stats ? (
@@ -151,7 +151,7 @@ export function DashboardHome() {
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" />
                   <YAxis tick={{ fontSize: 10 }} className="fill-muted-foreground" allowDecimals={false} />
                   <Tooltip
-                    formatter={(v: unknown) => [v as number, "Đơn hàng"]}
+                    formatter={(v: unknown) => [v as number, "Orders"]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Bar dataKey="orders" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
@@ -179,7 +179,7 @@ export function DashboardHome() {
           </div>
           <Button size="sm" variant="outline" asChild>
             <Link to="/bot-status">
-              <Activity className="mr-1 h-3.5 w-3.5" /> Quản lý
+              <Activity className="mr-1 h-3.5 w-3.5" /> Manage
             </Link>
           </Button>
         </CardContent>

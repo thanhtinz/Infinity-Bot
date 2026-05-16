@@ -29,8 +29,8 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
     return (
       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <Inbox className="h-12 w-12 mb-3 opacity-40" />
-        <p className="text-sm font-medium">Không có ticket nào</p>
-        <p className="text-xs mt-1">Thử thay đổi bộ lọc hoặc tìm kiếm</p>
+        <p className="text-sm font-medium">No tickets yet</p>
+        <p className="text-xs mt-1">Try changing filters or search terms</p>
       </div>
     );
   }
@@ -44,11 +44,11 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
             <TableHead>Subject</TableHead>
             <TableHead>Creator</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Mức ưu tiên</TableHead>
+            <TableHead>Priority</TableHead>
             <TableHead>Claimed</TableHead>
             <TableHead>Panel</TableHead>
             <TableHead>Created</TableHead>
-            <TableHead className="w-24 text-right">Thao tác</TableHead>
+            <TableHead className="w-24 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -58,7 +58,7 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
               <TableCell className="max-w-[200px] truncate">
                 {t.subject || (
                   <span className="text-muted-foreground italic">
-                    Không có chủ đề
+                    No subject
                   </span>
                 )}
               </TableCell>
@@ -109,7 +109,7 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
                   className="h-7 text-xs"
                   onClick={() => onViewDetail(t.id)}
                 >
-                  Chi tiết
+                  Details
                 </Button>
               </TableCell>
             </TableRow>
@@ -136,9 +136,9 @@ export function BlacklistTable({ blacklist, isLoading, isRemoving, onRemove }: B
     return (
       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <Shield className="h-12 w-12 mb-3 opacity-40" />
-        <p className="text-sm font-medium">Chưa có ai trong blacklist</p>
+        <p className="text-sm font-medium">None yet ai trong blacklist</p>
         <p className="text-xs mt-1">
-          Người dùng bị blacklist sẽ không thể tạo ticket
+          Blacklisted users cannot create tickets
         </p>
       </div>
     );
@@ -151,9 +151,9 @@ export function BlacklistTable({ blacklist, isLoading, isRemoving, onRemove }: B
           <TableRow>
             <TableHead>Discord ID</TableHead>
             <TableHead>Reason</TableHead>
-            <TableHead>Thêm bởi</TableHead>
-            <TableHead>Ngày thêm</TableHead>
-            <TableHead className="w-24 text-right">Thao tác</TableHead>
+            <TableHead>Added by</TableHead>
+            <TableHead>Date added</TableHead>
+            <TableHead className="w-24 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -167,7 +167,7 @@ export function BlacklistTable({ blacklist, isLoading, isRemoving, onRemove }: B
               <TableCell className="max-w-[300px] truncate text-sm">
                 {b.reason || (
                   <span className="text-muted-foreground italic">
-                    Không có lý do
+                    No reason
                   </span>
                 )}
               </TableCell>
@@ -188,7 +188,7 @@ export function BlacklistTable({ blacklist, isLoading, isRemoving, onRemove }: B
                   onClick={() => onRemove(b.id)}
                 >
                   <Trash2 className="h-3.5 w-3.5 mr-1" />
-                  Xóa
+                  Delete
                 </Button>
               </TableCell>
             </TableRow>

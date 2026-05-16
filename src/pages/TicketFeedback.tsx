@@ -156,13 +156,13 @@ export function TicketFeedback() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Ticket Feedback</h1>
           <p className="text-muted-foreground text-sm">
-            Đánh giá từ người dùng sau khi đóng ticket
+            User ratings after closing a ticket
           </p>
         </div>
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <MessageCircleHeart className="h-12 w-12 mb-3 opacity-40" />
-          <p className="text-lg font-medium">Chưa có đánh giá nào</p>
-          <p className="text-sm">Đánh giá sẽ xuất hiện khi người dùng gửi feedback sau khi đóng ticket</p>
+          <p className="text-lg font-medium">No ratings yet</p>
+          <p className="text-sm">Ratings will appear when users submit feedback after closing a ticket</p>
         </div>
       </div>
     );
@@ -175,7 +175,7 @@ export function TicketFeedback() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Ticket Feedback</h1>
           <p className="text-muted-foreground text-sm">
-            Đánh giá từ người dùng sau khi đóng ticket
+            User ratings after closing a ticket
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -185,7 +185,7 @@ export function TicketFeedback() {
           <Badge variant="secondary" className="text-sm">
             {avgRating} / 5
           </Badge>
-          <Badge variant="outline">{total} đánh giá</Badge>
+          <Badge variant="outline">{total} ratings</Badge>
         </div>
       </div>
 
@@ -193,13 +193,13 @@ export function TicketFeedback() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-4 pb-4">
-            <p className="text-xs text-muted-foreground">Tổng đánh giá</p>
+            <p className="text-xs text-muted-foreground">Total ratings</p>
             <p className="text-2xl font-bold">{total}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4">
-            <p className="text-xs text-muted-foreground">Điểm trung bình</p>
+            <p className="text-xs text-muted-foreground">Average score</p>
             <p className="text-2xl font-bold">{avgRating}</p>
           </CardContent>
         </Card>
@@ -220,7 +220,7 @@ export function TicketFeedback() {
       {/* Rating distribution */}
       <Card>
         <CardContent className="pt-4 pb-4 space-y-2">
-          <p className="text-sm font-medium mb-3">Phân bố đánh giá</p>
+          <p className="text-sm font-medium mb-3">Rating distribution</p>
           {[5, 4, 3, 2, 1].map((star) => {
             const count = byRating[String(star)] ?? 0;
             const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
@@ -245,7 +245,7 @@ export function TicketFeedback() {
       {/* Search */}
       <div className="flex items-center gap-2">
         <Input
-          placeholder="Tìm theo Ticket ID, User ID, hoặc comment..."
+          placeholder="Search by Ticket ID, User ID, or comment..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
@@ -281,7 +281,7 @@ export function TicketFeedback() {
                   onClick={() => toggleSort("created_at")}
                 >
                   <span className="inline-flex items-center gap-1">
-                    Ngày <ArrowUpDown className="h-3 w-3" />
+                    Date <ArrowUpDown className="h-3 w-3" />
                   </span>
                 </TableHead>
               </TableRow>
@@ -305,7 +305,7 @@ export function TicketFeedback() {
               {sortedItems.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    Không tìm thấy kết quả
+                    No results found
                   </TableCell>
                 </TableRow>
               )}

@@ -54,12 +54,12 @@ export function CustomCommands() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["custom-commands"] });
       setDeleteTarget(null);
-      toast({ title: "Đã xóa command" });
+      toast({ title: "Command deleted" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi xóa command",
+        title: "Error deleting command",
         description: e.message,
       }),
   });
@@ -79,7 +79,7 @@ export function CustomCommands() {
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi toggle",
+        title: "Toggle error",
         description: e.message,
       }),
   });
@@ -106,12 +106,12 @@ export function CustomCommands() {
             Custom Commands
           </h2>
           <p className="text-muted-foreground mt-1">
-            Tạo command tùy chỉnh từ dashboard
+            Create custom commands from the dashboard
           </p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4 mr-1.5" />
-          Tạo Command
+          Add Command
         </Button>
       </div>
 
@@ -125,13 +125,13 @@ export function CustomCommands() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Terminal className="h-10 w-10 text-muted-foreground/50 mb-3" />
-            <p className="text-sm font-medium">Chưa có command nào</p>
+            <p className="text-sm font-medium">No commands yet</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Tạo lệnh tùy chỉnh để bot phản hồi tự động.
+              Create custom commands for the bot to respond automatically.
             </p>
             <Button variant="outline" size="sm" className="mt-4" onClick={openCreate}>
               <Plus className="h-4 w-4 mr-1.5" />
-              Tạo Command
+              Add Command
             </Button>
           </CardContent>
         </Card>
@@ -160,14 +160,14 @@ export function CustomCommands() {
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Xóa command?</DialogTitle>
+            <DialogTitle>Delete command?</DialogTitle>
             <DialogDescription>
-              Command <strong>!{deleteTarget?.name}</strong> sẽ bị xóa vĩnh viễn.
+              Command <strong>!{deleteTarget?.name}</strong> will be permanently deleted.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Hủy
+              Cancel
             </Button>
             <Button
               variant="destructive"

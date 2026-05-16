@@ -147,10 +147,10 @@ export function StickyManager() {
       qc.invalidateQueries({ queryKey: ["sticky"] });
       qc.invalidateQueries({ queryKey: ["sticky-stats"] });
       setConfirmDeleteId(null);
-      toast({ title: "Đã xóa sticky." });
+      toast({ title: "Sticky deleted." });
     },
     onError: () =>
-      toast({ variant: "destructive", title: "Lỗi khi xóa sticky." }),
+      toast({ variant: "destructive", title: "Failed to delete sticky." }),
   });
 
   const toggleMutation = useMutation({
@@ -174,7 +174,7 @@ export function StickyManager() {
     },
     onError: (_err, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(["sticky"], ctx.prev);
-      toast({ variant: "destructive", title: "Lỗi khi chuyển trạng thái." });
+      toast({ variant: "destructive", title: "Failed to toggle status." });
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["sticky"] });
@@ -193,10 +193,10 @@ export function StickyManager() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["sticky"] });
       qc.invalidateQueries({ queryKey: ["sticky-stats"] });
-      toast({ title: "Đã gửi lại sticky." });
+      toast({ title: "Sticky resent." });
     },
     onError: () =>
-      toast({ variant: "destructive", title: "Lỗi khi gửi lại." }),
+      toast({ variant: "destructive", title: "Failed to resend." }),
   });
 
   // ── Handlers ─────────────────────────────────────────────────────────────
@@ -213,35 +213,35 @@ export function StickyManager() {
 
   const statCards = [
     {
-      label: "Tổng sticky",
+      label: "Total stickies",
       value: stats?.total ?? 0,
       icon: Pin,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
     },
     {
-      label: "Đang hoạt động",
+      label: "Online",
       value: stats?.active ?? 0,
       icon: CheckCircle,
       color: "text-green-500",
       bg: "bg-green-500/10",
     },
     {
-      label: "Tổng lần gửi lại",
+      label: "Total resends",
       value: stats?.total_resends ?? 0,
       icon: RefreshCw,
       color: "text-orange-500",
       bg: "bg-orange-500/10",
     },
     {
-      label: "Dạng Embed",
+      label: "Embed type",
       value: stats?.embed_count ?? 0,
       icon: Image,
       color: "text-purple-500",
       bg: "bg-purple-500/10",
     },
     {
-      label: "Đã ghim",
+      label: "Pinned",
       value: stats?.pinned_count ?? 0,
       icon: MapPin,
       color: "text-rose-500",
@@ -261,7 +261,7 @@ export function StickyManager() {
         </div>
         <Button onClick={openCreate} size="sm">
           <Plus className="mr-1.5 h-4 w-4" />
-          Thêm Sticky
+          Add Sticky
         </Button>
       </div>
 
@@ -326,7 +326,7 @@ export function StickyManager() {
           <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <Pin className="mb-3 h-10 w-10 opacity-40" />
             <p className="text-sm">
-              Chưa có sticky nào. Nhấn Thêm Sticky để bắt đầu.
+              No stickies yet. Click Add Sticky to get started.
             </p>
           </CardContent>
         </Card>
@@ -377,7 +377,7 @@ export function StickyManager() {
                             : ""
                         )}
                       >
-                        {s.is_enabled ? "Bật" : "Tắt"}
+                        {s.is_enabled ? "Enable" : "Disable"}
                       </Badge>
 
                       {/* Preview */}
@@ -391,13 +391,13 @@ export function StickyManager() {
                       {/* Info */}
                       <div className="hidden flex-col gap-0.5 text-xs text-muted-foreground md:flex">
                         <span>
-                          Trigger: mỗi {s.message_count_trigger} tin |{" "}
+                          Trigger: every {s.message_count_trigger} msgs |{" "}
                           {s.interval_minutes > 0
-                            ? `${s.interval_minutes} phút`
-                            : "Tắt interval"}
+                            ? `${s.interval_minutes} min`
+                            : "Disable interval"}
                         </span>
                         <span>
-                          Gửi lại: {s.resend_count} lần ·{" "}
+                          Resent: {s.resend_count}x ·{" "}
                           {formatTime(s.last_sent)}
                         </span>
                       </div>
@@ -408,10 +408,10 @@ export function StickyManager() {
                           {s.message_count_trigger} tin ·{" "}
                           {s.interval_minutes > 0
                             ? `${s.interval_minutes}p`
-                            : "Tắt"}
+                            : "Disable"}
                         </span>
                         <span>
-                          {s.resend_count} lần · {formatTime(s.last_sent)}
+                          {s.resend_count}x · {formatTime(s.last_sent)}
                         </span>
                       </div>
 
@@ -429,7 +429,7 @@ export function StickyManager() {
                           })
                         }
                         disabled={toggleMutation.isPending}
-                        title={s.is_enabled ? "Tắt" : "Bật"}
+                        title={s.is_enabled ? "Disable" : "Enable"}
                       >
                         <Power
                           className={cn(
@@ -457,7 +457,7 @@ export function StickyManager() {
                         className="h-8 w-8"
                         onClick={() => resendMutation.mutate(s.id)}
                         disabled={resendMutation.isPending}
-                        title="Gửi lại ngay"
+                        title="Resend now"
                       >
                         <RefreshCw
                           className={cn(
@@ -475,7 +475,7 @@ export function StickyManager() {
                           onClick={() => deleteMutation.mutate(s.id)}
                           disabled={deleteMutation.isPending}
                         >
-                          Xác nhận?
+                          Confirm?
                         </Button>
                       ) : (
                         <Button

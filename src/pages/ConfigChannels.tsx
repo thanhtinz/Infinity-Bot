@@ -107,22 +107,22 @@ export function ConfigChannels() {
       },
       credentials: "include",
       body: JSON.stringify(v),
-    }).then(r => { if (!r.ok) throw new Error("Lưu thất bại"); return r.json(); }),
+    }).then(r => { if (!r.ok) throw new Error("Save failed"); return r.json(); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["config", selectedGuildId] });
       qc.invalidateQueries({ queryKey: ["discord_channels"] });
       qc.invalidateQueries({ queryKey: ["discord_roles"] });
-      toast({ title: "Saved", description: "Cấu hình kênh & quyền đã được lưu." });
+      toast({ title: "Saved", description: "Channel & permissions config saved." });
     },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Lưu thất bại." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Save failed." }),
   });
 
   const channelFields: { name: keyof FormValues; label: string }[] = [
-    { name: "don_hang_channel_id", label: "Kênh Đơn hàng" },
-    { name: "feedback_channel_id", label: "Kênh Feedback" },
-    { name: "coupon_channel_id", label: "Kênh Coupon" },
-    { name: "bang_gia_channel_id", label: "Kênh Bảng giá" },
-    { name: "welcome_channel_id", label: "Kênh Welcome" },
+    { name: "don_hang_channel_id", label: "Channel Orders" },
+    { name: "feedback_channel_id", label: "Feedback Channel" },
+    { name: "coupon_channel_id", label: "Coupon Log Channel" },
+    { name: "bang_gia_channel_id", label: "Price List Channel" },
+    { name: "welcome_channel_id", label: "Channel Welcome" },
   ];
 
   if (isLoading) return <div className="text-muted-foreground text-sm">Loading...</div>;
@@ -135,8 +135,8 @@ export function ConfigChannels() {
           <Hash className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Kênh & Phân quyền</h1>
-          <p className="text-sm text-muted-foreground">Chọn server, role admin và các kênh thông báo.</p>
+          <h1 className="text-xl font-bold">Channels & Permissions</h1>
+          <p className="text-sm text-muted-foreground">Select server, admin role, and notification channels.</p>
         </div>
       </div>
 
@@ -146,9 +146,9 @@ export function ConfigChannels() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Shield className="w-4 h-4" /> Quyền Admin
+                <Shield className="w-4 h-4" /> Permission Admin
               </CardTitle>
-              <CardDescription>Cấu hình cho server đang chọn: <strong>{activeGuildId}</strong></CardDescription>
+              <CardDescription>Config for selected server: <strong>{activeGuildId}</strong></CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -156,7 +156,7 @@ export function ConfigChannels() {
                 name="admin_role_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Role Admin Dashboard</FormLabel>
+                    <FormLabel>Dashboard Admin Role</FormLabel>
                     <FormControl>
                       {roles.length > 0 ? (
                         <DiscordSelect
@@ -167,14 +167,14 @@ export function ConfigChannels() {
                         />
                       ) : (
                         <Input
-                          placeholder={activeGuildId ? "Đang tải roles..." : "Select a server first"}
+                          placeholder={activeGuildId ? "Loading roles..." : "Select a server first"}
                           disabled={!activeGuildId}
                           {...field}
                           value={field.value || ""}
                         />
                       )}
                     </FormControl>
-                    <FormDescription>User có role này mới được đăng nhập dashboard.</FormDescription>
+                    <FormDescription>Users with this role can log in to the dashboard.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -186,7 +186,7 @@ export function ConfigChannels() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Hash className="w-4 h-4" /> Kênh thông báo
+                <Hash className="w-4 h-4" /> Notification channels
               </CardTitle>
               <CardDescription>Bot will send notifications to these channels.</CardDescription>
             </CardHeader>
@@ -210,7 +210,7 @@ export function ConfigChannels() {
                             />
                           ) : (
                             <Input
-                              placeholder={activeGuildId ? "Đang tải kênh..." : "Select a server first"}
+                              placeholder={activeGuildId ? "Loading channels..." : "Select a server first"}
                               disabled={!activeGuildId}
                               {...field}
                               value={field.value || ""}
@@ -227,7 +227,7 @@ export function ConfigChannels() {
           </Card>
 
           <Button type="submit" disabled={mutation.isPending}>
-            {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
+            {mutation.isPending ? "Saving..." : "Save Config"}
           </Button>
         </form>
       </Form>

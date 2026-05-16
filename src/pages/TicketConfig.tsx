@@ -164,7 +164,7 @@ export function TicketConfig() {
         credentials: "include",
       });
       if (res.status === 404) return null;
-      if (!res.ok) throw new Error("Không thể tải cấu hình ticket");
+      if (!res.ok) throw new Error("Could not load ticket configuration");
       return res.json();
     },
   });
@@ -202,17 +202,17 @@ export function TicketConfig() {
         credentials: "include",
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Lưu thất bại");
+      if (!res.ok) throw new Error("Save failed");
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Đã lưu cấu hình ticket" });
+      toast({ title: "Ticket configuration saved" });
       qc.invalidateQueries({ queryKey: ["ticket-config"] });
     },
     onError: () => {
       toast({
         variant: "destructive",
-        title: "Lưu thất bại",
+        title: "Save failed",
         description: "Please try again",
       });
     },
@@ -247,16 +247,16 @@ export function TicketConfig() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Cấu hình Ticket
+            Ticket Config
           </h1>
           <p className="text-sm text-muted-foreground">
-            Thiết lập hệ thống ticket cho server Discord
+            Configure the ticket system for your Discord server
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {isDirty && (
             <Badge variant="secondary" className="text-xs">
-              Có thay đổi chưa lưu
+              Unsaved changes
             </Badge>
           )}
           <Button
@@ -265,7 +265,7 @@ export function TicketConfig() {
             onClick={() => saveMutation.mutate(form)}
           >
             <Save className="mr-1.5 h-3.5 w-3.5" />
-            {saveMutation.isPending ? "Saving..." : "Lưu cấu hình"}
+            {saveMutation.isPending ? "Saving..." : "Save Config"}
           </Button>
         </div>
       </div>
@@ -274,7 +274,7 @@ export function TicketConfig() {
       <SectionCard
         icon={Settings2}
         title="Channel & Role"
-        description="Cấu hình channel và role cho hệ thống ticket"
+        description="Configure channels and roles for the ticket system"
       >
         <div className="space-y-2">
           <Label htmlFor="log-channel">Log Channel ID</Label>
@@ -282,10 +282,10 @@ export function TicketConfig() {
             filter="text"
             value={form.log_channel_id}
             onChange={(v) => set("log_channel_id", v === "__clear__" ? "" : v)}
-            placeholder="Chọn kênh log..."
+            placeholder="Select log channel..."
           />
           <p className="text-xs text-muted-foreground">
-            Channel ghi lại lịch sử các ticket
+            Channel to log ticket history
           </p>
         </div>
 
@@ -295,10 +295,10 @@ export function TicketConfig() {
             filter="category"
             value={form.category_id}
             onChange={(v) => set("category_id", v === "__clear__" ? "" : v)}
-            placeholder="Chọn category..."
+            placeholder="Select category..."
           />
           <p className="text-xs text-muted-foreground">
-            Category Discord chứa channel ticket
+            Discord category containing ticket channels
           </p>
         </div>
 
@@ -310,19 +310,19 @@ export function TicketConfig() {
               .map((s) => s.trim())
               .filter(Boolean)}
             onChange={(v) => set("support_role_ids", v.join(", "))}
-            placeholder="Chọn roles hỗ trợ..."
+            placeholder="Select support roles..."
           />
           <p className="text-xs text-muted-foreground">
-            Các role có quyền xem và xử lý ticket (phân cách bằng dấu phẩy)
+            Roles with permission to view and handle tickets
           </p>
         </div>
       </SectionCard>
 
-      {/* ── Section 2: Giới hạn & Cooldown ── */}
+      {/* ── Section 2: Limits & Cooldown ── */}
       <SectionCard
         icon={Sliders}
-        title="Giới hạn & Cooldown"
-        description="Kiểm soát tần suất tạo ticket"
+        title="Limits & Cooldown"
+        description="Control the frequency of ticket creation"
       >
         <div className="space-y-2">
           <Label>Ticket limit per user</Label>
@@ -340,12 +340,12 @@ export function TicketConfig() {
             </span>
           </div>
           <p className="text-xs text-muted-foreground">
-            Số ticket tối đa mỗi người có thể mở cùng lúc
+            Max tickets a user can have open at the same time
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="cooldown">Cooldown (phút)</Label>
+          <Label htmlFor="cooldown">Cooldown (minutes)</Label>
           <Input
             id="cooldown"
             type="number"
@@ -357,22 +357,22 @@ export function TicketConfig() {
             }
           />
           <p className="text-xs text-muted-foreground">
-            Thời gian chờ giữa 2 lần tạo ticket (phút, 0 = tắt)
+            Cooldown between ticket creations (minutes, 0 = off)
           </p>
         </div>
       </SectionCard>
 
-      {/* ── Section 3: Tự động đóng ── */}
+      {/* ── Section 3: Auto-close ── */}
       <SectionCard
         icon={Clock}
-        title="Tự động đóng"
-        description="Tự động đóng ticket không hoạt động"
+        title="Auto-close"
+        description="Automatically close inactive tickets"
       >
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-0.5">
             <Label>Enable auto close</Label>
             <p className="text-xs text-muted-foreground">
-              Tự động đóng ticket khi không có hoạt động
+              Auto-close tickets when inactive
             </p>
           </div>
           <Switch
@@ -388,7 +388,7 @@ export function TicketConfig() {
         {form.auto_close_enabled && (
           <>
             <div className="space-y-2">
-              <Label htmlFor="auto-close-hours">Đóng sau (giờ)</Label>
+              <Label htmlFor="auto-close-hours">Close after (hours)</Label>
               <Input
                 id="auto-close-hours"
                 type="number"
@@ -404,8 +404,8 @@ export function TicketConfig() {
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  Ticket sẽ tự động đóng sau {form.auto_close_hours} giờ không
-                  có tin nhắn
+                  Ticket will auto-close after {form.auto_close_hours} hours of
+                  inactivity
                 </AlertDescription>
               </Alert>
             )}

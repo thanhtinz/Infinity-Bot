@@ -129,12 +129,12 @@ export function ReactionRoleEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["reaction-roles"] });
       navigate(-1);
-      toast({ title: "Đã tạo panel thành công" });
+      toast({ title: "Panel created" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi tạo panel",
+        title: "Error creating panel",
         description: e.message,
       }),
   });
@@ -153,12 +153,12 @@ export function ReactionRoleEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["reaction-roles"] });
       navigate(-1);
-      toast({ title: "Đã cập nhật panel" });
+      toast({ title: "Panel updated" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi cập nhật",
+        title: "Update error",
         description: e.message,
       }),
   });
@@ -221,7 +221,7 @@ export function ReactionRoleEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"} Panel Reaction Role</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Create" : "Edit"} Panel Reaction Role</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
             {isPending ? "Saving..." : "Save"}
@@ -231,11 +231,11 @@ export function ReactionRoleEditPage() {
       <div className="max-w-2xl mx-auto p-6 space-y-6">
         {/* Name */}
         <div className="space-y-2">
-          <Label>Tên Panel</Label>
+          <Label>Name Panel</Label>
           <Input
             value={form.name}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-            placeholder="VD: Chọn màu sắc"
+            placeholder="e.g. Choose a color"
           />
         </div>
 
@@ -245,7 +245,7 @@ export function ReactionRoleEditPage() {
           <ChannelSelect
             value={form.channel_id}
             onChange={(v) => setForm((p) => ({ ...p, channel_id: v }))}
-            placeholder="Chọn kênh gửi panel"
+            placeholder="Select channel for panel"
             filter="text"
           />
         </div>
@@ -254,7 +254,7 @@ export function ReactionRoleEditPage() {
 
         {/* Embed settings */}
         <div className="space-y-4">
-          <p className="text-sm font-medium">Cài đặt Embed</p>
+          <p className="text-sm font-medium">Settings Embed</p>
           <EmbedBuilder
             data={{
               title: form.embed_title,
@@ -289,13 +289,13 @@ export function ReactionRoleEditPage() {
             <p className="text-sm font-medium">Emoji → Role</p>
             <Button variant="outline" size="sm" onClick={addMapping}>
               <Plus className="h-3.5 w-3.5 mr-1" />
-              Thêm
+              Add
             </Button>
           </div>
 
           {form.mappings.length === 0 && (
             <p className="text-xs text-muted-foreground text-center py-4">
-              Chưa có mapping nào. Nhấn "Add" để bắt đầu.
+              No mappings yet. Click "Add" to get started.
             </p>
           )}
 
@@ -339,13 +339,13 @@ export function ReactionRoleEditPage() {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Nhãn</Label>
+                    <Label className="text-xs">Label</Label>
                     <Input
                       value={mapping.label}
                       onChange={(e) =>
                         updateMapping(idx, { label: e.target.value })
                       }
-                      placeholder="VD: Đỏ"
+                      placeholder="e.g. Red"
                       className="h-8 text-sm"
                     />
                   </div>

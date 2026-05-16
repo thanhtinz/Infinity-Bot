@@ -21,7 +21,7 @@ interface LoggingConfigData {
 
 async function fetchLoggingConfig(): Promise<LoggingConfigData> {
   const res = await apiFetch("/api/logging/config");
-  if (!res.ok) throw new Error("Tải cấu hình thất bại");
+  if (!res.ok) throw new Error("Failed to load config");
   return res.json();
 }
 
@@ -32,7 +32,7 @@ async function saveLoggingConfig(data: LoggingConfigData): Promise<{ ok: boolean
     credentials: "include",
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Lưu thất bại");
+  if (!res.ok) throw new Error("Save failed");
   return res.json();
 }
 
@@ -65,7 +65,7 @@ function ChannelField({ label, description, icon, value, onChange }: ChannelFiel
             size="icon"
             className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
             onClick={() => onChange("")}
-            aria-label="Xóa kênh"
+            aria-label="Delete channel"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -116,10 +116,10 @@ export function LoggingConfig() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["logging-config"] });
-      toast({ title: "Saved", description: "Cấu hình Log đã được cập nhật." });
+      toast({ title: "Saved", description: "Log configuration updated." });
     },
     onError: () => {
-      toast({ title: "Error", description: "Không thể lưu cấu hình.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not save configuration.", variant: "destructive" });
     },
   });
 
@@ -131,9 +131,9 @@ export function LoggingConfig() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Hệ thống Log</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Logging System</h2>
         <p className="text-muted-foreground">
-          Cấu hình kênh nhận log cho từng loại sự kiện.
+          Configure log channels for each event type.
         </p>
       </div>
 
@@ -142,21 +142,21 @@ export function LoggingConfig() {
         <CardHeader>
           <CardTitle className="text-base">Log Channels</CardTitle>
           <CardDescription>
-            Chọn kênh sẽ nhận log cho từng loại sự kiện.
+            Select the channel that will receive logs for each event type.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ChannelField
               label="Message Log"
-              description="Tin nhắn xóa/sửa"
+              description="Messages deleted/edited"
               icon={<ScrollText className="h-4 w-4 text-muted-foreground" />}
               value={messageLog}
               onChange={setMessageLog}
             />
             <ChannelField
               label="Voice Log"
-              description="Vào/rời voice"
+              description="Voice join/leave"
               icon={<Mic className="h-4 w-4 text-muted-foreground" />}
               value={voiceLog}
               onChange={setVoiceLog}
@@ -177,7 +177,7 @@ export function LoggingConfig() {
             />
             <ChannelField
               label="Server Log"
-              description="Kênh tạo/xóa"
+              description="Channels created/deleted"
               icon={<Server className="h-4 w-4 text-muted-foreground" />}
               value={serverLog}
               onChange={setServerLog}
@@ -190,28 +190,28 @@ export function LoggingConfig() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Filter className="w-4 h-4" /> Bộ lọc
+            <Filter className="w-4 h-4" /> Filters
           </CardTitle>
           <CardDescription>
-            Bỏ qua log cho các role hoặc kênh cụ thể.
+            Ignore logs for specific roles or channels.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">Ignored Roles</Label>
             <p className="text-xs text-muted-foreground">
-              Không log hành động của các role này
+              Skip logging actions from these roles
             </p>
             <MultiRoleSelect
               value={ignoredRoles}
               onChange={setIgnoredRoles}
-              placeholder="Chọn roles cần bỏ qua..."
+              placeholder="Select roles to ignore..."
             />
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium">Ignored Channels</Label>
             <p className="text-xs text-muted-foreground">
-              Không log sự kiện từ các kênh này. Hiện chưa hỗ trợ chọn nhiều kênh — sẽ được cập nhật sau.
+              Skip logging events from these channels.
             </p>
           </div>
         </CardContent>
@@ -219,7 +219,7 @@ export function LoggingConfig() {
 
       {/* Save button */}
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
-        {mutation.isPending ? "Saving..." : "Lưu cấu hình"}
+        {mutation.isPending ? "Saving..." : "Save Config"}
       </Button>
     </div>
   );

@@ -9,7 +9,7 @@ export function BackupList({ getBackups, loadBackup, deleteBackup }: {
 }) {
   const [list, setList] = useState(() => getBackups());
   const refresh = () => setList(getBackups());
-  if (!list.length) return <p className="text-sm text-muted-foreground text-center py-6">Chưa có backup nào. Nhấn "Lưu backup hiện tại".</p>;
+  if (!list.length) return <p className="text-sm text-muted-foreground text-center py-6">No backups yet. Click "Save current backup".</p>;
   return (
     <div className="space-y-1.5 max-h-72 overflow-y-auto">
       {list.map(b => (

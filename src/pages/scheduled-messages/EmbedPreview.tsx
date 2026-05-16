@@ -14,7 +14,7 @@ export function DiscordEmbedPreview({ data }: DiscordEmbedPreviewProps) {
   if (!hasContent) {
     return (
       <div className="rounded-md bg-[#313338] p-6 text-center">
-        <p className="text-sm text-[#B5BAC1]">Xem trước embed sẽ hiển thị ở đây</p>
+        <p className="text-sm text-[#B5BAC1]">Embed preview will appear here</p>
       </div>
     );
   }

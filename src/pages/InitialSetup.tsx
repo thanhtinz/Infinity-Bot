@@ -11,9 +11,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 
 const setupSchema = z.object({
-  discord_client_id: z.string().min(1, "Client ID là bắt buộc"),
-  discord_client_secret: z.string().min(1, "Client Secret là bắt buộc"),
-  public_app_url: z.string().url("Phải là URL hợp lệ, ví dụ: https://abc.preview.workshop.ai"),
+  discord_client_id: z.string().min(1, "Client ID is required"),
+  discord_client_secret: z.string().min(1, "Client Secret is required"),
+  public_app_url: z.string().url("Must be a valid URL, e.g. https://abc.preview.workshop.ai"),
 });
 
 type SetupValues = z.infer<typeof setupSchema>;
@@ -35,7 +35,7 @@ export function InitialSetup() {
     mutationFn: async (values: SetupValues) => {
       const currentConfigResponse = await fetch("/api/config");
       if (!currentConfigResponse.ok) {
-        throw new Error("Không thể tải cấu hình hiện tại");
+        throw new Error("Could not load current configuration");
       }
 
       const currentConfig = await currentConfigResponse.json();
@@ -51,7 +51,7 @@ export function InitialSetup() {
       });
 
       if (!response.ok) {
-        throw new Error("Không thể lưu cấu hình đăng nhập Discord");
+        throw new Error("Could not save Discord login configuration");
       }
 
       return response.json();
@@ -60,15 +60,15 @@ export function InitialSetup() {
       await queryClient.invalidateQueries({ queryKey: ["setup_status"] });
       await queryClient.invalidateQueries({ queryKey: ["config"] });
       toast({
-        title: "Đã lưu cấu hình",
-        description: "Bạn có thể đăng nhập Discord để vào dashboard.",
+        title: "Configuration saved",
+        description: "You can now log in with Discord to access the dashboard.",
       });
     },
     onError: () => {
       toast({
         variant: "destructive",
-        title: "Lưu thất bại",
-        description: "Kiểm tra lại Client ID và Client Secret rồi thử lại.",
+        title: "Save failed",
+        description: "Please check your Client ID and Client Secret and try again.",
       });
     },
   });
@@ -82,9 +82,9 @@ export function InitialSetup() {
               <ShieldCheck className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <CardTitle>Thiết lập lần đầu</CardTitle>
+              <CardTitle>Initial Setup</CardTitle>
               <CardDescription>
-                Nhập Discord OAuth Client ID và Client Secret để bật đăng nhập dashboard.
+                Enter your Discord OAuth Client ID and Client Secret to enable dashboard login.
               </CardDescription>
             </div>
           </div>
@@ -128,7 +128,7 @@ export function InitialSetup() {
                       <Input placeholder="https://abc.preview.workshop.ai" {...field} />
                     </FormControl>
                     <p className="text-xs text-muted-foreground">
-                      URL này phải được thêm vào Discord Developer Portal → OAuth2 → Redirects dưới dạng:<br />
+                      This URL must be added to the Discord Developer Portal → OAuth2 → Redirects as:<br />
                       <code className="bg-muted px-1 rounded">{field.value ? `${field.value}/api/auth/callback` : "https://your-domain/api/auth/callback"}</code>
                     </p>
                     <FormMessage />
@@ -136,7 +136,7 @@ export function InitialSetup() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={mutation.isPending}>
-                {mutation.isPending ? "Saving..." : "Lưu và tiếp tục"}
+                {mutation.isPending ? "Saving..." : "Save and continue"}
               </Button>
             </form>
           </Form>

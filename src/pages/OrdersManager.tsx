@@ -18,12 +18,12 @@ import type { Order, Product } from "../types";
 import { apiFetch } from "@/hooks/useApi";
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  PAID:      { label: "Đã thanh toán", cls: "bg-green-500/15 text-green-600 border-green-500/30" },
-  PENDING:   { label: "Chờ thanh toán", cls: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30" },
+  PAID:      { label: "Paid", cls: "bg-green-500/15 text-green-600 border-green-500/30" },
+  PENDING:   { label: "Pending payment", cls: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30" },
   DELIVERING: { label: "Đang giao",     cls: "bg-blue-500/15 text-blue-600 border-blue-500/30" },
-  DELIVERED:  { label: "Đã giao",       cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30" },
-  CANCELLED:  { label: "Đã hủy",        cls: "bg-red-500/15 text-red-600 border-red-500/30" },
-  ERROR:      { label: "Lỗi",           cls: "bg-gray-500/15 text-gray-600 border-gray-500/30" },
+  DELIVERED:  { label: "Delivered",     cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30" },
+  CANCELLED:  { label: "Cancelled",        cls: "bg-red-500/15 text-red-600 border-red-500/30" },
+  ERROR:      { label: "Error",         cls: "bg-gray-500/15 text-gray-600 border-gray-500/30" },
 };
 
 export function OrdersManager() {
@@ -32,7 +32,7 @@ export function OrdersManager() {
   const [filter, setFilter] = useState<string>("ALL");
   const [createOpen, setCreateOpen] = useState(false);
 
-  // Form tạo đơn
+  // Create order form
   const [discordUid, setDiscordUid] = useState("");
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [selectedPackage, setSelectedPackage] = useState<string>("");
@@ -65,9 +65,9 @@ export function OrdersManager() {
       }).then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
-      toast({ title: "Đã cập nhật trạng thái." });
+      toast({ title: "Status updated." });
     },
-    onError: () => toast({ variant: "destructive", title: "Lỗi cập nhật." }),
+    onError: () => toast({ variant: "destructive", title: "Update error." }),
   });
 
   const createMutation = useMutation({
@@ -82,7 +82,7 @@ export function OrdersManager() {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       setCreateOpen(false);
       resetCreateForm();
-      toast({ title: "Đã tạo đơn hàng." });
+      toast({ title: "Order created." });
     },
     onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
   });
@@ -99,9 +99,9 @@ export function OrdersManager() {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       setDeliverTarget(null);
       setDmContent("");
-      toast({ title: "Đã giao hàng." });
+      toast({ title: "Delivered." });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Lỗi giao hàng", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: "Delivery error", description: e.message }),
   });
 
   const resetCreateForm = () => {
@@ -109,12 +109,12 @@ export function OrdersManager() {
     setIsCustom(false); setCustomProductName(""); setSendQrChannelId("");
   };
 
-  // Khi chọn sản phẩm → reset gói
+  // When product selected → reset package
   const handleSelectProduct = (pid: string) => {
     setSelectedProductId(pid); setSelectedPackage(""); setSelectedPrice(0);
   };
 
-  // Khi chọn gói → tự điền giá
+  // Khi chọn package → tự điền giá
   const handleSelectPackage = (pkgName: string) => {
     setSelectedPackage(pkgName);
     const prod = products.find((p) => String(p.id) === selectedProductId);
@@ -137,13 +137,13 @@ export function OrdersManager() {
     <div className="p-4 md:p-6 space-y-4 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-xl font-semibold">Đơn hàng</h1>
+        <h1 className="text-xl font-semibold">Orders</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
           <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Tạo đơn
+            <Plus className="mr-2 h-4 w-4" /> New Order
           </Button>
         </div>
       </div>
@@ -151,10 +151,10 @@ export function OrdersManager() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Tổng đơn", value: counts.ALL, cls: "" },
-          { label: "Chờ TT", value: counts.PENDING, cls: "text-yellow-600" },
-          { label: "Đã TT + Giao", value: paidAndDelivered, cls: "text-green-600" },
-          { label: "Doanh thu", value: totalPaid.toLocaleString("vi-VN") + " đ", cls: "text-primary" },
+          { label: "Total Orders", value: counts.ALL, cls: "" },
+          { label: "Pending", value: counts.PENDING, cls: "text-yellow-600" },
+          { label: "Paid + Delivered", value: paidAndDelivered, cls: "text-green-600" },
+          { label: "Revenue", value: totalPaid.toLocaleString() + " đ", cls: "text-primary" },
         ].map(({ label, value, cls }) => (
           <Card key={label}>
             <CardContent className="p-3 text-center">
@@ -175,7 +175,7 @@ export function OrdersManager() {
             onClick={() => setFilter(s)}
             className="text-xs"
           >
-            {s === "ALL" ? "Tất cả" : STATUS_CONFIG[s]?.label} ({(counts as Record<string,number>)[s] ?? 0})
+            {s === "ALL" ? "All" : STATUS_CONFIG[s]?.label} ({(counts as Record<string,number>)[s] ?? 0})
           </Button>
         ))}
       </div>
@@ -184,7 +184,7 @@ export function OrdersManager() {
       {isLoading ? (
         <p className="text-muted-foreground text-sm">Loading...</p>
       ) : filtered.length === 0 ? (
-        <p className="text-muted-foreground text-sm text-center py-8">Không có đơn hàng nào.</p>
+        <p className="text-muted-foreground text-sm text-center py-8">No orders found.</p>
       ) : (
         <div className="space-y-3">
           {filtered.map((order) => (
@@ -223,7 +223,7 @@ export function OrdersManager() {
 
                   {/* Right: price + status changer */}
                   <div className="flex flex-col items-end gap-2 shrink-0">
-                    <span className="font-bold text-sm">{order.total_price.toLocaleString("vi-VN")} đ</span>
+                    <span className="font-bold text-sm">{order.total_price.toLocaleString()} đ</span>
                     <Select
                       value={order.status}
                       onValueChange={(s) => updateStatusMutation.mutate({ id: order.id, status: s })}
@@ -232,12 +232,12 @@ export function OrdersManager() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="PENDING">Chờ thanh toán</SelectItem>
-                        <SelectItem value="PAID">Đã thanh toán</SelectItem>
+                        <SelectItem value="PENDING">Pending payment</SelectItem>
+                        <SelectItem value="PAID">Paid</SelectItem>
                         <SelectItem value="DELIVERING">Đang giao</SelectItem>
-                        <SelectItem value="DELIVERED">Đã giao</SelectItem>
-                        <SelectItem value="CANCELLED">Đã hủy</SelectItem>
-                        <SelectItem value="ERROR">Lỗi</SelectItem>
+                        <SelectItem value="DELIVERED">Delivered</SelectItem>
+                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                        <SelectItem value="ERROR">Error</SelectItem>
                       </SelectContent>
                     </Select>
                     {order.status === "PAID" && (
@@ -247,7 +247,7 @@ export function OrdersManager() {
                         className="text-xs h-7"
                         onClick={() => { setDeliverTarget(order); setDmContent(""); }}
                       >
-                        <Truck className="mr-1 h-3.5 w-3.5" /> Giao hàng
+                        <Truck className="mr-1 h-3.5 w-3.5" /> Deliver
                       </Button>
                     )}
                     {order.status === "PENDING" && order.checkout_url && (
@@ -259,7 +259,7 @@ export function OrdersManager() {
                           asChild
                         >
                           <a href={order.checkout_url} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="mr-1 h-3 w-3" /> Thanh toán
+                            <ExternalLink className="mr-1 h-3 w-3" /> Payment
                           </a>
                         </Button>
                         <Button
@@ -269,7 +269,7 @@ export function OrdersManager() {
                           title="Copy link"
                           onClick={() => {
                             navigator.clipboard.writeText(order.checkout_url!);
-                            toast({ title: "Đã copy link thanh toán" });
+                            toast({ title: "Payment link copied" });
                           }}
                         >
                           <Copy className="h-3 w-3" />
@@ -284,11 +284,11 @@ export function OrdersManager() {
         </div>
       )}
 
-      {/* ── Dialog tạo đơn ── */}
+      {/* ── Create order dialog ── */}
       <Dialog open={createOpen} onOpenChange={(o) => { if (!o) { setCreateOpen(false); resetCreateForm(); } }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Tạo đơn hàng</DialogTitle>
+            <DialogTitle>Create Order</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             {/* Discord UID */}
@@ -300,10 +300,10 @@ export function OrdersManager() {
                 onChange={(e) => setDiscordUid(e.target.value)}
               />
             </div>
-            {/* Sản phẩm + Toggle Custom */}
+            {/* Products + Toggle Custom */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label>Sản phẩm <span className="text-destructive">*</span></Label>
+                <Label>Products <span className="text-destructive">*</span></Label>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-muted-foreground">Custom</span>
                   <Switch checked={isCustom} onCheckedChange={(v) => {
@@ -317,14 +317,14 @@ export function OrdersManager() {
               </div>
               {isCustom ? (
                 <Input
-                  placeholder="Tên sản phẩm tự nhập..."
+                  placeholder="Enter product name..."
                   value={customProductName}
                   onChange={(e) => setCustomProductName(e.target.value)}
                 />
               ) : (
                 <Select value={selectedProductId} onValueChange={handleSelectProduct}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Chọn sản phẩm" />
+                    <SelectValue placeholder="Select product" />
                   </SelectTrigger>
                   <SelectContent>
                     {products.filter((p) => p.active).map((p) => (
@@ -334,27 +334,27 @@ export function OrdersManager() {
                 </Select>
               )}
             </div>
-            {/* Gói */}
+            {/* Package */}
             {activePackages.length > 0 && (
               <div className="space-y-1.5">
-                <Label>Gói</Label>
+                <Label>Package</Label>
                 <Select value={selectedPackage} onValueChange={handleSelectPackage}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Chọn gói" />
+                    <SelectValue placeholder="Select package" />
                   </SelectTrigger>
                   <SelectContent>
                     {activePackages.map((pk) => (
                       <SelectItem key={pk.name} value={pk.name}>
-                        {pk.name} — {pk.price.toLocaleString("vi-VN")} đ
+                        {pk.name} — {pk.price.toLocaleString()} đ
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             )}
-            {/* Giá */}
+            {/* Price */}
             <div className="space-y-1.5">
-              <Label>Tổng tiền (đ)</Label>
+              <Label>Total (VND)</Label>
               <Input
                 type="number"
                 value={selectedPrice || ""}
@@ -362,7 +362,7 @@ export function OrdersManager() {
                 placeholder="0"
               />
             </div>
-            {/* Trạng thái */}
+            {/* Status */}
             <div className="space-y-1.5">
               <Label>Status</Label>
               <Select value={orderStatus} onValueChange={setOrderStatus}>
@@ -370,25 +370,25 @@ export function OrdersManager() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PENDING">Chờ thanh toán</SelectItem>
-                  <SelectItem value="PAID">Đã thanh toán</SelectItem>
+                  <SelectItem value="PENDING">Pending payment</SelectItem>
+                  <SelectItem value="PAID">Paid</SelectItem>
                   <SelectItem value="DELIVERING">Đang giao</SelectItem>
-                  <SelectItem value="DELIVERED">Đã giao</SelectItem>
-                  <SelectItem value="CANCELLED">Đã hủy</SelectItem>
-                  <SelectItem value="ERROR">Lỗi</SelectItem>
+                  <SelectItem value="DELIVERED">Delivered</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                  <SelectItem value="ERROR">Error</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            {/* Kênh gửi QR PayOS */}
+            {/* Send channel QR PayOS */}
             <div className="space-y-1.5">
-              <Label>Kênh gửi QR thanh toán</Label>
+              <Label>QR Payment Channel</Label>
               <ChannelSelect
                 filter="text"
                 value={sendQrChannelId}
                 onChange={(v) => setSendQrChannelId(v === "__clear__" ? "" : v)}
-                placeholder="Không gửi Discord"
+                placeholder="Skip Discord send"
               />
-              <p className="text-xs text-muted-foreground">Bot sẽ gửi QR PayOS vào kênh này và chờ thanh toán (15 phút)</p>
+              <p className="text-xs text-muted-foreground">Bot will send PayOS QR to this channel and wait for payment (15 min)</p>
             </div>
             <Separator />
           </div>
@@ -406,23 +406,23 @@ export function OrdersManager() {
                 send_qr_channel_id: sendQrChannelId || "",
               })}
             >
-              {createMutation.isPending ? "Đang tạo..." : "Tạo đơn"}
+              {createMutation.isPending ? "Creating..." : "Create Order"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* ── Dialog giao hàng ── */}
+      {/* ── Delivery dialog ── */}
       <Dialog open={!!deliverTarget} onOpenChange={(o) => { if (!o) { setDeliverTarget(null); setDmContent(""); } }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Giao hàng #{deliverTarget?.id}</DialogTitle>
+            <DialogTitle>Deliver #{deliverTarget?.id}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Nội dung DM</Label>
+              <Label>Content DM</Label>
               <Textarea
-                placeholder="Nội dung gửi DM cho khách khi giao hàng..."
+                placeholder="DM content to send customer on delivery..."
                 value={dmContent}
                 onChange={(e) => setDmContent(e.target.value)}
                 rows={4}
@@ -437,7 +437,7 @@ export function OrdersManager() {
                 if (deliverTarget) deliverMutation.mutate({ id: deliverTarget.id, dm_content: dmContent });
               }}
             >
-              {deliverMutation.isPending ? "Đang giao..." : "Xác nhận giao hàng"}
+              {deliverMutation.isPending ? "Delivering..." : "Confirm Delivery"}
             </Button>
           </DialogFooter>
         </DialogContent>

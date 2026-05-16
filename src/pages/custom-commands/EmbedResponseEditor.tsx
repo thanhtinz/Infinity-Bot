@@ -29,7 +29,7 @@ export function EmbedResponseEditor({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label>Tiêu đề Embed</Label>
+        <Label>Title Embed</Label>
         <Input
           value={form.response_embed.title}
           onChange={(e) =>
@@ -41,7 +41,7 @@ export function EmbedResponseEditor({
               },
             }))
           }
-          placeholder="Tiêu đề embed"
+          placeholder="Title embed"
         />
       </div>
 
@@ -59,13 +59,13 @@ export function EmbedResponseEditor({
             }))
           }
           onFocus={onFocusDescription}
-          placeholder="Nội dung embed"
+          placeholder="Content embed"
           rows={4}
         />
       </div>
 
       <div className="space-y-2">
-        <Label>Màu</Label>
+        <Label>Color</Label>
         <div className="flex items-center gap-2">
           <div className="flex gap-1.5">
             {PRESET_COLORS.map((c) => (
@@ -109,7 +109,7 @@ export function EmbedResponseEditor({
 
       {/* Embed extras: Author, Footer, Thumbnail, Image */}
       <div className="space-y-3">
-        <p className="text-sm font-medium">Tùy chọn thêm</p>
+        <p className="text-sm font-medium">Additional options</p>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
@@ -125,7 +125,7 @@ export function EmbedResponseEditor({
                   },
                 }))
               }
-              placeholder="Tên tác giả"
+              placeholder="Author name"
               className="h-8 text-sm"
             />
           </div>
@@ -194,13 +194,13 @@ export function EmbedResponseEditor({
           <p className="text-sm font-medium">Fields</p>
           <Button variant="outline" size="sm" onClick={onAddField}>
             <Plus className="h-3.5 w-3.5 mr-1" />
-            Thêm field
+            Add field
           </Button>
         </div>
 
         {form.response_embed.fields.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-4">
-            Chưa có field nào. Nhấn "Thêm field" để bắt đầu.
+            No fields yet. Click "Add field" to get started.
           </p>
         )}
 
@@ -232,18 +232,18 @@ export function EmbedResponseEditor({
                     onChange={(e) =>
                       onUpdateField(idx, { name: e.target.value })
                     }
-                    placeholder="Tên field"
+                    placeholder="Name field"
                     className="h-8 text-sm"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Giá trị</Label>
+                  <Label className="text-xs">Value</Label>
                   <Input
                     value={field.value}
                     onChange={(e) =>
                       onUpdateField(idx, { value: e.target.value })
                     }
-                    placeholder="Nội dung"
+                    placeholder="Content"
                     className="h-8 text-sm"
                   />
                 </div>

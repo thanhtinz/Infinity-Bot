@@ -36,7 +36,7 @@ export function CommandPermissionsSection({ form, onFormChange, open, onOpenChan
             <MultiRoleSelect
               value={form.allowed_roles}
               onChange={(roles) => onFormChange((p) => ({ ...p, allowed_roles: roles }))}
-              placeholder="Roles được phép dùng (để trống = tất cả)..."
+              placeholder="Allowed roles (leave empty = all)..."
             />
           </div>
 
@@ -46,7 +46,7 @@ export function CommandPermissionsSection({ form, onFormChange, open, onOpenChan
             <MultiRoleSelect
               value={form.ignored_roles}
               onChange={(roles) => onFormChange((p) => ({ ...p, ignored_roles: roles }))}
-              placeholder="Roles bị chặn..."
+              placeholder="Blocked roles..."
             />
           </div>
 
@@ -56,7 +56,7 @@ export function CommandPermissionsSection({ form, onFormChange, open, onOpenChan
             <MultiChannelSelect
               value={form.allowed_channels}
               onChange={(chs) => onFormChange((p) => ({ ...p, allowed_channels: chs }))}
-              placeholder="Channels được phép (để trống = tất cả)..."
+              placeholder="Allowed channels (leave empty = all)..."
             />
           </div>
 
@@ -66,7 +66,7 @@ export function CommandPermissionsSection({ form, onFormChange, open, onOpenChan
             <MultiChannelSelect
               value={form.ignored_channels}
               onChange={(chs) => onFormChange((p) => ({ ...p, ignored_channels: chs }))}
-              placeholder="Channels bị chặn..."
+              placeholder="Blocked channels..."
             />
           </div>
 
@@ -77,9 +77,9 @@ export function CommandPermissionsSection({ form, onFormChange, open, onOpenChan
               filter="text"
               value={form.response_channel_id}
               onChange={(chId) => onFormChange((p) => ({ ...p, response_channel_id: chId }))}
-              placeholder="Override kênh bot phản hồi..."
+              placeholder="Override response channel..."
             />
-            <p className="text-[11px] text-muted-foreground">Để trống = phản hồi trong kênh user gọi lệnh</p>
+            <p className="text-[11px] text-muted-foreground">Leave empty = respond in the channel the user called the command</p>
           </div>
         </div>
       </CollapsibleContent>

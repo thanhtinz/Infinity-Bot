@@ -92,7 +92,7 @@ export function CommandAdditionalResponses({ form, onFormChange, open, onOpenCha
                           i === idx ? { ...r, content: e.target.value } : r
                         ),
                       }))}
-                      placeholder="Nội dung phản hồi thêm..."
+                      placeholder="Additional response content..."
                       rows={3}
                     />
                   ) : (
@@ -105,7 +105,7 @@ export function CommandAdditionalResponses({ form, onFormChange, open, onOpenCha
                             i === idx ? { ...r, embed: { ...emptyEmbed(), ...r.embed, title: e.target.value } } : r
                           ),
                         }))}
-                        placeholder="Tiêu đề embed"
+                        placeholder="Title embed"
                       />
                       <Textarea
                         value={resp.embed?.description ?? ""}
@@ -115,7 +115,7 @@ export function CommandAdditionalResponses({ form, onFormChange, open, onOpenCha
                             i === idx ? { ...r, embed: { ...emptyEmbed(), ...r.embed, description: e.target.value } } : r
                           ),
                         }))}
-                        placeholder="Mô tả embed"
+                        placeholder="Description embed"
                         rows={3}
                       />
                     </div>

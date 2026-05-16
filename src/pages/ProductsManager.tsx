@@ -33,7 +33,7 @@ export function ProductsManager() {
         body: JSON.stringify({ ...p, active: !p.active }),
       }).then((r) => r.json()),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Không thể cập nhật." }),
+    onError: () => toast({ variant: "destructive", title: "Error", description: "Could not update." }),
   });
 
   const deleteMutation = useMutation({
@@ -42,18 +42,18 @@ export function ProductsManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       setDeleteTarget(null);
-      toast({ title: "Đã xóa sản phẩm." });
+      toast({ title: "Deleted product." });
     },
-    onError: () => toast({ variant: "destructive", title: "Lỗi xóa sản phẩm." }),
+    onError: () => toast({ variant: "destructive", title: "Delete error product." }),
   });
 
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Sản phẩm</h1>
+        <h1 className="text-xl font-semibold">Products</h1>
         <Button size="sm" onClick={() => navigate('/products/new')}>
-          <Plus className="mr-2 h-4 w-4" /> Thêm sản phẩm
+          <Plus className="mr-2 h-4 w-4" /> Add Product
         </Button>
       </div>
 
@@ -61,7 +61,7 @@ export function ProductsManager() {
       {isLoading ? (
         <p className="text-muted-foreground text-sm">Loading...</p>
       ) : products.length === 0 ? (
-        <p className="text-muted-foreground text-sm">Chưa có sản phẩm nào.</p>
+        <p className="text-muted-foreground text-sm">No products yet.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((p) => (
@@ -101,18 +101,18 @@ export function ProductsManager() {
                 )}
               </CardHeader>
               <CardContent className="px-4 pb-3 pt-0">
-                {/* Gói giá */}
+                {/* Package price */}
                 {p.packages?.length > 0 ? (
                   <div className="space-y-1">
                     {p.packages.map((pkg, i) => (
                       <div key={i} className={cn("flex items-center justify-between text-xs rounded px-2 py-1 bg-muted/50", !pkg.active && "opacity-50 line-through")}>
                         <span>{pkg.name}</span>
-                        <span className="font-medium">{pkg.price.toLocaleString("vi-VN")} đ</span>
+                        <span className="font-medium">{pkg.price.toLocaleString()} đ</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground italic">Chưa có gói</p>
+                  <p className="text-xs text-muted-foreground italic">No packages</p>
                 )}
               </CardContent>
             </Card>
@@ -120,14 +120,14 @@ export function ProductsManager() {
         </div>
       )}
 
-      {/* ── Confirm Xóa ── */}
+      {/* ── Confirm Delete ── */}
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xóa sản phẩm?</DialogTitle>
+            <DialogTitle>Delete product?</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Sản phẩm <strong>{deleteTarget?.name}</strong> sẽ bị xóa vĩnh viễn.
+            Products <strong>{deleteTarget?.name}</strong> will be permanently deleted.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
@@ -136,7 +136,7 @@ export function ProductsManager() {
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               disabled={deleteMutation.isPending}
             >
-              Xóa
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -94,16 +94,16 @@ export function EmojiManager() {
         method: "DELETE",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Xóa thất bại");
+      if (!res.ok) throw new Error("Delete failed");
     },
     onSuccess: () => {
-      toast({ title: "Deleted", description: "Emoji đã được xóa thành công." });
+      toast({ title: "Deleted", description: "Emoji deleted successfully." });
       queryClient.invalidateQueries({ queryKey: ["discord-emojis"] });
       queryClient.invalidateQueries({ queryKey: ["managed-emojis"] });
       setDeleteTarget(null);
     },
     onError: () => {
-      toast({ title: "Error", description: "Không thể xóa emoji.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not delete emoji.", variant: "destructive" });
     },
   });
 
@@ -114,15 +114,15 @@ export function EmojiManager() {
         method: "DELETE",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Xóa thất bại");
+      if (!res.ok) throw new Error("Delete failed");
     },
     onSuccess: () => {
-      toast({ title: "Deleted", description: "Sticker đã được xóa thành công." });
+      toast({ title: "Deleted", description: "Sticker deleted successfully." });
       queryClient.invalidateQueries({ queryKey: ["discord-stickers"] });
       setStickerDeleteTarget(null);
     },
     onError: () => {
-      toast({ title: "Error", description: "Không thể xóa sticker.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not delete sticker.", variant: "destructive" });
     },
   });
 
@@ -133,19 +133,19 @@ export function EmojiManager() {
         method: "POST",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Sync thất bại");
+      if (!res.ok) throw new Error("Sync failed");
       return res.json();
     },
     onSuccess: (data) => {
       toast({
-        title: "Đồng bộ thành công",
-        description: `Đã thêm ${data.added} emoji mới vào danh sách quản lý.`,
+        title: "Sync successful",
+        description: `Added ${data.added} new emoji(s) to the management list.`,
       });
       queryClient.invalidateQueries({ queryKey: ["discord-emojis"] });
       queryClient.invalidateQueries({ queryKey: ["managed-emojis"] });
     },
     onError: () => {
-      toast({ title: "Error", description: "Không thể đồng bộ emoji.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not sync emoji.", variant: "destructive" });
     },
   });
 
@@ -153,9 +153,9 @@ export function EmojiManager() {
   const copyUsage = async (usage: string) => {
     try {
       await navigator.clipboard.writeText(usage);
-      toast({ title: "Copied", description: `\`${usage}\` đã được copy.` });
+      toast({ title: "Copied", description: `\`${usage}\` copied.` });
     } catch {
-      toast({ title: "Error", description: "Không thể sao chép.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not copy.", variant: "destructive" });
     }
   };
 
@@ -166,7 +166,7 @@ export function EmojiManager() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Emoji & Sticker</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Quản lý emoji và sticker tùy chỉnh cho server Discord
+            Manage custom emoji and stickers for your Discord server
           </p>
         </div>
         <div className="flex gap-2">
@@ -174,18 +174,18 @@ export function EmojiManager() {
             <>
               <Button variant="outline" onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}>
                 <RefreshCw className={cn("h-4 w-4 mr-2", syncMutation.isPending && "animate-spin")} />
-                Đồng bộ
+                Sync
               </Button>
               <Button onClick={() => setEmojiUploadOpen(true)}>
                 <SmilePlus className="h-4 w-4 mr-2" />
-                Thêm Emoji
+                Add Emoji
               </Button>
             </>
           )}
           {tab === "sticker" && (
             <Button onClick={() => setStickerUploadOpen(true)}>
               <Sticker className="h-4 w-4 mr-2" />
-              Thêm Sticker
+              Add Sticker
             </Button>
           )}
         </div>
@@ -256,13 +256,13 @@ export function EmojiManager() {
           ) : emojis.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <ImageIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-lg font-medium text-muted-foreground">Chưa có emoji nào</p>
+              <p className="text-lg font-medium text-muted-foreground">No emojis yet</p>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
-                Thêm emoji tùy chỉnh để sử dụng trong server
+                Add custom emoji for use in the server
               </p>
               <Button variant="outline" onClick={() => setEmojiUploadOpen(true)}>
                 <SmilePlus className="h-4 w-4 mr-2" />
-                Thêm Emoji
+                Add Emoji
               </Button>
             </div>
           ) : (
@@ -284,7 +284,7 @@ export function EmojiManager() {
                       size="icon" variant="ghost"
                       className="h-8 w-8 text-white hover:text-white hover:bg-white/20"
                       onClick={() => copyUsage(emoji.usage)}
-                      title="Sao chép"
+                      title="Copy"
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -327,13 +327,13 @@ export function EmojiManager() {
           ) : stickers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Sticker className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-lg font-medium text-muted-foreground">Chưa có sticker nào</p>
+              <p className="text-lg font-medium text-muted-foreground">No stickers yet</p>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
-                Thêm sticker tùy chỉnh cho server (PNG, APNG, GIF — 320×320px)
+                Add sticker custom cho server (PNG, APNG, GIF — 320×320px)
               </p>
               <Button variant="outline" onClick={() => setStickerUploadOpen(true)}>
                 <Sticker className="h-4 w-4 mr-2" />
-                Thêm Sticker
+                Add Sticker
               </Button>
             </div>
           ) : (
@@ -396,9 +396,9 @@ export function EmojiManager() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xóa emoji?</AlertDialogTitle>
+            <AlertDialogTitle>Delete emoji?</AlertDialogTitle>
             <AlertDialogDescription>
-              Emoji <code className="font-mono">:{deleteTarget?.name}:</code> sẽ bị xóa vĩnh viễn khỏi server.
+              Emoji <code className="font-mono">:{deleteTarget?.name}:</code> will be permanently deleted from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -407,7 +407,7 @@ export function EmojiManager() {
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Xóa
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -417,9 +417,9 @@ export function EmojiManager() {
       <AlertDialog open={!!stickerDeleteTarget} onOpenChange={(open) => !open && setStickerDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xóa sticker?</AlertDialogTitle>
+            <AlertDialogTitle>Delete sticker?</AlertDialogTitle>
             <AlertDialogDescription>
-              Sticker <strong>{stickerDeleteTarget?.name}</strong> sẽ bị xóa vĩnh viễn khỏi server.
+              Sticker <strong>{stickerDeleteTarget?.name}</strong> will be permanently deleted from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -428,7 +428,7 @@ export function EmojiManager() {
               onClick={() => stickerDeleteTarget && deleteStickerMutation.mutate(stickerDeleteTarget.id)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Xóa
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -456,7 +456,7 @@ function EmojiUploadDialog({
   const [preview, setPreview] = useState<string | null>(null);
   const [sizeError, setSizeError] = useState(false);
 
-  // GIF giữ nguyên; còn lại resize về 128×128 qua Canvas
+  // Keep GIFs as-is; others resize to 128×128 via Canvas
   const prepareImageData = (f: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -492,18 +492,18 @@ function EmojiUploadDialog({
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || "Upload thất bại");
+        throw new Error(err.detail || "Upload failed");
       }
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Success", description: "Emoji đã được thêm vào server." });
+      toast({ title: "Success", description: "Emoji added to the server." });
       onSuccess();
       resetForm();
       onOpenChange(false);
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: err.message || "Không thể upload emoji.", variant: "destructive" });
+      toast({ title: "Error", description: err.message || "Could not upload emoji.", variant: "destructive" });
     },
   });
 
@@ -531,11 +531,11 @@ function EmojiUploadDialog({
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Thêm Emoji</DialogTitle>
+          <DialogTitle>Add Emoji</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="emoji-name">Tên Emoji</Label>
+            <Label htmlFor="emoji-name">Name Emoji</Label>
             <Input
               id="emoji-name"
               placeholder="vd: cool_cat"
@@ -544,14 +544,14 @@ function EmojiUploadDialog({
               maxLength={32}
             />
             <p className="text-xs text-muted-foreground">
-              Chỉ chữ cái, số và dấu gạch dưới. 2–32 ký tự.
+              Only letters, numbers, and underscores. 2–32 chars.
             </p>
             {name.length > 0 && !/^[a-zA-Z0-9_]+$/.test(name) && (
-              <p className="text-xs text-destructive">Tên chỉ được chứa chữ cái, số và _</p>
+              <p className="text-xs text-destructive">Name can only contain letters, numbers, and _</p>
             )}
           </div>
           <div className="space-y-1.5">
-            <Label>Hình ảnh</Label>
+            <Label>Image</Label>
             <Input
               ref={fileInputRef}
               type="file"
@@ -559,10 +559,10 @@ function EmojiUploadDialog({
               onChange={handleFileChange}
             />
             <p className="text-xs text-muted-foreground">
-              PNG, JPEG, GIF, WebP — tối đa 256KB. File GIF sẽ thành emoji animated.
+              PNG, JPEG, GIF, WebP — max 256KB. GIF files become animated emoji.
             </p>
             {sizeError && (
-              <p className="text-xs text-destructive">File quá lớn. Kích thước tối đa 256KB.</p>
+              <p className="text-xs text-destructive">File too large. Max size 256KB.</p>
             )}
             {preview && (
               <div className="flex items-center gap-3 mt-2">
@@ -572,12 +572,12 @@ function EmojiUploadDialog({
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            ⚠️ Discord giới hạn 50 emoji thường và 50 emoji animated mỗi server (tăng theo Boost)
+            ⚠️ Discord limits 50 regular and 50 animated emoji per server (increases with Boost)
           </p>
         </div>
         <DialogFooter>
           <Button onClick={() => uploadMutation.mutate()} disabled={!canSubmit || uploadMutation.isPending}>
-            {uploadMutation.isPending ? "Đang upload..." : (
+            {uploadMutation.isPending ? "Uploading..." : (
               <><Upload className="h-4 w-4 mr-2" />Upload</>
             )}
           </Button>
@@ -630,18 +630,18 @@ function StickerUploadDialog({
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || "Upload thất bại");
+        throw new Error(err.detail || "Upload failed");
       }
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Success", description: "Sticker đã được thêm vào server." });
+      toast({ title: "Success", description: "Sticker added to the server." });
       onSuccess();
       resetForm();
       onOpenChange(false);
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: err.message || "Không thể upload sticker.", variant: "destructive" });
+      toast({ title: "Error", description: err.message || "Could not upload sticker.", variant: "destructive" });
     },
   });
 
@@ -671,11 +671,11 @@ function StickerUploadDialog({
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Thêm Sticker</DialogTitle>
+          <DialogTitle>Add Sticker</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="sticker-name">Tên Sticker</Label>
+            <Label htmlFor="sticker-name">Name Sticker</Label>
             <Input
               id="sticker-name"
               placeholder="vd: happy_dance"
@@ -683,13 +683,13 @@ function StickerUploadDialog({
               onChange={(e) => setName(e.target.value)}
               maxLength={30}
             />
-            <p className="text-xs text-muted-foreground">2–30 ký tự.</p>
+            <p className="text-xs text-muted-foreground">2–30 chars.</p>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="sticker-desc">Description</Label>
             <Textarea
               id="sticker-desc"
-              placeholder="Mô tả sticker (tuỳ chọn)"
+              placeholder="Sticker description (optional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               maxLength={100}
@@ -706,11 +706,11 @@ function StickerUploadDialog({
               maxLength={200}
             />
             <p className="text-xs text-muted-foreground">
-              Từ khoá gợi ý khi tìm sticker. Để trống sẽ dùng tên.
+              Keyword suggestions when searching for stickers. Leave empty to use the name.
             </p>
           </div>
           <div className="space-y-1.5">
-            <Label>Hình ảnh</Label>
+            <Label>Image</Label>
             <Input
               ref={fileInputRef}
               type="file"
@@ -718,10 +718,10 @@ function StickerUploadDialog({
               onChange={handleFileChange}
             />
             <p className="text-xs text-muted-foreground">
-              PNG, APNG hoặc GIF — 320×320px, tối đa 512KB.
+              PNG, APNG, or GIF — 320×320px, max 512KB.
             </p>
             {sizeError && (
-              <p className="text-xs text-destructive">File quá lớn. Kích thước tối đa 512KB.</p>
+              <p className="text-xs text-destructive">File too large. Max size 512KB.</p>
             )}
             {preview && (
               <div className="flex items-center gap-3 mt-2">
@@ -731,12 +731,12 @@ function StickerUploadDialog({
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            ⚠️ Discord giới hạn 5 sticker mỗi server (tăng theo Boost: 15/30/60)
+            ⚠️ Discord limits 5 stickers per server (increases with Boost: 15/30/60)
           </p>
         </div>
         <DialogFooter>
           <Button onClick={() => uploadMutation.mutate()} disabled={!canSubmit || uploadMutation.isPending}>
-            {uploadMutation.isPending ? "Đang upload..." : (
+            {uploadMutation.isPending ? "Uploading..." : (
               <><Upload className="h-4 w-4 mr-2" />Upload</>
             )}
           </Button>

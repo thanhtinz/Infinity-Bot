@@ -51,7 +51,7 @@ export function MessageSidebar({
       <div className="p-3 space-y-2 border-b">
         <Button size="sm" className="w-full" onClick={onCreateNew}>
           <Plus className="h-3.5 w-3.5 mr-1.5" />
-          Tạo mới
+          Create
         </Button>
         <div className="flex gap-1.5">
           <Input
@@ -71,7 +71,7 @@ export function MessageSidebar({
         {listLoading ? (
           <div className="p-4 text-center text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />Loading...</div>
         ) : customEmbeds.length === 0 ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">Chưa có tin nhắn nào</div>
+          <div className="p-4 text-center text-sm text-muted-foreground">No messages yet</div>
         ) : (
           <div className="p-2 space-y-1">
             {customEmbeds.map((embed) => (
@@ -79,11 +79,11 @@ export function MessageSidebar({
                 className={cn("w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted/50 cursor-pointer", selectedId === embed.id && "bg-muted")}
                 onClick={() => onSelectEmbed(embed)}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelectEmbed(embed); } }}>
-                <div className="font-medium truncate">{embed.name || "Không tên"}</div>
+                <div className="font-medium truncate">{embed.name || "Untitled"}</div>
                 <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
                   <Hash className="h-3 w-3" />
                   {channels.find((c) => c.id === embed.channel_id)?.name || embed.channel_id || "—"}
-                  {embed.message_id && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1">Đã gửi</Badge>}
+                  {embed.message_id && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1">Sent</Badge>}
                 </div>
                 <div className="flex items-center gap-1 mt-1.5">
                   <Button size="icon" variant="ghost" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); onSelectEmbed(embed); }}>

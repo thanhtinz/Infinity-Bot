@@ -100,14 +100,14 @@ function PanelCard({
           {isSent ? (
             <Badge className="bg-green-500/15 text-green-600 border border-green-500/30 shrink-0 text-[10px] px-1.5">
               <CheckCircle2 className="h-3 w-3 mr-0.5" />
-              Đã gửi
+              Sent
             </Badge>
           ) : (
             <Badge
               variant="outline"
               className="text-muted-foreground shrink-0 text-[10px] px-1.5"
             >
-              Chưa gửi
+              Not sent
             </Badge>
           )}
         </div>
@@ -121,10 +121,10 @@ function PanelCard({
             />
             <div className="p-2.5 flex-1 min-w-0 bg-muted/30">
               <p className="font-semibold text-xs leading-tight">
-                {panel.embed_title || "Tiêu đề"}
+                {panel.embed_title || "Title"}
               </p>
               <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
-                {panel.embed_description || "Mô tả..."}
+                {panel.embed_description || "Description..."}
               </p>
             </div>
           </div>
@@ -159,7 +159,7 @@ function PanelCard({
               {panel.channel_id}
             </code>
           ) : (
-            <span>Chưa chọn kênh</span>
+            <span>No channel selected</span>
           )}
         </div>
 
@@ -184,7 +184,7 @@ function PanelCard({
               disabled={sendPending}
             >
               <Send className="h-3.5 w-3.5 mr-1" />
-              {sendPending ? "Đang gửi..." : "Gửi"}
+              {sendPending ? "Sending..." : "Send"}
             </Button>
             <Button
               variant="ghost"
@@ -193,7 +193,7 @@ function PanelCard({
               onClick={onEdit}
             >
               <Pencil className="h-3.5 w-3.5 mr-1" />
-              Sửa
+              Edit
             </Button>
             <Button
               variant="ghost"
@@ -202,7 +202,7 @@ function PanelCard({
               onClick={onDelete}
             >
               <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Xóa
+              Delete
             </Button>
           </div>
         </div>
@@ -245,12 +245,12 @@ export function ReactionRoles() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["reaction-roles"] });
       setDeleteTarget(null);
-      toast({ title: "Đã xóa panel" });
+      toast({ title: "Deleted panel" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi xóa panel",
+        title: "Delete error panel",
         description: e.message,
       }),
   });
@@ -266,12 +266,12 @@ export function ReactionRoles() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["reaction-roles"] });
-      toast({ title: "Đã gửi panel lên Discord" });
+      toast({ title: "Panel sent to Discord" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi gửi panel",
+        title: "Error sending panel",
         description: e.message,
       }),
   });
@@ -288,12 +288,12 @@ export function ReactionRoles() {
             Reaction Roles
           </h2>
           <p className="text-muted-foreground mt-1">
-            Tạo panel reaction role để thành viên tự nhận role bằng emoji.
+            Create a reaction role panel so members can self-assign roles using emojis.
           </p>
         </div>
         <Button onClick={() => navigate('/reaction-roles/new')}>
           <Plus className="h-4 w-4 mr-1.5" />
-          Tạo Panel
+          Create Panel
         </Button>
       </div>
 
@@ -307,13 +307,13 @@ export function ReactionRoles() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Smile className="h-10 w-10 text-muted-foreground/50 mb-3" />
-            <p className="text-sm font-medium">Chưa có panel nào</p>
+            <p className="text-sm font-medium">No panels yet</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Tạo panel reaction role để thành viên tự nhận role bằng emoji.
+              Create a reaction role panel so members can self-assign roles using emojis.
             </p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate('/reaction-roles/new')}>
               <Plus className="h-4 w-4 mr-1.5" />
-              Tạo Panel
+              Create Panel
             </Button>
           </CardContent>
         </Card>
@@ -342,14 +342,14 @@ export function ReactionRoles() {
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Xóa panel?</DialogTitle>
+            <DialogTitle>Delete panel?</DialogTitle>
             <DialogDescription>
-              Panel <strong>{deleteTarget?.name}</strong> sẽ bị xóa vĩnh viễn.
+              Panel <strong>{deleteTarget?.name}</strong> will be permanently deleted.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Hủy
+              Cancel
             </Button>
             <Button
               variant="destructive"

@@ -91,7 +91,7 @@ export function ScheduledMessagesEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["scheduled-messages"] });
       navigate(-1);
-      toast({ title: "Đã tạo lịch gửi tin nhắn." });
+      toast({ title: "Scheduled message created." });
     },
     onError: (e: Error) =>
       toast({ variant: "destructive", title: "Error", description: e.message }),
@@ -111,7 +111,7 @@ export function ScheduledMessagesEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["scheduled-messages"] });
       navigate(-1);
-      toast({ title: "Đã cập nhật lịch gửi." });
+      toast({ title: "Schedule updated." });
     },
     onError: (e: Error) =>
       toast({ variant: "destructive", title: "Error", description: e.message }),
@@ -183,7 +183,7 @@ export function ScheduledMessagesEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"} lịch gửi</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Create" : "Edit"} schedule</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={!form.channel_id || !form.send_at || isPending}>
             {isPending ? "Saving..." : "Save"}
@@ -191,11 +191,11 @@ export function ScheduledMessagesEditPage() {
         </div>
       </div>
       <div className="max-w-2xl mx-auto p-6 space-y-6">
-        {/* ── Section 1: Cài đặt gửi ── */}
+        {/* ── Section 1: Send settings ── */}
         <div className="space-y-4">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
             <CalendarClock className="h-3.5 w-3.5" />
-            ⏰ Cài đặt gửi
+            ⏰ Send settings
           </p>
 
           <div className="grid grid-cols-2 gap-4">
@@ -211,13 +211,13 @@ export function ScheduledMessagesEditPage() {
                     channel_id: v === "__clear__" ? "" : v,
                   }))
                 }
-                placeholder="Chọn channel..."
+                placeholder="Select channel..."
               />
             </div>
 
             {/* Time picker */}
             <div className="space-y-2">
-              <Label>Thời gian gửi</Label>
+              <Label>Send duration</Label>
               <Input
                 type="datetime-local"
                 value={form.send_at}
@@ -231,7 +231,7 @@ export function ScheduledMessagesEditPage() {
           <div className="grid grid-cols-2 gap-4">
             {/* Repeat type */}
             <div className="space-y-2">
-              <Label>Lặp lại</Label>
+              <Label>Repeat</Label>
               <Select
                 value={form.repeat_type}
                 onValueChange={(v: ScheduledMessage["repeat_type"]) =>
@@ -242,11 +242,11 @@ export function ScheduledMessagesEditPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Không lặp</SelectItem>
-                  <SelectItem value="hourly">Mỗi giờ</SelectItem>
-                  <SelectItem value="daily">Mỗi ngày</SelectItem>
-                  <SelectItem value="weekly">Mỗi tuần</SelectItem>
-                  <SelectItem value="monthly">Mỗi tháng</SelectItem>
+                  <SelectItem value="none">No repeat</SelectItem>
+                  <SelectItem value="hourly">Every hour</SelectItem>
+                  <SelectItem value="daily">Every day</SelectItem>
+                  <SelectItem value="weekly">Every week</SelectItem>
+                  <SelectItem value="monthly">Every month</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -276,7 +276,7 @@ export function ScheduledMessagesEditPage() {
                 <div className="flex items-center gap-2">
                   <ToggleLeft className={cn("h-4 w-4", form.enabled ? "text-primary" : "text-muted-foreground")} />
                   <span className={cn("text-sm font-medium", form.enabled ? "text-primary" : "text-muted-foreground")}>
-                    {form.enabled ? "Đang bật" : "Đang tắt"}
+                    {form.enabled ? "Active" : "Inactive"}
                   </span>
                 </div>
                 <Switch
@@ -293,22 +293,22 @@ export function ScheduledMessagesEditPage() {
 
         <Separator />
 
-        {/* ── Section 2: Nội dung ── */}
+        {/* ── Section 2: Content ── */}
         <div className="space-y-4">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
             <FileText className="h-3.5 w-3.5" />
-            📝 Nội dung
+            📝 Content
           </p>
 
           {/* Message content */}
           <div className="space-y-2">
-            <Label>Nội dung tin nhắn</Label>
+            <Label>Message content</Label>
             <Textarea
               value={form.content}
               onChange={(e) =>
                 setForm((f) => ({ ...f, content: e.target.value }))
               }
-              placeholder="Nội dung tin nhắn sẽ gửi..."
+              placeholder="Message content to send..."
               rows={4}
             />
           </div>
@@ -339,10 +339,10 @@ export function ScheduledMessagesEditPage() {
               </div>
               <div className="text-left">
                 <p className={cn("text-sm font-medium", form.add_embed ? "text-indigo-600 dark:text-indigo-400" : "text-foreground")}>
-                  Thêm Embed
+                  Add Embed
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  Gửi kèm embed đẹp mắt cùng tin nhắn
+                  Send a rich embed along with the message
                 </p>
               </div>
             </div>
@@ -360,7 +360,7 @@ export function ScheduledMessagesEditPage() {
           </button>
         </div>
 
-        {/* ── Section 3: Cấu hình Embed ── */}
+        {/* ── Section 3: Config Embed ── */}
         {form.add_embed && (
           <>
             <Separator />

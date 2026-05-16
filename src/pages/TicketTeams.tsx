@@ -59,10 +59,10 @@ export function TicketTeams() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-teams"] });
-      toast({ title: "Đã xóa team" });
+      toast({ title: "Deleted team" });
       setDeleteTarget(null);
     },
-    onError: () => toast({ title: "Lỗi khi xóa", variant: "destructive" }),
+    onError: () => toast({ title: "Delete failed", variant: "destructive" }),
   });
 
   // ─── Render ──────────────────────────────────────────────────────────────
@@ -89,12 +89,12 @@ export function TicketTeams() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Support Teams</h1>
           <p className="text-muted-foreground text-sm">
-            Phân chia nhân sự theo từng loại hỗ trợ
+            Assign staff to different support categories
           </p>
         </div>
         <Button onClick={() => navigate('/ticket-teams/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          Tạo team
+          Create Team
         </Button>
       </div>
 
@@ -102,8 +102,8 @@ export function TicketTeams() {
       {teamList.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <UserCheck className="h-12 w-12 mb-3 opacity-40" />
-          <p className="text-lg font-medium">Chưa có team nào</p>
-          <p className="text-sm">Tạo team để phân chia nhân sự hỗ trợ</p>
+          <p className="text-lg font-medium">No teams yet</p>
+          <p className="text-sm">Create teams to organize support staff</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -166,21 +166,21 @@ export function TicketTeams() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Xóa team?</DialogTitle>
+            <DialogTitle>Delete team?</DialogTitle>
             <DialogDescription>
-              Team <strong className="text-foreground">{deleteTarget?.name}</strong> sẽ bị xóa vĩnh viễn.
+              Team <strong className="text-foreground">{deleteTarget?.name}</strong> will be permanently deleted.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Hủy
+              Cancel
             </Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              {deleteMutation.isPending ? "Đang xóa..." : "Xóa"}
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

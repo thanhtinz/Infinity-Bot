@@ -78,9 +78,9 @@ export function TicketClaiming() {
       }).then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-claim-config"] });
-      toast({ title: "Đã lưu cài đặt claiming" });
+      toast({ title: "Claiming settings saved" });
     },
-    onError: () => toast({ title: "Lỗi khi lưu", variant: "destructive" }),
+    onError: () => toast({ title: "Save failed", variant: "destructive" }),
   });
 
   const unclaimMutation = useMutation({
@@ -88,9 +88,9 @@ export function TicketClaiming() {
       fetch(`/api/tickets/${ticketId}/unclaim`, { method: "POST" }).then((r) => { if (!r.ok) throw new Error(); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tickets-claimed"] });
-      toast({ title: "Đã bỏ claim" });
+      toast({ title: "Claim released" });
     },
-    onError: () => toast({ title: "Lỗi khi bỏ claim", variant: "destructive" }),
+    onError: () => toast({ title: "Unclaim failed", variant: "destructive" }),
   });
 
   // ── Stats ──
@@ -102,13 +102,13 @@ export function TicketClaiming() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold flex items-center gap-2">
-        <UserCheck2 className="w-6 h-6" /> Claiming & Phân công
+        <UserCheck2 className="w-6 h-6" /> Claiming & Assignment
       </h1>
 
       {/* ── Config Card ── */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Cài đặt Claiming</CardTitle>
+          <CardTitle className="text-base">Settings Claiming</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           {configLoading ? (
@@ -122,35 +122,35 @@ export function TicketClaiming() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-sm font-medium">Enable claiming</Label>
-                  <p className="text-xs text-muted-foreground">Staff có thể claim ticket để phụ trách</p>
+                  <p className="text-xs text-muted-foreground">Staff can claim a ticket to take responsibility for it</p>
                 </div>
                 <Switch checked={cfgEnabled} onCheckedChange={setCfgEnabled} />
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-medium">Chỉ người claim mới trả lời</Label>
-                  <p className="text-xs text-muted-foreground">Chặn staff khác gửi tin nhắn trong ticket đã claim</p>
+                  <Label className="text-sm font-medium">Only claimer can reply</Label>
+                  <p className="text-xs text-muted-foreground">Prevent other staff from sending messages in a claimed ticket</p>
                 </div>
                 <Switch checked={cfgExclusive} onCheckedChange={setCfgExclusive} />
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-medium">Thông báo khi claim</Label>
-                  <p className="text-xs text-muted-foreground">Gửi thông báo khi ticket bị claim</p>
+                  <Label className="text-sm font-medium">Notify on claim</Label>
+                  <p className="text-xs text-muted-foreground">Send a notification when a ticket is claimed</p>
                 </div>
                 <Switch checked={cfgNotify} onCheckedChange={setCfgNotify} />
               </div>
 
               {cfgNotify && (
                 <div className="space-y-2">
-                  <Label>Kênh gửi thông báo claim</Label>
+                  <Label>Claim notification channel</Label>
                   <ChannelSelect
                     filter="text"
                     value={cfgNotifyChannel}
                     onChange={(v) => setCfgNotifyChannel(v === "__clear__" ? "" : v)}
-                    placeholder="Chọn kênh thông báo..."
+                    placeholder="Select notification channel..."
                   />
                 </div>
               )}
@@ -167,7 +167,7 @@ export function TicketClaiming() {
                   })
                 }
               >
-                <Save className="w-4 h-4 mr-1" /> Lưu
+                <Save className="w-4 h-4 mr-1" /> Save
               </Button>
             </>
           )}
@@ -178,19 +178,19 @@ export function TicketClaiming() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground mb-1">Tổng đã claim</p>
+            <p className="text-xs text-muted-foreground mb-1">Total claimed</p>
             <p className="text-2xl font-bold">{totalClaimed}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground mb-1">Đang xử lý</p>
+            <p className="text-xs text-muted-foreground mb-1">In Progress</p>
             <p className="text-2xl font-bold text-blue-500">{inProgress}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground mb-1">Đã giải quyết</p>
+            <p className="text-xs text-muted-foreground mb-1">Resolved</p>
             <p className="text-2xl font-bold text-green-500">{resolved}</p>
           </CardContent>
         </Card>
@@ -199,7 +199,7 @@ export function TicketClaiming() {
       {/* ── Claimed Tickets Table ── */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Tickets đang được claim</CardTitle>
+          <CardTitle className="text-base">Currently claimed tickets</CardTitle>
         </CardHeader>
         <CardContent>
           {ticketsLoading ? (
@@ -209,7 +209,7 @@ export function TicketClaiming() {
               ))}
             </div>
           ) : !claimedTickets?.length ? (
-            <p className="text-center text-muted-foreground py-8">Không có ticket nào đang được claim</p>
+            <p className="text-center text-muted-foreground py-8">No tickets currently claimed</p>
           ) : (
             <Table>
               <TableHeader>
@@ -217,7 +217,7 @@ export function TicketClaiming() {
                   <TableHead className="w-16">#ID</TableHead>
                   <TableHead>Subject</TableHead>
                   <TableHead>Claimed by</TableHead>
-                  <TableHead>Ngày claim</TableHead>
+                  <TableHead>Date claim</TableHead>
                   <TableHead className="w-28"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -240,7 +240,7 @@ export function TicketClaiming() {
                         disabled={unclaimMutation.isPending}
                         onClick={() => unclaimMutation.mutate(t.id)}
                       >
-                        <UserX className="w-4 h-4 mr-1" /> Bỏ claim
+                        <UserX className="w-4 h-4 mr-1" /> Unclaim
                       </Button>
                     </TableCell>
                   </TableRow>

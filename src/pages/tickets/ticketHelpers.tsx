@@ -65,7 +65,7 @@ export const PRIORITY_CONFIG: Record<
   { label: string; cls: string; iconCls: string }
 > = {
   low: {
-    label: "Thấp",
+    label: "Low",
     cls: "bg-green-500/15 text-green-600 border-green-500/30",
     iconCls: "text-green-500",
   },
@@ -75,12 +75,12 @@ export const PRIORITY_CONFIG: Record<
     iconCls: "text-blue-500",
   },
   high: {
-    label: "Cao",
+    label: "High",
     cls: "bg-amber-500/15 text-amber-600 border-amber-500/30",
     iconCls: "text-amber-500",
   },
   urgent: {
-    label: "Khẩn cấp",
+    label: "Urgent",
     cls: "bg-red-500/15 text-red-600 border-red-500/30",
     iconCls: "text-red-500",
   },
@@ -91,17 +91,17 @@ export const STATUS_CONFIG: Record<
   { label: string; cls: string; iconCls: string }
 > = {
   open: {
-    label: "Đang mở",
+    label: "Open",
     cls: "bg-green-500/15 text-green-600 border-green-500/30",
     iconCls: "text-green-500",
   },
   closed: {
-    label: "Đã đóng",
+    label: "Closed",
     cls: "bg-gray-500/15 text-gray-500 border-gray-500/30",
     iconCls: "text-gray-500",
   },
   deleted: {
-    label: "Đã xóa",
+    label: "Deleted",
     cls: "bg-red-500/15 text-red-500 border-red-500/30",
     iconCls: "text-red-500",
   },
@@ -169,7 +169,7 @@ export function CopyableId({ value }: { value: string }) {
             <Copy className="h-3 w-3 text-muted-foreground" />
           </button>
         </TooltipTrigger>
-        <TooltipContent>Sao chép</TooltipContent>
+        <TooltipContent>Copy</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

@@ -274,11 +274,11 @@ export function CustomMessagesTab() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Local backups</DialogTitle>
-            <DialogDescription>Backup được lưu trong trình duyệt của bạn (tối đa 20).</DialogDescription>
+            <DialogDescription>Backups are saved in your browser (max 20).</DialogDescription>
           </DialogHeader>
           <BackupList getBackups={getBackups} loadBackup={loadBackup} deleteBackup={deleteBackup} />
           <DialogFooter>
-            <Button size="sm" onClick={saveBackup}><Save className="h-3.5 w-3.5 mr-1" />Lưu backup hiện tại</Button>
+            <Button size="sm" onClick={saveBackup}><Save className="h-3.5 w-3.5 mr-1" />Save current backup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -295,11 +295,11 @@ export function CustomMessagesTab() {
       {/* ── Preview Dialog ── */}
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader><DialogTitle>Xem trước Discord</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Preview Discord</DialogTitle></DialogHeader>
           <div className="py-2">
             {form.content && <p className="text-sm mb-3 whitespace-pre-wrap text-foreground">{form.content}</p>}
             <DiscordPreview form={previewForm} />
-            {form.embeds.length > 1 && <p className="text-xs text-muted-foreground mt-2">* Preview chỉ hiển thị embed đầu tiên</p>}
+            {form.embeds.length > 1 && <p className="text-xs text-muted-foreground mt-2">* Preview only shows the first embed</p>}
           </div>
         </DialogContent>
       </Dialog>
@@ -316,7 +316,7 @@ export function CustomMessagesTab() {
           <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground p-8">
             <div className="text-center space-y-2">
               <MessageSquare className="h-10 w-10 mx-auto text-muted-foreground/50" />
-              <p>Chọn tin nhắn từ danh sách hoặc tạo mới</p>
+              <p>Select a message from the list or create a new one</p>
             </div>
           </div>
         )}

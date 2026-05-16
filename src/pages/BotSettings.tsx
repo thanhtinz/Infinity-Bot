@@ -9,13 +9,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useT } from "@/i18n";
 import {
-  Settings, Terminal, Hash, Mic, ScrollText, Shield,
+  Settings, Hash, Mic, ScrollText, Shield,
   ShieldCheck, Users, Server, Filter, X, Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
@@ -125,7 +125,7 @@ function GeneralSection() {
               }`}
             >
               <span className="text-lg">{l === "en" ? "🇬🇧" : "🇻🇳"}</span>
-              {l === "en" ? "English" : "Tiếng Việt"}
+              {l === "en" ? "English" : "Vietnamese"}
             </button>
           ))}
         </div>
@@ -366,7 +366,6 @@ const BITRATE_OPTIONS = [
 function TempVoiceSection() {
   const { toast } = useToast();
   const qc = useQueryClient();
-  const { selectedGuildId } = useGuild();
 
   const { data: tvConfig } = useQuery({
     queryKey: ["tempvoice_config"],

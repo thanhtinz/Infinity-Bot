@@ -85,12 +85,12 @@ export function TicketPanels() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setSheetOpen(false);
-      toast({ title: "Đã tạo panel thành công" });
+      toast({ title: "Panel created" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi tạo panel",
+        title: "Error creating panel",
         description: e.message,
       }),
   });
@@ -110,12 +110,12 @@ export function TicketPanels() {
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setSheetOpen(false);
       setEditingPanel(null);
-      toast({ title: "Đã cập nhật panel" });
+      toast({ title: "Panel updated" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi cập nhật",
+        title: "Update error",
         description: e.message,
       }),
   });
@@ -131,12 +131,12 @@ export function TicketPanels() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setDeleteTarget(null);
-      toast({ title: "Đã xóa panel" });
+      toast({ title: "Deleted panel" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi xóa panel",
+        title: "Delete error panel",
         description: e.message,
       }),
   });
@@ -158,12 +158,12 @@ export function TicketPanels() {
       qc.invalidateQueries({ queryKey: ["ticket-panel-groups"] });
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setGroupSheetOpen(false);
-      toast({ title: "Đã tạo nhóm panel" });
+      toast({ title: "Panel group created" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi tạo nhóm",
+        title: "Group creation failed",
         description: e.message,
       }),
   });
@@ -184,12 +184,12 @@ export function TicketPanels() {
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setGroupSheetOpen(false);
       setEditingGroup(null);
-      toast({ title: "Đã cập nhật nhóm" });
+      toast({ title: "Group updated" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi cập nhật nhóm",
+        title: "Group update failed",
         description: e.message,
       }),
   });
@@ -206,12 +206,12 @@ export function TicketPanels() {
       qc.invalidateQueries({ queryKey: ["ticket-panel-groups"] });
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setDeleteGroupTarget(null);
-      toast({ title: "Đã xóa nhóm" });
+      toast({ title: "Group deleted" });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Lỗi xóa nhóm",
+        title: "Group delete failed",
         description: e.message,
       }),
   });
@@ -398,12 +398,12 @@ export function TicketPanels() {
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
-            Quản lý panel tạo ticket cho server Discord của bạn
+            Manage ticket creation panels for your Discord server
           </p>
         </div>
         <Button onClick={openCreate} className="shrink-0">
           <Plus className="h-4 w-4 mr-1.5" />
-          Tạo Panel
+          Create Panel
         </Button>
       </div>
 

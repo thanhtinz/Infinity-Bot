@@ -50,7 +50,7 @@ export function TicketTeamEditPage() {
   const qc = useQueryClient();
   const isNew = !id;
 
-  const [teamName, setTeamName] = useState("Team mới");
+  const [teamName, setTeamName] = useState("New Team");
   const [teamDesc, setTeamDesc] = useState("");
   const [teamColor, setTeamColor] = useState("#5865F2");
   const [roleIds, setRoleIds] = useState<string[]>([]);
@@ -96,9 +96,9 @@ export function TicketTeamEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-teams"] });
       navigate(-1);
-      toast({ title: "Đã tạo team thành công" });
+      toast({ title: "Team created" });
     },
-    onError: () => toast({ title: "Lỗi khi tạo team", variant: "destructive" }),
+    onError: () => toast({ title: "Error creating team", variant: "destructive" }),
   });
 
   const updateMutation = useMutation({
@@ -114,9 +114,9 @@ export function TicketTeamEditPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-teams"] });
       navigate(-1);
-      toast({ title: "Đã cập nhật team" });
+      toast({ title: "Team updated" });
     },
-    onError: () => toast({ title: "Lỗi khi cập nhật", variant: "destructive" }),
+    onError: () => toast({ title: "Error updating", variant: "destructive" }),
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -158,7 +158,7 @@ export function TicketTeamEditPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Tạo mới" : "Edit"}</h1>
+        <h1 className="font-semibold text-lg">{isNew ? "Create" : "Edit"}</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={!teamName.trim() || isPending}>
             {isPending ? "Saving..." : "Save"}
@@ -168,11 +168,11 @@ export function TicketTeamEditPage() {
       <div className="max-w-2xl mx-auto p-6 space-y-6">
         {/* Name */}
         <div className="space-y-2">
-          <Label>Tên team</Label>
+          <Label>Name team</Label>
           <Input
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
-            placeholder="Team mới"
+            placeholder="New Team"
           />
         </div>
 
@@ -182,7 +182,7 @@ export function TicketTeamEditPage() {
           <Textarea
             value={teamDesc}
             onChange={(e) => setTeamDesc(e.target.value)}
-            placeholder="Mô tả ngắn về team..."
+            placeholder="Short team description..."
             rows={3}
           />
         </div>
@@ -213,7 +213,7 @@ export function TicketTeamEditPage() {
           <MultiRoleSelect
             value={roleIds}
             onChange={setRoleIds}
-            placeholder="Chọn roles..."
+            placeholder="Select roles..."
             disabled={!isNew}
           />
         </div>
@@ -222,10 +222,10 @@ export function TicketTeamEditPage() {
 
         {/* Panel assignment */}
         <div className="space-y-2">
-          <Label>Panel được gắn</Label>
+          <Label>Attached panels</Label>
           <div className="space-y-2 rounded-lg border p-3 max-h-48 overflow-y-auto">
             {((panels as TicketPanel[] | undefined) ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">Chưa có panel nào</p>
+              <p className="text-sm text-muted-foreground">No panels yet</p>
             ) : (
               ((panels as TicketPanel[] | undefined) ?? []).map((p) => (
                 <div key={p.id} className="flex items-center gap-2">
