@@ -227,7 +227,11 @@ def create_bot():
     ]
     for cog in cogs:
         cog.feature_key = _COG_FEATURE_MAP.get(type(cog).__name__)
-        bot_client.add_cog(cog)
+        try:
+            bot_client.add_cog(cog)
+            logger.info(f"✅ Loaded cog: {type(cog).__name__}")
+        except Exception as cog_err:
+            logger.error(f"❌ Failed to load cog {type(cog).__name__}: {cog_err}")
 
     # ── Global before_invoke: block commands if feature disabled ──
     from src.bot.feature_utils import feature_enabled
@@ -327,7 +331,19 @@ def create_bot():
     async def on_ready():
         global bot_start_time, bot_ready_event
         logger.info(f"Bot on_ready: Logged in as {bot_client.user} (ID: {bot_client.user.id})")
+        logger.info(f"Loaded cogs: {list(bot_client.cogs.keys())}")
+        logger.info(f"Pending application commands: {len(bot_client.pending_application_commands)}")
         bot_start_time = datetime.datetime.utcnow()
+
+        # ── Force sync slash commands to all guilds bot is in ──
+        try:
+            guild_ids = [g.id for g in bot_client.guilds]
+            logger.info(f"Syncing commands to {len(guild_ids)} guilds: {guild_ids}")
+            await bot_client.sync_commands()
+            logger.info("Command sync completed successfully")
+        except Exception as sync_err:
+            logger.error(f"Command sync failed: {sync_err}")
+
         await asyncio.to_thread(update_bot_status, "running")
         if bot_ready_event and not bot_ready_event.is_set():
             bot_ready_event.set()
