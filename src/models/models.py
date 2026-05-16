@@ -10,6 +10,7 @@ class SystemConfig(Base):
     discord_client_id = Column(String, nullable=True)
     discord_client_secret = Column(String, nullable=True)
     public_app_url = Column(String, nullable=True)
+    support_server_url = Column(String, nullable=True)
     payos_client_id = Column(String, nullable=True)
     payos_api_key = Column(String, nullable=True)
     payos_checksum_key = Column(String, nullable=True)

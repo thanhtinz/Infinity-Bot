@@ -15,6 +15,7 @@ const schema = z.object({
   discord_token: z.string().optional(),
   discord_client_id: z.string().optional(),
   discord_client_secret: z.string().optional(),
+  support_server_url: z.string().url("Nhập URL Discord hợp lệ").or(z.literal("")).optional(),
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -70,7 +71,7 @@ export function ConfigDiscord() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { discord_token: "", discord_client_id: "", discord_client_secret: "" },
+    defaultValues: { discord_token: "", discord_client_id: "", discord_client_secret: "", support_server_url: "" },
   });
 
   useEffect(() => {
@@ -79,6 +80,7 @@ export function ConfigDiscord() {
         discord_token: "",
         discord_client_id: config.discord_client_id || "",
         discord_client_secret: "",
+        support_server_url: config.support_server_url || "",
       });
   }, [config]);
 
@@ -191,6 +193,27 @@ export function ConfigDiscord() {
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="support_server_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Support Server Link</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          placeholder="https://discord.gg/your-support"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Link server support hiển thị ngoài landing page. Khác với link mời bot vào server.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="pt-1">
                   <Button type="submit" disabled={mutation.isPending}>

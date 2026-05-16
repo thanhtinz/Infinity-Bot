@@ -127,12 +127,14 @@ export function LandingPage() {
   useLandingFonts();
 
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [supportUrl, setSupportUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/public/invite")
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.invite_url) setInviteUrl(d.invite_url);
+        if (d?.support_url) setSupportUrl(d.support_url);
       })
       .catch(() => {});
   }, []);
@@ -273,8 +275,8 @@ export function LandingPage() {
             <Link to="/commands" className="hover:text-white/60 transition-colors">Commands</Link>
             <Link to="/pricing" className="hover:text-white/60 transition-colors">Pricing</Link>
             <Link to="/status" className="hover:text-white/60 transition-colors">Status</Link>
-            {inviteUrl && (
-              <a href={inviteUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white/60 transition-colors">Support</a>
+            {supportUrl && (
+              <a href={supportUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white/60 transition-colors">Support</a>
             )}
           </div>
         </div>

@@ -321,6 +321,7 @@ def read_config(request: Request, db=Depends(get_db)):
         bot_status=config.bot_status or "offline",
         discord_client_id=config.discord_client_id,
         public_app_url=config.public_app_url,
+        support_server_url=config.support_server_url,
         payos_client_id=config.payos_client_id,
         guild_id=config.guild_id,
         admin_role_id=config.admin_role_id,
@@ -362,6 +363,7 @@ def update_config(config_in: SystemConfigBase, request: Request, db=Depends(get_
     return SystemConfigSafe(
         id=config.id,
         bot_status=config.bot_status or "offline",
+        support_server_url=config.support_server_url,
         discord_client_id=config.discord_client_id,
         public_app_url=config.public_app_url,
         payos_client_id=config.payos_client_id,

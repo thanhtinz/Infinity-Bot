@@ -7,6 +7,7 @@ class SystemConfigBase(BaseModel):
     discord_client_id: Optional[str] = None
     discord_client_secret: Optional[str] = None
     public_app_url: Optional[str] = None
+    support_server_url: Optional[str] = None
     payos_client_id: Optional[str] = None
     payos_api_key: Optional[str] = None
     payos_checksum_key: Optional[str] = None
@@ -36,6 +37,7 @@ class SystemConfigSafe(BaseModel):
     # Non-secret fields
     discord_client_id: Optional[str] = None
     public_app_url: Optional[str] = None
+    support_server_url: Optional[str] = None
     payos_client_id: Optional[str] = None
     guild_id: Optional[str] = None
     admin_role_id: Optional[str] = None

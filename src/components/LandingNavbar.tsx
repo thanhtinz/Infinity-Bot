@@ -17,6 +17,7 @@ export function LandingNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [supportUrl, setSupportUrl] = useState<string | null>(null);
 
   useLandingFonts();
 
@@ -25,6 +26,7 @@ export function LandingNavbar() {
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.invite_url) setInviteUrl(d.invite_url);
+        if (d?.support_url) setSupportUrl(d.support_url);
       })
       .catch(() => {});
   }, []);
@@ -63,8 +65,8 @@ export function LandingNavbar() {
           {navLinks.map(l => (
             <Link key={l.to} to={l.to} className="hover:text-white transition-colors">{l.label}</Link>
           ))}
-          {inviteUrl && (
-            <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
+          {supportUrl && (
+            <a href={supportUrl} target="_blank" rel="noopener noreferrer"
               className="hover:text-white transition-colors flex items-center gap-1">
               Support <ExternalLink className="w-3.5 h-3.5" />
             </a>
@@ -103,8 +105,8 @@ export function LandingNavbar() {
               {l.label}
             </Link>
           ))}
-          {inviteUrl && (
-            <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
+          {supportUrl && (
+            <a href={supportUrl} target="_blank" rel="noopener noreferrer"
               onClick={() => setMenuOpen(false)}
               className="flex items-center gap-2 text-sm text-white/70 hover:text-white py-2 transition-colors">
               Support <ExternalLink className="w-3.5 h-3.5" />

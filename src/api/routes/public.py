@@ -9,15 +9,13 @@ router = APIRouter(prefix="/public")
 
 @router.get("/invite")
 def public_invite(db=Depends(get_db)):
-    """Trả về invite URL của bot — không cần auth."""
-    client_id = os.environ.get("DISCORD_CLIENT_ID")
-    if not client_id:
-        config = get_config(db)
-        client_id = config.discord_client_id
-    if not client_id:
-        return {"invite_url": None}
-    url = f"https://discord.com/oauth2/authorize?client_id={client_id}&permissions=8&scope=bot%20applications.commands"
-    return {"invite_url": url}
+    """Trả về invite URL của bot và link server support — không cần auth."""
+    config = get_config(db)
+    client_id = os.environ.get("DISCORD_CLIENT_ID") or config.discord_client_id
+    invite_url = None
+    if client_id:
+        invite_url = f"https://discord.com/oauth2/authorize?client_id={client_id}&permissions=8&scope=bot%20applications.commands"
+    return {"invite_url": invite_url, "support_url": config.support_server_url}
 
 
 @router.get("/status")

@@ -73,6 +73,8 @@ async def init_db():
             all_stmts.append("ALTER TABLE system_config ADD COLUMN discord_client_secret VARCHAR")
         if "public_app_url" not in sc:
             all_stmts.append("ALTER TABLE system_config ADD COLUMN public_app_url VARCHAR")
+        if "support_server_url" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN support_server_url VARCHAR")
         if "shop_leaderboard_reset_at" not in sc:
             all_stmts.append("ALTER TABLE system_config ADD COLUMN shop_leaderboard_reset_at TIMESTAMP")
         if "bot_invisible" not in sc:

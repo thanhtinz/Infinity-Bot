@@ -26,6 +26,7 @@ export interface SystemConfig {
   has_payos_checksum_key?: boolean;
   command_prefix?: string;
   public_app_url?: string;
+  support_server_url?: string;
 }
 
 export interface ProductPackage {
