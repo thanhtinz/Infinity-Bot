@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useT } from "@/i18n";
 import {
   Settings, Terminal, Hash, Mic, ScrollText, Shield,
   ShieldCheck, Users, Server, Filter, X, Save,
@@ -56,6 +57,7 @@ function GeneralSection() {
   const qc = useQueryClient();
   const { selectedGuildId } = useGuild();
   const { data: config } = useConfig();
+  const { setLang: setI18nLang } = useT();
 
   const [lang, setLang] = useState<"en" | "vi">("en");
   const [prefix, setPrefix] = useState("!");
@@ -88,6 +90,7 @@ function GeneralSection() {
           admin_role_id: adminRoles.join(","),
         }),
       });
+      setI18nLang(lang); // sync dashboard language immediately
       qc.invalidateQueries({ queryKey: ["config", selectedGuildId] });
       toast({ title: "Saved", description: "General settings updated." });
     } catch {

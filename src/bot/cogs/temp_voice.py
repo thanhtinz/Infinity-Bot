@@ -1,6 +1,8 @@
 # src/bot/cogs/temp_voice.py
 import discord
 import logging
+import datetime
+from discord.ext import tasks
 from sqlalchemy import select
 from src.database.config import SessionLocal
 from src.models.models import TempVoiceConfig, TempVoiceRoom, LoggingConfig, LogEntry
@@ -9,9 +11,14 @@ from src.bot.embed_utils import build_embed
 
 logger = logging.getLogger(__name__)
 
+# In-memory rename cooldown: {channel_id: last_rename_ts}
+_rename_cooldowns: dict[str, float] = {}
+
 
 def get_session():
     return SessionLocal()
+
+
 TEMPVOICE_BUTTONS = {
     "name": {"label": "Name", "emoji": "✏️", "style": discord.ButtonStyle.primary},
     "limit": {"label": "Limit", "emoji": "👥", "style": discord.ButtonStyle.primary},
@@ -242,6 +249,46 @@ async def handle_voice_button(interaction: discord.Interaction, action: str, val
     if not ch:
         return
     try:
+        # ── Permission gates ─────────────────────────────────
+        config = session.execute(
+            select(TempVoiceConfig).where(
+                TempVoiceConfig.guild_id == str(interaction.guild_id),
+                TempVoiceConfig.enabled == True,
+            )
+        ).scalars().first()
+        if config:
+            bypass_ids = set(config.bypass_role_ids or [])
+            user_role_ids = {str(r.id) for r in interaction.user.roles}
+            is_bypass = bool(user_role_ids & bypass_ids)
+            if not is_bypass:
+                perm_map = {
+                    "name": config.allow_rename,
+                    "limit": config.allow_limit,
+                    "privacy": config.allow_lock,
+                    "trust": config.allow_invite,
+                    "untrust": config.allow_invite,
+                    "invite": config.allow_invite,
+                    "kick": config.allow_kick,
+                    "transfer": config.allow_transfer,
+                    "claim": config.allow_claim,
+                }
+                allowed = perm_map.get(action, True)
+                if allowed is False:
+                    await _respond_interaction(interaction, "❌ Tính năng này đã bị tắt.")
+                    session.close()
+                    return
+                # Rename cooldown
+                if action == "name" and (config.rename_cooldown_seconds or 0) > 0:
+                    import time
+                    last = _rename_cooldowns.get(str(ch.id), 0)
+                    elapsed = time.time() - last
+                    if elapsed < config.rename_cooldown_seconds:
+                        remaining = int(config.rename_cooldown_seconds - elapsed)
+                        await _respond_interaction(interaction, f"⏳ Vui lòng chờ **{remaining}s** trước khi đổi tên.")
+                        session.close()
+                        return
+                    if value is not None:
+                        _rename_cooldowns[str(ch.id)] = time.time()
         if action == "name":
             if value is None:
                 await interaction.response.send_modal(_VoiceTextModal("name", "Đổi tên phòng", "Tên mới", "Phòng của bạn"))
@@ -342,6 +389,7 @@ def _get_room(session, channel_id: str):
 class TempVoiceCog(discord.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self._cleanup_task_started = False
 
     @discord.Cog.listener()
     async def on_ready(self):
@@ -349,6 +397,50 @@ class TempVoiceCog(discord.Cog):
             self.bot.add_view(TempVoicePanelView(TEMPVOICE_DEFAULT_BUTTONS))
         except Exception as e:
             logger.error(f"temp voice persistent view error: {e}")
+        if not self._cleanup_task_started:
+            self._cleanup_task_started = True
+            self.inactive_room_cleanup.start()
+
+    def cog_unload(self):
+        self.inactive_room_cleanup.cancel()
+
+    @tasks.loop(minutes=1)
+    async def inactive_room_cleanup(self):
+        """Auto-delete rooms that have been empty longer than inactive_cleanup_minutes."""
+        session = get_session()
+        try:
+            all_configs = session.execute(select(TempVoiceConfig)).scalars().all()
+            for config in all_configs:
+                if not config.enabled or not (config.inactive_cleanup_minutes or 0):
+                    continue
+                cutoff = datetime.datetime.utcnow() - datetime.timedelta(minutes=config.inactive_cleanup_minutes)
+                rooms = session.execute(
+                    select(TempVoiceRoom).where(TempVoiceRoom.guild_id == config.guild_id)
+                ).scalars().all()
+                for room in rooms:
+                    guild = self.bot.get_guild(int(config.guild_id)) if config.guild_id else None
+                    if not guild:
+                        continue
+                    ch = guild.get_channel(int(room.channel_id))
+                    if ch and len(ch.members) == 0 and room.created_at and room.created_at < cutoff:
+                        try:
+                            if room.panel_channel_id and room.panel_message_id:
+                                panel_ch = guild.get_channel(int(room.panel_channel_id))
+                                if panel_ch:
+                                    msg = await panel_ch.fetch_message(int(room.panel_message_id))
+                                    await msg.delete()
+                        except Exception:
+                            pass
+                        try:
+                            await ch.delete(reason="Inactive TempVoice room cleanup")
+                        except Exception:
+                            pass
+                        session.delete(room)
+            session.commit()
+        except Exception as e:
+            logger.error(f"inactive_room_cleanup error: {e}")
+        finally:
+            session.close()
 
     # ── Events ──────────────────────────────────────────────
 
@@ -368,6 +460,47 @@ class TempVoiceCog(discord.Cog):
 
             # User join "Join to Create"
             if after.channel and str(after.channel.id) == config.join_channel_id:
+                # ── Anti-abuse checks ─────────────────────────────────────
+                member_role_ids = {str(r.id) for r in member.roles}
+                blacklist = set(config.blacklist_role_ids or [])
+                bypass = set(config.bypass_role_ids or [])
+                is_bypass = bool(member_role_ids & bypass)
+
+                if not is_bypass and (blacklist & member_role_ids):
+                    try:
+                        await member.move_to(None)
+                    except Exception:
+                        pass
+                    return
+
+                if not is_bypass:
+                    max_per_user = config.max_rooms_per_user or 0
+                    if max_per_user > 0:
+                        user_rooms = session.execute(
+                            select(TempVoiceRoom).where(
+                                TempVoiceRoom.guild_id == str(member.guild.id),
+                                TempVoiceRoom.owner_id == str(member.id),
+                            )
+                        ).scalars().all()
+                        if len(user_rooms) >= max_per_user:
+                            try:
+                                await member.move_to(None)
+                            except Exception:
+                                pass
+                            return
+
+                    max_per_guild = config.max_rooms_per_guild or 0
+                    if max_per_guild > 0:
+                        guild_rooms = session.execute(
+                            select(TempVoiceRoom).where(TempVoiceRoom.guild_id == str(member.guild.id))
+                        ).scalars().all()
+                        if len(guild_rooms) >= max_per_guild:
+                            try:
+                                await member.move_to(None)
+                            except Exception:
+                                pass
+                            return
+
                 category = member.guild.get_channel(int(config.category_id)) if config.category_id else after.channel.category
                 # Apply saved config
                 naming = (config.naming_format or "🎙 {user}").replace("{user}", member.display_name)
@@ -383,11 +516,21 @@ class TempVoiceCog(discord.Cog):
                     user_limit=user_limit,
                     bitrate=bitrate,
                 )
+                # Apply default visibility
+                visibility = config.default_visibility or "public"
+                if visibility == "private":
+                    try:
+                        await new_ch.set_permissions(member.guild.default_role, connect=False, view_channel=False)
+                        await new_ch.set_permissions(member, connect=True, view_channel=True)
+                    except Exception:
+                        pass
                 await member.move_to(new_ch)
                 room = TempVoiceRoom(
                     channel_id=str(new_ch.id),
                     owner_id=str(member.id),
                     guild_id=str(member.guild.id),
+                    room_name=naming,
+                    peak_members=1,
                 )
                 session.add(room)
                 session.commit()
@@ -412,22 +555,35 @@ class TempVoiceCog(discord.Cog):
                         room.panel_message_id = str(msg.id)
                         session.commit()
 
-            # User rời → xóa room nếu trống
+            # User rời → xóa room nếu trống / track peak
             if before.channel and before.channel != after.channel:
                 room = _get_room(session, str(before.channel.id))
                 if room:
                     ch = member.guild.get_channel(int(room.channel_id))
-                    if ch and len(ch.members) == 0:
-                        if room.panel_channel_id and room.panel_message_id:
-                            try:
-                                panel_ch = member.guild.get_channel(int(room.panel_channel_id))
-                                if panel_ch:
-                                    msg = await panel_ch.fetch_message(int(room.panel_message_id))
-                                    await msg.delete()
-                            except Exception as e:
-                                logger.warning(f"delete temp voice panel message failed: {e}")
-                        await ch.delete()
-                        session.delete(room)
+                    if ch:
+                        # Track peak members for rooms that member joins
+                        current_count = len(ch.members)
+                        if after.channel and str(after.channel.id) != config.join_channel_id if config else True:
+                            pass  # already counted on join
+                        if current_count == 0:
+                            if room.panel_channel_id and room.panel_message_id:
+                                try:
+                                    panel_ch = member.guild.get_channel(int(room.panel_channel_id))
+                                    if panel_ch:
+                                        msg = await panel_ch.fetch_message(int(room.panel_message_id))
+                                        await msg.delete()
+                                except Exception as e:
+                                    logger.warning(f"delete temp voice panel message failed: {e}")
+                            await ch.delete()
+                            session.delete(room)
+                            session.commit()
+            # Track peak_members when someone joins an existing room
+            if after.channel and after.channel.id != (int(config.join_channel_id) if config and config.join_channel_id else 0):
+                room = _get_room(session, str(after.channel.id))
+                if room:
+                    current_count = len(after.channel.members)
+                    if current_count > (room.peak_members or 0):
+                        room.peak_members = current_count
                         session.commit()
         except Exception as e:
             logger.error(f"on_voice_state_update error: {e}")
@@ -723,3 +879,119 @@ class TempVoiceCog(discord.Cog):
         if not ch: return
         await ch.edit(slowmode_delay=giay)
         await ctx.respond(f"⏱ Slowmode: **{giay}s**.", ephemeral=True)
+
+    # ── Admin commands ───────────────────────────────────────
+
+    admin_voice = discord.SlashCommandGroup("tempvoice", "Admin: quản lý temp voice", default_member_permissions=discord.Permissions(manage_channels=True))
+
+    @admin_voice.command(name="delete", description="Admin: xóa phòng temp voice")
+    async def admin_delete(self, ctx, channel: discord.Option(discord.VoiceChannel, "Phòng cần xóa")):
+        await ctx.defer(ephemeral=True)
+        session = get_session()
+        try:
+            room = _get_room(session, str(channel.id))
+            if not room:
+                await ctx.followup.send("❌ Không tìm thấy temp room.", ephemeral=True)
+                return
+            if room.panel_channel_id and room.panel_message_id:
+                try:
+                    panel_ch = ctx.guild.get_channel(int(room.panel_channel_id))
+                    if panel_ch:
+                        msg = await panel_ch.fetch_message(int(room.panel_message_id))
+                        await msg.delete()
+                except Exception:
+                    pass
+            await channel.delete(reason=f"Admin force delete by {ctx.author}")
+            session.delete(room)
+            session.commit()
+            await ctx.followup.send(f"✅ Đã xóa phòng **{channel.name}**.", ephemeral=True)
+        except Exception as e:
+            logger.error(f"admin_delete error: {e}")
+            await ctx.followup.send("❌ Lỗi khi xóa phòng.", ephemeral=True)
+        finally:
+            session.close()
+
+    @admin_voice.command(name="rename", description="Admin: đổi tên phòng temp voice")
+    async def admin_rename(self, ctx, channel: discord.Option(discord.VoiceChannel, "Phòng"), name: discord.Option(str, "Tên mới")):
+        await ctx.defer(ephemeral=True)
+        session = get_session()
+        try:
+            room = _get_room(session, str(channel.id))
+            if not room:
+                await ctx.followup.send("❌ Không tìm thấy temp room.", ephemeral=True)
+                return
+            await channel.edit(name=name[:100], reason=f"Admin rename by {ctx.author}")
+            room.room_name = name[:100]
+            session.commit()
+            await ctx.followup.send(f"✅ Đổi tên thành **{name}**.", ephemeral=True)
+        except Exception as e:
+            logger.error(f"admin_rename error: {e}")
+            await ctx.followup.send("❌ Lỗi khi đổi tên.", ephemeral=True)
+        finally:
+            session.close()
+
+    @admin_voice.command(name="transfer", description="Admin: chuyển chủ phòng")
+    async def admin_transfer(self, ctx, channel: discord.Option(discord.VoiceChannel, "Phòng"), user: discord.Option(discord.Member, "Chủ mới")):
+        await ctx.defer(ephemeral=True)
+        session = get_session()
+        try:
+            room = _get_room(session, str(channel.id))
+            if not room:
+                await ctx.followup.send("❌ Không tìm thấy temp room.", ephemeral=True)
+                return
+            room.owner_id = str(user.id)
+            session.commit()
+            await ctx.followup.send(f"✅ Đã chuyển quyền chủ phòng cho {user.mention}.", ephemeral=True)
+        except Exception as e:
+            logger.error(f"admin_transfer error: {e}")
+            await ctx.followup.send("❌ Lỗi.", ephemeral=True)
+        finally:
+            session.close()
+
+    @admin_voice.command(name="cleanup", description="Admin: xóa tất cả phòng trống")
+    async def admin_cleanup(self, ctx):
+        await ctx.defer(ephemeral=True)
+        session = get_session()
+        deleted = 0
+        try:
+            rooms = session.execute(
+                select(TempVoiceRoom).where(TempVoiceRoom.guild_id == str(ctx.guild.id))
+            ).scalars().all()
+            for room in rooms:
+                ch = ctx.guild.get_channel(int(room.channel_id))
+                if ch and len(ch.members) == 0:
+                    try:
+                        await ch.delete(reason=f"Admin cleanup by {ctx.author}")
+                    except Exception:
+                        pass
+                    session.delete(room)
+                    deleted += 1
+            session.commit()
+            await ctx.followup.send(f"✅ Đã xóa **{deleted}** phòng trống.", ephemeral=True)
+        except Exception as e:
+            logger.error(f"admin_cleanup error: {e}")
+            await ctx.followup.send("❌ Lỗi khi dọn dẹp.", ephemeral=True)
+        finally:
+            session.close()
+
+    @admin_voice.command(name="stats", description="Xem thống kê temp voice")
+    async def admin_stats(self, ctx):
+        await ctx.defer(ephemeral=True)
+        session = get_session()
+        try:
+            rooms = session.execute(
+                select(TempVoiceRoom).where(TempVoiceRoom.guild_id == str(ctx.guild.id))
+            ).scalars().all()
+            embed = discord.Embed(title="📊 TempVoice Stats", color=0x5865F2)
+            embed.add_field(name="Active Rooms", value=str(len(rooms)), inline=True)
+            embed.add_field(name="Total Members", value=str(sum(
+                len(ctx.guild.get_channel(int(r.channel_id)).members)
+                for r in rooms
+                if ctx.guild.get_channel(int(r.channel_id))
+            )), inline=True)
+            await ctx.followup.send(embed=embed, ephemeral=True)
+        except Exception as e:
+            logger.error(f"admin_stats error: {e}")
+        finally:
+            session.close()
+

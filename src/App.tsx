@@ -72,6 +72,15 @@ const LandingPage = lazy(() => import("./pages/LandingPage").then(m => ({ defaul
 const PublicCommandsPage = lazy(() => import("./pages/PublicCommandsPage").then(m => ({ default: m.PublicCommandsPage })));
 const PublicPricingPage = lazy(() => import("./pages/PublicPricingPage").then(m => ({ default: m.PublicPricingPage })));
 const PublicStatusPage = lazy(() => import("./pages/PublicStatusPage").then(m => ({ default: m.PublicStatusPage })));
+// TempVoice pages
+const TempVoicePage = lazy(() => import("./pages/voice/TempVoicePage").then(m => ({ default: m.TempVoicePage })));
+const TempVoiceSetup = lazy(() => import("./pages/voice/TempVoiceSetup").then(m => ({ default: m.TempVoiceSetup })));
+const TempVoiceDefaults = lazy(() => import("./pages/voice/TempVoiceDefaults").then(m => ({ default: m.TempVoiceDefaults })));
+const TempVoicePermissions = lazy(() => import("./pages/voice/TempVoicePermissions").then(m => ({ default: m.TempVoicePermissions })));
+const TempVoiceCleanup = lazy(() => import("./pages/voice/TempVoiceCleanup").then(m => ({ default: m.TempVoiceCleanup })));
+const TempVoiceRooms = lazy(() => import("./pages/voice/TempVoiceRooms").then(m => ({ default: m.TempVoiceRooms })));
+const TempVoiceAnalytics = lazy(() => import("./pages/voice/TempVoiceAnalytics").then(m => ({ default: m.TempVoiceAnalytics })));
+const ShopChannels = lazy(() => import("./pages/ShopChannels").then(m => ({ default: m.ShopChannels })));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -741,6 +750,16 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/scheduled-messages/new" element={<ScheduledMessagesEditPage />} />
         <Route path="/scheduled-messages/:id/edit" element={<ScheduledMessagesEditPage />} />
         <Route path="/backup" element={<OwnerRoute><BackupRestore /></OwnerRoute>} />
+        {/* TempVoice */}
+        <Route path="/voice" element={<TempVoicePage />} />
+        <Route path="/voice/setup" element={<TempVoiceSetup />} />
+        <Route path="/voice/defaults" element={<TempVoiceDefaults />} />
+        <Route path="/voice/permissions" element={<TempVoicePermissions />} />
+        <Route path="/voice/cleanup" element={<TempVoiceCleanup />} />
+        <Route path="/voice/rooms" element={<TempVoiceRooms />} />
+        <Route path="/voice/analytics" element={<TempVoiceAnalytics />} />
+        {/* Shop Channels */}
+        <Route path="/config/shop-channels" element={<ShopChannels />} />
       </Routes>
       </Suspense>
     </ProtectedRoute>

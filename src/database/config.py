@@ -97,6 +97,21 @@ async def init_db():
         tv = cols("temp_voice_config")
         if "voice_buttons" not in tv:
             all_stmts.append("ALTER TABLE temp_voice_config ADD COLUMN voice_buttons JSON DEFAULT '[]'")
+        for col, stmt in {
+            "default_visibility": "ALTER TABLE temp_voice_config ADD COLUMN default_visibility VARCHAR DEFAULT 'public'",
+            "inactive_cleanup_minutes": "ALTER TABLE temp_voice_config ADD COLUMN inactive_cleanup_minutes INTEGER DEFAULT 0",
+            "max_rooms_per_user": "ALTER TABLE temp_voice_config ADD COLUMN max_rooms_per_user INTEGER DEFAULT 0",
+            "max_rooms_per_guild": "ALTER TABLE temp_voice_config ADD COLUMN max_rooms_per_guild INTEGER DEFAULT 0",
+            "rename_cooldown_seconds": "ALTER TABLE temp_voice_config ADD COLUMN rename_cooldown_seconds INTEGER DEFAULT 0",
+            "allow_invite": "ALTER TABLE temp_voice_config ADD COLUMN allow_invite BOOLEAN DEFAULT TRUE",
+            "allow_kick": "ALTER TABLE temp_voice_config ADD COLUMN allow_kick BOOLEAN DEFAULT TRUE",
+            "allow_transfer": "ALTER TABLE temp_voice_config ADD COLUMN allow_transfer BOOLEAN DEFAULT TRUE",
+            "allow_claim": "ALTER TABLE temp_voice_config ADD COLUMN allow_claim BOOLEAN DEFAULT TRUE",
+            "bypass_role_ids": "ALTER TABLE temp_voice_config ADD COLUMN bypass_role_ids JSON DEFAULT '[]'",
+            "blacklist_role_ids": "ALTER TABLE temp_voice_config ADD COLUMN blacklist_role_ids JSON DEFAULT '[]'",
+        }.items():
+            if col not in tv:
+                all_stmts.append(stmt)
 
         # ticket_configs
         tc = cols("ticket_configs")
@@ -132,6 +147,10 @@ async def init_db():
             all_stmts.append("ALTER TABLE temp_voice_rooms ADD COLUMN panel_channel_id VARCHAR")
         if "panel_message_id" not in tvr:
             all_stmts.append("ALTER TABLE temp_voice_rooms ADD COLUMN panel_message_id VARCHAR")
+        if "room_name" not in tvr:
+            all_stmts.append("ALTER TABLE temp_voice_rooms ADD COLUMN room_name VARCHAR")
+        if "peak_members" not in tvr:
+            all_stmts.append("ALTER TABLE temp_voice_rooms ADD COLUMN peak_members INTEGER DEFAULT 0")
 
         # leveling_configs
         lvl = cols("leveling_configs")

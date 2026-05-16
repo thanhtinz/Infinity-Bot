@@ -146,13 +146,25 @@ class TempVoiceConfig(Base):
     default_user_limit = Column(Integer, default=0)         # 0 = unlimited
     default_bitrate = Column(Integer, default=64000)         # in bps
     naming_format = Column(String, default="{user}'s Channel")
-    # Behavior
+    default_visibility = Column(String, default="public")   # public | private
+    # Behavior / cleanup
     auto_delete_seconds = Column(Integer, default=0)         # 0 = when empty
+    inactive_cleanup_minutes = Column(Integer, default=0)    # 0 = disabled
+    max_rooms_per_user = Column(Integer, default=0)          # 0 = unlimited
+    max_rooms_per_guild = Column(Integer, default=0)         # 0 = unlimited
+    rename_cooldown_seconds = Column(Integer, default=0)     # 0 = no cooldown
     # Permission toggles
     allow_rename = Column(Boolean, default=True)
     allow_limit = Column(Boolean, default=True)
     allow_lock = Column(Boolean, default=True)
     allow_hide = Column(Boolean, default=True)
+    allow_invite = Column(Boolean, default=True)
+    allow_kick = Column(Boolean, default=True)
+    allow_transfer = Column(Boolean, default=True)
+    allow_claim = Column(Boolean, default=True)
+    # Role overrides
+    bypass_role_ids = Column(JSON, default=list)    # bypass all restrictions
+    blacklist_role_ids = Column(JSON, default=list) # cannot create rooms
     # Interface channel for control panel buttons
     interface_channel_id = Column(String, nullable=True)
     voice_buttons = Column(JSON, default=list)  # enabled panel buttons
@@ -166,6 +178,8 @@ class TempVoiceRoom(Base):
     panel_channel_id = Column(String, nullable=True)
     panel_message_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    room_name = Column(String, nullable=True)
+    peak_members = Column(Integer, default=0)
 
 class LevelingConfig(Base):
     __tablename__ = "leveling_configs"
