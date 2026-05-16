@@ -65,7 +65,7 @@ export function TicketsPage() {
     queryFn: () => {
       const params = new URLSearchParams();
       if (statusTab !== "all") params.set("status", statusTab);
-      return fetch(`/api/tickets?${params}`, { credentials: "include" }).then(
+      return apiFetch(`/api/tickets?${params}`, { credentials: "include" }).then(
         (r) => r.json()
       );
     },
@@ -107,7 +107,7 @@ export function TicketsPage() {
   const { data: detail, isLoading: detailLoading } = useQuery<TicketRow>({
     queryKey: ["ticket", selectedTicketId],
     queryFn: () =>
-      fetch(`/api/tickets/${selectedTicketId}`, {
+      apiFetch(`/api/tickets/${selectedTicketId}`, {
         credentials: "include",
       }).then((r) => r.json()),
     enabled: selectedTicketId !== null,
@@ -123,7 +123,7 @@ export function TicketsPage() {
     }: {
       id: number;
     } & Record<string, unknown>) =>
-      fetch(`/api/tickets/${id}`, {
+      apiFetch(`/api/tickets/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -144,7 +144,7 @@ export function TicketsPage() {
 
   const blacklistRemoveMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/ticket-blacklist/${id}`, {
+      apiFetch(`/api/ticket-blacklist/${id}`, {
         method: "DELETE",
         credentials: "include",
       }).then(async (r) => {

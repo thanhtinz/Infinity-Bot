@@ -76,7 +76,7 @@ export function CouponEditPage() {
 
   const updateMutation = useMutation({
     mutationFn: (body: object & { id: number }) =>
-      fetch(`/api/coupons/${body.id}`, {
+      apiFetch(`/api/coupons/${body.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

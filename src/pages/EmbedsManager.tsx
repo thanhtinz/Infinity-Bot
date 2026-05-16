@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useGuild } from "@/contexts/GuildContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,12 +39,26 @@ import { apiFetch } from "@/hooks/useApi";
 export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsManagerProps = {}) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { selectedGuildId } = useGuild();
   const [activeTab, setActiveTab] = useState<"events" | "custom">("events");
   const allowedKeys = useMemo(() => eventKeys ? new Set(eventKeys) : null, [eventKeys]);
   const visibleEvents = useMemo(() => allowedKeys ? EMBED_EVENTS.filter((event) => allowedKeys.has(event.key)) : EMBED_EVENTS, [allowedKeys]);
   const visibleGroups = useMemo(() => EVENT_GROUPS
     .map((group) => ({ ...group, keys: group.keys.filter((key) => !allowedKeys || allowedKeys.has(key)) }))
     .filter((group) => group.keys.length > 0), [allowedKeys]);
+
+  // ── Bot language from config ──
+  const { data: configData } = useQuery({
+    queryKey: ["config", selectedGuildId],
+    queryFn: () =>
+      apiFetch("/api/config", {
+        credentials: "include",
+        headers: selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {},
+      }).then((r) => r.json()),
+    staleTime: 60_000,
+    enabled: !!selectedGuildId,
+  });
+  const botLang = (configData?.language ?? "vi") as "vi" | "en";
 
   // Selected event
   const initialEventKey = (() => {
@@ -53,7 +68,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
   const [selectedKey, setSelectedKey] = useState<string>(initialEventKey);
 
   // Form state
-  const [form, setForm] = useState<FormState>(defaultForm(initialEventKey));
+  const [form, setForm] = useState<FormState>(defaultForm(initialEventKey, botLang));
 
   // Collapsible sections
   const [embedOpen, setEmbedOpen] = useState(true);
@@ -100,7 +115,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
         text_template: payload.text_template,
       };
       if (payload.existingId) {
-        const res = await fetch(`/api/embeds/${payload.existingId}`, {
+        const res = await apiFetch(`/api/embeds/${payload.existingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -152,7 +167,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
         existingId: saved.id,
       });
     } else {
-      setForm(defaultForm(key));
+      setForm(defaultForm(key, botLang));
     }
     setImagesOpen(false);
     setFieldsOpen(true);
@@ -162,7 +177,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
 
   // ── Reset ──
   const handleReset = () => {
-    setForm(defaultForm(selectedKey));
+    setForm(defaultForm(selectedKey, botLang));
     setResetDialogOpen(false);
   };
 
@@ -245,7 +260,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                   return (
                     <span className="flex items-center gap-2">
                       <Icon className="h-4 w-4 text-primary" />
-                      {currentEvent.label}
+                      {botLang === "en" ? (currentEvent.labelEn ?? currentEvent.label) : currentEvent.label}
                       {savedMap.has(selectedKey) && (
                         <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0 text-[10px] px-1.5 py-0 h-4">
                           Customize
@@ -259,7 +274,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             <SelectContent>
               {visibleGroups.map((group) => (
                 <SelectGroup key={group.label}>
-                  <SelectLabel className="text-xs uppercase tracking-wide">{group.label}</SelectLabel>
+                  <SelectLabel className="text-xs uppercase tracking-wide">{botLang === "en" ? (group.labelEn ?? group.label) : group.label}</SelectLabel>
                   {group.keys.map((key) => {
                     const ev = EMBED_EVENTS.find((e) => e.key === key);
                     if (!ev) return null;
@@ -269,7 +284,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                       <SelectItem key={ev.key} value={ev.key}>
                         <span className="flex items-center gap-2">
                           <Icon className="h-3.5 w-3.5" />
-                          {ev.label}
+                          {botLang === "en" ? (ev.labelEn ?? ev.label) : ev.label}
                           {saved && <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />}
                         </span>
                       </SelectItem>
@@ -648,7 +663,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                       <code className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-primary">
                         {v.token}
                       </code>
-                      <span className="text-muted-foreground truncate">{v.desc}</span>
+                      <span className="text-muted-foreground truncate">{botLang === "en" ? (v.descEn ?? v.desc) : v.desc}</span>
                     </div>
                   ))}
                 </div>
@@ -687,7 +702,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
           <AlertDialogHeader>
             <AlertDialogTitle>Reset to default?</AlertDialogTitle>
             <AlertDialogDescription>
-              Embed &quot;{currentEvent?.label}&quot; will be reset to default content. Unsaved changes will be lost.
+              Embed &quot;{botLang === "en" ? (currentEvent?.labelEn ?? currentEvent?.label) : currentEvent?.label}&quot; will be reset to default content. Unsaved changes will be lost.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

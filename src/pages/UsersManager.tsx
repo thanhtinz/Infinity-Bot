@@ -66,13 +66,13 @@ export function UsersManager() {
 
   const { data: userOrders = [] } = useQuery<UserOrder[]>({
     queryKey: ["user_orders", orderSheetUser?.id],
-    queryFn: () => fetch(`/api/users/${orderSheetUser!.id}/orders`, { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch(`/api/users/${orderSheetUser!.id}/orders`, { credentials: "include" }).then((r) => r.json()),
     enabled: !!orderSheetUser,
   });
 
   const banMutation = useMutation({
     mutationFn: ({ id, reason }: { id: number; reason: string }) =>
-      fetch(`/api/users/${id}/ban`, {
+      apiFetch(`/api/users/${id}/ban`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -89,7 +89,7 @@ export function UsersManager() {
 
   const unbanMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/users/${id}/unban`, {
+      apiFetch(`/api/users/${id}/unban`, {
         method: "POST",
         credentials: "include",
       }).then(async (r) => { if (!r.ok) throw new Error(await r.text()); return r.json(); }),

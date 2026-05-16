@@ -112,7 +112,7 @@ export function TicketFormEditPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id: formId, ...body }: { id: number } & Record<string, unknown>) =>
-      fetch(`/api/ticket-forms/${formId}`, {
+      apiFetch(`/api/ticket-forms/${formId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

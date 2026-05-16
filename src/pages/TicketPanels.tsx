@@ -97,7 +97,7 @@ export function TicketPanels() {
 
   const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id, ...body }: { id: number } & Record<string, unknown>) =>
-      fetch(`/api/ticket-panels/${id}`, {
+      apiFetch(`/api/ticket-panels/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -122,7 +122,7 @@ export function TicketPanels() {
 
   const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
-      fetch(`/api/ticket-panels/${id}`, {
+      apiFetch(`/api/ticket-panels/${id}`, {
         method: "DELETE",
         credentials: "include",
       }).then(async (r) => {
@@ -170,7 +170,7 @@ export function TicketPanels() {
 
   const updateGroupMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id, ...body }: { id: number } & Record<string, unknown>) =>
-      fetch(`/api/ticket-panel-groups/${id}`, {
+      apiFetch(`/api/ticket-panel-groups/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -196,7 +196,7 @@ export function TicketPanels() {
 
   const deleteGroupMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
-      fetch(`/api/ticket-panel-groups/${id}`, {
+      apiFetch(`/api/ticket-panel-groups/${id}`, {
         method: "DELETE",
         credentials: "include",
       }).then(async (r) => {

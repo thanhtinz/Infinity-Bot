@@ -21,7 +21,7 @@ export function GuildSelector() {
     setSelectedGuildId(guildId);
     queryClient.clear();
     setOpen(false);
-    navigate("/");
+    navigate("/bot-settings");
   };
 
   useEffect(() => {

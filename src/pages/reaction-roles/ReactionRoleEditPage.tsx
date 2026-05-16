@@ -141,7 +141,7 @@ export function ReactionRoleEditPage() {
 
   const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id: panelId, ...body }: { id: number } & Record<string, unknown>) =>
-      fetch(`/api/reaction-roles/${panelId}`, {
+      apiFetch(`/api/reaction-roles/${panelId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

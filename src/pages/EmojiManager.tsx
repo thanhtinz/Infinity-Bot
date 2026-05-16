@@ -90,7 +90,7 @@ export function EmojiManager() {
   // ── Delete emoji mutation ──
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/discord/emojis/${id}`, {
+      const res = await apiFetch(`/api/discord/emojis/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -110,7 +110,7 @@ export function EmojiManager() {
   // ── Delete sticker mutation ──
   const deleteStickerMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/discord/stickers/${id}`, {
+      const res = await apiFetch(`/api/discord/stickers/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

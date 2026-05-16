@@ -8,6 +8,16 @@ import { useVoiceConfig } from "@/hooks/useVoiceConfig";
 import type { VoiceConfig } from "@/hooks/useVoiceConfig";
 import { useT } from "@/i18n";
 
+const BITRATE_OPTIONS = [
+  { value: 8000,   label: "8 kbps" },
+  { value: 32000,  label: "32 kbps" },
+  { value: 64000,  label: "64 kbps" },
+  { value: 96000,  label: "96 kbps" },
+  { value: 128000, label: "128 kbps" },
+  { value: 256000, label: "256 kbps" },
+  { value: 384000, label: "384 kbps" },
+];
+
 export function TempVoiceDefaults() {
   const { t } = useT();
   const { config, save, isSaving, isLoading } = useVoiceConfig();
@@ -57,11 +67,19 @@ export function TempVoiceDefaults() {
           <CardTitle className="text-base">{t("voice_defaultBitrate")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Input
-            type="number"
-            value={form.default_bitrate ?? 64000}
-            onChange={(e) => set("default_bitrate", Number(e.target.value))}
-          />
+          <Select
+            value={String(form.default_bitrate ?? 64000)}
+            onValueChange={(v) => set("default_bitrate", Number(v))}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {BITRATE_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
 

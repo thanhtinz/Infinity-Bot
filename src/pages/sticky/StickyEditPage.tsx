@@ -267,7 +267,7 @@ export function StickyEditPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id: stickyId, ...body }: { id: number } & Partial<FormState>) =>
-      fetch(`/api/sticky/${stickyId}`, {
+      apiFetch(`/api/sticky/${stickyId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

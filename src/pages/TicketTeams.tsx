@@ -53,7 +53,7 @@ export function TicketTeams() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/ticket-teams/${id}`, { method: "DELETE" }).then((r) => {
+      apiFetch(`/api/ticket-teams/${id}`, { method: "DELETE" }).then((r) => {
         if (!r.ok) throw new Error("Failed");
         return r.json();
       }),

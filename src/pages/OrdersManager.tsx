@@ -57,7 +57,7 @@ export function OrdersManager() {
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) =>
-      fetch(`/api/orders/${id}/status`, {
+      apiFetch(`/api/orders/${id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -89,7 +89,7 @@ export function OrdersManager() {
 
   const deliverMutation = useMutation({
     mutationFn: ({ id, dm_content }: { id: number; dm_content: string }) =>
-      fetch(`/api/orders/${id}/deliver`, {
+      apiFetch(`/api/orders/${id}/deliver`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -45,7 +45,7 @@ export function GiveawaysManager() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/giveaways/${id}`, { method: "DELETE", credentials: "include" })
+      apiFetch(`/api/giveaways/${id}`, { method: "DELETE", credentials: "include" })
         .then(async (r) => { if (!r.ok) throw new Error(await r.text()); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["giveaways"] });

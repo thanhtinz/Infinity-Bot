@@ -68,7 +68,7 @@ export function TicketForms() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/ticket-forms/${id}`, { method: "DELETE" }).then((r) => {
+      apiFetch(`/api/ticket-forms/${id}`, { method: "DELETE" }).then((r) => {
         if (!r.ok) throw new Error("Failed");
         return r.json();
       }),

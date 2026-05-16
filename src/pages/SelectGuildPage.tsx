@@ -21,7 +21,7 @@ export function SelectGuildPage() {
   const handleSelect = (guildId: string) => {
     setSelectedGuildId(guildId);
     queryClient.clear();
-    navigate("/");
+    navigate("/bot-settings");
   };
 
   if (isLoading) {

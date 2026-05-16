@@ -99,7 +99,7 @@ export function ScheduledMessagesEditPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id: msgId, ...body }: { id: number } & Partial<FormState>) =>
-      fetch(`/api/scheduled-messages/${msgId}`, {
+      apiFetch(`/api/scheduled-messages/${msgId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

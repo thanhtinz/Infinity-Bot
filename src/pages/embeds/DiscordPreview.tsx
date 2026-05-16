@@ -51,11 +51,11 @@ export function parseBold(text: string): ReactNode[] {
 
 // ─── Helper: build form from defaults ────────────────────────────────────────
 
-export function defaultForm(eventKey: string): FormState {
-  const d = DEFAULTS[eventKey];
+export function defaultForm(eventKey: string, lang: "vi" | "en" = "vi"): FormState {
+  const d = DEFAULTS[eventKey]?.[lang] ?? DEFAULTS[eventKey]?.["vi"];
   const ev = EMBED_EVENTS.find((e) => e.key === eventKey);
   return {
-    name: ev?.label ?? eventKey,
+    name: lang === "en" ? (ev?.labelEn ?? ev?.label ?? eventKey) : (ev?.label ?? eventKey),
     event_type: eventKey,
     title: d.title,
     description: d.description,

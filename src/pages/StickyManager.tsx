@@ -137,7 +137,7 @@ export function StickyManager() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/sticky/${id}`, {
+      apiFetch(`/api/sticky/${id}`, {
         method: "DELETE",
         credentials: "include",
       }).then(async (r) => {
@@ -155,7 +155,7 @@ export function StickyManager() {
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, is_enabled }: { id: number; is_enabled: boolean }) =>
-      fetch(`/api/sticky/${id}`, {
+      apiFetch(`/api/sticky/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -184,7 +184,7 @@ export function StickyManager() {
 
   const resendMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/sticky/${id}/resend`, {
+      apiFetch(`/api/sticky/${id}/resend`, {
         method: "POST",
         credentials: "include",
       }).then(async (r) => {

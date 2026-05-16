@@ -190,7 +190,7 @@ export function LogViewer() {
   } = useQuery<LogEntriesResponse>({
     queryKey: ["logging-entries", category, debouncedSearch, page],
     queryFn: () =>
-      fetch(`/api/logging/entries?${params}`, {
+      apiFetch(`/api/logging/entries?${params}`, {
         credentials: "include",
       }).then((r) => r.json()),
   });

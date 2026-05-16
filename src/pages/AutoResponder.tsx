@@ -47,7 +47,7 @@ export function AutoResponder() {
 
   const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
-      fetch(`/api/auto-responders/${id}`, {
+      apiFetch(`/api/auto-responders/${id}`, {
         method: "DELETE",
         credentials: "include",
       }).then(async (r) => {
@@ -68,7 +68,7 @@ export function AutoResponder() {
 
   const toggleMutation = useMutation<any, Error, number>({
     mutationFn: (id: number) =>
-      fetch(`/api/auto-responders/${id}/toggle`, {
+      apiFetch(`/api/auto-responders/${id}/toggle`, {
         method: "PUT",
         credentials: "include",
       }).then(async (r) => {

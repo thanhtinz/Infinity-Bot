@@ -103,7 +103,7 @@ export function TicketTeamEditPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id: teamId, ...body }: { id: number } & Record<string, unknown>) =>
-      fetch(`/api/ticket-teams/${teamId}`, {
+      apiFetch(`/api/ticket-teams/${teamId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

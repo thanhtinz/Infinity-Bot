@@ -35,7 +35,7 @@ export function CouponsManager() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/coupons/${id}`, { method: "DELETE", credentials: "include" }).then((r) => r.json()),
+      apiFetch(`/api/coupons/${id}`, { method: "DELETE", credentials: "include" }).then((r) => r.json()),
     onSuccess: () => { invalidate(); setDeleteTarget(null); toast({ title: "Coupon deleted." }); },
     onError: () => toast({ variant: "destructive", title: "Delete error." }),
   });

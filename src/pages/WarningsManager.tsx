@@ -30,7 +30,7 @@ export function WarningsManager() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/warnings/${id}`, { method: "DELETE", credentials: "include" }).then((r) => {
+      apiFetch(`/api/warnings/${id}`, { method: "DELETE", credentials: "include" }).then((r) => {
         if (!r.ok) throw new Error("Delete failed");
       }),
     onSuccess: () => {

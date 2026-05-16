@@ -46,13 +46,13 @@ export function ConfigVoice() {
 
   const { data: config } = useQuery({
     queryKey: ["config"],
-    queryFn: () => fetch("/api/config", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/config", { credentials: "include" }).then((r) => r.json()),
     staleTime: 60_000,
   });
 
   const { data: tvConfig } = useQuery({
     queryKey: ["tempvoice_config"],
-    queryFn: () => fetch("/api/tempvoice/config", { credentials: "include" }).then((r) => r.json()),
+    queryFn: () => apiFetch("/api/tempvoice/config", { credentials: "include" }).then((r) => r.json()),
     staleTime: 60_000,
   });
 
@@ -100,7 +100,7 @@ export function ConfigVoice() {
 
   const { data: guilds = [] } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["discord_guilds"],
-    queryFn: () => fetch("/api/discord/guilds", { credentials: "include" }).then((r) =>
+    queryFn: () => apiFetch("/api/discord/guilds", { credentials: "include" }).then((r) =>
       r.ok ? r.json() : []
     ),
     staleTime: 60_000,
@@ -108,7 +108,7 @@ export function ConfigVoice() {
 
   const mutation = useMutation({
     mutationFn: () =>
-      fetch("/api/tempvoice/config", {
+      apiFetch("/api/tempvoice/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

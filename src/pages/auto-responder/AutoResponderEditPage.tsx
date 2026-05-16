@@ -113,7 +113,7 @@ export function AutoResponderEditPage() {
 
   const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id: ruleId, ...body }: { id: number } & Record<string, unknown>) =>
-      fetch(`/api/auto-responders/${ruleId}`, {
+      apiFetch(`/api/auto-responders/${ruleId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

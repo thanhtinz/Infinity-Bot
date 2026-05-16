@@ -225,7 +225,7 @@ export function SelectMenuRoles() {
 
   const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
-      fetch(`/api/welcome/select-roles/${id}`, {
+      apiFetch(`/api/welcome/select-roles/${id}`, {
         method: "DELETE",
         credentials: "include",
       }).then(async (r) => {

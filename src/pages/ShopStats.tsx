@@ -1,14 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Activity, TrendingUp, ShoppingCart, Users, Package } from "lucide-react";
-import { Link } from "react-router-dom";
 import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
-import type { SystemConfig } from "@/types";
+import { TrendingUp, ShoppingCart, Users, Package } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
 
 interface Stats {
@@ -45,24 +41,13 @@ function StatCard({
   );
 }
 
-export function DashboardHome() {
-  const { data: config, isLoading: configLoading } = useQuery<SystemConfig>({
-    queryKey: ["config"],
-    queryFn: () => apiFetch("/api/config").then((r) => r.json()),
-    refetchInterval: 15_000,
-    staleTime: 30_000,
-  });
-
-  const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
+export function ShopStats() {
+  const { data: stats, isLoading } = useQuery<Stats>({
     queryKey: ["stats"],
     queryFn: () => apiFetch("/api/stats").then((r) => r.json()),
     refetchInterval: 60_000,
     staleTime: 60_000,
   });
-
-  if (configLoading) return <div className="p-8 text-muted-foreground">Loading...</div>;
-
-  const isRunning = config?.bot_status === "running";
 
   const fmtMoney = (n: number) =>
     n >= 1_000_000
@@ -72,36 +57,35 @@ export function DashboardHome() {
       : `${n.toLocaleString("vi-VN")} đ`;
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
-      <h1 className="text-xl font-semibold">Overview</h1>
+    <div className="space-y-6 max-w-5xl">
+      <h1 className="text-xl font-semibold">Thống kê Shop</h1>
 
-      {/* ── Stats grid ── */}
+      {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           icon={TrendingUp}
-          label="Revenue"
+          label="Doanh thu"
           value={stats ? fmtMoney(stats.total_revenue) : "—"}
           highlight
         />
         <StatCard
           icon={ShoppingCart}
-          label="Total Orders"
+          label="Tổng đơn hàng"
           value={stats?.total_orders ?? "—"}
-          sub={stats ? `${stats.pending_orders} pending` : undefined}
+          sub={stats ? `${stats.pending_orders} chờ xử lý` : undefined}
         />
-        <StatCard icon={Users} label="Users" value={stats?.total_users ?? "—"} />
-        <StatCard icon={Package} label="Products" value={stats?.total_products ?? "—"} />
+        <StatCard icon={Users} label="Người dùng" value={stats?.total_users ?? "—"} />
+        <StatCard icon={Package} label="Sản phẩm" value={stats?.total_products ?? "—"} />
       </div>
 
-      {/* ── Charts ── */}
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Doanh thu */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Doanh thu 14 days</CardTitle>
+            <CardTitle className="text-sm font-medium">Doanh thu 14 ngày</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            {statsLoading || !stats ? (
+            {isLoading || !stats ? (
               <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
             ) : (
               <ResponsiveContainer width="100%" height={180}>
@@ -120,29 +104,22 @@ export function DashboardHome() {
                     tickFormatter={(v) => v >= 1000 ? `${v / 1000}K` : v}
                   />
                   <Tooltip
-                    formatter={(v: unknown) => [(v as number).toLocaleString("vi-VN") + " đ", "Revenue"]}
+                    formatter={(v: unknown) => [(v as number).toLocaleString("vi-VN") + " đ", "Doanh thu"]}
                     contentStyle={{ fontSize: 12 }}
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="hsl(var(--primary))"
-                    fill="url(#revGrad)"
-                    strokeWidth={2}
-                  />
+                  <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             )}
           </CardContent>
         </Card>
 
-        {/* Orders */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Orders (14 days)</CardTitle>
+            <CardTitle className="text-sm font-medium">Đơn hàng 14 ngày</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            {statsLoading || !stats ? (
+            {isLoading || !stats ? (
               <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
             ) : (
               <ResponsiveContainer width="100%" height={180}>
@@ -151,7 +128,7 @@ export function DashboardHome() {
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" />
                   <YAxis tick={{ fontSize: 10 }} className="fill-muted-foreground" allowDecimals={false} />
                   <Tooltip
-                    formatter={(v: unknown) => [v as number, "Orders"]}
+                    formatter={(v: unknown) => [v as number, "Đơn hàng"]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Bar dataKey="orders" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
@@ -161,29 +138,6 @@ export function DashboardHome() {
           </CardContent>
         </Card>
       </div>
-
-      {/* ── Bot Status Banner ── */}
-      <Card>
-        <CardContent className="p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="relative flex h-2.5 w-2.5">
-              {isRunning && (
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-              )}
-              <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isRunning ? "bg-green-500" : "bg-red-500"}`} />
-            </span>
-            <span className="text-sm font-medium">Bot Discord</span>
-            <Badge variant={isRunning ? "default" : "secondary"} className="text-xs">
-              {isRunning ? "Online" : "Offline"}
-            </Badge>
-          </div>
-          <Button size="sm" variant="outline" asChild>
-            <Link to="/bot-status">
-              <Activity className="mr-1 h-3.5 w-3.5" /> Manage
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 }

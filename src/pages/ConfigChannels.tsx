@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { useToast } from "@/hooks/use-toast";
 import { Hash, Shield } from "lucide-react";
 import { useGuild } from "@/contexts/GuildContext";
+import { apiFetch } from "@/hooks/useApi";
 
 const schema = z.object({
   admin_role_id: z.string().optional(),
@@ -52,9 +53,8 @@ export function ConfigChannels() {
 
   const { data: config, isLoading } = useQuery({
     queryKey: ["config", selectedGuildId],
-    queryFn: () => fetch("/api/config", {
+    queryFn: () => apiFetch("/api/config", {
       credentials: "include",
-      headers: selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {},
     }).then((r) => r.json()),
     staleTime: 60_000,
     enabled: !!selectedGuildId,
@@ -85,7 +85,7 @@ export function ConfigChannels() {
   const { data: channels = [] } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["discord_channels", activeGuildId],
     queryFn: () =>
-      fetch(`/api/discord/channels?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
+      apiFetch(`/api/discord/channels?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
     enabled: !!activeGuildId,
     staleTime: 60_000,
   });
@@ -93,17 +93,16 @@ export function ConfigChannels() {
   const { data: roles = [] } = useQuery<{ id: string; name: string }[]>({
     queryKey: ["discord_roles", activeGuildId],
     queryFn: () =>
-      fetch(`/api/discord/roles?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
+      apiFetch(`/api/discord/roles?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
     enabled: !!activeGuildId,
     staleTime: 60_000,
   });
 
   const mutation = useMutation({
-    mutationFn: (v: FormValues) => fetch("/api/config", {
+    mutationFn: (v: FormValues) => apiFetch("/api/config", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {}),
       },
       credentials: "include",
       body: JSON.stringify(v),

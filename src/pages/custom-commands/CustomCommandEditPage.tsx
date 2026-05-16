@@ -129,7 +129,7 @@ export function CustomCommandEditPage() {
 
   const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id: cmdId, ...body }: { id: number } & Record<string, unknown>) =>
-      fetch(`/api/custom-commands/${cmdId}`, {
+      apiFetch(`/api/custom-commands/${cmdId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

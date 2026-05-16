@@ -15,7 +15,7 @@ export function ConfigPrefix() {
 
   const { data: config, isLoading } = useQuery({
     queryKey: ["config", selectedGuildId],
-    queryFn: () => fetch("/api/config", {
+    queryFn: () => apiFetch("/api/config", {
       credentials: "include",
       headers: selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {},
     }).then((r) => r.json()),
@@ -28,7 +28,7 @@ export function ConfigPrefix() {
   }, [config]);
 
   const prefixMutation = useMutation({
-    mutationFn: () => fetch("/api/config", {
+    mutationFn: () => apiFetch("/api/config", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

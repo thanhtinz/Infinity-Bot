@@ -33,8 +33,10 @@ export type FormState = Omit<EmbedTemplate, "id"> & { existingId?: number };
 export interface EmbedEventDef {
   key: string;
   label: string;
+  labelEn: string;
   icon: React.ComponentType<{ className?: string }>;
   desc: string;
+  descEn: string;
 }
 
 // ─── Custom Messages types ───────────────────────────────────────────────────

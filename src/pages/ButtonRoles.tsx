@@ -238,7 +238,7 @@ export function ButtonRoles() {
 
   const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
-      fetch(`/api/welcome/button-roles/${id}`, {
+      apiFetch(`/api/welcome/button-roles/${id}`, {
         method: "DELETE",
         credentials: "include",
       }).then(async (r) => {

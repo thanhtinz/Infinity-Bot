@@ -76,7 +76,7 @@ export function FeedbackManager() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/feedback/${id}`, { method: "DELETE", credentials: "include" }).then(async (r) => {
+      apiFetch(`/api/feedback/${id}`, { method: "DELETE", credentials: "include" }).then(async (r) => {
         if (!r.ok) throw new Error(await r.text());
       }),
     onSuccess: () => {

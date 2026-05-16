@@ -134,7 +134,7 @@ async function saveEmbed(
     enabled: true,
   };
   if (form.existingId) {
-    const res = await fetch(`/api/embeds/${form.existingId}`, {
+    const res = await apiFetch(`/api/embeds/${form.existingId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

@@ -1,3 +1,4 @@
+import { apiFetch } from "@/hooks/useApi";
 import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -40,13 +41,13 @@ interface RestoreResult {
 // ─── API ─────────────────────────────────────────────────────────────────────
 
 async function fetchPreview(): Promise<BackupPreview> {
-  const res = await fetch("/api/backup/preview", { credentials: "include" });
+  const res = await apiFetch("/api/backup/preview", { credentials: "include" });
   if (!res.ok) throw new Error("Failed to load preview");
   return res.json();
 }
 
 async function restoreBackup(data: unknown): Promise<RestoreResult> {
-  const res = await fetch("/api/restore", {
+  const res = await apiFetch("/api/restore", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -96,7 +97,7 @@ export function BackupRestore() {
 
   const handleBackup = async () => {
     try {
-      const res = await fetch("/api/backup", { credentials: "include" });
+      const res = await apiFetch("/api/backup", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load backup");
       const data = await res.json();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });

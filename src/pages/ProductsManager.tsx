@@ -26,7 +26,7 @@ export function ProductsManager() {
   // ── Toggle product active ───────────────────────────────────
   const toggleMutation = useMutation({
     mutationFn: (p: Product) =>
-      fetch(`/api/products/${p.id}`, {
+      apiFetch(`/api/products/${p.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -38,7 +38,7 @@ export function ProductsManager() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/products/${id}`, { method: "DELETE", credentials: "include" }).then((r) => r.json()),
+      apiFetch(`/api/products/${id}`, { method: "DELETE", credentials: "include" }).then((r) => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       setDeleteTarget(null);

@@ -1,3 +1,4 @@
+import { apiFetch } from "@/hooks/useApi";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import type { EmbedField, CustomEmbed, EmbedData, CustomFormState, ActionRow, MessageFlags, AllowedMentions, EmbedOpenState } from "./embedTypes";
@@ -28,17 +29,17 @@ export function useCustomMessagesMutations(
   // ── Mutations ──
   const createMutation = useMutation({
     mutationFn: async (body: CustomFormState) => {
-      const res = await fetch("/api/embeds/custom", {
+      const res = await apiFetch("/api/embeds/custom", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error("Tạo thất bại");
+      if (!res.ok) throw new Error("Create failed");
       return res.json() as Promise<CustomEmbed>;
     },
     onSuccess: (data) => {
-      toast({ title: "Đã tạo", description: "Embed mới đã được tạo." });
+      toast({ title: "Created", description: "New embed created." });
       queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
       setEditingExistingId(data.id);
       setSelectedId(data.id);
@@ -46,40 +47,40 @@ export function useCustomMessagesMutations(
       setSelectedChannelId(data.channel_id || "");
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể tạo embed.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not create embed.", variant: "destructive" });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, body }: { id: number; body: CustomFormState }) => {
-      const res = await fetch(`/api/embeds/custom/${id}`, {
+      const res = await apiFetch(`/api/embeds/custom/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error("Cập nhật thất bại");
+      if (!res.ok) throw new Error("Update failed");
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Đã lưu", description: "Embed đã được cập nhật." });
+      toast({ title: "Saved", description: "Embed updated." });
       queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể lưu embed.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not save embed.", variant: "destructive" });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/embeds/custom/${id}`, {
+      const res = await apiFetch(`/api/embeds/custom/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Xóa thất bại");
+      if (!res.ok) throw new Error("Delete failed");
     },
     onSuccess: () => {
-      toast({ title: "Đã xóa", description: "Embed đã được xóa." });
+      toast({ title: "Deleted", description: "Embed deleted." });
       queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
       if (selectedId === editingExistingId) {
         setSelectedId(null);
@@ -88,62 +89,62 @@ export function useCustomMessagesMutations(
       }
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể xóa embed.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not delete embed.", variant: "destructive" });
     },
   });
 
   const sendMutation = useMutation({
     mutationFn: async ({ id, channel_id }: { id: number; channel_id: string }) => {
-      const res = await fetch(`/api/embeds/custom/${id}/send`, {
+      const res = await apiFetch(`/api/embeds/custom/${id}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ channel_id }),
       });
-      if (!res.ok) throw new Error("Gửi thất bại");
+      if (!res.ok) throw new Error("Send failed");
       return res.json() as Promise<CustomEmbed & { message_url?: string }>;
     },
     onSuccess: () => {
-      toast({ title: "Đã gửi", description: "Embed đã được gửi lên Discord." });
+      toast({ title: "Sent", description: "Embed sent to Discord." });
       queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể gửi embed lên Discord.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not send embed to Discord.", variant: "destructive" });
     },
   });
 
   const updateMessageMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/embeds/custom/${id}/update-message`, {
+      const res = await apiFetch(`/api/embeds/custom/${id}/update-message`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Cập nhật tin nhắn thất bại");
+      if (!res.ok) throw new Error("Update message failed");
       return res.json() as Promise<{ ok: boolean; message_url?: string }>;
     },
     onSuccess: (_data) => {
-      toast({ title: "Đã cập nhật", description: "Tin nhắn Discord đã được cập nhật." });
+      toast({ title: "Updated", description: "Discord message updated." });
       queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể cập nhật tin nhắn Discord.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not update Discord message.", variant: "destructive" });
     },
   });
 
   const loadLinkMutation = useMutation({
     mutationFn: async (link: string) => {
-      const res = await fetch("/api/embeds/custom/load-link", {
+      const res = await apiFetch("/api/embeds/custom/load-link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ link }),
       });
-      if (!res.ok) throw new Error("Tải link thất bại");
+      if (!res.ok) throw new Error("Load link failed");
       return res.json() as Promise<CustomEmbed & { is_new?: boolean }>;
     },
     onSuccess: (data) => {
-      toast({ title: "Đã tải", description: "Embed từ link đã được tải thành công." });
+      toast({ title: "Loaded", description: "Embed loaded from link." });
       queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
       setSelectedId(data.id);
       setEditingExistingId(data.id);
@@ -163,46 +164,46 @@ export function useCustomMessagesMutations(
       setLinkInput("");
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể tải embed từ link. Kiểm tra lại link Discord.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not load embed from link. Check the Discord link.", variant: "destructive" });
     },
   });
 
   const duplicateMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/embeds/custom/${id}/duplicate`, {
+      const res = await apiFetch(`/api/embeds/custom/${id}/duplicate`, {
         method: "POST",
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Nhân đôi thất bại");
+      if (!res.ok) throw new Error("Duplicate failed");
       return res.json() as Promise<CustomEmbed>;
     },
     onSuccess: () => {
-      toast({ title: "Đã nhân đôi", description: "Tin nhắn đã được sao chép." });
+      toast({ title: "Duplicated", description: "Message duplicated." });
       queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể nhân đôi.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not duplicate.", variant: "destructive" });
     },
   });
 
   const importMutation = useMutation({
     mutationFn: async (body: object) => {
-      const res = await fetch("/api/embeds/custom/import", {
+      const res = await apiFetch("/api/embeds/custom/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error("Import thất bại");
+      if (!res.ok) throw new Error("Import failed");
       return res.json() as Promise<CustomEmbed>;
     },
     onSuccess: (data) => {
-      toast({ title: "Đã import", description: "Tin nhắn đã được tạo từ JSON." });
+      toast({ title: "Imported", description: "Message created from JSON." });
       queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
       handleSelectEmbed(data);
     },
     onError: () => {
-      toast({ title: "Lỗi", description: "Không thể import JSON.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not import JSON.", variant: "destructive" });
     },
   });
 
@@ -272,7 +273,7 @@ export function useCustomMessagesMutations(
 
   const removeEmbed = (idx: number) => {
     if (form.embeds.length <= 1) {
-      toast({ title: "Không thể xóa", description: "Cần ít nhất 1 embed.", variant: "destructive" });
+      toast({ title: "Cannot remove", description: "At least 1 embed required.", variant: "destructive" });
       return;
     }
     setForm((f) => ({ ...f, embeds: f.embeds.filter((_, i) => i !== idx) }));
@@ -345,7 +346,7 @@ export function useCustomMessagesMutations(
   const copyQueryData = () => {
     const data = JSON.stringify({ content: form.content, embeds: form.embeds }, null, 2);
     navigator.clipboard.writeText(data);
-    toast({ title: "Đã copy JSON!" });
+    toast({ title: "JSON copied!" });
   };
 
   // ── Share via URL ──
@@ -354,7 +355,7 @@ export function useCustomMessagesMutations(
     const b64 = btoa(encodeURIComponent(JSON.stringify(payload)));
     const url = `${window.location.origin}${window.location.pathname}?tab=custom&share=${b64}`;
     navigator.clipboard.writeText(url);
-    toast({ title: "Đã copy link share!", description: "Người khác mở link sẽ thấy nội dung này." });
+    toast({ title: "Share link copied!", description: "Anyone with this link can view the message." });
   };
 
   // ── Backups (localStorage) ──
@@ -374,7 +375,7 @@ export function useCustomMessagesMutations(
     backups.unshift(backup);
     if (backups.length > 20) backups.pop();
     localStorage.setItem(BACKUP_KEY, JSON.stringify(backups));
-    toast({ title: "Đã lưu backup!", description: `Backup "${form.name || "Untitled"}" đã được lưu.` });
+    toast({ title: "Backup saved!", description: `Backup "${form.name || "Untitled"}" saved.` });
   };
   const loadBackup = (data: Record<string, unknown>) => {
     const embeds = (data.embeds as EmbedData[]) || [emptyEmbed()];
@@ -391,7 +392,7 @@ export function useCustomMessagesMutations(
     }));
     setEmbedOpenStates(embeds.map(() => defaultEmbedOpen()));
     setBackupsOpen(false);
-    toast({ title: "Đã tải backup!" });
+    toast({ title: "Backup loaded!" });
   };
   const deleteBackup = (id: string) => {
     const backups = getBackups().filter(b => b.id !== id);
@@ -424,7 +425,7 @@ export function useCustomMessagesMutations(
         const parsed = JSON.parse(text);
         importMutation.mutate(parsed);
       } catch {
-        toast({ title: "Lỗi", description: "File JSON không hợp lệ.", variant: "destructive" });
+        toast({ title: "Error", description: "Invalid JSON file.", variant: "destructive" });
       }
     };
     input.click();

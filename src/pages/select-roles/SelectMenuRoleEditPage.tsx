@@ -158,7 +158,7 @@ export function SelectMenuRoleEditPage() {
 
   const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id: panelId, ...body }: { id: number } & Record<string, unknown>) =>
-      fetch(`/api/welcome/select-roles/${panelId}`, {
+      apiFetch(`/api/welcome/select-roles/${panelId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

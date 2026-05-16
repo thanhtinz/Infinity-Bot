@@ -236,7 +236,7 @@ export function ReactionRoles() {
 
   const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
-      fetch(`/api/reaction-roles/${id}`, {
+      apiFetch(`/api/reaction-roles/${id}`, {
         method: "DELETE",
         credentials: "include",
       }).then(async (r) => {
@@ -257,7 +257,7 @@ export function ReactionRoles() {
 
   const sendMutation = useMutation<any, Error, number>({
     mutationFn: (id: number) =>
-      fetch(`/api/reaction-roles/${id}/send`, {
+      apiFetch(`/api/reaction-roles/${id}/send`, {
         method: "POST",
         credentials: "include",
       }).then(async (r) => {

@@ -61,7 +61,7 @@ export function Leaderboard() {
   const { data, isLoading } = useQuery<LeaderboardResponse>({
     queryKey: ["leaderboard", loai, time],
     queryFn: () =>
-      fetch(`/api/leaderboard?loai=${loai}&time=${time}`, { credentials: "include" }).then((r) => r.json()),
+      apiFetch(`/api/leaderboard?loai=${loai}&time=${time}`, { credentials: "include" }).then((r) => r.json()),
     staleTime: 30_000,
   });
 

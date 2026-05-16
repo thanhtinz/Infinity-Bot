@@ -85,7 +85,7 @@ export function TicketClaiming() {
 
   const unclaimMutation = useMutation({
     mutationFn: (ticketId: number) =>
-      fetch(`/api/tickets/${ticketId}/unclaim`, { method: "POST" }).then((r) => { if (!r.ok) throw new Error(); }),
+      apiFetch(`/api/tickets/${ticketId}/unclaim`, { method: "POST" }).then((r) => { if (!r.ok) throw new Error(); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tickets-claimed"] });
       toast({ title: "Claim released" });

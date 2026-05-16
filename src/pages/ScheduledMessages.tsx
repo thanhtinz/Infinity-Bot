@@ -121,7 +121,7 @@ export function ScheduledMessages() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      fetch(`/api/scheduled-messages/${id}`, {
+      apiFetch(`/api/scheduled-messages/${id}`, {
         method: "DELETE",
         credentials: "include",
       }).then(async (r) => {
@@ -138,7 +138,7 @@ export function ScheduledMessages() {
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, enabled }: { id: number; enabled: boolean }) =>
-      fetch(`/api/scheduled-messages/${id}`, {
+      apiFetch(`/api/scheduled-messages/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

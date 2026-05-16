@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CreditCard, ExternalLink, Zap, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useGuild } from "@/contexts/GuildContext";
+import { apiFetch } from "@/hooks/useApi";
 
 const schema = z.object({
   payos_client_id: z.string().optional(),
@@ -57,9 +58,8 @@ export function ConfigPayOS() {
 
   const { data: config, isLoading } = useQuery({
     queryKey: ["payos_config", selectedGuildId],
-    queryFn: () => fetch("/api/payos/config", {
+    queryFn: () => apiFetch("/api/payos/config", {
       credentials: "include",
-      headers: { "X-Guild-ID": selectedGuildId! },
     }).then((r) => r.json()),
     staleTime: 60_000,
     enabled: !!selectedGuildId,
@@ -80,9 +80,9 @@ export function ConfigPayOS() {
   }, [config]);
 
   const mutation = useMutation({
-    mutationFn: (v: FormValues) => fetch("/api/payos/config", {
+    mutationFn: (v: FormValues) => apiFetch("/api/payos/config", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Guild-ID": selectedGuildId! },
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify(v),
     }).then(r => { if (!r.ok) throw new Error("Save failed"); return r.json(); }),
@@ -98,10 +98,9 @@ export function ConfigPayOS() {
   const handleTest = async () => {
     setTesting(true);
     try {
-      const res = await fetch("/api/payos/test", {
+      const res = await apiFetch("/api/payos/test", {
         method: "POST",
         credentials: "include",
-        headers: { "X-Guild-ID": selectedGuildId! },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Unknown error");

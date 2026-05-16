@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, LayoutDashboard, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ListOrdered, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply, Image as ImageIcon, Filter, Zap } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ListOrdered, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply, Image as ImageIcon, Filter, Zap, BarChart2 } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
@@ -8,7 +8,6 @@ import { GuildSelector } from "@/components/GuildSelector";
 import { I18nProvider, useT } from "@/i18n";
 
 // ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
-const DashboardHome = lazy(() => import("./pages/DashboardHome").then(m => ({ default: m.DashboardHome })));
 const ConfigDiscord = lazy(() => import("./pages/ConfigDiscord").then(m => ({ default: m.ConfigDiscord })));
 const ConfigPayOS = lazy(() => import("./pages/ConfigPayOS").then(m => ({ default: m.ConfigPayOS })));
 const ConfigChannels = lazy(() => import("./pages/ConfigChannels").then(m => ({ default: m.ConfigChannels })));
@@ -80,6 +79,7 @@ const TempVoiceCleanup = lazy(() => import("./pages/voice/TempVoiceCleanup").the
 const TempVoiceRooms = lazy(() => import("./pages/voice/TempVoiceRooms").then(m => ({ default: m.TempVoiceRooms })));
 const TempVoiceAnalytics = lazy(() => import("./pages/voice/TempVoiceAnalytics").then(m => ({ default: m.TempVoiceAnalytics })));
 const ShopChannels = lazy(() => import("./pages/ShopChannels").then(m => ({ default: m.ShopChannels })));
+const ShopStats = lazy(() => import("./pages/ShopStats").then(m => ({ default: m.ShopStats })));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -114,6 +114,7 @@ const navGroups: NavGroup[] = [
       { to: "/orders", icon: ShoppingCart, label: "nav_orders" },
       { to: "/coupons", icon: Tag, label: "nav_coupons" },
       { to: "/users", icon: Users, label: "nav_users" },
+      { to: "/shop-stats", icon: Activity, label: "nav_shopStats" },
       { to: "/leaderboard", icon: Trophy, label: "nav_leaderboard" },
       { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
       { to: "/config/shop-channels", icon: Hash, label: "nav_shopChannels", feature: "shop" },
@@ -185,7 +186,7 @@ const navGroups: NavGroup[] = [
       { to: "/voice/permissions", icon: Shield, label: "nav_voicePermissions" },
       { to: "/voice/cleanup", icon: Filter, label: "nav_voiceCleanup" },
       { to: "/voice/rooms", icon: Mic, label: "nav_voiceRooms" },
-      { to: "/voice/analytics", icon: ScrollText, label: "nav_voiceAnalytics" },
+      { to: "/voice/analytics", icon: BarChart2, label: "nav_voiceAnalytics" },
     ],
   },
   {
@@ -195,6 +196,7 @@ const navGroups: NavGroup[] = [
     feature: "moderation",
     items: [
       { to: "/automod", icon: Shield, label: "nav_automod" },
+      { to: "/logging", icon: ScrollText, label: "nav_loggingConfig" },
       { to: "/logs", icon: Activity, label: "nav_logging" },
     ],
   },
@@ -234,7 +236,6 @@ const navGroups: NavGroup[] = [
 ];
 
 const standaloneItems = [
-  { to: "/", icon: LayoutDashboard, label: "nav_dashboard" as const },
   { to: "/features", icon: ToggleRight, label: "nav_features" as const },
 ];
 
@@ -330,25 +331,6 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           </div>
         ) : (
         <>
-        {/* Standalone: Dashboard */}
-        {standaloneItems.slice(0, 1).map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={onClose}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
-                location.pathname === item.to && "bg-accent text-accent-foreground font-medium"
-              )}
-            >
-              <Icon className="w-4 h-4" />
-              {t(item.label as Parameters<typeof t>[0])}
-            </Link>
-          );
-        })}
-
         {/* Grouped nav */}
         {filteredGroups.map((group) => {
           const isOpen = openGroups.has(group.key);
@@ -404,7 +386,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         })}
 
         {/* Standalone: Features */}
-        {standaloneItems.slice(1).map((item) => {
+        {standaloneItems.map((item) => {
           const Icon = item.icon;
           return (
             <Link
@@ -658,12 +640,10 @@ function RouteLoader() {
 
 function ProtectedAppRoutes({ root }: { root?: boolean }) {
   if (root) {
-    // /dashboard → redirect vào trang chủ dashboard thật
+    // /dashboard → redirect sang bot-settings
     return (
       <ProtectedRoute>
-        <Suspense fallback={<RouteLoader />}>
-          <DashboardHome />
-        </Suspense>
+        <Navigate to="/bot-settings" replace />
       </ProtectedRoute>
     );
   }
@@ -672,7 +652,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
       <Suspense fallback={<RouteLoader />}>
         <Routes>
         <Route path="/select-guild" element={<SelectGuildPage />} />
-        <Route path="/" element={<DashboardHome />} />
+        <Route path="/" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/bot-status" element={<OwnerRoute><BotStatus /></OwnerRoute>} />
         <Route path="/leveling/rank-card" element={<LevelingManager section="rank-card" />} />
         <Route path="/features" element={<Features />} />
@@ -680,7 +660,6 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/config/prefix" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/config/channels" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/config/voice" element={<Navigate to="/bot-settings" replace />} />
-        <Route path="/logging" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/bot-settings" element={<BotSettings />} />
         <Route path="/config/discord" element={<OwnerRoute><ConfigDiscord /></OwnerRoute>} />
         <Route path="/config/payos" element={<ConfigPayOS />} />
@@ -759,6 +738,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/voice/analytics" element={<TempVoiceAnalytics />} />
         {/* Shop Channels */}
         <Route path="/config/shop-channels" element={<ShopChannels />} />
+        <Route path="/shop-stats" element={<ShopStats />} />
       </Routes>
       </Suspense>
     </ProtectedRoute>

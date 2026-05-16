@@ -163,7 +163,7 @@ export function ButtonRoleEditPage() {
 
   const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id: panelId, ...body }: { id: number } & Record<string, unknown>) =>
-      fetch(`/api/welcome/button-roles/${panelId}`, {
+      apiFetch(`/api/welcome/button-roles/${panelId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

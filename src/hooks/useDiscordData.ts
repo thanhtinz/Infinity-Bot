@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import { apiFetch } from "@/hooks/useApi";
+import { useGuild } from "@/contexts/GuildContext";
 
 export interface DiscordChannel {
   id: string;
@@ -15,27 +17,35 @@ export interface DiscordRole {
 }
 
 export function useDiscordChannels(guildId?: string) {
+  const { selectedGuildId } = useGuild();
+  const effectiveGuildId = guildId || selectedGuildId || "";
+
   return useQuery<DiscordChannel[]>({
-    queryKey: ["discord_channels_all", guildId],
+    queryKey: ["discord_channels_all", effectiveGuildId],
     queryFn: async () => {
-      const params = guildId ? `?guild_id=${guildId}` : "";
-      const res = await fetch(`/api/discord/channels/all${params}`, { credentials: "include" });
+      const params = effectiveGuildId ? `?guild_id=${effectiveGuildId}` : "";
+      const res = await apiFetch(`/api/discord/channels/all${params}`);
       if (!res.ok) return [];
       return res.json();
     },
+    enabled: !!effectiveGuildId,
     staleTime: 60_000,
   });
 }
 
 export function useDiscordRoles(guildId?: string) {
+  const { selectedGuildId } = useGuild();
+  const effectiveGuildId = guildId || selectedGuildId || "";
+
   return useQuery<DiscordRole[]>({
-    queryKey: ["discord_roles", guildId],
+    queryKey: ["discord_roles", effectiveGuildId],
     queryFn: async () => {
-      const params = guildId ? `?guild_id=${guildId}` : "";
-      const res = await fetch(`/api/discord/roles${params}`, { credentials: "include" });
+      const params = effectiveGuildId ? `?guild_id=${effectiveGuildId}` : "";
+      const res = await apiFetch(`/api/discord/roles${params}`);
       if (!res.ok) return [];
       return res.json();
     },
+    enabled: !!effectiveGuildId,
     staleTime: 60_000,
   });
 }

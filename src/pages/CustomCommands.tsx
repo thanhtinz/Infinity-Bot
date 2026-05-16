@@ -45,7 +45,7 @@ export function CustomCommands() {
 
   const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
-      fetch(`/api/custom-commands/${id}`, {
+      apiFetch(`/api/custom-commands/${id}`, {
         method: "DELETE",
         credentials: "include",
       }).then(async (r) => {
@@ -66,7 +66,7 @@ export function CustomCommands() {
 
   const toggleMutation = useMutation<any, Error, number>({
     mutationFn: (id: number) =>
-      fetch(`/api/custom-commands/${id}/toggle`, {
+      apiFetch(`/api/custom-commands/${id}/toggle`, {
         method: "PUT",
         credentials: "include",
       }).then(async (r) => {

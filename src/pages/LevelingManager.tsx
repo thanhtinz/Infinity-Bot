@@ -418,12 +418,12 @@ export function LevelingManager({ section }: { section?: string } = {}) {
     mutationFn: () => apiFetch("/api/leveling/rewards", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(reward) }).then(r => r.json()),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_rewards"] }); setReward({ level: 1, role_id: "", role_name: "" }); },
   });
-  const delReward = useMutation({ mutationFn: (id: number) => fetch(`/api/leveling/rewards/${id}`, { method: "DELETE", credentials: "include" }), onSuccess: () => qc.invalidateQueries({ queryKey: ["leveling_rewards"] }) });
+  const delReward = useMutation({ mutationFn: (id: number) => apiFetch(`/api/leveling/rewards/${id}`, { method: "DELETE", credentials: "include" }), onSuccess: () => qc.invalidateQueries({ queryKey: ["leveling_rewards"] }) });
   const addMulti = useMutation({
     mutationFn: () => apiFetch("/api/leveling/multipliers", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(multi) }).then(r => r.json()),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_multipliers"] }); setMulti({ type: "global", target_id: "", target_name: "", multiplier: 1, priority: 0, enabled: true }); },
   });
-  const delMulti = useMutation({ mutationFn: (id: number) => fetch(`/api/leveling/multipliers/${id}`, { method: "DELETE", credentials: "include" }), onSuccess: () => qc.invalidateQueries({ queryKey: ["leveling_multipliers"] }) });
+  const delMulti = useMutation({ mutationFn: (id: number) => apiFetch(`/api/leveling/multipliers/${id}`, { method: "DELETE", credentials: "include" }), onSuccess: () => qc.invalidateQueries({ queryKey: ["leveling_multipliers"] }) });
   const resetLeaderboard = useMutation({
     mutationFn: () => apiFetch("/api/leveling/leaderboard/reset", { method: "POST", credentials: "include" }).then(r => r.json()),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_leaderboard"] }); toast({ title: "Reset", description: "Level leaderboard has been reset." }); },
@@ -596,7 +596,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                                 <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-white">Activeg</span>
                               )}
                               <button type="button" onClick={async () => {
-                                await fetch(`/api/leveling/rank-card/background/${bg.slug}`, { method: "DELETE", credentials: "include" });
+                                await apiFetch(`/api/leveling/rank-card/background/${bg.slug}`, { method: "DELETE", credentials: "include" });
                                 refetchBgList(); setPreviewVersion(v => v + 1);
                               }} className="absolute right-1 top-1 hidden rounded bg-black/70 p-0.5 text-white hover:bg-destructive group-hover:flex">
                                 <X className="h-3 w-3" />

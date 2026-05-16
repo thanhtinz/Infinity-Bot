@@ -115,7 +115,7 @@ export function ProductEditPage() {
 
   const updateMutation = useMutation({
     mutationFn: (values: ProductForm & { packages: ProductPackage[] } & { id: number }) =>
-      fetch(`/api/products/${values.id}`, {
+      apiFetch(`/api/products/${values.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
