@@ -7,7 +7,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 # Get DB config from Neon
 # Workshop's DB injection standard: use standard env vars injected by workshop platform
-DATABASE_URL = os.environ.get("DB8624B53A_DATABASE_URL")
+DATABASE_URL = os.environ.get("DATABASE_URL") or os.environ.get("DB8624B53A_DATABASE_URL")
 
 # Try dropping asyncpg and using sync psycopg2 driver since asyncpg has bug
 if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
