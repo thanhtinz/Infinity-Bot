@@ -188,7 +188,6 @@ const navGroups: NavGroup[] = [
     label: "Cấu hình",
     items: [
       { to: "/config/prefix", icon: Terminal, label: "Prefix lệnh" },
-      { to: "/config/discord", icon: Bot, label: "Discord Bot" },
       { to: "/config/payos", icon: CreditCard, label: "PayOS", feature: "shop" },
       { to: "/config/channels", icon: Hash, label: "Kênh & Quyền" },
       { to: "/config/voice", icon: Mic, label: "Temp Voice", feature: "temp_voice" },
@@ -201,6 +200,7 @@ const navGroups: NavGroup[] = [
     ownerOnly: true,
     items: [
       { to: "/bot-status", icon: Activity, label: "Trạng thái & Điều khiển" },
+      { to: "/config/discord", icon: Bot, label: "Discord Bot (Token)" },
       { to: "/backup", icon: Database, label: "Sao lưu & Khôi phục" },
     ],
   },
@@ -468,7 +468,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (isError) return <Navigate to="/login" replace />;
 
   // Một số route owner không cần guild
-  const guildFreeRoutes = ["/bot-status", "/backup"];
+  const guildFreeRoutes = ["/bot-status", "/backup", "/config/discord"];
   if (!selectedGuildId && !guildFreeRoutes.includes(location.pathname)) {
     return <Navigate to="/select-guild" replace />;
   }
@@ -574,7 +574,7 @@ function ProtectedAppRoutes() {
         <Route path="/features" element={<Features />} />
         <Route path="/config" element={<Navigate to="/config/discord" replace />} />
         <Route path="/config/prefix" element={<ConfigPrefix />} />
-        <Route path="/config/discord" element={<ConfigDiscord />} />
+        <Route path="/config/discord" element={<OwnerRoute><ConfigDiscord /></OwnerRoute>} />
         <Route path="/config/payos" element={<ConfigPayOS />} />
         <Route path="/config/channels" element={<ConfigChannels />} />
         <Route path="/config/voice" element={<ConfigVoice />} />
