@@ -580,7 +580,7 @@ def _visible_commands(cat: dict, is_admin: bool) -> list:
 def _commands_list_text(cat: dict, is_admin: bool = True) -> str:
     cmds = _visible_commands(cat, is_admin)
     return "\n".join(
-        f"{cmd['emoji']} **`/{cmd['name']}`** — {cmd['desc']}{' *(admin)*' if cmd.get('admin') else ''}"
+        f"**`/{cmd['name']}`** — {cmd['desc']}{' *(admin)*' if cmd.get('admin') else ''}"
         for cmd in cmds
     )
 
@@ -641,7 +641,6 @@ class CommandSelect(discord.ui.Select):
                 label=f"/{cmd['name']}" + (" (admin)" if cmd.get("admin") else ""),
                 value=f"{cat['key']}:{cmd['name']}",
                 description=cmd["desc"][:100],
-                emoji=cmd["emoji"],
             )
             for cmd in cmds
         ]
@@ -662,7 +661,7 @@ class CommandSelect(discord.ui.Select):
         session = _get_session()
         try:
             embed = build_embed("help_command", session, vars={
-                "command_emoji": cmd_info["emoji"],
+                "command_emoji": "",
                 "command_name": cmd_info["name"],
                 "command_desc": cmd_info["desc"],
                 "command_usage": cmd_info["usage"],

@@ -631,7 +631,7 @@ DEFAULTS: dict[str, dict] = {
         "fields": [],
     },
     "help_command": {
-        "title": "{command_emoji} `/{command_name}`",
+        "title": "/{command_name}",
         "description": "{command_desc}",
         "color": "#57F287",
         "footer": "{bot_name}",
