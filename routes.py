@@ -52,15 +52,18 @@ def create_app(static_dir: str) -> FastAPI:
             from src.database.config import SessionLocal
             from src.models.models import SystemConfig
 
-            session = SessionLocal()
-            try:
-                config = session.execute(select(SystemConfig).limit(1)).scalars().first()
-                oauth_configured = bool(
-                    (config and config.discord_client_id and config.discord_client_secret)
-                    or (os.environ.get("DISCORD_CLIENT_ID") and os.environ.get("DISCORD_CLIENT_SECRET"))
-                )
-            finally:
-                session.close()
+            oauth_configured = bool(
+                os.environ.get("DISCORD_CLIENT_ID") and os.environ.get("DISCORD_CLIENT_SECRET")
+            )
+            if not oauth_configured and SessionLocal is not None:
+                session = SessionLocal()
+                try:
+                    config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+                    oauth_configured = bool(
+                        config and config.discord_client_id and config.discord_client_secret
+                    )
+                finally:
+                    session.close()
 
             if not oauth_configured:
                 return await call_next(request)
