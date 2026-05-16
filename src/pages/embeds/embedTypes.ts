@@ -36,7 +36,7 @@ export interface EmbedEventDef {
   labelEn: string;
   icon: React.ComponentType<{ className?: string }>;
   desc: string;
-  descEn: string;
+  descEn?: string;
 }
 
 // ─── Custom Messages types ───────────────────────────────────────────────────

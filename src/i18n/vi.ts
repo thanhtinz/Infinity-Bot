@@ -129,7 +129,6 @@ const vi = {
   nav_voiceCleanup: "Tự động dọn dẹp",
   nav_voiceRooms: "Quản lý phòng",
   nav_voiceAnalytics: "Thống kê",
-  nav_voiceAnalytics: "Thống kê & Log",
   nav_botSettings: "Cấu hình Bot",
   nav_payos: "PayOS",
   nav_botOwner: "Quản lý Bot",

@@ -131,7 +131,6 @@ const en: Record<TranslationKey, string> = {
   nav_voiceCleanup: "Auto Cleanup",
   nav_voiceRooms: "Manage Rooms",
   nav_voiceAnalytics: "Analytics",
-  nav_voiceAnalytics: "Analytics & Logs",
   nav_botSettings: "Bot Settings",
   nav_payos: "PayOS",
   nav_botOwner: "Bot Management",
