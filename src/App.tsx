@@ -466,7 +466,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (isLoading || guildLoading) return <div className="h-screen flex items-center justify-center">Đang tải...</div>;
   if (isError) return <Navigate to="/login" replace />;
-  if (!selectedGuildId && location.pathname !== "/select-guild") {
+
+  // Một số route owner không cần guild
+  const guildFreeRoutes = ["/bot-status"];
+  if (!selectedGuildId && !guildFreeRoutes.includes(location.pathname)) {
     return <Navigate to="/select-guild" replace />;
   }
   const isFullscreenEditor = location.pathname === "/leveling/rank-card-editor";
