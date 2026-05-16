@@ -73,6 +73,8 @@ async def init_db():
             all_stmts.append("ALTER TABLE system_config ADD COLUMN discord_client_secret VARCHAR")
         if "public_app_url" not in sc:
             all_stmts.append("ALTER TABLE system_config ADD COLUMN public_app_url VARCHAR")
+        if "shop_leaderboard_reset_at" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN shop_leaderboard_reset_at TIMESTAMP")
 
         # embed_templates
         et = cols("embed_templates")
@@ -128,6 +130,7 @@ async def init_db():
             "remove_old_reward_roles": "ALTER TABLE leveling_configs ADD COLUMN remove_old_reward_roles BOOLEAN DEFAULT FALSE",
             "stack_reward_roles": "ALTER TABLE leveling_configs ADD COLUMN stack_reward_roles BOOLEAN DEFAULT TRUE",
             "rank_card_config": "ALTER TABLE leveling_configs ADD COLUMN rank_card_config JSON DEFAULT '{}'",
+            "leaderboard_reset_at": "ALTER TABLE leveling_configs ADD COLUMN leaderboard_reset_at TIMESTAMP",
         }.items():
             if col not in lvl:
                 all_stmts.append(stmt)
