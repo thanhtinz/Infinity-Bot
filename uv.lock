@@ -3,11 +3,7 @@ revision = 3
 requires-python = ">=3.12"
 
 [options]
-exclude-newer = "2026-04-30T23:02:18.765236971Z"
-exclude-newer-span = "P14D"
-
-[options.exclude-newer-package]
-workshop-connect = "2027-01-02T00:00:00Z"
+exclude-newer = "2026-05-16T00:00:00Z"
 
 [[package]]
 name = "aiohappyeyeballs"
