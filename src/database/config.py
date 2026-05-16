@@ -15,6 +15,7 @@ if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
 
 engine = None
 async_session = None
+SessionLocal = None  # defined below if DATABASE_URL is set
 
 if DATABASE_URL:
     ssl_context = ssl.create_default_context()
