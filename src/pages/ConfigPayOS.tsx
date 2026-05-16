@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { CreditCard, ExternalLink, Zap, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { CreditCard, ExternalLink, Zap, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 const schema = z.object({
@@ -45,8 +45,11 @@ function MaskedField({
       <Input
         type="password"
         placeholder={isConfigured ? "••••••••  (đã cấu hình)" : placeholder}
-        {...field}
         value={field.value || ""}
+        onChange={(e) => field.onChange(e.target.value)}
+        onBlur={field.onBlur}
+        name={field.name}
+        ref={field.ref}
         autoComplete="new-password"
       />
       {isConfigured && !field.value && (

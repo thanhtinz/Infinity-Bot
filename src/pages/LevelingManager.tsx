@@ -310,13 +310,6 @@ export function LevelingManager({ section }: { section?: string } = {}) {
     if (rankCard) triggerAutoSync(rankCard);
   }, [rankCard, triggerAutoSync]);
 
-  const setRankCardSync = useCallback((next: RankCardConfig | ((prev: RankCardConfig) => RankCardConfig)) => {
-    setRankCard((prev) => {
-      const resolved = typeof next === "function" ? (prev ? next(prev) : prev) : next;
-      return resolved;
-    });
-  }, []);
-
   const layout = rankCard?.layout_config;
   const selectedLayer = layout?.layers.find((layer) => layer.id === selectedLayerId) || layout?.layers[0];
   const updateLayout = (patch: Partial<RankCardLayout>) => {

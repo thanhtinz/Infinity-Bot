@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UseMutationOptions } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -273,7 +272,7 @@ export function SelectMenuRoles() {
 
   // ── Mutations ────────────────────────────────────────────────────────────
 
-  const createMutation = useMutation({
+  const createMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
       fetch("/api/welcome/select-roles", {
         method: "POST",
@@ -295,9 +294,9 @@ export function SelectMenuRoles() {
         title: "Lỗi tạo panel",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
-  const updateMutation = useMutation({
+  const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id, ...body }: { id: number } & Record<string, unknown>) =>
       fetch(`/api/welcome/select-roles/${id}`, {
         method: "PUT",
@@ -320,9 +319,9 @@ export function SelectMenuRoles() {
         title: "Lỗi cập nhật",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
       fetch(`/api/welcome/select-roles/${id}`, {
         method: "DELETE",
@@ -341,7 +340,7 @@ export function SelectMenuRoles() {
         title: "Lỗi xóa panel",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 

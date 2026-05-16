@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UseMutationOptions } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -594,7 +593,7 @@ export function TicketPanels() {
 
   // ── Panel Mutations ──────────────────────────────────────────────────────
 
-  const createMutation = useMutation({
+  const createMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
       fetch("/api/ticket-panels", {
         method: "POST",
@@ -616,9 +615,9 @@ export function TicketPanels() {
         title: "Lỗi tạo panel",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
-  const updateMutation = useMutation({
+  const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id, ...body }: { id: number } & Record<string, unknown>) =>
       fetch(`/api/ticket-panels/${id}`, {
         method: "PUT",
@@ -641,9 +640,9 @@ export function TicketPanels() {
         title: "Lỗi cập nhật",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
       fetch(`/api/ticket-panels/${id}`, {
         method: "DELETE",
@@ -662,11 +661,11 @@ export function TicketPanels() {
         title: "Lỗi xóa panel",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
   // ── Group Mutations ──────────────────────────────────────────────────────
 
-  const createGroupMutation = useMutation({
+  const createGroupMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
       fetch("/api/ticket-panel-groups", {
         method: "POST",
@@ -689,9 +688,9 @@ export function TicketPanels() {
         title: "Lỗi tạo nhóm",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
-  const updateGroupMutation = useMutation({
+  const updateGroupMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id, ...body }: { id: number } & Record<string, unknown>) =>
       fetch(`/api/ticket-panel-groups/${id}`, {
         method: "PUT",
@@ -715,9 +714,9 @@ export function TicketPanels() {
         title: "Lỗi cập nhật nhóm",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
-  const deleteGroupMutation = useMutation({
+  const deleteGroupMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
       fetch(`/api/ticket-panel-groups/${id}`, {
         method: "DELETE",
@@ -737,7 +736,7 @@ export function TicketPanels() {
         title: "Lỗi xóa nhóm",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
   // ── Panel Handlers ───────────────────────────────────────────────────────
 

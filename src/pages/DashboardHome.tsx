@@ -6,7 +6,7 @@ import { Activity, TrendingUp, ShoppingCart, Users, Package } from "lucide-react
 import { Link } from "react-router-dom";
 import {
   AreaChart, Area, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import type { SystemConfig } from "../types";
 
@@ -119,7 +119,7 @@ export function DashboardHome() {
                     tickFormatter={(v) => v >= 1000 ? `${v / 1000}K` : v}
                   />
                   <Tooltip
-                    formatter={(v: number) => [v.toLocaleString("vi-VN") + " đ", "Doanh thu"]}
+                    formatter={(v: unknown) => [(v as number).toLocaleString("vi-VN") + " đ", "Doanh thu"]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Area
@@ -150,7 +150,7 @@ export function DashboardHome() {
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" />
                   <YAxis tick={{ fontSize: 10 }} className="fill-muted-foreground" allowDecimals={false} />
                   <Tooltip
-                    formatter={(v: number) => [v, "Đơn hàng"]}
+                    formatter={(v: unknown) => [v as number, "Đơn hàng"]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Bar dataKey="orders" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />

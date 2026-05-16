@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UseMutationOptions } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,7 +35,6 @@ import {
   Hash,
   X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { EmojiPicker } from "@/components/EmojiPicker";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -94,20 +92,6 @@ const BUTTON_STYLES = [
   { key: "danger", label: "Danger", bg: "#ed4245", text: "#ffffff" },
 ] as const;
 
-const STYLE_RING: Record<string, string> = {
-  primary: "ring-[#5865F2]",
-  secondary: "ring-[#4e5058]",
-  success: "ring-[#57f287]",
-  danger: "ring-[#ed4245]",
-};
-
-const STYLE_CHECK: Record<string, string> = {
-  primary: "text-[#5865F2]",
-  secondary: "text-[#4e5058]",
-  success: "text-[#57f287]",
-  danger: "text-[#ed4245]",
-};
-
 const emptyPanelForm = (): PanelForm => ({
   name: "",
   embed_title: "",
@@ -141,51 +125,6 @@ function formatDate(s?: string) {
 
 function getButtonStyle(key: string) {
   return BUTTON_STYLES.find((s) => s.key === key) ?? BUTTON_STYLES[0];
-}
-
-// ─── Button Style Picker ─────────────────────────────────────────────────────
-
-function ButtonStylePicker({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="grid grid-cols-2 gap-2">
-      {BUTTON_STYLES.map((s) => (
-        <button
-          key={s.key}
-          type="button"
-          onClick={() => onChange(s.key)}
-          className={cn(
-            "relative flex items-center gap-2 rounded-lg border-2 p-3 transition-all",
-            value === s.key
-              ? cn(
-                  "border-foreground",
-                  STYLE_RING[s.key],
-                  "ring-2 ring-offset-1 ring-offset-background"
-                )
-              : "border-transparent bg-muted/30 hover:bg-muted/50"
-          )}
-        >
-          <div
-            className="h-5 w-5 rounded-full shrink-0"
-            style={{ backgroundColor: s.bg }}
-          />
-          <div className="text-left">
-            <p className="text-xs font-medium">{s.label}</p>
-          </div>
-          {value === s.key && (
-            <div className="absolute top-1.5 right-1.5">
-              <CheckCircle2 className={cn("h-4 w-4", STYLE_CHECK[s.key])} />
-            </div>
-          )}
-        </button>
-      ))}
-    </div>
-  );
 }
 
 // ─── Panel Card ──────────────────────────────────────────────────────────────
@@ -349,7 +288,7 @@ export function ButtonRoles() {
 
   // ── Mutations ────────────────────────────────────────────────────────────
 
-  const createMutation = useMutation({
+  const createMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
       fetch("/api/welcome/button-roles", {
         method: "POST",
@@ -371,9 +310,9 @@ export function ButtonRoles() {
         title: "Lỗi tạo panel",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
-  const updateMutation = useMutation({
+  const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id, ...body }: { id: number } & Record<string, unknown>) =>
       fetch(`/api/welcome/button-roles/${id}`, {
         method: "PUT",
@@ -396,9 +335,9 @@ export function ButtonRoles() {
         title: "Lỗi cập nhật",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
       fetch(`/api/welcome/button-roles/${id}`, {
         method: "DELETE",
@@ -417,7 +356,7 @@ export function ButtonRoles() {
         title: "Lỗi xóa panel",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 

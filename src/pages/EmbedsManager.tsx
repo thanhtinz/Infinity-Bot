@@ -39,15 +39,15 @@ import {
   Trophy, Plus, Trash2,
   ChevronDown, ChevronRight,
   Ticket, TicketX, UserCheck, UserMinus, Ban,
-  UserPlus2, QrCode,
+  QrCode,
   ShieldOff, LayoutGrid, ShieldAlert,
   LogOut, Pencil, Volume2, VolumeX, ArrowRightLeft,
   LogIn, Hash, Shield, Moon, Zap, AlertTriangle,
   Type, Layout, RotateCcw, Heart, Mic, HelpCircle,
-  Send, Link2, Copy, Check, MessageSquare, ExternalLink, Loader2,
-  Mail, TrendingUp, Tag, Clock, UserPlus, Edit, MicOff, ArrowRight,
+  Send, Link2, Copy, MessageSquare, ExternalLink, Loader2,
+  Mail, TrendingUp,
   ArrowUp, ArrowDown, FileJson, Download, Upload, Save, Share2, Database,
-  Code2, RefreshCw, Eye, EyeOff, Bell, BellOff, AtSign, Globe,
+  Code2, BellOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmojiPicker } from "@/components/EmojiPicker";
@@ -1902,7 +1902,7 @@ function CustomMessagesTab() {
   const [isCreatingNew, setIsCreatingNew] = useState(!!shareInit.content || !!(shareInit.embeds?.length));
   const [linkInput, setLinkInput] = useState("");
   const [selectedChannelId, setSelectedChannelId] = useState<string>("");
-  const [copiedUrl, setCopiedUrl] = useState(false);
+  const [, setCopiedUrl] = useState(false);
 
   // Section collapsibles (message-level)
   const [threadOpen, setThreadOpen] = useState(false);
@@ -2038,7 +2038,7 @@ function CustomMessagesTab() {
       if (!res.ok) throw new Error("Cập nhật tin nhắn thất bại");
       return res.json() as Promise<{ ok: boolean; message_url?: string }>;
     },
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       toast({ title: "Đã cập nhật", description: "Tin nhắn Discord đã được cập nhật." });
       queryClient.invalidateQueries({ queryKey: ["custom-embeds"] });
       setCopiedUrl(false);
@@ -2458,6 +2458,7 @@ function CustomMessagesTab() {
     const firstEmbed = form.embeds[0] ?? emptyEmbed();
     return {
       ...firstEmbed,
+      name: "",
       event_type: "",
       enabled: true,
       response_mode: "embed" as const,

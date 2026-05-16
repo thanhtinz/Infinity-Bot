@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +22,7 @@ const productSchema = z.object({
   description: z.string().optional(),
   note: z.string().optional(),
   image_url: z.string().optional(),
-  active: z.boolean().default(true),
+  active: z.boolean(),
 });
 type ProductForm = z.infer<typeof productSchema>;
 

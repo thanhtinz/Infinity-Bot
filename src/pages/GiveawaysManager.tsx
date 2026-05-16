@@ -7,7 +7,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { Gift, Trophy, Clock, Users, Trash2, Info } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface Giveaway {
   id: number;

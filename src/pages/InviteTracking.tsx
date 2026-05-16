@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link2, UserPlus, UserMinus, AlertTriangle, Info } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface InviteRecord {
   inviter_id: string;

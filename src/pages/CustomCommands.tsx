@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UseMutationOptions } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -529,7 +528,7 @@ export function CustomCommands() {
 
   // ── Mutations ────────────────────────────────────────────────────────────
 
-  const createMutation = useMutation({
+  const createMutation = useMutation<any, Error, Record<string, unknown>>({
     mutationFn: (body: Record<string, unknown>) =>
       fetch("/api/custom-commands", {
         method: "POST",
@@ -551,9 +550,9 @@ export function CustomCommands() {
         title: "Lỗi tạo command",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
-  const updateMutation = useMutation({
+  const updateMutation = useMutation<any, Error, { id: number } & Record<string, unknown>>({
     mutationFn: ({ id, ...body }: { id: number } & Record<string, unknown>) =>
       fetch(`/api/custom-commands/${id}`, {
         method: "PUT",
@@ -576,9 +575,9 @@ export function CustomCommands() {
         title: "Lỗi cập nhật",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutation<unknown, Error, number>({
     mutationFn: (id: number) =>
       fetch(`/api/custom-commands/${id}`, {
         method: "DELETE",
@@ -597,9 +596,9 @@ export function CustomCommands() {
         title: "Lỗi xóa command",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
-  const toggleMutation = useMutation({
+  const toggleMutation = useMutation<any, Error, number>({
     mutationFn: (id: number) =>
       fetch(`/api/custom-commands/${id}/toggle`, {
         method: "PUT",
@@ -617,7 +616,7 @@ export function CustomCommands() {
         title: "Lỗi toggle",
         description: e.message,
       }),
-  } satisfies UseMutationOptions);
+  });
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 

@@ -23,7 +23,6 @@ import {
   Sliders,
   Clock,
   Save,
-  FolderOpen,
   AlertTriangle,
 } from "lucide-react";
 import { ChannelSelect } from "@/components/ChannelSelect";
@@ -116,41 +115,6 @@ function SectionCard({
       </CardHeader>
       <CardContent className="space-y-5">{children}</CardContent>
     </Card>
-  );
-}
-
-// ─── Field helpers ───────────────────────────────────────────────────────────
-
-function IconInput({
-  icon: Icon,
-  value,
-  onChange,
-  placeholder,
-  type = "text",
-  min,
-  max,
-}: {
-  icon: React.ElementType;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: string;
-  min?: number;
-  max?: number;
-}) {
-  return (
-    <div className="relative">
-      <Icon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        type={type}
-        className="pl-9"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        min={min}
-        max={max}
-      />
-    </div>
   );
 }
 

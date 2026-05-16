@@ -278,7 +278,7 @@ export function BackupRestore() {
             </label>
 
             {/* File preview */}
-            {filePreview && (
+            {filePreview != null && (
               <div className="rounded-lg border p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <FileJson className="h-4 w-4 text-muted-foreground" />
@@ -338,7 +338,7 @@ export function BackupRestore() {
             )}
 
             {/* Warning + Actions */}
-            {backupData && (
+            {backupData != null && (
               <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-3">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
@@ -365,7 +365,7 @@ export function BackupRestore() {
                   </>
                 )}
               </Button>
-              {backupData && (
+              {backupData != null && (
                 <Button variant="outline" onClick={resetRestore}>
                   Xóa
                 </Button>

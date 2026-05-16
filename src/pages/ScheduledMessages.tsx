@@ -23,11 +23,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import {
@@ -42,7 +37,6 @@ import {
   Send,
   Layout,
   ChevronDown,
-  ChevronRight,
   CalendarClock,
   FileText,
   X,

@@ -7,6 +7,7 @@ export interface HealthResponse {
 export interface SystemConfig {
   id: number;
   discord_token?: string;
+  discord_client_id?: string;
   payos_client_id?: string;
   payos_api_key?: string;
   payos_checksum_key?: string;
@@ -30,6 +31,7 @@ export interface Product {
   id: number;
   name: string;
   description?: string;
+  note?: string;
   image_url?: string;
   packages: ProductPackage[];
   active: boolean;

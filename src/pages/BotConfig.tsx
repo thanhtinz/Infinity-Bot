@@ -65,8 +65,11 @@ function MaskedField({
       <Input
         type="password"
         placeholder={isConfigured ? "••••••••  (đã cấu hình)" : placeholder}
-        {...field}
         value={field.value || ""}
+        onChange={(e) => field.onChange(e.target.value)}
+        onBlur={field.onBlur}
+        name={field.name}
+        ref={field.ref}
         autoComplete="new-password"
       />
       {isConfigured && !field.value && (
@@ -404,8 +407,8 @@ export function BotConfig() {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Category</label>
-            {tvCategories.length > 0 ? (
-              <DiscordSelect value={tvCategory} onChange={setTvCategory} options={tvCategories.map((c) => ({ id: c.id, name: c.name }))} placeholder="Chọn category..." />
+            {allChannels.filter((c: { id: string; name: string; type: number }) => c.type === 4).length > 0 ? (
+              <DiscordSelect value={tvCategory} onChange={setTvCategory} options={allChannels.filter((c: { id: string; name: string; type: number }) => c.type === 4).map((c: { id: string; name: string; type: number }) => ({ id: c.id, name: c.name }))} placeholder="Chọn category..." />
             ) : (
               <Input placeholder={activeGuildId ? "Đang tải categories..." : "Chọn Server trước"} disabled={!activeGuildId} value={tvCategory} onChange={(e) => setTvCategory(e.target.value)} />
             )}
