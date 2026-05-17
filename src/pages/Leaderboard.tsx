@@ -22,6 +22,7 @@ import { Trophy, Users, DollarSign, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 interface LeaderboardRow {
   rank: number;
@@ -53,6 +54,7 @@ function formatDate(iso: string | null) {
 }
 
 export function Leaderboard() {
+  const { t } = useT();
   const [loai, setLoai] = useState<"chi_tieu" | "don_hang">("chi_tieu");
   const [time, setTime] = useState<"all" | "30days" | "7days" | "daily">("all");
   const { toast } = useToast();
@@ -76,9 +78,9 @@ export function Leaderboard() {
       apiFetch("/api/leaderboard/reset", { method: "POST", credentials: "include" }).then((r) => r.json()),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leaderboard"] });
-      toast({ title: "Reset", description: "Spending & purchase leaderboard has been reset." });
+      toast({ title: t("toast_reset"), description: t("toast_shopReset") });
     },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Reset failed." }),
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_resetFailed") }),
   });
 
   return (
@@ -86,38 +88,38 @@ export function Leaderboard() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Trophy className="h-6 w-6" /> Leaderboard
+            <Trophy className="h-6 w-6" /> {t("lb_title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Leaderboard is also accessible on Discord via the command{" "}
+            {t("lb_discordCommand")}{" "}
             <code className="bg-muted px-1.5 py-0.5 rounded text-xs">/bxh</code>
           </p>
           {resetAt && (
             <p className="text-xs text-muted-foreground mt-1">
-              Last reset: {formatDate(resetAt)}
+              {t("lb_lastReset")}: {formatDate(resetAt)}
             </p>
           )}
         </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" size="sm" className="shrink-0">
-              <RotateCcw className="h-4 w-4 mr-2" /> Reset BXH
+              <RotateCcw className="h-4 w-4 mr-2" /> {t("lb_resetBxh")}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Reset leaderboard?</AlertDialogTitle>
+              <AlertDialogTitle>{t("lb_resetLeaderboard")}</AlertDialogTitle>
               <AlertDialogDescription>
-                The spending & purchase leaderboard will reset from this point. Old order data is preserved; it just won't appear on the leaderboard anymore.
+                {t("lb_resetDesc")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 onClick={() => resetMutation.mutate()}
               >
-                Confirm reset
+                {t("lb_confirmReset")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -133,7 +135,7 @@ export function Leaderboard() {
             </div>
             <div>
               <p className="text-2xl font-bold">{totalBuyers}</p>
-              <p className="text-xs text-muted-foreground">Buyer</p>
+              <p className="text-xs text-muted-foreground">{t("lb_buyer")}</p>
             </div>
           </CardContent>
         </Card>
@@ -144,7 +146,7 @@ export function Leaderboard() {
             </div>
             <div>
               <p className="text-2xl font-bold">{formatVND(totalRevenue)}</p>
-              <p className="text-xs text-muted-foreground">Total spent</p>
+              <p className="text-xs text-muted-foreground">{t("lb_totalSpent")}</p>
             </div>
           </CardContent>
         </Card>
@@ -158,8 +160,8 @@ export function Leaderboard() {
           onValueChange={(v) => v && setLoai(v as typeof loai)}
           className="border rounded-lg p-1"
         >
-          <ToggleGroupItem value="chi_tieu" className="text-sm">Spending</ToggleGroupItem>
-          <ToggleGroupItem value="don_hang" className="text-sm">Orders</ToggleGroupItem>
+          <ToggleGroupItem value="chi_tieu" className="text-sm">{t("lb_spending")}</ToggleGroupItem>
+          <ToggleGroupItem value="don_hang" className="text-sm">{t("lb_orders")}</ToggleGroupItem>
         </ToggleGroup>
 
         <Select value={time} onValueChange={(v) => setTime(v as typeof time)}>
@@ -167,10 +169,10 @@ export function Leaderboard() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="30days">30 days</SelectItem>
-            <SelectItem value="7days">7 days</SelectItem>
-            <SelectItem value="daily">Today</SelectItem>
+            <SelectItem value="all">{t("all")}</SelectItem>
+            <SelectItem value="30days">{t("lb_30days")}</SelectItem>
+            <SelectItem value="7days">{t("lb_7days")}</SelectItem>
+            <SelectItem value="daily">{t("today")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -185,18 +187,18 @@ export function Leaderboard() {
       ) : rows.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Trophy className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p>No data yet</p>
+          <p>{t("lb_noData")}</p>
         </div>
       ) : (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px]">Rank</TableHead>
-                <TableHead>Username</TableHead>
+                <TableHead className="w-[80px]">{t("rank")}</TableHead>
+                <TableHead>{t("username")}</TableHead>
                 <TableHead>Discord ID</TableHead>
-                <TableHead className="text-right">Total spent</TableHead>
-                <TableHead className="text-right">Orders</TableHead>
+                <TableHead className="text-right">{t("lb_totalSpent")}</TableHead>
+                <TableHead className="text-right">{t("lb_orders")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

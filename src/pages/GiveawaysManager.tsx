@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Gift, Trophy, Clock, Users, Trash2, Info } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 interface Giveaway {
   id: number;
@@ -33,6 +34,7 @@ function formatDate(s: string) {
 }
 
 export function GiveawaysManager() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [filter, setFilter] = useState<"all" | "active" | "ended">("all");
@@ -50,9 +52,9 @@ export function GiveawaysManager() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["giveaways"] });
       setDeleteTarget(null);
-      toast({ title: "Giveaway deleted." });
+      toast({ title: t("toast_giveawayDeleted") });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: t("error"), description: e.message }),
   });
 
   const filtered = giveaways.filter((g) => {
@@ -67,20 +69,20 @@ export function GiveawaysManager() {
   const totalEntries = giveaways.reduce((sum, g) => sum + g.entry_count, 0);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-64 text-muted-foreground">Loading...</div>;
+    return <div className="flex items-center justify-center h-64 text-muted-foreground">{t("loading")}</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Gift className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">Giveaway</h2>
+        <h2 className="text-2xl font-bold">{t("giveaway_title")}</h2>
       </div>
 
       {/* ── Note ── */}
       <div className="flex items-start gap-2 rounded-lg border border-blue-500/30 bg-blue-500/5 p-3 text-sm text-blue-700 dark:text-blue-400">
         <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-        <p>Giveaways are created and managed directly via the Discord bot command (<code className="font-mono bg-blue-500/10 px-1 rounded">/giveaway</code>)</p>
+        <p>{t("giveaway_note")} (<code className="font-mono bg-blue-500/10 px-1 rounded">/giveaway</code>)</p>
       </div>
 
       {/* ── Stat Cards ── */}
@@ -91,7 +93,7 @@ export function GiveawaysManager() {
               <Gift className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total giveaways</p>
+              <p className="text-xs text-muted-foreground">{t("giveaway_totalGiveawaysStat")}</p>
               <p className="text-xl font-bold">{totalGiveaways}</p>
             </div>
           </CardContent>
@@ -102,7 +104,7 @@ export function GiveawaysManager() {
               <Trophy className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Active</p>
+              <p className="text-xs text-muted-foreground">{t("active")}</p>
               <p className="text-xl font-bold">{activeGiveaways}</p>
             </div>
           </CardContent>
@@ -113,7 +115,7 @@ export function GiveawaysManager() {
               <Clock className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Ended</p>
+              <p className="text-xs text-muted-foreground">{t("giveaway_ended")}</p>
               <p className="text-xl font-bold">{endedGiveaways}</p>
             </div>
           </CardContent>
@@ -124,7 +126,7 @@ export function GiveawaysManager() {
               <Users className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total participants</p>
+              <p className="text-xs text-muted-foreground">{t("giveaway_totalParticipantsStat")}</p>
               <p className="text-xl font-bold">{totalEntries.toLocaleString("vi-VN")}</p>
             </div>
           </CardContent>
@@ -140,7 +142,7 @@ export function GiveawaysManager() {
             variant={filter === f ? "default" : "outline"}
             onClick={() => setFilter(f)}
           >
-            {f === "all" ? "All" : f === "active" ? "Active" : "Ended"}
+            {f === "all" ? t("all") : f === "active" ? t("active") : t("giveaway_ended")}
           </Button>
         ))}
       </div>
@@ -151,21 +153,21 @@ export function GiveawaysManager() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Prize</TableHead>
-                <TableHead className="text-center">Winners</TableHead>
-                <TableHead className="text-center">Entries</TableHead>
-                <TableHead>Channel ID</TableHead>
-                <TableHead>Ends</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("title")}</TableHead>
+                <TableHead>{t("prize")}</TableHead>
+                <TableHead className="text-center">{t("winners")}</TableHead>
+                <TableHead className="text-center">{t("giveaway_entries")}</TableHead>
+                <TableHead>{t("giveaway_channelId")}</TableHead>
+                <TableHead>{t("giveaway_ends")}</TableHead>
+                <TableHead>{t("status")}</TableHead>
+                <TableHead className="text-right">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                    No giveaways found.
+                    {t("giveaway_noGiveaways")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -181,9 +183,9 @@ export function GiveawaysManager() {
                     <TableCell className="text-sm">{formatDate(g.ends_at)}</TableCell>
                     <TableCell>
                       {g.ended ? (
-                        <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30">Ended</Badge>
+                        <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30">{t("giveaway_ended")}</Badge>
                       ) : (
-                        <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Active</Badge>
+                        <Badge className="bg-green-500/15 text-green-600 border-green-500/30">{t("active")}</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -208,19 +210,19 @@ export function GiveawaysManager() {
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent className="max-w-xs">
           <DialogHeader>
-            <DialogTitle>Delete giveaway?</DialogTitle>
+            <DialogTitle>{t("giveaway_deleteConfirm")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Giveaway <strong>{deleteTarget?.title}</strong> will be permanently deleted.
+            {t("giveaway_title")} <strong>{deleteTarget?.title}</strong> {t("giveaway_willBeDeleted")}
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>{t("cancel")}</Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              Delete
+              {t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

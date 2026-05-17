@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Hash, Shield } from "lucide-react";
 import { useGuild } from "@/contexts/GuildContext";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 const schema = z.object({
   admin_role_id: z.string().optional(),
@@ -47,6 +48,7 @@ function DiscordSelect({
 }
 
 export function ConfigChannels() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
   const { selectedGuildId } = useGuild();
@@ -111,20 +113,20 @@ export function ConfigChannels() {
       qc.invalidateQueries({ queryKey: ["config", selectedGuildId] });
       qc.invalidateQueries({ queryKey: ["discord_channels"] });
       qc.invalidateQueries({ queryKey: ["discord_roles"] });
-      toast({ title: "Saved", description: "Channel & permissions config saved." });
+      toast({ title: t("savedSuccess"), description: t("toast_channelsSaved") });
     },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Save failed." }),
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_saveFailed") }),
   });
 
   const channelFields: { name: keyof FormValues; label: string }[] = [
-    { name: "don_hang_channel_id", label: "Channel Orders" },
-    { name: "feedback_channel_id", label: "Feedback Channel" },
-    { name: "coupon_channel_id", label: "Coupon Log Channel" },
-    { name: "bang_gia_channel_id", label: "Price List Channel" },
-    { name: "welcome_channel_id", label: "Channel Welcome" },
+    { name: "don_hang_channel_id", label: t("configChannels_channelOrders") },
+    { name: "feedback_channel_id", label: t("configChannels_feedbackChannel") },
+    { name: "coupon_channel_id", label: t("configChannels_couponLogChannel") },
+    { name: "bang_gia_channel_id", label: t("configChannels_priceListChannel") },
+    { name: "welcome_channel_id", label: t("configChannels_channelWelcome") },
   ];
 
-  if (isLoading) return <div className="text-muted-foreground text-sm">Loading...</div>;
+  if (isLoading) return <div className="text-muted-foreground text-sm">{t("loading")}</div>;
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -134,8 +136,8 @@ export function ConfigChannels() {
           <Hash className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Channels & Permissions</h1>
-          <p className="text-sm text-muted-foreground">Select server, admin role, and notification channels.</p>
+          <h1 className="text-xl font-bold">{t("configChannels_channelsPerms")}</h1>
+          <p className="text-sm text-muted-foreground">{t("configChannels_channelsPermsDesc")}</p>
         </div>
       </div>
 
@@ -145,9 +147,9 @@ export function ConfigChannels() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Shield className="w-4 h-4" /> Permission Admin
+                <Shield className="w-4 h-4" /> {t("configChannels_permissionAdmin")}
               </CardTitle>
-              <CardDescription>Config for selected server: <strong>{activeGuildId}</strong></CardDescription>
+              <CardDescription>{t("configChannels_configForServer")} <strong>{activeGuildId}</strong></CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -155,25 +157,25 @@ export function ConfigChannels() {
                 name="admin_role_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Dashboard Admin Role</FormLabel>
+                    <FormLabel>{t("configChannels_dashboardAdminRole")}</FormLabel>
                     <FormControl>
                       {roles.length > 0 ? (
                         <DiscordSelect
                           value={field.value}
                           onChange={field.onChange}
                           options={roles}
-                          placeholder="Select role..."
+                          placeholder={t("configChannels_selectRole")}
                         />
                       ) : (
                         <Input
-                          placeholder={activeGuildId ? "Loading roles..." : "Select a server first"}
+                          placeholder={activeGuildId ? t("configChannels_loadingRoles") : t("configChannels_selectServerFirst")}
                           disabled={!activeGuildId}
                           {...field}
                           value={field.value || ""}
                         />
                       )}
                     </FormControl>
-                    <FormDescription>Users with this role can log in to the dashboard.</FormDescription>
+                    <FormDescription>{t("configChannels_adminRoleDesc")}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -185,9 +187,9 @@ export function ConfigChannels() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Hash className="w-4 h-4" /> Notification channels
+                <Hash className="w-4 h-4" /> {t("configChannels_notifChannels")}
               </CardTitle>
-              <CardDescription>Bot will send notifications to these channels.</CardDescription>
+              <CardDescription>{t("configChannels_notifDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -205,11 +207,11 @@ export function ConfigChannels() {
                               value={field.value}
                               onChange={field.onChange}
                               options={channels.map((c) => ({ id: c.id, name: `#${c.name}` }))}
-                              placeholder="Select channel..."
+                              placeholder={t("configChannels_selectChannel")}
                             />
                           ) : (
                             <Input
-                              placeholder={activeGuildId ? "Loading channels..." : "Select a server first"}
+                              placeholder={activeGuildId ? t("configChannels_loadingChannels") : t("configChannels_selectServerFirst")}
                               disabled={!activeGuildId}
                               {...field}
                               value={field.value || ""}
@@ -226,7 +228,7 @@ export function ConfigChannels() {
           </Card>
 
           <Button type="submit" disabled={mutation.isPending}>
-            {mutation.isPending ? "Saving..." : "Save Config"}
+            {mutation.isPending ? t("saving") : t("configChannels_saveConfig")}
           </Button>
         </form>
       </Form>

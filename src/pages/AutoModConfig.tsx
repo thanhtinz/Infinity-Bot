@@ -38,6 +38,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -64,9 +65,9 @@ interface AutoModConfigData {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const ACTION_OPTIONS = [
-  { value: "warn", label: "Warn" },
-  { value: "mute", label: "Mute 5 min" },
-  { value: "kick", label: "Kick" },
+  { value: "warn", labelKey: "automod_warn" as const },
+  { value: "mute", labelKey: "automod_mute5min" as const },
+  { value: "kick", labelKey: "automod_kick" as const },
 ] as const;
 
 // ─── API ─────────────────────────────────────────────────────────────────────
@@ -104,6 +105,7 @@ function textToArr(text: string): string[] {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function AutoModConfig() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -200,11 +202,11 @@ export function AutoModConfig() {
         log_channel_id: logChannelId,
       }),
     onSuccess: () => {
-      toast({ title: "Saved", description: "Auto Mod config updated." });
+      toast({ title: t("savedSuccess"), description: t("toast_autoModSaved") });
       qc.invalidateQueries({ queryKey: ["automod_config"] });
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast({ title: t("error"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -214,9 +216,9 @@ export function AutoModConfig() {
       <div>
         <div className="flex items-center gap-2">
           <Shield className="w-5 h-5" />
-          <h2 className="text-2xl font-bold tracking-tight">Auto Mod</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{t("automod_title")}</h2>
         </div>
-        <p className="text-muted-foreground mt-1">Automatically moderate messages</p>
+        <p className="text-muted-foreground mt-1">{t("automod_autoModerate")}</p>
       </div>
 
       {/* ── Anti-Spam ── */}
@@ -225,7 +227,7 @@ export function AutoModConfig() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <MessageSquareOff className="w-4 h-4" /> Anti Spam
+                <MessageSquareOff className="w-4 h-4" /> {t("automod_antiSpam")}
               </CardTitle>
               <div className="flex items-center gap-3">
                 <Switch
@@ -249,7 +251,7 @@ export function AutoModConfig() {
             <CardContent className="space-y-4 pt-0">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Max messages</Label>
+                  <Label>{t("automod_maxMessages")}</Label>
                   <Input
                     type="number"
                     min={1}
@@ -258,7 +260,7 @@ export function AutoModConfig() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Interval (seconds)</Label>
+                  <Label>{t("automod_interval")}</Label>
                   <Input
                     type="number"
                     min={1}
@@ -268,7 +270,7 @@ export function AutoModConfig() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Actions</Label>
+                <Label>{t("automod_action")}</Label>
                 <Select value={antiSpamAction} onValueChange={setAntiSpamAction}>
                   <SelectTrigger>
                     <SelectValue />
@@ -276,7 +278,7 @@ export function AutoModConfig() {
                   <SelectContent>
                     {ACTION_OPTIONS.map((o) => (
                       <SelectItem key={o.value} value={o.value}>
-                        {o.label}
+                        {t(o.labelKey)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -293,7 +295,7 @@ export function AutoModConfig() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <Link2Off className="w-4 h-4" /> Anti Link
+                <Link2Off className="w-4 h-4" /> {t("automod_antiLink")}
               </CardTitle>
               <div className="flex items-center gap-3">
                 <Switch
@@ -316,7 +318,7 @@ export function AutoModConfig() {
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-0">
               <div className="space-y-2">
-                <Label>Whitelist (one domain per line)</Label>
+                <Label>{t("automod_whitelist")}</Label>
                 <Textarea
                   value={antiLinkWhitelist}
                   onChange={(e) => setAntiLinkWhitelist(e.target.value)}
@@ -335,7 +337,7 @@ export function AutoModConfig() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <Ban className="w-4 h-4" /> Bad Words
+                <Ban className="w-4 h-4" /> {t("automod_badWords")}
               </CardTitle>
               <div className="flex items-center gap-3">
                 <Switch
@@ -358,7 +360,7 @@ export function AutoModConfig() {
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-0">
               <div className="space-y-2">
-                <Label>Bad words list (one word per line)</Label>
+                <Label>{t("automod_badWordsListLabel")}</Label>
                 <Textarea
                   value={badWordsList}
                   onChange={(e) => setBadWordsList(e.target.value)}
@@ -377,7 +379,7 @@ export function AutoModConfig() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <CaseSensitive className="w-4 h-4" /> Anti Caps
+                <CaseSensitive className="w-4 h-4" /> {t("automod_antiCaps")}
               </CardTitle>
               <div className="flex items-center gap-3">
                 <Switch
@@ -400,7 +402,7 @@ export function AutoModConfig() {
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-0">
               <div className="space-y-2">
-                <Label>Min length</Label>
+                <Label>{t("automod_minLength")}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -408,11 +410,11 @@ export function AutoModConfig() {
                   onChange={(e) => setCapsLockMinLength(Number(e.target.value))}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Only check messages longer than this value.
+                  {t("automod_capsMinLengthDesc")}
                 </p>
               </div>
               <div className="space-y-2">
-                <Label>Caps percentage: {capsLockPercentage}%</Label>
+                <Label>{t("automod_capsPercentage")}: {capsLockPercentage}%</Label>
                 <Slider
                   value={[capsLockPercentage]}
                   onValueChange={([v]) => setCapsLockPercentage(v)}
@@ -432,7 +434,7 @@ export function AutoModConfig() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <AtSign className="w-4 h-4" /> Anti Mass Mention
+                <AtSign className="w-4 h-4" /> {t("automod_antiMassMention")}
               </CardTitle>
               <div className="flex items-center gap-3">
                 <Switch
@@ -455,7 +457,7 @@ export function AutoModConfig() {
           <CollapsibleContent>
             <CardContent className="space-y-4 pt-0">
               <div className="space-y-2">
-                <Label>Max mentions</Label>
+                <Label>{t("automod_maxMentions")}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -464,7 +466,7 @@ export function AutoModConfig() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Actions</Label>
+                <Label>{t("automod_action")}</Label>
                 <Select value={mentionSpamAction} onValueChange={setMentionSpamAction}>
                   <SelectTrigger>
                     <SelectValue />
@@ -472,7 +474,7 @@ export function AutoModConfig() {
                   <SelectContent>
                     {ACTION_OPTIONS.map((o) => (
                       <SelectItem key={o.value} value={o.value}>
-                        {o.label}
+                        {t(o.labelKey)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -486,44 +488,44 @@ export function AutoModConfig() {
       {/* ── Filters ── */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Filters</CardTitle>
+          <CardTitle className="text-base">{t("automod_filters")}</CardTitle>
           <CardDescription>
-            Channels and roles ignored by all filters.
+            {t("automod_ignoredChannelsDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-2">
-            <Label>Ignored channels</Label>
+            <Label>{t("automod_ignoredChannelsLabel")}</Label>
             <ChannelSelect
               value={ignoredChannels[0] ?? ""}
               onChange={(v) => setIgnoredChannels(v ? [v] : [])}
-              placeholder="Select channel..."
+              placeholder={t("selectChannel")}
               filter="text"
             />
             <p className="text-xs text-muted-foreground">
-              These channels will not be checked by Auto Mod.
+              {t("automod_ignoredChannelsDesc")}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Ignored roles</Label>
+            <Label>{t("automod_ignoredRolesLabel")}</Label>
             <MultiRoleSelect
               value={ignoredRoles}
               onChange={setIgnoredRoles}
-              placeholder="Select roles..."
+              placeholder={t("selectRoles")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Log channel</Label>
+            <Label>{t("automod_logChannelLabel")}</Label>
             <ChannelSelect
               value={logChannelId ?? ""}
               onChange={setLogChannelId}
-              placeholder="Select channel..."
+              placeholder={t("selectChannel")}
               filter="text"
             />
             <p className="text-xs text-muted-foreground">
-              Channel for logging Auto Mod actions.
+              {t("automod_logChannelDesc")}
             </p>
           </div>
         </CardContent>
@@ -531,7 +533,7 @@ export function AutoModConfig() {
 
       {/* Save */}
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
-        {mutation.isPending ? "Saving..." : "Save Config"}
+        {mutation.isPending ? t("saving") : t("automod_saveConfig")}
       </Button>
     </div>
   );

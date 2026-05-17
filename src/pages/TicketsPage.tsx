@@ -32,10 +32,12 @@ import { StatCard } from "./tickets/ticketHelpers";
 import { TicketDetailDialog } from "./tickets/TicketDetailDialog";
 import { TicketTable, BlacklistTable } from "./tickets/TicketTables";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 /* ── Main page ── */
 
 export function TicketsPage() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -136,10 +138,10 @@ export function TicketsPage() {
       qc.invalidateQueries({ queryKey: ["tickets"] });
       qc.invalidateQueries({ queryKey: ["ticket-stats"] });
       qc.invalidateQueries({ queryKey: ["ticket", selectedTicketId] });
-      toast({ title: "Ticket updated" });
+      toast({ title: t("toast_ticketUpdated") });
     },
     onError: (e: Error) =>
-      toast({ variant: "destructive", title: "Error", description: e.message }),
+      toast({ variant: "destructive", title: t("error"), description: e.message }),
   });
 
   const blacklistRemoveMutation = useMutation({
@@ -152,10 +154,10 @@ export function TicketsPage() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-blacklist"] });
-      toast({ title: "Removed from blacklist" });
+      toast({ title: t("toast_removedFromBlacklist") });
     },
     onError: () =>
-      toast({ variant: "destructive", title: "Failed to remove from blacklist" }),
+      toast({ variant: "destructive", title: t("toast_removeBlacklistFailed") }),
   });
 
   /* ── Derived data ── */
@@ -194,28 +196,28 @@ export function TicketsPage() {
 
   const statCards = [
     {
-      label: "Total tickets",
+      label: t("ticket_totalTickets"),
       value: stats?.total ?? 0,
       icon: Ticket,
       iconBg: "bg-blue-500/10",
       iconColor: "text-blue-500",
     },
     {
-      label: "Open",
+      label: t("open"),
       value: stats?.open ?? 0,
       icon: Inbox,
       iconBg: "bg-green-500/10",
       iconColor: "text-green-500",
     },
     {
-      label: "Closed",
+      label: t("closed"),
       value: stats?.closed ?? 0,
       icon: CheckCircle,
       iconBg: "bg-gray-500/10",
       iconColor: "text-gray-500",
     },
     {
-      label: "Avg close (hrs)",
+      label: t("tickets_avgCloseHrs"),
       value: stats?.avg_close_hours?.toFixed(1) ?? "—",
       icon: Clock,
       iconBg: "bg-amber-500/10",
@@ -231,10 +233,10 @@ export function TicketsPage() {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Ticket className="h-6 w-6 text-primary" />
-          Tickets
+          {t("tickets_title")}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Manage ticket system
+          {t("tickets_manageSystem")}
         </p>
       </div>
 
@@ -244,10 +246,10 @@ export function TicketsPage() {
         onValueChange={(v) => setPageTab(v as "list" | "blacklist")}
       >
         <TabsList>
-          <TabsTrigger value="list">List</TabsTrigger>
+          <TabsTrigger value="list">{t("tickets_title")}</TabsTrigger>
           <TabsTrigger value="blacklist" className="gap-1.5">
             <Shield className="h-3.5 w-3.5" />
-            Blacklist
+            {t("tickets_blacklist")}
           </TabsTrigger>
         </TabsList>
 
@@ -280,10 +282,10 @@ export function TicketsPage() {
               }
             >
               <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="open">Open</TabsTrigger>
-                <TabsTrigger value="closed">Closed</TabsTrigger>
-                <TabsTrigger value="deleted">Deleted</TabsTrigger>
+                <TabsTrigger value="all">{t("all")}</TabsTrigger>
+                <TabsTrigger value="open">{t("open")}</TabsTrigger>
+                <TabsTrigger value="closed">{t("closed")}</TabsTrigger>
+                <TabsTrigger value="deleted">{t("deleted")}</TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -292,7 +294,7 @@ export function TicketsPage() {
               <div className="relative flex-1 min-w-[200px] lg:w-64">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search subject, creator, channel..."
+                  placeholder={t("ticket_searchSubject")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
@@ -304,23 +306,23 @@ export function TicketsPage() {
                 onValueChange={setPriorityFilter}
               >
                 <SelectTrigger className="w-[140px] h-9">
-                  <SelectValue placeholder="Priority" />
+                  <SelectValue placeholder={t("priority")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All levels</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
+                  <SelectItem value="all">{t("tickets_allLevels")}</SelectItem>
+                  <SelectItem value="low">{t("tickets_low")}</SelectItem>
+                  <SelectItem value="normal">{t("tickets_normal")}</SelectItem>
+                  <SelectItem value="high">{t("tickets_high")}</SelectItem>
+                  <SelectItem value="urgent">{t("urgent")}</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={panelFilter} onValueChange={setPanelFilter}>
                 <SelectTrigger className="w-[140px] h-9">
-                  <SelectValue placeholder="Panel" />
+                  <SelectValue placeholder={t("selectPanel")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All panels</SelectItem>
+                  <SelectItem value="all">{t("tickets_allPanels")}</SelectItem>
                   {panels.map((p) => (
                     <SelectItem key={p.id} value={String(p.id)}>
                       {p.name}

@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link2, UserPlus, UserMinus, AlertTriangle, Info } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 interface InviteRecord {
   inviter_id: string;
@@ -36,6 +37,7 @@ function formatDate(s: string) {
 }
 
 export function InviteTracking() {
+  const { t } = useT();
   const [tab, setTab] = useState("leaderboard");
 
   const { data: invites = [], isLoading: invitesLoading } = useQuery<InviteRecord[]>({
@@ -58,20 +60,20 @@ export function InviteTracking() {
   const isLoading = tab === "leaderboard" ? invitesLoading : logsLoading;
 
   if (isLoading && invites.length === 0 && logs.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-muted-foreground">Loading...</div>;
+    return <div className="flex items-center justify-center h-64 text-muted-foreground">{t("loading")}</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Link2 className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">Invite Tracking</h2>
+        <h2 className="text-2xl font-bold">{t("invite_title")}</h2>
       </div>
 
       {/* ── Note ── */}
       <div className="flex items-start gap-2 rounded-lg border border-blue-500/30 bg-blue-500/5 p-3 text-sm text-blue-700 dark:text-blue-400">
         <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-        <p>Invite tracking works when the bot is online and has Manage Guild permission</p>
+        <p>{t("invite_notePermission")}</p>
       </div>
 
       {/* ── Stat Cards ── */}
@@ -82,7 +84,7 @@ export function InviteTracking() {
               <Link2 className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total invites</p>
+              <p className="text-xs text-muted-foreground">{t("invite_totalInvites")}</p>
               <p className="text-xl font-bold">{totalInvites.toLocaleString("vi-VN")}</p>
             </div>
           </CardContent>
@@ -93,7 +95,7 @@ export function InviteTracking() {
               <UserPlus className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Active</p>
+              <p className="text-xs text-muted-foreground">{t("active")}</p>
               <p className="text-xl font-bold">{totalActive.toLocaleString("vi-VN")}</p>
             </div>
           </CardContent>
@@ -104,7 +106,7 @@ export function InviteTracking() {
               <UserMinus className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Left</p>
+              <p className="text-xs text-muted-foreground">{t("invite_left")}</p>
               <p className="text-xl font-bold">{totalLeft.toLocaleString("vi-VN")}</p>
             </div>
           </CardContent>
@@ -115,7 +117,7 @@ export function InviteTracking() {
               <AlertTriangle className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Fake</p>
+              <p className="text-xs text-muted-foreground">{t("invite_fake")}</p>
               <p className="text-xl font-bold">{totalFake.toLocaleString("vi-VN")}</p>
             </div>
           </CardContent>
@@ -125,8 +127,8 @@ export function InviteTracking() {
       {/* ── Tabs ── */}
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-          <TabsTrigger value="log">Logs Invite</TabsTrigger>
+          <TabsTrigger value="leaderboard">{t("invite_leaderboard")}</TabsTrigger>
+          <TabsTrigger value="log">{t("invite_log")}</TabsTrigger>
         </TabsList>
 
         {/* ── Tab 1: Leaderboard ── */}
@@ -137,18 +139,18 @@ export function InviteTracking() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">#</TableHead>
-                    <TableHead>Inviter ID</TableHead>
-                    <TableHead className="text-center">Total Invites</TableHead>
-                    <TableHead className="text-center">Active</TableHead>
-                    <TableHead className="text-center">Left</TableHead>
-                    <TableHead className="text-center">Fake</TableHead>
+                    <TableHead>{t("invite_inviter")} ID</TableHead>
+                    <TableHead className="text-center">{t("invite_total")}</TableHead>
+                    <TableHead className="text-center">{t("active")}</TableHead>
+                    <TableHead className="text-center">{t("invite_left")}</TableHead>
+                    <TableHead className="text-center">{t("invite_fake")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sortedInvites.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                        No data yet invite.
+                        {t("invite_noData")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -178,19 +180,19 @@ export function InviteTracking() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Inviter</TableHead>
-                    <TableHead>Invitee</TableHead>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Date join</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Fake</TableHead>
+                    <TableHead>{t("invite_inviter")}</TableHead>
+                    <TableHead>{t("invite_invited")}</TableHead>
+                    <TableHead>{t("invite_code")}</TableHead>
+                    <TableHead>{t("invite_dateJoin")}</TableHead>
+                    <TableHead>{t("status")}</TableHead>
+                    <TableHead>{t("invite_fake")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {logs.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                        No invite logs yet.
+                        {t("invite_noLogs")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -208,14 +210,14 @@ export function InviteTracking() {
                         <TableCell className="text-sm">{formatDate(log.joined_at)}</TableCell>
                         <TableCell>
                           {log.left ? (
-                            <Badge className="bg-red-500/15 text-red-600 border-red-500/30">Left</Badge>
+                            <Badge className="bg-red-500/15 text-red-600 border-red-500/30">{t("invite_left")}</Badge>
                           ) : (
-                            <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Active</Badge>
+                            <Badge className="bg-green-500/15 text-green-600 border-green-500/30">{t("active")}</Badge>
                           )}
                         </TableCell>
                         <TableCell>
                           {log.is_fake && (
-                            <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30">Fake</Badge>
+                            <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30">{t("invite_fake")}</Badge>
                           )}
                         </TableCell>
                       </TableRow>

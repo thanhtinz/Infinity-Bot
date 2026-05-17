@@ -28,6 +28,7 @@ import {
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect } from "@/components/RoleSelect";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface TicketConfigData {
@@ -150,6 +151,7 @@ function LoadingSkeleton() {
 // ─── Main component ──────────────────────────────────────────────────────────
 
 export function TicketConfig() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [form, setForm] = useState<ConfigForm>({ ...DEFAULTS });
@@ -206,14 +208,14 @@ export function TicketConfig() {
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Ticket configuration saved" });
+      toast({ title: t("toast_ticketSaved") });
       qc.invalidateQueries({ queryKey: ["ticket-config"] });
     },
     onError: () => {
       toast({
         variant: "destructive",
-        title: "Save failed",
-        description: "Please try again",
+        title: t("toast_saveFailed"),
+        description: t("tryAgain"),
       });
     },
   });
@@ -247,16 +249,16 @@ export function TicketConfig() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Ticket Config
+            {t("ticketConfig_title")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Configure the ticket system for your Discord server
+            {t("ticketConfig_desc")}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {isDirty && (
             <Badge variant="secondary" className="text-xs">
-              Unsaved changes
+              {t("ticketConfig_unsavedChanges")}
             </Badge>
           )}
           <Button
@@ -265,7 +267,7 @@ export function TicketConfig() {
             onClick={() => saveMutation.mutate(form)}
           >
             <Save className="mr-1.5 h-3.5 w-3.5" />
-            {saveMutation.isPending ? "Saving..." : "Save Config"}
+            {saveMutation.isPending ? t("saving") : t("ticketConfig_save")}
           </Button>
         </div>
       </div>
@@ -273,47 +275,47 @@ export function TicketConfig() {
       {/* ── Section 1: Channels & Roles ── */}
       <SectionCard
         icon={Settings2}
-        title="Channel & Role"
-        description="Configure channels and roles for the ticket system"
+        title={t("ticketConfig_channelRole")}
+        description={t("ticketConfig_channelRoleDesc")}
       >
         <div className="space-y-2">
-          <Label htmlFor="log-channel">Log Channel ID</Label>
+          <Label htmlFor="log-channel">{t("ticketConfig_logChannelId")}</Label>
           <ChannelSelect
             filter="text"
             value={form.log_channel_id}
             onChange={(v) => set("log_channel_id", v === "__clear__" ? "" : v)}
-            placeholder="Select log channel..."
+            placeholder={t("ticketConfig_selectLogChannel")}
           />
           <p className="text-xs text-muted-foreground">
-            Channel to log ticket history
+            {t("ticketConfig_logChannelDesc")}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="category-id">Default Category ID</Label>
+          <Label htmlFor="category-id">{t("ticketConfig_defaultCategoryId")}</Label>
           <ChannelSelect
             filter="category"
             value={form.category_id}
             onChange={(v) => set("category_id", v === "__clear__" ? "" : v)}
-            placeholder="Select category..."
+            placeholder={t("ticketConfig_selectCategory")}
           />
           <p className="text-xs text-muted-foreground">
-            Discord category containing ticket channels
+            {t("ticketConfig_categoryDesc")}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="support-roles">Support Role IDs</Label>
+          <Label htmlFor="support-roles">{t("ticketConfig_supportRoleIds")}</Label>
           <MultiRoleSelect
             value={form.support_role_ids
               .split(",")
               .map((s) => s.trim())
               .filter(Boolean)}
             onChange={(v) => set("support_role_ids", v.join(", "))}
-            placeholder="Select support roles..."
+            placeholder={t("ticketConfig_selectSupportRoles")}
           />
           <p className="text-xs text-muted-foreground">
-            Roles with permission to view and handle tickets
+            {t("ticketConfig_supportRoleDesc")}
           </p>
         </div>
       </SectionCard>
@@ -321,11 +323,11 @@ export function TicketConfig() {
       {/* ── Section 2: Limits & Cooldown ── */}
       <SectionCard
         icon={Sliders}
-        title="Limits & Cooldown"
-        description="Control the frequency of ticket creation"
+        title={t("ticketConfig_limitsCooldown")}
+        description={t("ticketConfig_limitsCooldownDesc")}
       >
         <div className="space-y-2">
-          <Label>Ticket limit per user</Label>
+          <Label>{t("ticketConfig_ticketLimitPerUser")}</Label>
           <div className="flex items-center gap-4">
             <Slider
               value={[form.ticket_limit]}
@@ -340,12 +342,12 @@ export function TicketConfig() {
             </span>
           </div>
           <p className="text-xs text-muted-foreground">
-            Max tickets a user can have open at the same time
+            {t("ticketConfig_maxOpenDesc")}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="cooldown">Cooldown (minutes)</Label>
+          <Label htmlFor="cooldown">{t("ticketConfig_cooldownMinutes")}</Label>
           <Input
             id="cooldown"
             type="number"
@@ -357,7 +359,7 @@ export function TicketConfig() {
             }
           />
           <p className="text-xs text-muted-foreground">
-            Cooldown between ticket creations (minutes, 0 = off)
+            {t("ticketConfig_cooldownDesc")}
           </p>
         </div>
       </SectionCard>
@@ -365,14 +367,14 @@ export function TicketConfig() {
       {/* ── Section 3: Auto-close ── */}
       <SectionCard
         icon={Clock}
-        title="Auto-close"
-        description="Automatically close inactive tickets"
+        title={t("ticketConfig_autoClose")}
+        description={t("ticketConfig_autoCloseDesc")}
       >
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-0.5">
-            <Label>Enable auto close</Label>
+            <Label>{t("ticketConfig_enableAutoClose")}</Label>
             <p className="text-xs text-muted-foreground">
-              Auto-close tickets when inactive
+              {t("ticketConfig_autoCloseWhenInactive")}
             </p>
           </div>
           <Switch
@@ -388,7 +390,7 @@ export function TicketConfig() {
         {form.auto_close_enabled && (
           <>
             <div className="space-y-2">
-              <Label htmlFor="auto-close-hours">Close after (hours)</Label>
+              <Label htmlFor="auto-close-hours">{t("ticketConfig_closeAfterHours")}</Label>
               <Input
                 id="auto-close-hours"
                 type="number"
@@ -404,8 +406,7 @@ export function TicketConfig() {
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  Ticket will auto-close after {form.auto_close_hours} hours of
-                  inactivity
+                  {t("ticketConfig_autoCloseWarning").replace("{hours}", String(form.auto_close_hours))}
                 </AlertDescription>
               </Alert>
             )}

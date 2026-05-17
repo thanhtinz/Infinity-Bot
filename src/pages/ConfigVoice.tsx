@@ -13,21 +13,22 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { Mic, Server, Settings, Shield, Wrench } from "lucide-react";
+import { useT } from "@/i18n";
 
 const VOICE_BUTTON_OPTIONS = [
-  { key: "name", label: "Name", desc: "Rename room", emoji: "✏️" },
-  { key: "limit", label: "Limit", desc: "User limit", emoji: "👥" },
-  { key: "privacy", label: "Privacy", desc: "Toggle privacy", emoji: "🔐" },
-  { key: "trust", label: "Trust", desc: "Allow user", emoji: "✅" },
-  { key: "untrust", label: "Untrust", desc: "Remove user trust", emoji: "➖" },
-  { key: "invite", label: "Invite", desc: "Invite user", emoji: "📨" },
-  { key: "kick", label: "Kick", desc: "Kick user", emoji: "👢" },
-  { key: "region", label: "Region", desc: "Set automatic region", emoji: "🌍" },
-  { key: "block", label: "Block", desc: "Block user", emoji: "🚫" },
-  { key: "unblock", label: "Unblock", desc: "Unblock user", emoji: "🔓" },
-  { key: "claim", label: "Claim", desc: "Claim ownerless room", emoji: "🙋" },
-  { key: "transfer", label: "Transfer", desc: "Transfer ownership", emoji: "👑" },
-  { key: "delete", label: "Delete", desc: "Delete room", emoji: "🗑️" },
+  { key: "name", labelKey: "voiceBtn_name" as const, descKey: "voiceBtn_nameDesc" as const, emoji: "✏️" },
+  { key: "limit", labelKey: "voiceBtn_limit" as const, descKey: "voiceBtn_limitDesc" as const, emoji: "👥" },
+  { key: "privacy", labelKey: "voiceBtn_privacy" as const, descKey: "voiceBtn_privacyDesc" as const, emoji: "🔐" },
+  { key: "trust", labelKey: "voiceBtn_trust" as const, descKey: "voiceBtn_trustDesc" as const, emoji: "✅" },
+  { key: "untrust", labelKey: "voiceBtn_untrust" as const, descKey: "voiceBtn_untrustDesc" as const, emoji: "➖" },
+  { key: "invite", labelKey: "voiceBtn_invite" as const, descKey: "voiceBtn_inviteDesc" as const, emoji: "📨" },
+  { key: "kick", labelKey: "voiceBtn_kick" as const, descKey: "voiceBtn_kickDesc" as const, emoji: "👢" },
+  { key: "region", labelKey: "voiceBtn_region" as const, descKey: "voiceBtn_regionDesc" as const, emoji: "🌍" },
+  { key: "block", labelKey: "voiceBtn_block" as const, descKey: "voiceBtn_blockDesc" as const, emoji: "🚫" },
+  { key: "unblock", labelKey: "voiceBtn_unblock" as const, descKey: "voiceBtn_unblockDesc" as const, emoji: "🔓" },
+  { key: "claim", labelKey: "voiceBtn_claim" as const, descKey: "voiceBtn_claimDesc" as const, emoji: "🙋" },
+  { key: "transfer", labelKey: "voiceBtn_transfer" as const, descKey: "voiceBtn_transferDesc" as const, emoji: "👑" },
+  { key: "delete", labelKey: "voiceBtn_delete" as const, descKey: "voiceBtn_deleteDesc" as const, emoji: "🗑️" },
 ];
 const DEFAULT_VOICE_BUTTONS = VOICE_BUTTON_OPTIONS.map((button) => button.key);
 
@@ -42,6 +43,7 @@ const BITRATE_OPTIONS = [
 ];
 
 export function ConfigVoice() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -134,9 +136,9 @@ export function ConfigVoice() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tempvoice_config"] });
-      toast({ title: "Saved", description: "TempVoice config saved." });
+      toast({ title: t("savedSuccess"), description: t("toast_tempVoiceSaved") });
     },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Save failed." }),
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_saveFailed") }),
   });
 
   return (
@@ -147,9 +149,9 @@ export function ConfigVoice() {
           <Mic className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Temp Voice</h1>
+          <h1 className="text-xl font-bold">{t("configVoice_tempVoice")}</h1>
           <p className="text-sm text-muted-foreground">
-            When users join the "Join to Create" channel, the bot creates a private voice room.
+            {t("configVoice_tempVoiceDesc")}
           </p>
         </div>
         <Badge
@@ -159,7 +161,7 @@ export function ConfigVoice() {
               : "ml-auto bg-gray-500/15 text-gray-500 border-gray-500/30"
           }
         >
-          {enabled ? "Active" : "Inactive"}
+          {enabled ? t("active") : t("inactive")}
         </Badge>
       </div>
 
@@ -167,14 +169,14 @@ export function ConfigVoice() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Server className="w-4 h-4" /> Server Discord
+            <Server className="w-4 h-4" /> {t("configVoice_serverDiscord")}
           </CardTitle>
-          <CardDescription>Select a server to load voice channels and categories.</CardDescription>
+          <CardDescription>{t("configChannels_channelsPermsDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <Select value={guildId || ""} onValueChange={setGuildId}>
             <SelectTrigger>
-              <SelectValue placeholder="Select server..." />
+              <SelectValue placeholder={t("configVoice_selectServer")} />
             </SelectTrigger>
             <SelectContent>
               {guilds.map((g) => (
@@ -185,7 +187,7 @@ export function ConfigVoice() {
           {guilds.length === 0 && (
             <Input
               className="mt-2"
-              placeholder="Discord server ID (Bot Token required first)"
+              placeholder={t("configVoice_serverIdPlaceholder")}
               value={guildId}
               onChange={(e) => setGuildId(e.target.value)}
             />
@@ -197,44 +199,44 @@ export function ConfigVoice() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Settings className="w-4 h-4" /> Basic Config
+            <Settings className="w-4 h-4" /> {t("configVoice_basicConfig")}
           </CardTitle>
-          <CardDescription>Set up the channel and category for temporary voice rooms.</CardDescription>
+          <CardDescription>{t("configVoice_basicConfigDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* Enable toggle */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Enable feature</p>
-              <p className="text-sm text-muted-foreground">Automatically creates voice rooms.</p>
+              <p className="font-medium">{t("configVoice_enableFeature")}</p>
+              <p className="text-sm text-muted-foreground">{t("configVoice_enableFeatureDesc")}</p>
             </div>
             <Switch checked={enabled} onCheckedChange={setEnabled} />
           </div>
 
           {/* Category */}
           <div className="space-y-2">
-            <Label>Voice room category</Label>
+            <Label>{t("configVoice_voiceRoomCategory")}</Label>
             <ChannelSelect
               value={category}
               onChange={setCategory}
               filter="category"
-              placeholder="Select category..."
+              placeholder={t("configVoice_selectCategory")}
               guildId={activeGuildId}
             />
-            <p className="text-xs text-muted-foreground">Temporary voice rooms will be created in this category.</p>
+            <p className="text-xs text-muted-foreground">{t("configVoice_voiceRoomCategoryDesc")}</p>
           </div>
 
           {/* Join to Create channel */}
           <div className="space-y-2">
-            <Label>Channel "Join to Create"</Label>
+            <Label>{t("configVoice_joinToCreate")}</Label>
             <ChannelSelect
               value={joinChannel}
               onChange={setJoinChannel}
               filter="voice"
-              placeholder="Select voice channel..."
+              placeholder={t("configVoice_selectVoiceChannel")}
               guildId={activeGuildId}
             />
-            <p className="text-xs text-muted-foreground">User joins this channel → bot creates a private voice room.</p>
+            <p className="text-xs text-muted-foreground">{t("configVoice_joinToCreateDesc")}</p>
           </div>
         </CardContent>
       </Card>
@@ -243,17 +245,17 @@ export function ConfigVoice() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Mic className="w-4 h-4" /> Voice Channel Defaults
+            <Mic className="w-4 h-4" /> {t("configVoice_voiceChannelDefaults")}
           </CardTitle>
-          <CardDescription>Set default values for newly created voice rooms.</CardDescription>
+          <CardDescription>{t("configVoice_voiceChannelDefaultsDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* User Limit */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>User limit</Label>
+              <Label>{t("configVoice_userLimit")}</Label>
               <span className="text-sm text-muted-foreground">
-                {defaultUserLimit === 0 ? "Unlimited" : defaultUserLimit}
+                {defaultUserLimit === 0 ? t("unlimited") : defaultUserLimit}
               </span>
             </div>
             <Slider
@@ -263,17 +265,17 @@ export function ConfigVoice() {
               max={99}
               step={1}
             />
-            <p className="text-xs text-muted-foreground">0 = No user limit.</p>
+            <p className="text-xs text-muted-foreground">{t("configVoice_noUserLimit")}</p>
           </div>
 
           <Separator />
 
           {/* Bitrate */}
           <div className="space-y-2">
-            <Label>Bitrate</Label>
+            <Label>{t("configVoice_bitrate")}</Label>
             <Select value={String(defaultBitrate)} onValueChange={(v) => setDefaultBitrate(Number(v))}>
               <SelectTrigger>
-                <SelectValue placeholder="Select bitrate..." />
+                <SelectValue placeholder={t("configVoice_selectBitrate")} />
               </SelectTrigger>
               <SelectContent>
                 {BITRATE_OPTIONS.map((opt) => (
@@ -289,14 +291,14 @@ export function ConfigVoice() {
 
           {/* Naming Format */}
           <div className="space-y-2">
-            <Label>Channel name format</Label>
+            <Label>{t("configVoice_channelNameFormat")}</Label>
             <Input
               value={namingFormat}
               onChange={(e) => setNamingFormat(e.target.value)}
               placeholder="{user}'s Channel"
             />
             <p className="text-xs text-muted-foreground">
-              Variables: <code className="rounded bg-muted px-1 py-0.5 text-xs">{`{user}`}</code>{" "}
+              {t("configVoice_namingFormatVars")} <code className="rounded bg-muted px-1 py-0.5 text-xs">{`{user}`}</code>{" "}
               <code className="rounded bg-muted px-1 py-0.5 text-xs">{`{count}`}</code>{" "}
               <code className="rounded bg-muted px-1 py-0.5 text-xs">{`{game}`}</code>
             </p>
@@ -308,37 +310,37 @@ export function ConfigVoice() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Shield className="w-4 h-4" /> Permission user
+            <Shield className="w-4 h-4" /> {t("configVoice_permissionUser")}
           </CardTitle>
-          <CardDescription>Allow users to manage their own voice rooms.</CardDescription>
+          <CardDescription>{t("configVoice_permissionUserDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border divide-y">
             <div className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium">Rename channel</p>
-                <p className="text-sm text-muted-foreground">Allow rename voice room</p>
+                <p className="font-medium">{t("configVoice_renameChannel")}</p>
+                <p className="text-sm text-muted-foreground">{t("configVoice_renameChannelDesc")}</p>
               </div>
               <Switch checked={allowRename} onCheckedChange={setAllowRename} />
             </div>
             <div className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium">User limit</p>
-                <p className="text-sm text-muted-foreground">Allow changing user limit</p>
+                <p className="font-medium">{t("configVoice_userLimitLabel")}</p>
+                <p className="text-sm text-muted-foreground">{t("configVoice_userLimitDesc")}</p>
               </div>
               <Switch checked={allowLimit} onCheckedChange={setAllowLimit} />
             </div>
             <div className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium">Lock channel</p>
-                <p className="text-sm text-muted-foreground">Allow lock/unlock channel</p>
+                <p className="font-medium">{t("configVoice_lockChannel")}</p>
+                <p className="text-sm text-muted-foreground">{t("configVoice_lockChannelDesc")}</p>
               </div>
               <Switch checked={allowLock} onCheckedChange={setAllowLock} />
             </div>
             <div className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium">Hidden channel</p>
-                <p className="text-sm text-muted-foreground">Allow hide/show channel</p>
+                <p className="font-medium">{t("configVoice_hiddenChannel")}</p>
+                <p className="text-sm text-muted-foreground">{t("configVoice_hiddenChannelDesc")}</p>
               </div>
               <Switch checked={allowHide} onCheckedChange={setAllowHide} />
             </div>
@@ -350,22 +352,22 @@ export function ConfigVoice() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Wrench className="w-4 h-4" /> Advanced
+            <Wrench className="w-4 h-4" /> {t("configVoice_advanced")}
           </CardTitle>
-          <CardDescription>Advanced config for the TempVoice system.</CardDescription>
+          <CardDescription>{t("configVoice_advancedDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* Interface Channel */}
           <div className="space-y-2">
-            <Label>Control panel channel</Label>
+            <Label>{t("configVoice_controlPanelChannel")}</Label>
             <ChannelSelect
               value={interfaceChannel}
               onChange={setInterfaceChannel}
               filter="text"
-              placeholder="Select text channel..."
+              placeholder={t("configVoice_selectTextChannel")}
               guildId={activeGuildId}
             />
-            <p className="text-xs text-muted-foreground">Channel containing voice room control buttons.</p>
+            <p className="text-xs text-muted-foreground">{t("configVoice_controlPanelDesc")}</p>
           </div>
 
           <Separator />
@@ -374,21 +376,21 @@ export function ConfigVoice() {
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label>Custom panel buttons</Label>
+                <Label>{t("configVoice_customPanelButtons")}</Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Select buttons to show in the voice room control embed.
+                  {t("configVoice_customPanelButtonsDesc")}
                 </p>
               </div>
               <Button type="button" variant="outline" size="sm" onClick={() => setVoiceButtons(DEFAULT_VOICE_BUTTONS)}>
-                Select all
+                {t("configVoice_selectAll")}
               </Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {VOICE_BUTTON_OPTIONS.map((button) => (
                 <div key={button.key} className="flex items-center justify-between rounded-lg border p-3">
                   <div className="min-w-0">
-                    <p className="font-medium text-sm">{button.emoji} {button.label}</p>
-                    <p className="text-xs text-muted-foreground">{button.desc}</p>
+                    <p className="font-medium text-sm">{button.emoji} {t(button.labelKey)}</p>
+                    <p className="text-xs text-muted-foreground">{t(button.descKey)}</p>
                   </div>
                   <Switch
                     checked={voiceButtons.includes(button.key)}
@@ -398,7 +400,7 @@ export function ConfigVoice() {
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              Active {voiceButtons.length}/{VOICE_BUTTON_OPTIONS.length} buttons: {voiceButtons.join(", ")}
+              {t("configVoice_activeButtons")} {voiceButtons.length}/{VOICE_BUTTON_OPTIONS.length} {t("configVoice_buttonsLabel")} {voiceButtons.join(", ")}
             </p>
           </div>
 
@@ -406,7 +408,7 @@ export function ConfigVoice() {
 
           {/* Auto Delete */}
           <div className="space-y-2">
-            <Label>Auto-delete (seconds)</Label>
+            <Label>{t("configVoice_autoDelete")}</Label>
             <Input
               type="number"
               min={0}
@@ -416,8 +418,8 @@ export function ConfigVoice() {
             />
             <p className="text-xs text-muted-foreground">
               {autoDeleteSeconds === 0
-                ? "Delete immediately when empty"
-                : `Delete after ${autoDeleteSeconds}s when the channel is empty.`}
+                ? t("configVoice_deleteImmediately")
+                : `${t("configVoice_deleteAfter")} ${autoDeleteSeconds}s ${t("configVoice_deleteAfterSuffix")}`}
             </p>
           </div>
         </CardContent>
@@ -425,7 +427,7 @@ export function ConfigVoice() {
 
       {/* Save button */}
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
-        {mutation.isPending ? "Saving..." : "Save Config"}
+        {mutation.isPending ? t("saving") : t("ticketConfig_save")}
       </Button>
     </div>
   );

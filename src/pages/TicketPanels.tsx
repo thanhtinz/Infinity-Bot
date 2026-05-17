@@ -25,10 +25,12 @@ import { GroupEditDialog } from "./ticket-panels/GroupEditDialog";
 import { GroupListSection } from "./ticket-panels/GroupListSection";
 import { DeletePanelDialog, DeleteGroupDialog } from "./ticket-panels/DeleteDialogs";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export function TicketPanels() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -85,12 +87,12 @@ export function TicketPanels() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setSheetOpen(false);
-      toast({ title: "Panel created" });
+      toast({ title: t("toast_panelCreated") });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Error creating panel",
+        title: t("toast_panelCreateFailed"),
         description: e.message,
       }),
   });
@@ -110,12 +112,12 @@ export function TicketPanels() {
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setSheetOpen(false);
       setEditingPanel(null);
-      toast({ title: "Panel updated" });
+      toast({ title: t("toast_panelUpdated") });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Update error",
+        title: t("toast_saveFailed"),
         description: e.message,
       }),
   });
@@ -131,12 +133,12 @@ export function TicketPanels() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setDeleteTarget(null);
-      toast({ title: "Deleted panel" });
+      toast({ title: t("toast_panelDeleted") });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Delete error panel",
+        title: t("toast_panelDeleteFailed"),
         description: e.message,
       }),
   });
@@ -158,12 +160,12 @@ export function TicketPanels() {
       qc.invalidateQueries({ queryKey: ["ticket-panel-groups"] });
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setGroupSheetOpen(false);
-      toast({ title: "Panel group created" });
+      toast({ title: t("toast_panelGroupCreated") });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Group creation failed",
+        title: t("toast_groupCreateFailed"),
         description: e.message,
       }),
   });
@@ -184,12 +186,12 @@ export function TicketPanels() {
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setGroupSheetOpen(false);
       setEditingGroup(null);
-      toast({ title: "Group updated" });
+      toast({ title: t("toast_groupUpdated") });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Group update failed",
+        title: t("toast_groupUpdateFailed"),
         description: e.message,
       }),
   });
@@ -206,12 +208,12 @@ export function TicketPanels() {
       qc.invalidateQueries({ queryKey: ["ticket-panel-groups"] });
       qc.invalidateQueries({ queryKey: ["ticket-panels"] });
       setDeleteGroupTarget(null);
-      toast({ title: "Group deleted" });
+      toast({ title: t("toast_groupDeleted") });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Group delete failed",
+        title: t("toast_groupDeleteFailed"),
         description: e.message,
       }),
   });
@@ -392,18 +394,18 @@ export function TicketPanels() {
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">Panels</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("ticketPanels_panels")}</h1>
             <Badge variant="secondary" className="text-xs font-medium">
-              {panels.length} panel
+              {panels.length} {t("ticketPanels_panelCount")}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
-            Manage ticket creation panels for your Discord server
+            {t("ticketPanels_manageDesc")}
           </p>
         </div>
         <Button onClick={openCreate} className="shrink-0">
           <Plus className="h-4 w-4 mr-1.5" />
-          Create Panel
+          {t("ticketPanels_createPanel")}
         </Button>
       </div>
 

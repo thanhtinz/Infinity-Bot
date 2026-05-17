@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserCheck2, Save, UserX } from "lucide-react";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -38,6 +39,7 @@ interface ClaimedTicket {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function TicketClaiming() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -78,9 +80,9 @@ export function TicketClaiming() {
       }).then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-claim-config"] });
-      toast({ title: "Claiming settings saved" });
+      toast({ title: t("toast_claimingSaved") });
     },
-    onError: () => toast({ title: "Save failed", variant: "destructive" }),
+    onError: () => toast({ title: t("toast_saveFailed"), variant: "destructive" }),
   });
 
   const unclaimMutation = useMutation({
@@ -88,9 +90,9 @@ export function TicketClaiming() {
       apiFetch(`/api/tickets/${ticketId}/unclaim`, { method: "POST" }).then((r) => { if (!r.ok) throw new Error(); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tickets-claimed"] });
-      toast({ title: "Claim released" });
+      toast({ title: t("toast_claimReleased") });
     },
-    onError: () => toast({ title: "Unclaim failed", variant: "destructive" }),
+    onError: () => toast({ title: t("toast_unclaimFailed"), variant: "destructive" }),
   });
 
   // ── Stats ──
@@ -102,13 +104,13 @@ export function TicketClaiming() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold flex items-center gap-2">
-        <UserCheck2 className="w-6 h-6" /> Claiming & Assignment
+        <UserCheck2 className="w-6 h-6" /> {t("ticketClaiming_title")}
       </h1>
 
       {/* ── Config Card ── */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Settings Claiming</CardTitle>
+          <CardTitle className="text-base">{t("ticketClaiming_settings")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           {configLoading ? (
@@ -121,36 +123,36 @@ export function TicketClaiming() {
             <>
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-medium">Enable claiming</Label>
-                  <p className="text-xs text-muted-foreground">Staff can claim a ticket to take responsibility for it</p>
+                  <Label className="text-sm font-medium">{t("ticketClaiming_enableClaiming")}</Label>
+                  <p className="text-xs text-muted-foreground">{t("ticketClaiming_enableClaimingDesc")}</p>
                 </div>
                 <Switch checked={cfgEnabled} onCheckedChange={setCfgEnabled} />
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-medium">Only claimer can reply</Label>
-                  <p className="text-xs text-muted-foreground">Prevent other staff from sending messages in a claimed ticket</p>
+                  <Label className="text-sm font-medium">{t("ticketClaiming_exclusiveClaim")}</Label>
+                  <p className="text-xs text-muted-foreground">{t("ticketClaiming_exclusiveClaimDesc")}</p>
                 </div>
                 <Switch checked={cfgExclusive} onCheckedChange={setCfgExclusive} />
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-medium">Notify on claim</Label>
-                  <p className="text-xs text-muted-foreground">Send a notification when a ticket is claimed</p>
+                  <Label className="text-sm font-medium">{t("ticketClaiming_notifyOnClaim")}</Label>
+                  <p className="text-xs text-muted-foreground">{t("ticketClaiming_notifyOnClaimDesc")}</p>
                 </div>
                 <Switch checked={cfgNotify} onCheckedChange={setCfgNotify} />
               </div>
 
               {cfgNotify && (
                 <div className="space-y-2">
-                  <Label>Claim notification channel</Label>
+                  <Label>{t("ticketClaiming_claimNotifChannel")}</Label>
                   <ChannelSelect
                     filter="text"
                     value={cfgNotifyChannel}
                     onChange={(v) => setCfgNotifyChannel(v === "__clear__" ? "" : v)}
-                    placeholder="Select notification channel..."
+                    placeholder={t("ticketClaiming_selectNotifChannel")}
                   />
                 </div>
               )}
@@ -167,7 +169,7 @@ export function TicketClaiming() {
                   })
                 }
               >
-                <Save className="w-4 h-4 mr-1" /> Save
+                <Save className="w-4 h-4 mr-1" /> {t("save")}
               </Button>
             </>
           )}
@@ -178,19 +180,19 @@ export function TicketClaiming() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground mb-1">Total claimed</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("ticketClaiming_totalClaimed")}</p>
             <p className="text-2xl font-bold">{totalClaimed}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground mb-1">In Progress</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("ticketClaiming_inProgress")}</p>
             <p className="text-2xl font-bold text-blue-500">{inProgress}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground mb-1">Resolved</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("ticketClaiming_resolved")}</p>
             <p className="text-2xl font-bold text-green-500">{resolved}</p>
           </CardContent>
         </Card>
@@ -199,7 +201,7 @@ export function TicketClaiming() {
       {/* ── Claimed Tickets Table ── */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Currently claimed tickets</CardTitle>
+          <CardTitle className="text-base">{t("ticketClaiming_currentlyClaimed")}</CardTitle>
         </CardHeader>
         <CardContent>
           {ticketsLoading ? (
@@ -209,15 +211,15 @@ export function TicketClaiming() {
               ))}
             </div>
           ) : !claimedTickets?.length ? (
-            <p className="text-center text-muted-foreground py-8">No tickets currently claimed</p>
+            <p className="text-center text-muted-foreground py-8">{t("ticketClaiming_noClaimed")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-16">#ID</TableHead>
-                  <TableHead>Subject</TableHead>
-                  <TableHead>Claimed by</TableHead>
-                  <TableHead>Date claim</TableHead>
+                  <TableHead>{t("subject")}</TableHead>
+                  <TableHead>{t("ticketClaiming_claimedBy")}</TableHead>
+                  <TableHead>{t("ticketClaiming_dateClaim")}</TableHead>
                   <TableHead className="w-28"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -240,7 +242,7 @@ export function TicketClaiming() {
                         disabled={unclaimMutation.isPending}
                         onClick={() => unclaimMutation.mutate(t.id)}
                       >
-                        <UserX className="w-4 h-4 mr-1" /> Unclaim
+                        <UserX className="w-4 h-4 mr-1" /> {t("ticketClaiming_unclaim")}
                       </Button>
                     </TableCell>
                   </TableRow>
