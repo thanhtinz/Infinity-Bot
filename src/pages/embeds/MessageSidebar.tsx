@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CustomEmbed } from "./embedTypes";
+import { useT } from "@/i18n";
 
 interface ChannelInfo {
   id: string;
@@ -46,16 +47,17 @@ export function MessageSidebar({
   onDelete,
   onLinkInputChange,
 }: MessageSidebarProps) {
+  const { t } = useT();
   return (
     <div className="flex flex-col h-full">
       <div className="p-3 space-y-2 border-b">
         <Button size="sm" className="w-full" onClick={onCreateNew}>
           <Plus className="h-3.5 w-3.5 mr-1.5" />
-          Create
+          {t("embed_create")}
         </Button>
         <div className="flex gap-1.5">
           <Input
-            placeholder="Paste Discord message link..."
+            placeholder={t("embed_pasteLink")}
             value={linkInput}
             onChange={(e) => onLinkInputChange(e.target.value)}
             className="text-xs h-8"
@@ -69,9 +71,9 @@ export function MessageSidebar({
       </div>
       <div className="flex-1 overflow-y-auto">
         {listLoading ? (
-          <div className="p-4 text-center text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />Loading...</div>
+          <div className="p-4 text-center text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />{t("embed_loading")}</div>
         ) : customEmbeds.length === 0 ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">No messages yet</div>
+          <div className="p-4 text-center text-sm text-muted-foreground">{t("embed_noMessagesYet")}</div>
         ) : (
           <div className="p-2 space-y-1">
             {customEmbeds.map((embed) => (
@@ -79,11 +81,11 @@ export function MessageSidebar({
                 className={cn("w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted/50 cursor-pointer", selectedId === embed.id && "bg-muted")}
                 onClick={() => onSelectEmbed(embed)}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelectEmbed(embed); } }}>
-                <div className="font-medium truncate">{embed.name || "Untitled"}</div>
+                <div className="font-medium truncate">{embed.name || t("embed_untitled")}</div>
                 <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
                   <Hash className="h-3 w-3" />
                   {channels.find((c) => c.id === embed.channel_id)?.name || embed.channel_id || "—"}
-                  {embed.message_id && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1">Sent</Badge>}
+                  {embed.message_id && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1">{t("embed_sent")}</Badge>}
                 </div>
                 <div className="flex items-center gap-1 mt-1.5">
                   <Button size="icon" variant="ghost" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); onSelectEmbed(embed); }}>

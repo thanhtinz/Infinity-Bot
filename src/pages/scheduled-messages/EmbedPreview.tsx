@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 import type { EmbedData } from "./smTypes";
 import { DEFAULT_COLOR } from "./smConstants";
@@ -8,13 +9,14 @@ interface DiscordEmbedPreviewProps {
 }
 
 export function DiscordEmbedPreview({ data }: DiscordEmbedPreviewProps) {
+  const { t } = useT();
   const colorHex = data.color || DEFAULT_COLOR;
   const hasContent = data.title || data.description || data.fields.length > 0 || data.footer || data.author_name;
 
   if (!hasContent) {
     return (
       <div className="rounded-md bg-[#313338] p-6 text-center">
-        <p className="text-sm text-[#B5BAC1]">Embed preview will appear here</p>
+        <p className="text-sm text-[#B5BAC1]">{t("scheduler_embedPreviewHere")}</p>
       </div>
     );
   }

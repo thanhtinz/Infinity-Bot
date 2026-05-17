@@ -2001,6 +2001,48 @@ const en: Record<TranslationKey, string> = {
   ticket_noSubject: "No subject",
   ticket_notes: "Notes",
   ticket_unclaimed: "Unclaimed",
+
+  // Embed editor (scheduled-messages)
+  scheduler_configEmbed: "🎨 Config Embed",
+  scheduler_preview: "Preview",
+  scheduler_mainContent: "Main content",
+  scheduler_titleLabel: "Title",
+  scheduler_titlePlaceholder: "Title embed",
+  scheduler_descLabel: "Description",
+  scheduler_descPlaceholder: "Description embed...",
+  scheduler_colors: "Colors",
+  scheduler_authorSection: "Author",
+  scheduler_authorName: "Author name",
+  scheduler_authorNamePlaceholder: "Author name (shown above title)",
+  scheduler_iconUrl: "Icon URL",
+  scheduler_fieldsSection: "Fields",
+  scheduler_noFieldsYet: "No fields yet. Click the button below to add one.",
+  scheduler_fieldNum: "Field",
+  scheduler_nameLabel: "Name",
+  scheduler_nameFieldPlaceholder: "Name field",
+  scheduler_valueLabel: "Value",
+  scheduler_contentPlaceholder: "Content",
+  scheduler_inlineHint: "Inline (display side by side)",
+  scheduler_addField: "Add field",
+  scheduler_fieldsLimit: "25 fields limit reached",
+  scheduler_imageSection: "Image",
+  scheduler_thumbnailUrl: "Thumbnail URL",
+  scheduler_largeImageUrl: "Large image URL",
+  scheduler_footerSection: "Footer",
+  scheduler_footerContent: "Footer content",
+  scheduler_footerPlaceholder: "Embed footer",
+  scheduler_embedPreviewHere: "Embed preview will appear here",
+
+  // Discord preview
+  embed_todayAt: "Today at",
+
+  // Message sidebar (embeds)
+  embed_create: "Create",
+  embed_pasteLink: "Paste Discord message link...",
+  embed_loading: "Loading...",
+  embed_noMessagesYet: "No messages yet",
+  embed_untitled: "Untitled",
+  embed_sent: "Sent",
 };
 
 export default en;

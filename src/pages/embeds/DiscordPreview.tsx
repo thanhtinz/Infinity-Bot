@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { FormState } from "./embedTypes";
 import { EMBED_EVENTS } from "./embedEvents";
 import { DEFAULTS } from "./embedDefaults";
+import { useT } from "@/i18n";
 
 export const DUMMY: Record<string, string> = {
   "{user}": "John Doe",
@@ -76,6 +77,7 @@ export function defaultForm(eventKey: string, lang: "vi" | "en" = "vi"): FormSta
 // ─── Discord Preview Component ───────────────────────────────────────────────
 
 export function DiscordPreview({ form }: { form: FormState }) {
+  const { t } = useT();
   const inlineFields = form.fields.filter((f) => f.inline);
   const blockFields = form.fields.filter((f) => !f.inline);
   const now = new Date();
@@ -98,7 +100,7 @@ export function DiscordPreview({ form }: { form: FormState }) {
               BOT
             </span>
             <span className="text-xs text-[#949BA4] ml-1">
-              Today at {timeStr}
+              {t("embed_todayAt")} {timeStr}
             </span>
           </div>
         </div>
@@ -196,7 +198,7 @@ export function DiscordPreview({ form }: { form: FormState }) {
                 <div className="flex items-center gap-2 pt-1 text-xs text-[#B5BAC1]">
                   <span>{replaceVars(form.footer)}</span>
                   <span>•</span>
-                  <span>Today at {timeStr}</span>
+                  <span>{t("embed_todayAt")} {timeStr}</span>
                 </div>
               )}
             </div>

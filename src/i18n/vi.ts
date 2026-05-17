@@ -1821,6 +1821,48 @@ const vi = {
   ticket_noSubject: "Không có chủ đề",
   ticket_notes: "Ghi chú",
   ticket_unclaimed: "Chưa nhận",
+
+  // Embed editor (scheduled-messages)
+  scheduler_configEmbed: "🎨 Cấu hình Embed",
+  scheduler_preview: "Xem trước",
+  scheduler_mainContent: "Nội dung chính",
+  scheduler_titleLabel: "Tiêu đề",
+  scheduler_titlePlaceholder: "Tiêu đề embed",
+  scheduler_descLabel: "Mô tả",
+  scheduler_descPlaceholder: "Mô tả embed...",
+  scheduler_colors: "Màu sắc",
+  scheduler_authorSection: "Tác giả",
+  scheduler_authorName: "Tên tác giả",
+  scheduler_authorNamePlaceholder: "Tên tác giả (hiện phía trên tiêu đề)",
+  scheduler_iconUrl: "URL icon",
+  scheduler_fieldsSection: "Các field",
+  scheduler_noFieldsYet: "Chưa có field. Nhấn nút bên dưới để thêm.",
+  scheduler_fieldNum: "Field",
+  scheduler_nameLabel: "Tên",
+  scheduler_nameFieldPlaceholder: "Tên field",
+  scheduler_valueLabel: "Giá trị",
+  scheduler_contentPlaceholder: "Nội dung",
+  scheduler_inlineHint: "Inline (hiện cạnh nhau)",
+  scheduler_addField: "Thêm field",
+  scheduler_fieldsLimit: "Đã đạt giới hạn 25 fields",
+  scheduler_imageSection: "Hình ảnh",
+  scheduler_thumbnailUrl: "URL Thumbnail",
+  scheduler_largeImageUrl: "URL hình ảnh lớn",
+  scheduler_footerSection: "Footer",
+  scheduler_footerContent: "Nội dung footer",
+  scheduler_footerPlaceholder: "Footer embed",
+  scheduler_embedPreviewHere: "Xem trước embed sẽ hiện tại đây",
+
+  // Discord preview
+  embed_todayAt: "Hôm nay lúc",
+
+  // Message sidebar (embeds)
+  embed_create: "Tạo mới",
+  embed_pasteLink: "Dán link tin nhắn Discord...",
+  embed_loading: "Đang tải...",
+  embed_noMessagesYet: "Chưa có tin nhắn nào",
+  embed_untitled: "Chưa đặt tên",
+  embed_sent: "Đã gửi",
 } as const;
 
 export default vi;

@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 import type { EmbedField, EmbedData } from "./smTypes";
 import { PRESET_COLORS, DEFAULT_COLOR } from "./smConstants";
@@ -64,11 +65,12 @@ export function EmbedEditorSection({
   removeEmbedField,
   updateEmbedField,
 }: EmbedEditorSectionProps) {
+  const { t } = useT();
   return (
     <div className="space-y-3">
       <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
         <Type className="h-3.5 w-3.5" />
-        🎨 Config Embed
+        🎨 {t("scheduler_configEmbed")}
       </p>
 
       {/* ── Embed Preview — collapsible ── */}
@@ -80,7 +82,7 @@ export function EmbedEditorSection({
         >
           <span className="flex items-center gap-2">
             <ChevronDown className={cn("h-4 w-4 transition-transform", embedPreviewOpen && "rotate-180")} />
-            Preview
+            {t("scheduler_preview")}
           </span>
         </button>
         {embedPreviewOpen && (
@@ -106,7 +108,7 @@ export function EmbedEditorSection({
           <span className="flex items-center gap-2">
             <ChevronDown className={cn("h-4 w-4 transition-transform", embedBodyOpen && "rotate-180")} />
             <Type className="h-3.5 w-3.5 text-muted-foreground" />
-            Main content
+            {t("scheduler_mainContent")}
             {embedData.title && (
               <span className="text-xs font-normal text-muted-foreground truncate max-w-[200px]">
                 — {embedData.title}
@@ -118,7 +120,7 @@ export function EmbedEditorSection({
           <div className="px-4 pb-4 space-y-4">
             {/* Title */}
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Title</Label>
+              <Label className="text-xs text-muted-foreground">{t("scheduler_titleLabel")}</Label>
               <Input
                 value={embedData.title}
                 onChange={(e) =>
@@ -127,14 +129,14 @@ export function EmbedEditorSection({
                     embed_data: { ...f.embed_data, title: e.target.value },
                   }))
                 }
-                placeholder="Title embed"
+                placeholder={t("scheduler_titlePlaceholder")}
               />
             </div>
 
             {/* Description */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">Description</Label>
+                <Label className="text-xs text-muted-foreground">{t("scheduler_descLabel")}</Label>
                 <span className="text-[11px] text-muted-foreground">
                   {embedData.description.length}/4096
                 </span>
@@ -150,14 +152,14 @@ export function EmbedEditorSection({
                     },
                   }))
                 }
-                placeholder="Description embed..."
+                placeholder={t("scheduler_descPlaceholder")}
                 rows={4}
               />
             </div>
 
             {/* Color */}
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Colors</Label>
+              <Label className="text-xs text-muted-foreground">{t("scheduler_colors")}</Label>
               <div className="flex items-center gap-2">
                 {PRESET_COLORS.map((c) => (
                   <button
@@ -220,7 +222,7 @@ export function EmbedEditorSection({
           <span className="flex items-center gap-2">
             <ChevronDown className={cn("h-4 w-4 transition-transform", embedAuthorOpen && "rotate-180")} />
             <User className="h-3.5 w-3.5 text-muted-foreground" />
-            Author
+            {t("scheduler_authorSection")}
           </span>
           {embedData.author_name && !embedAuthorOpen && (
             <span className="text-xs font-normal text-muted-foreground truncate max-w-[200px]">
@@ -231,7 +233,7 @@ export function EmbedEditorSection({
         {embedAuthorOpen && (
           <div className="px-4 pb-4 space-y-3">
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Author name</Label>
+              <Label className="text-xs text-muted-foreground">{t("scheduler_authorName")}</Label>
               <Input
                 value={embedData.author_name}
                 onChange={(e) =>
@@ -240,11 +242,11 @@ export function EmbedEditorSection({
                     embed_data: { ...f.embed_data, author_name: e.target.value },
                   }))
                 }
-                placeholder="Author name (shown above title)"
+                placeholder={t("scheduler_authorNamePlaceholder")}
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Icon URL</Label>
+              <Label className="text-xs text-muted-foreground">{t("scheduler_iconUrl")}</Label>
               <Input
                 value={embedData.author_icon_url}
                 onChange={(e) =>
@@ -270,7 +272,7 @@ export function EmbedEditorSection({
           <span className="flex items-center gap-2">
             <ChevronDown className={cn("h-4 w-4 transition-transform", embedFieldsOpen && "rotate-180")} />
             <Type className="h-3.5 w-3.5 text-muted-foreground" />
-            Fields
+            {t("scheduler_fieldsSection")}
             <span className="text-xs text-muted-foreground font-normal">
               ({embedData.fields.length}/25)
             </span>
@@ -280,7 +282,7 @@ export function EmbedEditorSection({
           <div className="px-4 pb-4 space-y-3">
             {embedData.fields.length === 0 && (
               <p className="text-xs text-muted-foreground text-center py-3">
-                No fields yet. Click the button below to add one.
+                {t("scheduler_noFieldsYet")}
               </p>
             )}
             {embedData.fields.map((field, idx) => (
@@ -304,24 +306,24 @@ export function EmbedEditorSection({
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Name</Label>
+                    <Label className="text-xs">{t("scheduler_nameLabel")}</Label>
                     <Input
                       value={field.name}
                       onChange={(e) =>
                         updateEmbedField(idx, { name: e.target.value })
                       }
-                      placeholder="Name field"
+                      placeholder={t("scheduler_nameFieldPlaceholder")}
                       className="h-8 text-sm"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Value</Label>
+                    <Label className="text-xs">{t("scheduler_valueLabel")}</Label>
                     <Input
                       value={field.value}
                       onChange={(e) =>
                         updateEmbedField(idx, { value: e.target.value })
                       }
-                      placeholder="Content"
+                      placeholder={t("scheduler_contentPlaceholder")}
                       className="h-8 text-sm"
                     />
                   </div>
@@ -335,7 +337,7 @@ export function EmbedEditorSection({
                     }
                     className="rounded border-input"
                   />
-                  Inline (display side by side)
+                  {t("scheduler_inlineHint")}
                 </label>
               </div>
             ))}
@@ -347,12 +349,12 @@ export function EmbedEditorSection({
                 className="w-full border-dashed"
               >
                 <Plus className="h-3.5 w-3.5 mr-1.5" />
-                Add field
+                {t("scheduler_addField")}
               </Button>
             )}
             {embedData.fields.length >= 25 && (
               <p className="text-xs text-muted-foreground text-center">
-                25 fields limit reached
+                {t("scheduler_fieldsLimit")}
               </p>
             )}
           </div>
@@ -369,13 +371,13 @@ export function EmbedEditorSection({
           <span className="flex items-center gap-2">
             <ChevronDown className={cn("h-4 w-4 transition-transform", embedImagesOpen && "rotate-180")} />
             <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
-            Image
+            {t("scheduler_imageSection")}
           </span>
         </button>
         {embedImagesOpen && (
           <div className="px-4 pb-4 space-y-3">
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Thumbnail URL</Label>
+              <Label className="text-xs text-muted-foreground">{t("scheduler_thumbnailUrl")}</Label>
               <Input
                 value={embedData.thumbnail_url}
                 onChange={(e) =>
@@ -391,7 +393,7 @@ export function EmbedEditorSection({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">Large image URL</Label>
+              <Label className="text-xs text-muted-foreground">{t("scheduler_largeImageUrl")}</Label>
               <Input
                 value={embedData.image_url}
                 onChange={(e) =>
@@ -420,7 +422,7 @@ export function EmbedEditorSection({
           <span className="flex items-center gap-2">
             <ChevronDown className={cn("h-4 w-4 transition-transform", embedFooterOpen && "rotate-180")} />
             <Footprints className="h-3.5 w-3.5 text-muted-foreground" />
-            Footer
+            {t("scheduler_footerSection")}
           </span>
           {embedData.footer && !embedFooterOpen && (
             <span className="text-xs font-normal text-muted-foreground truncate max-w-[200px]">
@@ -432,7 +434,7 @@ export function EmbedEditorSection({
           <div className="px-4 pb-4 space-y-3">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">Footer content</Label>
+                <Label className="text-xs text-muted-foreground">{t("scheduler_footerContent")}</Label>
                 <span className="text-[11px] text-muted-foreground">
                   {embedData.footer.length}/2048
                 </span>
@@ -448,7 +450,7 @@ export function EmbedEditorSection({
                     },
                   }))
                 }
-                placeholder="Embed footer"
+                placeholder={t("scheduler_footerPlaceholder")}
               />
             </div>
           </div>
