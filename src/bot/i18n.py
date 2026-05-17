@@ -8,7 +8,6 @@ Usage:
 """
 from __future__ import annotations
 import logging
-from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 
@@ -157,54 +156,19 @@ STRINGS: dict[str, dict[str, str]] = {
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def _get_session():
-    from src.database.config import SessionLocal
-    return SessionLocal()
-
-
 def get_lang(guild_id: str | int) -> str:
-    """Return 'en' or 'vi' for the guild. Defaults to 'en'."""
-    try:
-        from src.models.models import SystemConfig
-        session = _get_session()
-        try:
-            cfg = session.execute(
-                select(SystemConfig).where(SystemConfig.guild_id == str(guild_id))
-            ).scalars().first()
-            if cfg and cfg.language in ("en", "vi"):
-                return cfg.language
-        finally:
-            session.close()
-    except Exception as e:
-        logger.warning(f"i18n.get_lang failed: {e}")
+    """Always returns 'en'."""
     return "en"
 
 
 def set_lang(guild_id: str | int, lang: str) -> None:
-    """Persist language ('en' or 'vi') for the guild."""
-    if lang not in ("en", "vi"):
-        raise ValueError(f"Invalid language: {lang}")
-    try:
-        from src.models.models import SystemConfig
-        session = _get_session()
-        try:
-            cfg = session.execute(
-                select(SystemConfig).where(SystemConfig.guild_id == str(guild_id))
-            ).scalars().first()
-            if cfg:
-                cfg.language = lang
-                session.commit()
-        finally:
-            session.close()
-    except Exception as e:
-        logger.error(f"i18n.set_lang failed: {e}")
+    """No-op — language is always English."""
+    pass
 
 
 def t(guild_id: str | int, key: str, **kwargs) -> str:
-    """Translate key for guild. Falls back to English if key/lang missing."""
-    lang = get_lang(guild_id)
-    table = STRINGS.get(lang) or STRINGS["en"]
-    text = table.get(key) or STRINGS["en"].get(key, key)
+    """Translate key — always returns English."""
+    text = STRINGS["en"].get(key, key)
     if kwargs:
         try:
             text = text.format(**kwargs)

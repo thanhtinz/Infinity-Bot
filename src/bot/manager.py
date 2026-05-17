@@ -380,12 +380,6 @@ def create_bot():
             bot_client.add_view(BangGiaView())
         except Exception as _pv_err:
             logger.warning(f"Persistent view register failed: {_pv_err}")
-        # Register language select persistent view
-        try:
-            from src.bot.cogs.onboarding import LanguageSelectView
-            bot_client.add_view(LanguageSelectView())
-        except Exception as _lv_err:
-            logger.warning(f"LanguageSelectView register failed: {_lv_err}")
         # Sync slash commands so new/updated commands register with Discord
         try:
             await bot_client.sync_commands()

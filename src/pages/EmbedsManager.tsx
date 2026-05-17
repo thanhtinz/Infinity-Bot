@@ -60,7 +60,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
     staleTime: 60_000,
     enabled: !!selectedGuildId,
   });
-  const botLang = (configData?.language ?? "vi") as "vi" | "en";
+  const botLang = "en" as const;
 
   // Selected event
   const initialEventKey = (() => {

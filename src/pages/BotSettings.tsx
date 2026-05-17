@@ -41,16 +41,14 @@ function GeneralSection() {
   const qc = useQueryClient();
   const { selectedGuildId } = useGuild();
   const { data: config } = useConfig();
-  const { t, setLang: setI18nLang } = useT();
+  const { t } = useT();
 
-  const [lang, setLang] = useState<"en" | "vi">("en");
   const [prefix, setPrefix] = useState("!");
   const [adminRoles, setAdminRoles] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (config) {
-      if (config.language) setLang(config.language as "en" | "vi");
       if (config.command_prefix) setPrefix(config.command_prefix);
       if (config.admin_role_id) {
         setAdminRoles(config.admin_role_id.split(",").map((s: string) => s.trim()).filter(Boolean));
@@ -69,12 +67,10 @@ function GeneralSection() {
           ...(selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {}),
         },
         body: JSON.stringify({
-          language: lang,
           command_prefix: prefix,
           admin_role_id: adminRoles.join(","),
         }),
       });
-      setI18nLang(lang); // sync dashboard language immediately
       qc.invalidateQueries({ queryKey: ["config", selectedGuildId] });
       toast({ title: t("toast_saved"), description: t("toast_generalSaved") });
     } catch {
@@ -86,35 +82,6 @@ function GeneralSection() {
 
   return (
     <div className="space-y-6">
-      {/* Language */}
-      <div className="space-y-3">
-        <div>
-          <Label className="text-sm font-semibold">{t("settings")}</Label>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {t("botConfig_tokenDesc")}
-          </p>
-        </div>
-        <div className="flex gap-3">
-          {(["en", "vi"] as const).map((l) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => setLang(l)}
-              className={`flex-1 flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
-                lang === l
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-card text-muted-foreground hover:bg-muted/50"
-              }`}
-            >
-              <span className="text-lg">{l === "en" ? "🇬🇧" : "🇻🇳"}</span>
-              {l === "en" ? "English" : "Vietnamese"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
-
       {/* Prefix */}
       <div className="space-y-3">
         <div>
