@@ -249,32 +249,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  dm_welcome: {
-    vi: {
-      title: "👋 Chào mừng {user.name}!",
-      description: "Chào mừng {user.mention} đến với **{server.name}**!\nHãy đọc kênh {rules_channel} và tận hưởng!",
-      color: "#5865F2",
-      author: "",
-      author_icon_url: "",
-      footer: "{server.name}",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [],
-      enabled: true,
-    },
-    en: {
-      title: "👋 Welcome {user.name}!",
-      description: "Welcome {user.mention} to **{server.name}**!\nPlease read {rules_channel} and enjoy your stay!",
-      color: "#5865F2",
-      author: "",
-      author_icon_url: "",
-      footer: "{server.name}",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [],
-      enabled: true,
-    },
-  },
+
   reaction_role_panel: {
     vi: {
       title: "🎭 Reaction Role",
@@ -363,92 +338,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  ticket_mo: {
-    vi: {
-      title: "🎫 Ticket #{ticket_id} đã được tạo",
-      description: "Xin chào {user.mention}!\nTicket của bạn đã được tạo.\nVui lòng mô tả vấn đề để được hỗ trợ.",
-      color: "#5865F2",
-      author: "",
-      author_icon_url: "",
-      footer: "Hỗ trợ sẽ đến sớm!",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [
-        { name: "Ticket ID", value: "#{ticket_id}", inline: true },
-      ],
-      enabled: true,
-    },
-    en: {
-      title: "🎫 Ticket #{ticket_id} Created",
-      description: "Hello {user.mention}!\nYour ticket has been created.\nPlease describe your issue so we can assist you.",
-      color: "#5865F2",
-      author: "",
-      author_icon_url: "",
-      footer: "Support will be with you shortly!",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [
-        { name: "Ticket ID", value: "#{ticket_id}", inline: true },
-      ],
-      enabled: true,
-    },
-  },
-  ticket_dong: {
-    vi: {
-      title: "🔒 Ticket đã đóng",
-      description: "Ticket #{ticket_id} của {user.mention} đã được đóng.",
-      color: "#ED4245",
-      author: "",
-      author_icon_url: "",
-      footer: "",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [
-        { name: "Lý do", value: "{close_reason}", inline: false },
-      ],
-      enabled: true,
-    },
-    en: {
-      title: "🔒 Ticket Closed",
-      description: "Ticket #{ticket_id} by {user.mention} has been closed.",
-      color: "#ED4245",
-      author: "",
-      author_icon_url: "",
-      footer: "",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [
-        { name: "Reason", value: "{close_reason}", inline: false },
-      ],
-      enabled: true,
-    },
-  },
-  ticket_nhan: {
-    vi: {
-      title: "✋ Ticket đã được nhận",
-      description: "{staff.mention} đã nhận ticket #{ticket_id}.",
-      color: "#57F287",
-      author: "",
-      author_icon_url: "",
-      footer: "Chúng tôi sẽ hỗ trợ bạn sớm nhất!",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [],
-      enabled: true,
-    },
-    en: {
-      title: "✋ Ticket Claimed",
-      description: "{staff.mention} has claimed ticket #{ticket_id}.",
-      color: "#57F287",
-      author: "",
-      author_icon_url: "",
-      footer: "We'll assist you as soon as possible!",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [],
-      enabled: true,
-    },
-  },
+
   kick: {
     vi: {
       title: "👢 Đã kick khỏi server",
@@ -627,58 +517,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  ticket_unclaim: {
-    vi: {
-      title: "↩️ Bỏ nhận Ticket",
-      description: "{staff.mention} đã bỏ nhận ticket này.",
-      color: "#95A5A6",
-      author: "",
-      author_icon_url: "",
-      footer: "Ticket #{ticket.id}",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [],
-      enabled: true,
-    },
-    en: {
-      title: "↩️ Ticket Unclaimed",
-      description: "{staff.mention} has unclaimed this ticket.",
-      color: "#95A5A6",
-      author: "",
-      author_icon_url: "",
-      footer: "Ticket #{ticket.id}",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [],
-      enabled: true,
-    },
-  },
-  ticket_panel: {
-    vi: {
-      title: "🎫 Hỗ trợ",
-      description: "Chọn loại hỗ trợ bên dưới để tạo ticket.",
-      color: "#5865F2",
-      author: "",
-      author_icon_url: "",
-      footer: "",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [],
-      enabled: true,
-    },
-    en: {
-      title: "🎫 Support",
-      description: "Select a support category below to create a ticket.",
-      color: "#5865F2",
-      author: "",
-      author_icon_url: "",
-      footer: "",
-      thumbnail_url: "",
-      image_url: "",
-      fields: [],
-      enabled: true,
-    },
-  },
+
+
   log_message_delete: {
     vi: {
       title: "🗑️ Tin nhắn bị xóa",
@@ -1029,120 +869,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  tempvoice_create: {
-    vi: {
-      title: "🔊 Voice tạm đã tạo",
-      description: "{user.mention} đã tạo kênh voice **{channel.name}**.",
-      color: "#5865F2",
-      author: "", author_icon_url: "", footer: "Dùng nút bên dưới để quản lý phòng", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "Kênh", value: "{channel.mention}", inline: true },
-        { name: "Chủ phòng", value: "{user.mention}", inline: true },
-      ],
-      enabled: true,
-    },
-    en: {
-      title: "🔊 Temp Voice Created",
-      description: "{user.mention} created a voice channel **{channel.name}**.",
-      color: "#5865F2",
-      author: "", author_icon_url: "", footer: "Use the buttons below to manage your room", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "Channel", value: "{channel.mention}", inline: true },
-        { name: "Owner", value: "{user.mention}", inline: true },
-      ],
-      enabled: true,
-    },
-  },
-  tempvoice_panel: {
-    vi: {
-      title: "🎙️ Điều khiển phòng voice",
-      description: "Panel quản lý phòng voice tạm cho **{server}**.\n\nVào phòng voice của bạn rồi dùng các nút bên dưới để khóa, đổi tên, giới hạn, cấp quyền hoặc chuyển chủ phòng.",
-      color: "#5865F2",
-      author: "", author_icon_url: "", footer: "Temp Voice Control Panel", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "Kênh gửi", value: "{panel.channel}", inline: true },
-        { name: "Nút bật", value: "{button.count}", inline: true },
-      ],
-      enabled: true,
-    },
-    en: {
-      title: "🎙️ Voice Room Control",
-      description: "Temp voice management panel for **{server}**.\n\nJoin your voice channel and use the buttons below to lock, rename, limit, grant permissions, or transfer ownership.",
-      color: "#5865F2",
-      author: "", author_icon_url: "", footer: "Temp Voice Control Panel", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "Panel Channel", value: "{panel.channel}", inline: true },
-        { name: "Buttons", value: "{button.count}", inline: true },
-      ],
-      enabled: true,
-    },
-  },
-  tempvoice_action: {
-    vi: {
-      title: "🎙️ Temp Voice Action",
-      description: "{user.mention} đã **{action}** trong {channel.mention}.",
-      color: "#5865F2",
-      author: "", author_icon_url: "", footer: "Temp Voice Logs", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "Mục tiêu", value: "{target.mention}", inline: true },
-        { name: "Chi tiết", value: "{details}", inline: true },
-      ],
-      enabled: true,
-    },
-    en: {
-      title: "🎙️ Temp Voice Action",
-      description: "{user.mention} performed **{action}** in {channel.mention}.",
-      color: "#5865F2",
-      author: "", author_icon_url: "", footer: "Temp Voice Logs", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "Target", value: "{target.mention}", inline: true },
-        { name: "Details", value: "{details}", inline: true },
-      ],
-      enabled: true,
-    },
-  },
-  level_up: {
-    vi: {
-      title: "🎉 Lên Level {level}!",
-      description: "Chúc mừng {user.mention} đã lên **Level {level}**!",
-      color: "#57F287",
-      author: "", author_icon_url: "", footer: "Tiếp tục chat để lên level nhé!", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "XP hiện tại", value: "{current_xp}", inline: true },
-        { name: "XP tiếp theo", value: "{next_level_xp}", inline: true },
-      ],
-      enabled: true,
-    },
-    en: {
-      title: "🎉 Level Up {level}!",
-      description: "Congratulations {user.mention} on reaching **Level {level}**!",
-      color: "#57F287",
-      author: "", author_icon_url: "", footer: "Keep chatting to level up!", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "Current XP", value: "{current_xp}", inline: true },
-        { name: "Next Level XP", value: "{next_level_xp}", inline: true },
-      ],
-      enabled: true,
-    },
-  },
-  level_reward: {
-    vi: {
-      title: "🎁 Level Reward",
-      description: "{user.mention} đã nhận reward **{reward.role}** ở Level {level}.",
-      color: "#57F287",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [],
-      enabled: true,
-    },
-    en: {
-      title: "🎁 Level Reward",
-      description: "{user.mention} received the **{reward.role}** reward at Level {level}.",
-      color: "#57F287",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [],
-      enabled: true,
-    },
-  },
+
   leaderboard: {
     vi: {
       title: "🏆 Bảng xếp hạng XP",
@@ -2731,49 +2458,6 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [{ name: "👮 Moderator", value: "{mod}", inline: true }],
-      enabled: true,
-    },
-  },
-  // ── Ticket (bổ sung) ──
-  ticket_transcript: {
-    vi: {
-      title: "📄 Transcript Ticket",
-      description: "Transcript của ticket **#{ticket.id}** đã được lưu.",
-      color: "#5865F2",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "👤 Tạo bởi", value: "{user.name}", inline: true },
-        { name: "📝 Số tin nhắn", value: "{message_count}", inline: true },
-      ],
-      enabled: true,
-    },
-    en: {
-      title: "📄 Ticket Transcript",
-      description: "Transcript for ticket **#{ticket.id}** has been saved.",
-      color: "#5865F2",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "👤 Created by", value: "{user.name}", inline: true },
-        { name: "📝 Messages", value: "{message_count}", inline: true },
-      ],
-      enabled: true,
-    },
-  },
-  ticket_feedback: {
-    vi: {
-      title: "⭐ Đánh giá hỗ trợ",
-      description: "Ticket **#{ticket.id}** đã được đóng.\nVui lòng đánh giá chất lượng hỗ trợ!",
-      color: "#FEE75C",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "👮 Staff", value: "{staff.mention}", inline: true }],
-      enabled: true,
-    },
-    en: {
-      title: "⭐ Support Feedback",
-      description: "Ticket **#{ticket.id}** has been closed.\nPlease rate the quality of support!",
-      color: "#FEE75C",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "👮 Staff", value: "{staff.mention}", inline: true }],
       enabled: true,
     },
   },

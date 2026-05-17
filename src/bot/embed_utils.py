@@ -64,15 +64,6 @@ DEFAULTS: dict[str, dict] = {
         "footer": "Host: {host} • Số người thắng: {winners_count}",
         "fields": [],
     },
-    "welcome": {
-        "title": "👋 Chào mừng đến với {server}!",
-        "description": "Xin chào {user.mention}! Chúc bạn có thời gian vui vẻ tại server.\n\nDùng `/help` để xem danh sách lệnh bot.",
-        "color": "#5865F2",
-        "footer": "Infinity Mall",
-        "fields": [
-            {"name": "Thành viên thứ", "value": "{member_count}", "inline": True},
-        ],
-    },
     "don_hang_het_han": {
         "title": "⏰ Đơn hàng đã hết hạn",
         "description": "Đơn hàng #{order.id} của bạn đã hết hạn do chưa thanh toán sau 15 phút.",
@@ -109,46 +100,6 @@ DEFAULTS: dict[str, dict] = {
         "fields": [
             {"name": "📋 Lý do", "value": "{reason}", "inline": False},
             {"name": "🔢 Tổng cảnh báo", "value": "{warn_count}", "inline": True},
-        ],
-    },
-    # ── Ticket System ─────────────────────────────────────────────────────────
-    "ticket_mo": {
-        "title": "🎫 Ticket đã được tạo",
-        "description": "Ticket **#{ticket.id}** của {user.mention} đã được tạo.\nStaff sẽ hỗ trợ bạn sớm nhất có thể.",
-        "color": "#5865F2",
-        "footer": "Dùng nút bên dưới để đóng ticket",
-        "fields": [
-            {"name": "📋 Chủ đề", "value": "{ticket.subject}", "inline": True},
-            {"name": "🔢 Mã ticket", "value": "#{ticket.id}", "inline": True},
-        ],
-    },
-    "ticket_dong": {
-        "title": "🔒 Ticket đã đóng",
-        "description": "Ticket **#{ticket.id}** đã được đóng bởi {closer.mention}.",
-        "color": "#ED4245",
-        "footer": "Dùng nút Mở lại để tiếp tục nếu cần",
-        "fields": [
-            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
-            {"name": "⏱️ Thời gian xử lý", "value": "{duration}", "inline": True},
-        ],
-    },
-    "ticket_nhan": {
-        "title": "✋ Ticket đã được nhận",
-        "description": "{staff.mention} đã nhận ticket **#{ticket.id}** và đang xử lý.",
-        "color": "#57F287",
-        "footer": "Vui lòng mô tả vấn đề chi tiết",
-        "fields": [
-            {"name": "👮 Staff", "value": "{staff.name}", "inline": True},
-        ],
-    },
-    "ticket_transcript": {
-        "title": "📄 Transcript Ticket",
-        "description": "Transcript của ticket **#{ticket.id}** đã được lưu.",
-        "color": "#5865F2",
-        "footer": "Infinity Mall — Support System",
-        "fields": [
-            {"name": "👤 Tạo bởi", "value": "{user.name}", "inline": True},
-            {"name": "💬 Số tin nhắn", "value": "{message_count}", "inline": True},
         ],
     },
     # ── Moderation ────────────────────────────────────────────────────────────
@@ -192,13 +143,6 @@ DEFAULTS: dict[str, dict] = {
             {"name": "🔗 Code invite", "value": "{invite.code}", "inline": True},
             {"name": "📊 Tổng invite của {inviter.name}", "value": "{inviter.total_invites}", "inline": True},
         ],
-    },
-    "leaderboard": {
-        "title": "🏆 Bảng xếp hạng Invite",
-        "description": "Top thành viên có nhiều lượt invite nhất trong **{server}**.",
-        "color": "#F0B232",
-        "footer": "Cập nhật: {updated_at}",
-        "fields": [],
     },
     # Alias for dashboard compatibility
     "invite_leaderboard": {
@@ -287,14 +231,6 @@ DEFAULTS: dict[str, dict] = {
             {"name": "👮 Người thực hiện", "value": "{moderator}", "inline": True},
         ],
     },
-    # ── Goodbye ───────────────────────────────────────────────────────────────
-    "goodbye": {
-        "title": "👋 Tạm biệt",
-        "description": "**{user}** đã rời khỏi server.",
-        "color": "#95A5A6",
-        "footer": "Còn lại {member_count} thành viên",
-        "fields": [],
-    },
     # ── Giveaway banned ───────────────────────────────────────────────────────
     "giveaway_banned": {
         "title": "⛔ Cấm tham gia Giveaway",
@@ -313,107 +249,12 @@ DEFAULTS: dict[str, dict] = {
             {"name": "👮 Người thực hiện", "value": "{moderator}", "inline": True},
         ],
     },
-    # ── Ticket extras ─────────────────────────────────────────────────────────
-    "ticket_unclaim": {
-        "title": "↩️ Bỏ nhận Ticket",
-        "description": "{staff.mention} đã bỏ nhận ticket **#{ticket.id}**.",
-        "color": "#95A5A6",
-        "footer": "Ticket #{ticket.id}",
-        "fields": [],
-    },
-    "ticket_panel": {
-        "title": "🎫 Hỗ trợ",
-        "description": "Chọn loại hỗ trợ bên dưới để tạo ticket.",
-        "color": "#5865F2",
-        "fields": [],
-    },
-    "ticket_feedback": {
-        "title": "⭐ Đánh giá hỗ trợ",
-        "description": "Ticket **#{ticket.id}** đã được đóng.\nVui lòng đánh giá chất lượng hỗ trợ!",
-        "color": "#FEE75C",
-        "fields": [
-            {"name": "👮 Staff", "value": "{staff.mention}", "inline": True},
-        ],
-    },
-    # ── Sticky / TempVoice ────────────────────────────────────────────────────
+    # ── Sticky ────────────────────────────────────────────────────────────────
     "sticky_message": {
         "title": "{sticky.title}",
         "description": "{sticky.content}",
         "color": "#5865F2",
         "footer": "Sticky Message",
-        "fields": [],
-    },
-    "tempvoice_create": {
-        "title": "🔊 Voice tạm đã tạo",
-        "description": "{user.mention} đã tạo kênh voice **{channel.name}**.",
-        "color": "#5865F2",
-        "footer": "Dùng nút bên dưới để quản lý phòng",
-        "fields": [
-            {"name": "Kênh", "value": "{channel.mention}", "inline": True},
-            {"name": "Chủ phòng", "value": "{user.mention}", "inline": True},
-        ],
-    },
-    "tempvoice_panel": {
-        "title": "🎙️ Điều khiển phòng voice",
-        "description": "Panel quản lý phòng voice tạm cho **{server}**.\n\nVào phòng voice của bạn rồi dùng các nút bên dưới để khóa, đổi tên, giới hạn, cấp quyền hoặc chuyển chủ phòng.",
-        "color": "#5865F2",
-        "footer": "Temp Voice Control Panel",
-        "fields": [
-            {"name": "Kênh gửi", "value": "{panel.channel}", "inline": True},
-            {"name": "Nút bật", "value": "{button.count}", "inline": True},
-        ],
-    },
-    "tempvoice_action": {
-        "title": "🎙️ Temp Voice Action",
-        "description": "{user.mention} đã **{action}** trong {channel.mention}.",
-        "color": "#5865F2",
-        "footer": "Temp Voice Logs",
-        "fields": [
-            {"name": "Mục tiêu", "value": "{target.mention}", "inline": True},
-            {"name": "Chi tiết", "value": "{details}", "inline": True},
-        ],
-    },
-    "level_up": {
-        "title": "🎉 Level Up!",
-        "description": "Chúc mừng {user.mention}, bạn đã lên **Level {level}**!",
-        "color": "#57F287",
-        "footer": "{server} • Rank #{rank}",
-        "fields": [
-            {"name": "XP", "value": "{xp}", "inline": True},
-            {"name": "Tiến độ", "value": "{progress} ({progress_percent}%)", "inline": True},
-            {"name": "Reward", "value": "{reward.role}", "inline": True},
-        ],
-    },
-    "level_reward": {
-        "title": "🎁 Level Reward",
-        "description": "{user.mention} đã nhận reward **{reward.role}** ở Level {level}.",
-        "color": "#57F287",
-        "fields": [],
-    },
-    "rep_given": {
-        "title": "⭐ +1 Rep!",
-        "description": "{user.mention} đã tặng rep cho {target.mention}",
-        "color": "#FEE75C",
-        "footer": "{target} hiện có {target.rep} rep",
-        "fields": [
-            {"name": "Lý do", "value": "{reason}", "inline": False},
-        ],
-    },
-    "weekly_summary": {
-        "title": "📊 Tổng kết tuần",
-        "description": "Bảng tổng kết XP tuần này của **{server}**",
-        "color": "#5865F2",
-        "fields": [
-            {"name": "🏆 Top 1", "value": "{top1}", "inline": True},
-            {"name": "🥈 Top 2", "value": "{top2}", "inline": True},
-            {"name": "🥉 Top 3", "value": "{top3}", "inline": True},
-        ],
-    },
-    # ── Phase 3: Welcome extras ───────────────────────────────────────────────
-    "dm_welcome": {
-        "title": "👋 Chào mừng!",
-        "description": "Xin chào {user.mention}! Cảm ơn bạn đã tham gia **{server}**.",
-        "color": "#5865F2",
         "fields": [],
     },
     # ── Phase 4: Logging ──────────────────────────────────────────────────────

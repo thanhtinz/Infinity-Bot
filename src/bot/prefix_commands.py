@@ -7,8 +7,6 @@ from __future__ import annotations
 
 import shlex
 from dataclasses import dataclass
-from typing import Awaitable, Callable
-
 import discord
 from sqlalchemy import select
 

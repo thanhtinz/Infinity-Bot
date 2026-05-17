@@ -14,11 +14,7 @@ def serve_file(file_id: str, db=Depends(get_db)):
     """Serve an uploaded file by its UUID."""
     f = db.execute(select(UploadedFile).where(UploadedFile.id == file_id)).scalars().first()
     if not f:
-        # Debug: list all file IDs
-        from sqlalchemy import text
-        rows = db.execute(text("SELECT id FROM uploaded_files")).fetchall()
-        ids = [r[0] for r in rows]
-        raise HTTPException(404, f"File not found. IDs in DB: {ids}")
+        raise HTTPException(404, "File not found")
     return Response(
         content=f.data,
         media_type=f.content_type,

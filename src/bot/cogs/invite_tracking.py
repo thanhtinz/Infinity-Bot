@@ -93,8 +93,6 @@ class InviteTrackingCog(commands.Cog):
         finally:
             db.close()
 
-        # Welcome is now handled by WelcomeCog
-
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
         if not check_feature(self): return
