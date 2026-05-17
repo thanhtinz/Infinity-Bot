@@ -5,7 +5,7 @@ from sqlalchemy.orm import joinedload
 import os, uuid, shutil, logging, datetime
 
 from src.database.config import get_db
-from src.models.models import SystemConfig, Product, Order, User, Coupon
+from src.models.models import SystemConfig, Product, Order, User, Coupon, SpendingMilestone
 from src.schemas.schemas import ProductBase, ProductResponse, OrderResponse
 from src.api.deps import get_guild_id
 
@@ -363,6 +363,10 @@ async def deliver_order(order_id: int, body: dict, db=Depends(get_db)):
         order.user.total_spent = (order.user.total_spent or 0) + order.total_price
     db.commit()
 
+    # Check spending milestones
+    if order.user and order.guild_id:
+        await check_spending_milestones(order.user, order.guild_id, db)
+
     if dm_content and order.user:
         from src.bot.manager import bot
         if bot:
@@ -659,6 +663,10 @@ async def payos_webhook(request: Request, db=Depends(get_db)):
                 order.user.total_spent = (order.user.total_spent or 0) + order.total_price
             db.commit()
 
+            # Check spending milestones
+            if order.user and order.guild_id:
+                await check_spending_milestones(order.user, order.guild_id, db)
+
             from src.bot.manager import bot
             from src.bot.embed_utils import build_embed
             import discord
@@ -704,3 +712,95 @@ async def payos_webhook(request: Request, db=Depends(get_db)):
                     logger.error(f"PayOS webhook DM error: {e}")
 
     return {"code": "00", "desc": "success"}
+
+
+# ── Spending Milestones ───────────────────────────────────────────────────────
+
+@router.get("/milestones")
+def get_milestones(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    rows = db.execute(
+        select(SpendingMilestone)
+        .where(SpendingMilestone.guild_id == guild_id)
+        .order_by(SpendingMilestone.threshold)
+    ).scalars().all()
+    return [
+        {"id": m.id, "name": m.name, "threshold": m.threshold,
+         "role_id": m.role_id, "emoji": m.emoji, "active": m.active}
+        for m in rows
+    ]
+
+
+@router.post("/milestones")
+def create_milestone(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    m = SpendingMilestone(
+        guild_id=guild_id,
+        name=body["name"],
+        threshold=float(body["threshold"]),
+        role_id=str(body["role_id"]),
+        emoji=body.get("emoji"),
+        active=body.get("active", True),
+    )
+    db.add(m)
+    db.commit()
+    db.refresh(m)
+    return {"id": m.id, "name": m.name, "threshold": m.threshold,
+            "role_id": m.role_id, "emoji": m.emoji, "active": m.active}
+
+
+@router.put("/milestones/{milestone_id}")
+def update_milestone(milestone_id: int, body: dict, db=Depends(get_db)):
+    m = db.execute(select(SpendingMilestone).where(SpendingMilestone.id == milestone_id)).scalars().first()
+    if not m:
+        raise HTTPException(404, "Milestone not found")
+    for k in ("name", "threshold", "role_id", "emoji", "active"):
+        if k in body:
+            setattr(m, k, body[k])
+    db.commit()
+    return {"ok": True}
+
+
+@router.delete("/milestones/{milestone_id}")
+def delete_milestone(milestone_id: int, db=Depends(get_db)):
+    m = db.execute(select(SpendingMilestone).where(SpendingMilestone.id == milestone_id)).scalars().first()
+    if not m:
+        raise HTTPException(404, "Milestone not found")
+    db.delete(m)
+    db.commit()
+    return {"ok": True}
+
+
+async def check_spending_milestones(user: User, guild_id: str, db):
+    """Check if user reached any spending milestones and grant roles."""
+    if not user or not user.discord_id:
+        return
+    milestones = db.execute(
+        select(SpendingMilestone)
+        .where(SpendingMilestone.guild_id == guild_id, SpendingMilestone.active == True)
+        .order_by(SpendingMilestone.threshold)
+    ).scalars().all()
+    if not milestones:
+        return
+
+    total = user.total_spent or 0
+    from src.bot.manager import get_bot_client
+    bot = get_bot_client()
+    if not bot or not bot.is_ready():
+        return
+
+    guild = bot.get_guild(int(guild_id)) if guild_id else None
+    if not guild:
+        return
+
+    try:
+        member = guild.get_member(int(user.discord_id)) or await guild.fetch_member(int(user.discord_id))
+    except Exception:
+        return
+
+    for m in milestones:
+        if total >= m.threshold:
+            role = guild.get_role(int(m.role_id))
+            if role and role not in member.roles:
+                try:
+                    await member.add_roles(role, reason=f"Mốc chi tiêu: {m.name} ({m.threshold:,.0f}đ)")
+                except Exception as e:
+                    logger.warning(f"Failed to add milestone role {m.name}: {e}")

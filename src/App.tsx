@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserCheck2, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserCheck2, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply, Gavel, FileText } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
@@ -20,9 +20,13 @@ const EmojiManager = lazy(() => import("./pages/EmojiManager").then(m => ({ defa
 const FeedbackManager = lazy(() => import("./pages/FeedbackManager").then(m => ({ default: m.FeedbackManager })));
 const UsersManager = lazy(() => import("./pages/UsersManager").then(m => ({ default: m.UsersManager })));
 const GiveawaysManager = lazy(() => import("./pages/GiveawaysManager").then(m => ({ default: m.GiveawaysManager })));
-const InviteTracking = lazy(() => import("./pages/InviteTracking").then(m => ({ default: m.InviteTracking })));
+const InviteLeaderboard = lazy(() => import("./pages/invites/InviteLeaderboard").then(m => ({ default: m.InviteLeaderboard })));
+const InviteLog = lazy(() => import("./pages/invites/InviteLog").then(m => ({ default: m.InviteLog })));
 const WarningsManager = lazy(() => import("./pages/WarningsManager").then(m => ({ default: m.WarningsManager })));
-const ModerationManager = lazy(() => import("./pages/ModerationManager").then(m => ({ default: m.ModerationManager })));
+const ModerationCases = lazy(() => import("./pages/moderation/ModerationCases").then(m => ({ default: m.ModerationCases })));
+const ModerationNotes = lazy(() => import("./pages/moderation/ModerationNotes").then(m => ({ default: m.ModerationNotes })));
+const ModerationActive = lazy(() => import("./pages/moderation/ModerationActive").then(m => ({ default: m.ModerationActive })));
+const ModerationSettings = lazy(() => import("./pages/moderation/ModerationSettings").then(m => ({ default: m.ModerationSettings })));
 const StickyManager = lazy(() => import("./pages/StickyManager").then(m => ({ default: m.StickyManager })));
 const StickyEditPage = lazy(() => import("./pages/sticky/StickyEditPage").then(m => ({ default: m.StickyEditPage })));
 const CouponEditPage = lazy(() => import("./pages/coupons/CouponEditPage").then(m => ({ default: m.CouponEditPage })));
@@ -44,9 +48,13 @@ const ReactionRoleEditPage = lazy(() => import("./pages/reaction-roles/ReactionR
 const SelectMenuRoleEditPage = lazy(() => import("./pages/select-roles/SelectMenuRoleEditPage").then(m => ({ default: m.SelectMenuRoleEditPage })));
 const AutoResponder = lazy(() => import("./pages/AutoResponder").then(m => ({ default: m.AutoResponder })));
 const AutoResponderEditPage = lazy(() => import("./pages/auto-responder/AutoResponderEditPage").then(m => ({ default: m.AutoResponderEditPage })));
-const BackupRestore = lazy(() => import("./pages/BackupRestore").then(m => ({ default: m.BackupRestore })));
-const ServerBackup = lazy(() => import("./pages/ServerBackup").then(m => ({ default: m.ServerBackup })));
-const VerificationManager = lazy(() => import("./pages/VerificationManager").then(m => ({ default: m.VerificationManager })));
+const BackupList = lazy(() => import("./pages/backup/BackupList").then(m => ({ default: m.BackupList })));
+const BackupSchedule = lazy(() => import("./pages/backup/BackupSchedule").then(m => ({ default: m.BackupSchedule })));
+const BackupHistory = lazy(() => import("./pages/backup/BackupHistory").then(m => ({ default: m.BackupHistory })));
+const VerifyMembers = lazy(() => import("./pages/verification/VerifyMembers").then(m => ({ default: m.VerifyMembers })));
+const VerifyConfig = lazy(() => import("./pages/verification/VerifyConfig").then(m => ({ default: m.VerifyConfig })));
+const VerifyPull = lazy(() => import("./pages/verification/VerifyPull").then(m => ({ default: m.VerifyPull })));
+const VerifyStats = lazy(() => import("./pages/verification/VerifyStats").then(m => ({ default: m.VerifyStats })));
 const SecurityConfig = lazy(() => import("./pages/SecurityConfig").then(m => ({ default: m.SecurityConfig })));
 const VerifyPage = lazy(() => import("./pages/VerifyPage").then(m => ({ default: m.VerifyPage })));
 const SelectGuildPage = lazy(() => import("./pages/SelectGuildPage").then(m => ({ default: m.SelectGuildPage })));
@@ -60,6 +68,7 @@ const PublicPricingPage = lazy(() => import("./pages/PublicPricingPage").then(m 
 const PublicStatusPage = lazy(() => import("./pages/PublicStatusPage").then(m => ({ default: m.PublicStatusPage })));
 const ShopChannels = lazy(() => import("./pages/ShopChannels").then(m => ({ default: m.ShopChannels })));
 const ShopStats = lazy(() => import("./pages/ShopStats").then(m => ({ default: m.ShopStats })));
+const SpendingMilestones = lazy(() => import("./pages/SpendingMilestones"));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -95,6 +104,7 @@ const navGroups: NavGroup[] = [
       { to: "/coupons", icon: Tag, label: "nav_coupons" },
       { to: "/users", icon: Users, label: "nav_users" },
       { to: "/shop-stats", icon: Activity, label: "nav_shopStats" },
+      { to: "/milestones", icon: Trophy, label: "Mốc chi tiêu" },
       { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
       { to: "/config/shop-channels", icon: Hash, label: "nav_shopChannels", feature: "shop" },
     ],
@@ -116,7 +126,8 @@ const navGroups: NavGroup[] = [
     label: "nav_community",
     items: [
       { to: "/giveaways", icon: Gift, label: "nav_giveaway", feature: "giveaway" },
-      { to: "/invites", icon: Link2, label: "nav_invite", feature: "invite_tracking" },
+      { to: "/invites/leaderboard", icon: Trophy, label: "BXH mời", feature: "invite_tracking" },
+      { to: "/invites/log", icon: ScrollText, label: "Nhật ký mời", feature: "invite_tracking" },
       { to: "/warnings", icon: ShieldAlert, label: "nav_warnings", feature: "moderation" },
       { to: "/starboard", icon: Star, label: "nav_starboard", feature: "starboard" },
     ],
@@ -127,7 +138,10 @@ const navGroups: NavGroup[] = [
     label: "nav_moderation",
     feature: "moderation",
     items: [
-      { to: "/moderation", icon: Shield, label: "nav_modCases" },
+      { to: "/moderation/cases", icon: Gavel, label: "Vụ vi phạm" },
+      { to: "/moderation/notes", icon: FileText, label: "Ghi chú" },
+      { to: "/moderation/active", icon: Clock, label: "Đang phạt" },
+      { to: "/moderation/settings", icon: Settings, label: "Cài đặt KD" },
       { to: "/automod", icon: Shield, label: "nav_automod" },
       { to: "/logging", icon: ScrollText, label: "nav_loggingConfig" },
       { to: "/logs", icon: Activity, label: "nav_logging" },
@@ -138,8 +152,10 @@ const navGroups: NavGroup[] = [
     icon: ShieldAlert,
     label: "nav_security",
     items: [
-      { to: "/verification", icon: UserCheck2, label: "nav_verification" },
-      { to: "/server-backup", icon: Database, label: "nav_serverBackup" },
+      { to: "/verification/members", icon: Users, label: "Thành viên" },
+      { to: "/verification/config", icon: Settings, label: "Cấu hình xác minh" },
+      { to: "/verification/pull", icon: UserPlus, label: "Kéo thành viên" },
+      { to: "/verification/stats", icon: Activity, label: "Thống kê xác minh" },
       { to: "/security-config", icon: Shield, label: "nav_securityConfig" },
     ],
   },
@@ -173,7 +189,9 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/bot-status", icon: Activity, label: "nav_botStatus" },
       { to: "/config/discord", icon: Bot, label: "nav_discordBot" },
-      { to: "/backup", icon: Database, label: "nav_backup" },
+      { to: "/backup/list", icon: Database, label: "Sao lưu" },
+      { to: "/backup/schedule", icon: Clock, label: "Lịch sao lưu" },
+      { to: "/backup/history", icon: ScrollText, label: "Lịch sử sao lưu" },
     ],
   },
 ];
@@ -480,7 +498,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (isError) return <Navigate to="/login" replace />;
 
   // Một số route owner không cần guild
-  const guildFreeRoutes = ["/bot-status", "/backup", "/config/discord", "/server-backup", "/security-config"];
+  const guildFreeRoutes = ["/bot-status", "/backup", "/backup/list", "/backup/schedule", "/backup/history", "/config/discord", "/security-config"];
   if (!selectedGuildId && !guildFreeRoutes.includes(location.pathname)) {
     return <Navigate to="/select-guild" replace />;
   }
@@ -618,11 +636,18 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/users" element={<UsersManager />} />
         <Route path="/config/shop-channels" element={<ShopChannels />} />
         <Route path="/shop-stats" element={<ShopStats />} />
+        <Route path="/milestones" element={<SpendingMilestones />} />
         {/* Community */}
         <Route path="/warnings" element={<WarningsManager />} />
-        <Route path="/moderation" element={<ModerationManager />} />
+        <Route path="/moderation" element={<Navigate to="/moderation/cases" replace />} />
+        <Route path="/moderation/cases" element={<ModerationCases />} />
+        <Route path="/moderation/notes" element={<ModerationNotes />} />
+        <Route path="/moderation/active" element={<ModerationActive />} />
+        <Route path="/moderation/settings" element={<ModerationSettings />} />
         <Route path="/giveaways" element={<GiveawaysManager />} />
-        <Route path="/invites" element={<InviteTracking />} />
+        <Route path="/invites" element={<Navigate to="/invites/leaderboard" replace />} />
+        <Route path="/invites/leaderboard" element={<InviteLeaderboard />} />
+        <Route path="/invites/log" element={<InviteLog />} />
         <Route path="/starboard" element={<StarboardConfig />} />
         {/* Roles */}
         <Route path="/autorole" element={<AutoRoleConfig />} />
@@ -640,8 +665,15 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/logging" element={<LoggingConfig />} />
         <Route path="/logs" element={<LogViewer />} />
         {/* Security */}
-        <Route path="/verification" element={<VerificationManager />} />
-        <Route path="/server-backup" element={<OwnerRoute><ServerBackup /></OwnerRoute>} />
+        <Route path="/verification" element={<Navigate to="/verification/members" replace />} />
+        <Route path="/verification/members" element={<VerifyMembers />} />
+        <Route path="/verification/config" element={<VerifyConfig />} />
+        <Route path="/verification/pull" element={<VerifyPull />} />
+        <Route path="/verification/stats" element={<VerifyStats />} />
+        <Route path="/backup" element={<Navigate to="/backup/list" replace />} />
+        <Route path="/backup/list" element={<OwnerRoute><BackupList /></OwnerRoute>} />
+        <Route path="/backup/schedule" element={<OwnerRoute><BackupSchedule /></OwnerRoute>} />
+        <Route path="/backup/history" element={<OwnerRoute><BackupHistory /></OwnerRoute>} />
         <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
         {/* Utilities */}
         <Route path="/sticky" element={<StickyManager />} />
@@ -659,7 +691,6 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/embeds" element={<EmbedsManager />} />
         <Route path="/emojis" element={<EmojiManager />} />
         {/* Owner */}
-        <Route path="/backup" element={<OwnerRoute><BackupRestore /></OwnerRoute>} />
       </Routes>
       </Suspense>
     </ProtectedRoute>

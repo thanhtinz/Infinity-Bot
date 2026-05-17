@@ -331,3 +331,45 @@ class ShopCog(discord.Cog):
             await ctx.respond(embed=embed)
         finally:
             session.close()
+
+    @discord.slash_command(name="milestones", description="Xem các mốc chi tiêu & tiến độ của bạn")
+    async def milestones_cmd(self, ctx: discord.ApplicationContext):
+        if not check_feature(self): return
+        session = get_session()
+        try:
+            from src.models.models import SpendingMilestone
+            guild_id = str(ctx.guild_id) if ctx.guild_id else None
+
+            user = session.execute(
+                select(User).where(User.discord_id == str(ctx.author.id), User.guild_id == guild_id)
+            ).scalars().first()
+            total = user.total_spent if user else 0
+
+            milestones = session.execute(
+                select(SpendingMilestone)
+                .where(SpendingMilestone.guild_id == guild_id, SpendingMilestone.active == True)
+                .order_by(SpendingMilestone.threshold)
+            ).scalars().all()
+
+            if not milestones:
+                await ctx.respond("Chưa có mốc chi tiêu nào được cấu hình.", ephemeral=True)
+                return
+
+            lines = []
+            for m in milestones:
+                reached = total >= m.threshold
+                icon = "✅" if reached else "⬜"
+                emoji = f" {m.emoji}" if m.emoji else ""
+                progress = " — **đã đạt!**" if reached else f" — còn **{m.threshold - total:,.0f}đ**"
+                lines.append(f"{icon}{emoji} **{m.name}** ({m.threshold:,.0f}đ){progress}")
+
+            embed = discord.Embed(
+                title="🏆 Mốc chi tiêu",
+                description="\n".join(lines),
+                color=0xF0B232,
+            )
+            embed.add_field(name="💰 Tổng chi tiêu của bạn", value=f"**{total:,.0f}đ**", inline=False)
+            embed.set_footer(text=f"{ctx.author.display_name}", icon_url=ctx.author.display_avatar.url if ctx.author.display_avatar else None)
+            await ctx.respond(embed=embed, ephemeral=True)
+        finally:
+            session.close()

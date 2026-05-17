@@ -1,0 +1,199 @@
+import { useState, useEffect } from "react";
+import { useT } from "@/i18n";
+import type { ChangeEvent } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
+import { apiFetch } from "@/hooks/useApi";
+import { Settings, Save } from "lucide-react";
+import type { ModerationConfig } from "./shared";
+
+export function ModerationSettings() {
+  const { t } = useT();
+  const { toast } = useToast();
+  const qc = useQueryClient();
+
+  const [configForm, setConfigForm] = useState<ModerationConfig>({
+    mute_role_id: "",
+    mod_log_channel_id: "",
+    lockdown_channels: "",
+    ignored_users: "",
+    ignored_roles: "",
+    ignored_channels: "",
+    dm_on_action: false,
+    show_mod_in_dm: false,
+    auto_dehoist: false,
+  });
+
+  // ── Queries ──
+
+  const { data: config } = useQuery<ModerationConfig>({
+    queryKey: ["moderation-config"],
+    queryFn: () => apiFetch("/api/moderation/config").then((r) => r.json()),
+  });
+
+  // Sync config form when config loads
+  useEffect(() => {
+    if (config) setConfigForm(config);
+  }, [config]);
+
+  // ── Mutations ──
+
+  const saveConfigMutation = useMutation({
+    mutationFn: (body: ModerationConfig) =>
+      apiFetch("/api/moderation/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }).then((r) => {
+        if (!r.ok) throw new Error("Save config failed");
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["moderation-config"] });
+      toast({ title: t("toast_saved") });
+    },
+    onError: () =>
+      toast({ title: t("toast_error"), variant: "destructive" }),
+  });
+
+  // ── Config helpers ──
+
+  function updateConfig(key: keyof ModerationConfig, value: string | boolean) {
+    setConfigForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function handleConfigInput(key: keyof ModerationConfig, e: ChangeEvent<HTMLInputElement>) {
+    updateConfig(key, e.target.value);
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* ── Header ── */}
+      <div>
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <Settings className="h-6 w-6 text-muted-foreground" />
+          {t("mod_action")}
+        </h2>
+      </div>
+
+      {/* ── Settings form ── */}
+      <Card>
+        <CardContent className="p-4 space-y-6">
+          {/* ID fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label>{t("mod_muteRoleId")}</Label>
+              <Input
+                placeholder={t("mod_roleId")}
+                value={configForm.mute_role_id}
+                onChange={(e) => handleConfigInput("mute_role_id", e)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("mod_modLogChannelId")}</Label>
+              <Input
+                placeholder={t("mod_channelId")}
+                value={configForm.mod_log_channel_id}
+                onChange={(e) => handleConfigInput("mod_log_channel_id", e)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>{t("mod_lockdownChannels")}</Label>
+            <Input
+              placeholder={t("mod_commaSeparatedChannelIds")}
+              value={configForm.lockdown_channels}
+              onChange={(e) => handleConfigInput("lockdown_channels", e)}
+            />
+            <p className="text-[11px] text-muted-foreground">
+              {t("mod_channelIdsComma")}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <Label>{t("mod_ignoredUsers")}</Label>
+              <Input
+                placeholder={t("mod_commaSeparatedUserIds")}
+                value={configForm.ignored_users}
+                onChange={(e) => handleConfigInput("ignored_users", e)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("mod_ignoredRolesLabel")}</Label>
+              <Input
+                placeholder={t("mod_commaSeparatedRoleIds")}
+                value={configForm.ignored_roles}
+                onChange={(e) => handleConfigInput("ignored_roles", e)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("mod_ignoredChannelsLabel")}</Label>
+              <Input
+                placeholder={t("mod_commaSeparatedChannelIds")}
+                value={configForm.ignored_channels}
+                onChange={(e) => handleConfigInput("ignored_channels", e)}
+              />
+            </div>
+          </div>
+
+          {/* Toggles */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>{t("mod_dmOnAction")}</Label>
+                <p className="text-[11px] text-muted-foreground">
+                  {t("mod_dmOnActionDesc")}
+                </p>
+              </div>
+              <Switch
+                checked={configForm.dm_on_action}
+                onCheckedChange={(v) => updateConfig("dm_on_action", v)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>{t("mod_showModerator")}</Label>
+                <p className="text-[11px] text-muted-foreground">
+                  {t("mod_suppressEmbeds")}
+                </p>
+              </div>
+              <Switch
+                checked={configForm.show_mod_in_dm}
+                onCheckedChange={(v) => updateConfig("show_mod_in_dm", v)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>{t("mod_autoDehoist")}</Label>
+                <p className="text-[11px] text-muted-foreground">
+                  {t("mod_suppressPings")}
+                </p>
+              </div>
+              <Switch
+                checked={configForm.auto_dehoist}
+                onCheckedChange={(v) => updateConfig("auto_dehoist", v)}
+              />
+            </div>
+          </div>
+
+          {/* Save */}
+          <div className="flex justify-end">
+            <Button
+              disabled={saveConfigMutation.isPending}
+              onClick={() => saveConfigMutation.mutate(configForm)}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {saveConfigMutation.isPending ? t("saving") : t("save")}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

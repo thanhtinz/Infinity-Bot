@@ -100,6 +100,18 @@ class Coupon(Base):
     used_count = Column(Integer, default=0)
     is_public = Column(Boolean, default=False)
 
+class SpendingMilestone(Base):
+    """Mốc chi tiêu — tự động gán role khi user đạt mốc."""
+    __tablename__ = "spending_milestones"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
+    name = Column(String, nullable=False)             # e.g. "VIP", "Diamond"
+    threshold = Column(Float, nullable=False)          # amount in VNĐ
+    role_id = Column(String, nullable=False)           # Discord role ID to grant
+    emoji = Column(String, nullable=True)              # display emoji
+    active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 class Feedback(Base):
     __tablename__ = "feedback"
     id = Column(Integer, primary_key=True, index=True)
