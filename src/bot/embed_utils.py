@@ -390,6 +390,25 @@ DEFAULTS: dict[str, dict] = {
         "color": "#57F287",
         "fields": [],
     },
+    "rep_given": {
+        "title": "⭐ +1 Rep!",
+        "description": "{user.mention} đã tặng rep cho {target.mention}",
+        "color": "#FEE75C",
+        "footer": "{target} hiện có {target.rep} rep",
+        "fields": [
+            {"name": "Lý do", "value": "{reason}", "inline": False},
+        ],
+    },
+    "weekly_summary": {
+        "title": "📊 Tổng kết tuần",
+        "description": "Bảng tổng kết XP tuần này của **{server}**",
+        "color": "#5865F2",
+        "fields": [
+            {"name": "🏆 Top 1", "value": "{top1}", "inline": True},
+            {"name": "🥈 Top 2", "value": "{top2}", "inline": True},
+            {"name": "🥉 Top 3", "value": "{top3}", "inline": True},
+        ],
+    },
     # ── Phase 3: Welcome extras ───────────────────────────────────────────────
     "dm_welcome": {
         "title": "👋 Chào mừng!",

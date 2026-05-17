@@ -162,6 +162,14 @@ async def init_db():
             "stack_reward_roles": "ALTER TABLE leveling_configs ADD COLUMN stack_reward_roles BOOLEAN DEFAULT TRUE",
             "rank_card_config": "ALTER TABLE leveling_configs ADD COLUMN rank_card_config JSON DEFAULT '{}'",
             "leaderboard_reset_at": "ALTER TABLE leveling_configs ADD COLUMN leaderboard_reset_at TIMESTAMP",
+            "voice_xp_enabled": "ALTER TABLE leveling_configs ADD COLUMN voice_xp_enabled BOOLEAN DEFAULT TRUE",
+            "voice_xp_per_minute": "ALTER TABLE leveling_configs ADD COLUMN voice_xp_per_minute INTEGER DEFAULT 5",
+            "voice_afk_timeout": "ALTER TABLE leveling_configs ADD COLUMN voice_afk_timeout INTEGER DEFAULT 5",
+            "voice_solo_xp": "ALTER TABLE leveling_configs ADD COLUMN voice_solo_xp BOOLEAN DEFAULT FALSE",
+            "voice_stream_bonus": "ALTER TABLE leveling_configs ADD COLUMN voice_stream_bonus FLOAT DEFAULT 1.5",
+            "voice_camera_bonus": "ALTER TABLE leveling_configs ADD COLUMN voice_camera_bonus FLOAT DEFAULT 1.2",
+            "voice_ignored_channels": "ALTER TABLE leveling_configs ADD COLUMN voice_ignored_channels JSON DEFAULT '[]'",
+            "weekly_reset_day": "ALTER TABLE leveling_configs ADD COLUMN weekly_reset_day INTEGER DEFAULT 1",
         }.items():
             if col not in lvl:
                 all_stmts.append(stmt)
@@ -170,6 +178,21 @@ async def init_db():
         mxp = cols("member_xp")
         if "rank_card_bg" not in mxp:
             all_stmts.append("ALTER TABLE member_xp ADD COLUMN rank_card_bg VARCHAR")
+        for col, stmt in {
+            "voice_xp": "ALTER TABLE member_xp ADD COLUMN voice_xp INTEGER DEFAULT 0",
+            "voice_minutes": "ALTER TABLE member_xp ADD COLUMN voice_minutes INTEGER DEFAULT 0",
+            "voice_streak_days": "ALTER TABLE member_xp ADD COLUMN voice_streak_days INTEGER DEFAULT 0",
+            "voice_last_active": "ALTER TABLE member_xp ADD COLUMN voice_last_active TIMESTAMP",
+            "weekly_xp": "ALTER TABLE member_xp ADD COLUMN weekly_xp INTEGER DEFAULT 0",
+            "weekly_voice_minutes": "ALTER TABLE member_xp ADD COLUMN weekly_voice_minutes INTEGER DEFAULT 0",
+            "weekly_messages": "ALTER TABLE member_xp ADD COLUMN weekly_messages INTEGER DEFAULT 0",
+            "last_message_at": "ALTER TABLE member_xp ADD COLUMN last_message_at TIMESTAMP",
+            "rep_score": "ALTER TABLE member_xp ADD COLUMN rep_score INTEGER DEFAULT 0",
+            "rep_given": "ALTER TABLE member_xp ADD COLUMN rep_given INTEGER DEFAULT 0",
+            "social_links": "ALTER TABLE member_xp ADD COLUMN social_links JSON DEFAULT '{}'",
+        }.items():
+            if col not in mxp:
+                all_stmts.append(stmt)
 
         # custom_commands
         cc = cols("custom_commands")

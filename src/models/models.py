@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text, JSON, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Date, ForeignKey, Text, JSON, UniqueConstraint
 from sqlalchemy.orm import relationship
 import datetime
 from src.database.config import Base
@@ -203,6 +203,16 @@ class LevelingConfig(Base):
     stack_reward_roles = Column(Boolean, default=True)
     rank_card_config = Column(JSON, default=dict)
     leaderboard_reset_at = Column(DateTime, nullable=True)
+    # Voice XP config
+    voice_xp_enabled = Column(Boolean, default=True)
+    voice_xp_per_minute = Column(Integer, default=5)
+    voice_afk_timeout = Column(Integer, default=5)       # minutes muted+deafened → stop XP
+    voice_solo_xp = Column(Boolean, default=False)       # XP when alone in voice
+    voice_stream_bonus = Column(Float, default=1.5)      # multiplier when streaming
+    voice_camera_bonus = Column(Float, default=1.2)      # multiplier when camera on
+    voice_ignored_channels = Column(JSON, default=list)
+    # Weekly reset
+    weekly_reset_day = Column(Integer, default=1)         # 0=Mon, 6=Sun
 
 class MemberXP(Base):
     __tablename__ = "member_xp"
@@ -218,6 +228,20 @@ class MemberXP(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
     rank_card_bg = Column(String, nullable=True)   # slug of selected background e.g. "rank_bg_{guild}_1"
+    # Voice & weekly stats
+    voice_xp = Column(Integer, default=0)
+    voice_minutes = Column(Integer, default=0)
+    voice_streak_days = Column(Integer, default=0)
+    voice_last_active = Column(DateTime, nullable=True)
+    weekly_xp = Column(Integer, default=0)
+    weekly_voice_minutes = Column(Integer, default=0)
+    weekly_messages = Column(Integer, default=0)
+    last_message_at = Column(DateTime, nullable=True)
+    # Reputation
+    rep_score = Column(Integer, default=0)
+    rep_given = Column(Integer, default=0)
+    # Social links
+    social_links = Column(JSON, default=dict)
 
 class LevelReward(Base):
     __tablename__ = "level_rewards"
@@ -240,6 +264,30 @@ class LevelMultiplier(Base):
     multiplier = Column(Float, default=1.0)
     priority = Column(Integer, default=0)
     enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class Reputation(Base):
+    __tablename__ = "reputation"
+    __table_args__ = (UniqueConstraint("guild_id", "from_user_id", "to_user_id", "date", name="uq_rep_daily"),)
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, index=True)
+    from_user_id = Column(String, nullable=False)
+    to_user_id = Column(String, nullable=False)
+    reason = Column(String, nullable=True)
+    date = Column(Date, default=lambda: datetime.date.today())
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class XPHistory(Base):
+    __tablename__ = "xp_history"
+    __table_args__ = (UniqueConstraint("guild_id", "date", name="uq_xp_history_guild_date"),)
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, index=True)
+    date = Column(Date, nullable=False)
+    total_text_xp = Column(Integer, default=0)
+    total_voice_xp = Column(Integer, default=0)
+    active_members = Column(Integer, default=0)
+    messages_count = Column(Integer, default=0)
+    voice_minutes = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class EmbedTemplate(Base):

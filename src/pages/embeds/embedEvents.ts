@@ -9,7 +9,7 @@ import {
   LogIn, Hash, Shield, Moon, Zap, AlertTriangle,
   Heart, Mic, HelpCircle,
   Mail, TrendingUp,
-  CheckCircle, Package, ClipboardList, Tag, FileText, UserPlus, Pin,
+  CheckCircle, Package, ClipboardList, Tag, FileText, UserPlus, Pin, BarChart3,
 } from "lucide-react";
 
 // ─── Event definitions ───────────────────────────────────────────────────────
@@ -76,6 +76,8 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "level_up",          label: "Lên level",              labelEn: "Level Up",             icon: TrendingUp,   desc: "Khi user lên level mới" },
   { key: "level_reward",      label: "Level Reward",          labelEn: "Level Reward",         icon: Gift,          desc: "Khi user nhận role reward theo level" },
   { key: "leaderboard",       label: "Bảng xếp hạng XP",      labelEn: "XP Leaderboard",       icon: Trophy,        desc: "Embed bảng xếp hạng XP" },
+  { key: "rep_given",         label: "Tặng Rep",              labelEn: "Rep Given",            icon: Star,          desc: "Khi user tặng rep cho người khác" },
+  { key: "weekly_summary",    label: "Tổng kết tuần",         labelEn: "Weekly Summary",       icon: BarChart3,     desc: "Embed tổng kết XP hàng tuần" },
   // ── Help ──
   { key: "help_menu",         label: "Help — Menu chính",     labelEn: "Help Menu",            icon: HelpCircle,    desc: "Embed chào mừng khi dùng /help" },
   { key: "help_category",     label: "Help — Danh mục",       labelEn: "Help Category",        icon: HelpCircle,    desc: "Embed hiển thị lệnh trong một danh mục" },
@@ -174,7 +176,7 @@ export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] 
   { label: "Ticket",      labelEn: "Ticket",          keys: ["ticket_mo", "ticket_dong", "ticket_nhan", "ticket_unclaim", "ticket_panel", "ticket_transcript", "ticket_feedback"] },
   { label: "Kiểm duyệt", labelEn: "Moderation",      keys: ["canh_bao", "kick", "ban", "unban", "softban", "mute", "deafen", "rolepersist", "temprole", "lockdown_start", "lockdown_end", "automod_warn", "automod_mute", "automod_kick", "automod_delete", "timeout"] },
   { label: "Tiện ích",    labelEn: "Utilities",       keys: ["afk_set", "afk_return", "tempvoice_create", "tempvoice_panel", "tempvoice_action", "sticky_message"] },
-  { label: "Leveling",    labelEn: "Leveling",        keys: ["level_up", "level_reward", "leaderboard"] },
+  { label: "Leveling",    labelEn: "Leveling",        keys: ["level_up", "level_reward", "leaderboard", "rep_given", "weekly_summary"] },
   { label: "Help",        labelEn: "Help",            keys: ["help_menu", "help_category", "help_command"] },
   { label: "Logging",     labelEn: "Logging",         keys: ["log_message_delete", "log_message_edit", "log_message_bulk_delete", "log_voice_join", "log_voice_leave", "log_voice_move", "log_member_join", "log_member_leave", "log_nickname_change", "log_role_update", "log_channel_create", "log_channel_delete"] },
   { label: "Tương tác — Có mục tiêu", labelEn: "Interactions — Targeted", keys: ["interact_airkiss", "interact_angrystare", "interact_bite", "interact_brofist", "interact_cuddle", "interact_handhold", "interact_hug", "interact_kiss", "interact_lick", "interact_nom", "interact_nuzzle", "interact_pat", "interact_pinch", "interact_poke", "interact_punch", "interact_slap", "interact_smack", "interact_tickle", "interact_wave", "interact_wink", "interact_stare", "interact_peek"] },
@@ -241,6 +243,8 @@ export const VARIABLES: { token: string; desc: string; descEn: string }[] = [
   { token: "{next_level_xp}",     desc: "XP cần cho level tiếp theo",       descEn: "XP needed for next level" },
   { token: "{leaderboard}",       desc: "Nội dung leaderboard",             descEn: "Leaderboard content" },
   { token: "{reward.role}",       desc: "Role reward theo level",           descEn: "Level role reward" },
+  { token: "{xp_source}",         desc: "Nguồn XP (text/voice)",           descEn: "XP source (text/voice)" },
+  { token: "{target.rep}",        desc: "Tổng rep của người được tặng",     descEn: "Target user total rep" },
   { token: "{ticket.id}",         desc: "ID ticket",                        descEn: "Ticket ID" },
   { token: "{close_reason}",      desc: "Lý do đóng ticket",                descEn: "Ticket close reason" },
   { token: "{staff.mention}",     desc: "Staff nhận ticket",                descEn: "Staff who claimed the ticket" },

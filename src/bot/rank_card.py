@@ -209,6 +209,16 @@ def make_rank_card(
     level_label: str = "Level",
     xp_label: str = "XP",
     layout_config: dict | None = None,
+    # Extended stats
+    message_count: int = 0,
+    voice_minutes: int = 0,
+    voice_xp: int = 0,
+    rep_score: int = 0,
+    # Visual enhancements
+    gradient_theme: str = "",
+    avatar_effect: str = "glow",
+    badges: list | None = None,
+    frame: str = "none",
 ) -> BytesIO:
     """Rank card PNG — pixel-matched to reference design."""
     import os as _os
@@ -237,11 +247,33 @@ def make_rank_card(
     pct = max(0, min(100, pct))
 
     # ── Background — gradient #3A3A45 → #24242B top→bottom ──────────────────
+    GRADIENT_THEMES = {
+        "sunset":  ((255, 94, 77),  (255, 154, 0)),
+        "ocean":   ((0, 150, 199),  (0, 69, 142)),
+        "forest":  ((34, 139, 34),  (0, 100, 0)),
+        "neon":    ((255, 0, 255),  (0, 255, 255)),
+        "pastel":  ((255, 179, 186),(186, 225, 255)),
+        "midnight":((25, 25, 112),  (72, 61, 139)),
+        "aurora":  ((0, 210, 190),  (95, 44, 255)),
+        "fire":    ((255, 69, 0),   (255, 165, 0)),
+    }
+
     if custom_bg_path and _os.path.exists(custom_bg_path):
         try:
             img = Image.open(custom_bg_path).convert("RGBA").resize((CARD_W, CARD_H), Image.Resampling.LANCZOS)
         except Exception:
             img = Image.new("RGBA", (CARD_W, CARD_H), (*bg_rgb, 255))
+    elif gradient_theme and gradient_theme in GRADIENT_THEMES:
+        # Use gradient theme
+        g_start, g_end = GRADIENT_THEMES[gradient_theme]
+        img = Image.new("RGBA", (CARD_W, CARD_H), (*bg_rgb, 255))
+        grad = Image.new("RGBA", (CARD_W, CARD_H), (0, 0, 0, 0))
+        gd = ImageDraw.Draw(grad)
+        for y in range(CARD_H):
+            t = y / max(1, CARD_H - 1)
+            c = tuple(int(g_start[i] * (1 - t) + g_end[i] * t) for i in range(3))
+            gd.line((0, y, CARD_W, y), fill=(*c, 180))
+        img.alpha_composite(grad)
     else:
         img = Image.new("RGBA", (CARD_W, CARD_H), (*bg_rgb, 255))
         # Diagonal gradient overlay (top-left lighter → bottom-right darker)
@@ -259,15 +291,32 @@ def make_rank_card(
 
     # Avatar glow — soft purple radial behind avatar (spec: glow:#7A5CFF, blur:40)
     av_cx, av_cy = 32 + 90, 70 + 90          # avatar center
-    glow_layer = Image.new("RGBA", (CARD_W, CARD_H), (0, 0, 0, 0))
-    gd2 = ImageDraw.Draw(glow_layer)
-    GLOW_R = 120
-    gd2.ellipse(
-        (av_cx - GLOW_R, av_cy - GLOW_R, av_cx + GLOW_R, av_cy + GLOW_R),
-        fill=(*glow_rgb, 80),
-    )
-    glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(40))
-    img.alpha_composite(glow_layer)
+    if avatar_effect != "none":
+        glow_layer = Image.new("RGBA", (CARD_W, CARD_H), (0, 0, 0, 0))
+        gd2 = ImageDraw.Draw(glow_layer)
+        GLOW_R = 120
+        if avatar_effect == "shadow":
+            # Drop shadow below/right
+            gd2.ellipse(
+                (av_cx - GLOW_R + 10, av_cy - GLOW_R + 10, av_cx + GLOW_R + 10, av_cy + GLOW_R + 10),
+                fill=(0, 0, 0, 100),
+            )
+            glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(30))
+        elif avatar_effect == "ring_pulse":
+            # Colored ring pulse effect
+            for r_offset in range(3):
+                ring_r = GLOW_R + r_offset * 15
+                gd2.ellipse(
+                    (av_cx - ring_r, av_cy - ring_r, av_cx + ring_r, av_cy + ring_r),
+                    outline=(*accent_rgb, max(20, 80 - r_offset * 25)), width=3,
+                )
+        else:  # "glow" (default)
+            gd2.ellipse(
+                (av_cx - GLOW_R, av_cy - GLOW_R, av_cx + GLOW_R, av_cy + GLOW_R),
+                fill=(*glow_rgb, 80),
+            )
+            glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(40))
+        img.alpha_composite(glow_layer)
 
     draw = ImageDraw.Draw(img)
 
@@ -288,6 +337,32 @@ def make_rank_card(
             outline=(*accent_rgb, 200),
             width=BORDER,
         )
+
+    # Avatar frame
+    FRAME_COLORS = {
+        "gold": (255, 215, 0), "diamond": (185, 242, 255),
+        "fire": (255, 69, 0), "rainbow": None,
+    }
+    if frame and frame != "none" and frame in FRAME_COLORS:
+        frame_w = 6
+        if frame == "rainbow":
+            rainbow = [(255,0,0),(255,127,0),(255,255,0),(0,255,0),(0,0,255),(75,0,130),(148,0,211)]
+            for i, c in enumerate(rainbow):
+                offset = i * 2
+                draw.rounded_rectangle(
+                    (AV_X - BORDER - frame_w + offset, AV_Y - BORDER - frame_w + offset,
+                     AV_X + AV_SIZE + BORDER + frame_w - offset, AV_Y + AV_SIZE + BORDER + frame_w - offset),
+                    radius=AV_R + BORDER + frame_w,
+                    outline=(*c, 180), width=1,
+                )
+        else:
+            fc = FRAME_COLORS[frame]
+            draw.rounded_rectangle(
+                (AV_X - BORDER - frame_w, AV_Y - BORDER - frame_w,
+                 AV_X + AV_SIZE + BORDER + frame_w, AV_Y + AV_SIZE + BORDER + frame_w),
+                radius=AV_R + BORDER + frame_w,
+                outline=(*fc, 220), width=frame_w,
+            )
 
     # ── Fonts — pixel sizes matching spec exactly ─────────────────────────────
     name_font  = _font(52, bold=True)   # username  52 / 700
@@ -381,6 +456,46 @@ def make_rank_card(
             needed_str,
             font=next_font, fill=(*secondary_txt, 200),
         )
+
+    # ── Stats row: messages, voice time, rep ──────────────────────────────────
+    stat_font = _font(18, bold=False)
+    stat_y = BELOW_Y + 42 if show_total_xp else BAR_Y + BAR_H + 12
+    stats_parts = []
+    if message_count > 0:
+        stats_parts.append(f"📝 {message_count:,} msgs")
+    if voice_minutes > 0:
+        if voice_minutes >= 60:
+            stats_parts.append(f"🔊 {voice_minutes // 60}h {voice_minutes % 60}m")
+        else:
+            stats_parts.append(f"🔊 {voice_minutes}m")
+    if rep_score > 0:
+        stats_parts.append(f"⭐ {rep_score} rep")
+    if stats_parts:
+        stats_str = "  •  ".join(stats_parts)
+        draw.text((BAR_X, stat_y), stats_str, font=stat_font, fill=(*secondary_txt, 180))
+
+    # ── Badges ────────────────────────────────────────────────────────────────
+    if badges:
+        BADGE_DEFS = {
+            "early_member": ("🏅", (255, 215, 0)),
+            "top_10": ("🏆", (255, 165, 0)),
+            "voice_king": ("👑", (148, 0, 211)),
+            "rep_master": ("⭐", (255, 255, 0)),
+            "msg_master": ("💬", (0, 191, 255)),
+            "streaker": ("🔥", (255, 69, 0)),
+        }
+        badge_x = BAR_X
+        badge_y = stat_y + 28 if stats_parts else stat_y
+        badge_font = _font(20, bold=True)
+        for b in badges[:6]:
+            emoji, color = BADGE_DEFS.get(b, ("🏷️", (200, 200, 200)))
+            # Draw badge circle background
+            draw.ellipse(
+                (badge_x, badge_y, badge_x + 28, badge_y + 28),
+                fill=(*color, 60),
+            )
+            draw.text((badge_x + 4, badge_y + 2), emoji, font=badge_font, fill=(*white, 255))
+            badge_x += 36
 
     # ── Final rounded clip  radius:24 ────────────────────────────────────────
     out_mask = _rounded_mask((CARD_W, CARD_H), 24)

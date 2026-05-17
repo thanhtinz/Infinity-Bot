@@ -1,5 +1,6 @@
-"""Leveling API — config, leaderboard, rewards, multipliers."""
+"""Leveling API — config, leaderboard, rewards, multipliers, analytics, reputation."""
 import os
+import datetime
 from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, File
 from pydantic import BaseModel
 from sqlalchemy import select, func
@@ -7,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from src.database.config import get_db
 from src.api.deps import get_guild_id
-from src.models.models import LevelingConfig, MemberXP, LevelReward, LevelMultiplier
+from src.models.models import LevelingConfig, MemberXP, LevelReward, LevelMultiplier, Reputation, XPHistory
 from src.bot.rank_card import demo_rank_card, make_rank_card
 
 router = APIRouter()
@@ -43,6 +44,16 @@ def _cfg_dict(cfg: LevelingConfig) -> dict:
         "remove_old_reward_roles": cfg.remove_old_reward_roles,
         "stack_reward_roles": cfg.stack_reward_roles,
         "rank_card_config": cfg.rank_card_config or {},
+        # Voice XP
+        "voice_xp_enabled": cfg.voice_xp_enabled if cfg.voice_xp_enabled is not None else True,
+        "voice_xp_per_minute": cfg.voice_xp_per_minute or 5,
+        "voice_afk_timeout": cfg.voice_afk_timeout or 5,
+        "voice_solo_xp": cfg.voice_solo_xp or False,
+        "voice_stream_bonus": cfg.voice_stream_bonus or 1.5,
+        "voice_camera_bonus": cfg.voice_camera_bonus or 1.2,
+        "voice_ignored_channels": cfg.voice_ignored_channels or [],
+        # Weekly
+        "weekly_reset_day": cfg.weekly_reset_day if cfg.weekly_reset_day is not None else 1,
     }
 
 
@@ -403,6 +414,10 @@ def get_leaderboard(page: int = 1, limit: int = 50, db: Session = Depends(get_db
                 "xp": row.xp or 0,
                 "level": row.level or 0,
                 "message_count": row.message_count or 0,
+                "voice_xp": row.voice_xp or 0,
+                "voice_minutes": row.voice_minutes or 0,
+                "weekly_xp": row.weekly_xp or 0,
+                "rep_score": row.rep_score or 0,
                 "updated_at": row.updated_at.isoformat() if row.updated_at else None,
             }
             for idx, row in enumerate(rows)
@@ -515,3 +530,106 @@ def delete_multiplier(multiplier_id: int, db: Session = Depends(get_db)):
         db.delete(row)
         db.commit()
     return {"ok": True}
+
+
+# ── Analytics ─────────────────────────────────────────────────────────────────
+
+@router.get("/leveling/analytics")
+def get_analytics(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    members = db.execute(select(MemberXP).where(MemberXP.guild_id == guild_id)).scalars().all()
+    now = datetime.datetime.utcnow()
+    day_ago = now - datetime.timedelta(days=1)
+    week_ago = now - datetime.timedelta(days=7)
+
+    total_members = len([m for m in members if (m.xp or 0) > 0])
+    total_xp = sum(m.xp or 0 for m in members)
+    total_text_xp = sum((m.xp or 0) - (m.voice_xp or 0) for m in members)
+    total_voice_xp = sum(m.voice_xp or 0 for m in members)
+    avg_level = round(sum(m.level or 0 for m in members) / max(1, total_members), 1)
+    active_today = sum(1 for m in members if m.updated_at and m.updated_at >= day_ago)
+    active_week = sum(1 for m in members if m.updated_at and m.updated_at >= week_ago)
+    total_messages = sum(m.message_count or 0 for m in members)
+    total_voice_mins = sum(m.voice_minutes or 0 for m in members)
+
+    # Level distribution
+    level_dist: dict[int, int] = {}
+    for m in members:
+        lvl = m.level or 0
+        level_dist[lvl] = level_dist.get(lvl, 0) + 1
+    level_distribution = [{"level": k, "count": v} for k, v in sorted(level_dist.items())]
+
+    # Hourly activity heatmap
+    hourly: dict[int, int] = {h: 0 for h in range(24)}
+    for m in members:
+        if m.last_xp_at and m.last_xp_at >= week_ago:
+            hourly[m.last_xp_at.hour] = hourly.get(m.last_xp_at.hour, 0) + 1
+    hourly_activity = [{"hour": h, "count": c} for h, c in sorted(hourly.items())]
+
+    # XP history (30 days)
+    thirty_days_ago = datetime.date.today() - datetime.timedelta(days=30)
+    history = db.execute(
+        select(XPHistory)
+        .where(XPHistory.guild_id == guild_id, XPHistory.date >= thirty_days_ago)
+        .order_by(XPHistory.date)
+    ).scalars().all()
+    xp_by_day = [
+        {
+            "date": h.date.isoformat(),
+            "text_xp": h.total_text_xp or 0,
+            "voice_xp": h.total_voice_xp or 0,
+            "total": (h.total_text_xp or 0) + (h.total_voice_xp or 0),
+            "active_members": h.active_members or 0,
+            "messages": h.messages_count or 0,
+            "voice_minutes": h.voice_minutes or 0,
+        }
+        for h in history
+    ]
+
+    # Top members
+    top_members = sorted(members, key=lambda m: m.xp or 0, reverse=True)[:10]
+    top = [
+        {
+            "discord_id": m.discord_id, "username": m.username,
+            "xp": m.xp or 0, "level": m.level or 0,
+            "message_count": m.message_count or 0,
+            "voice_xp": m.voice_xp or 0, "voice_minutes": m.voice_minutes or 0,
+            "rep_score": m.rep_score or 0,
+        }
+        for m in top_members
+    ]
+
+    return {
+        "total_members": total_members,
+        "total_xp": total_xp,
+        "total_text_xp": total_text_xp,
+        "total_voice_xp": total_voice_xp,
+        "avg_level": avg_level,
+        "active_today": active_today,
+        "active_week": active_week,
+        "total_messages": total_messages,
+        "total_voice_minutes": total_voice_mins,
+        "level_distribution": level_distribution,
+        "hourly_activity": hourly_activity,
+        "xp_by_day": xp_by_day,
+        "top_members": top,
+    }
+
+
+@router.get("/leveling/reputation")
+def get_reputation(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    members = db.execute(
+        select(MemberXP)
+        .where(MemberXP.guild_id == guild_id, MemberXP.rep_score > 0)
+        .order_by(MemberXP.rep_score.desc())
+        .limit(50)
+    ).scalars().all()
+    return {
+        "items": [
+            {
+                "discord_id": m.discord_id, "username": m.username,
+                "rep_score": m.rep_score or 0, "rep_given": m.rep_given or 0,
+                "level": m.level or 0,
+            }
+            for m in members
+        ]
+    }
