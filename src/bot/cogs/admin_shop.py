@@ -242,17 +242,32 @@ class OrderPayView(discord.ui.View):
 
 class BangGiaSelect(discord.ui.Select):
     def __init__(self, products: list):
-        options = [
-            discord.SelectOption(
+        options = []
+        for p in products[:25]:
+            opt = discord.SelectOption(
                 label=(p.name or f"Sản phẩm #{p.id}")[:100],
                 value=str(p.id),
                 description=(p.description[:100] if p.description else "Xem chi tiết gói"),
             )
-            for p in products[:25]
-        ]
+            # Parse emoji — supports Unicode, custom <:name:id>, or :name:id
+            if p.emoji:
+                raw = p.emoji.strip()
+                if raw.startswith("<") and raw.endswith(">"):
+                    raw = raw[1:-1]  # strip < >
+                if ":" in raw:
+                    parts = raw.split(":")
+                    try:
+                        eid = int(parts[-1])
+                        ename = parts[-2] if len(parts) >= 2 else "_"
+                        opt.emoji = discord.PartialEmoji(name=ename, id=eid, animated=raw.startswith("a:"))
+                    except (ValueError, IndexError):
+                        pass
+                else:
+                    opt.emoji = raw  # Unicode emoji
+            options.append(opt)
         super().__init__(
             placeholder="🔍 Chọn sản phẩm để xem chi tiết...",
-            options=options,
+            options=options or [discord.SelectOption(label="Không có sản phẩm", value="_")],
             min_values=1,
             max_values=1,
             custom_id="bang_gia_select_persistent",
@@ -279,13 +294,19 @@ class BangGiaSelect(discord.ui.Select):
             pkgs = [pk for pk in (product.packages or []) if pk.get("active", True)]
             img = resolve_image_url(product.image_url, session)
 
+            # Try per-product embed first, fall back to generic san_pham_detail
+            product_event = f"product_{product.id}"
             tmpl = session.execute(
-                select(EmbedTemplate).where(EmbedTemplate.event_type == "san_pham_detail")
+                select(EmbedTemplate).where(EmbedTemplate.event_type == product_event)
             ).scalars().first()
+            if not tmpl:
+                tmpl = session.execute(
+                    select(EmbedTemplate).where(EmbedTemplate.event_type == "san_pham_detail")
+                ).scalars().first()
             db_has_fields = bool(tmpl and tmpl.enabled and tmpl.fields)
 
             first_pkg = pkgs[0] if pkgs else {}
-            embed = build_embed("san_pham_detail", session, vars={
+            embed = build_embed(product_event, session, vars={
                 "product.name": product.name or f"Sản phẩm #{product.id}",
                 "product.description": product.description or "Không có mô tả.",
                 "product.image_url": img or "",
@@ -549,13 +570,19 @@ class AdminShopCog(discord.Cog):
             pkgs = [pk for pk in (product.packages or []) if pk.get("active", True)]
             img = resolve_image_url(product.image_url, session)
 
+            # Try per-product embed first, fall back to generic san_pham_detail
+            product_event = f"product_{product.id}"
             tmpl = session.execute(
-                select(EmbedTemplate).where(EmbedTemplate.event_type == "san_pham_detail")
+                select(EmbedTemplate).where(EmbedTemplate.event_type == product_event)
             ).scalars().first()
+            if not tmpl:
+                tmpl = session.execute(
+                    select(EmbedTemplate).where(EmbedTemplate.event_type == "san_pham_detail")
+                ).scalars().first()
             db_has_fields = bool(tmpl and tmpl.enabled and tmpl.fields)
 
             first_pkg = pkgs[0] if pkgs else {}
-            embed = build_embed("san_pham_detail", session, vars={
+            embed = build_embed(product_event, session, vars={
                 "product.name": product.name or f"Sản phẩm #{product.id}",
                 "product.description": product.description or "Không có mô tả.",
                 "product.image_url": img or "",

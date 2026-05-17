@@ -63,6 +63,7 @@ class ProductBase(BaseModel):
     description: Optional[str] = None
     note: Optional[str] = None
     image_url: Optional[str] = None
+    emoji: Optional[str] = None
     packages: Optional[List[dict]] = []  # [{"name": str, "price": float, "active": bool}]
     active: bool = True
 

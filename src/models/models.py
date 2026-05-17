@@ -65,6 +65,7 @@ class Product(Base):
     description = Column(Text, nullable=True)
     note = Column(Text, nullable=True)          # ghi chú nội bộ / hướng dẫn sau khi mua
     image_url = Column(String, nullable=True)
+    emoji = Column(String, nullable=True)       # emoji icon for dropdown (Unicode or custom :name:id)
     price = Column(Float, default=0)  # kept for compat, use packages instead
     packages = Column(JSON, default=list)  # [{"name": str, "price": float, "active": bool}]
     active = Column(Boolean, default=True)

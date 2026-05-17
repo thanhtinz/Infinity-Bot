@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Ticket, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Mic, Activity, Smile, Star, FileText, ClipboardList, Users2, UserCheck2, Hand, UserPlus, ToggleLeft, ListChecks, ListOrdered, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply, Image as ImageIcon, Filter, Zap, BarChart2 } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, Link2, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserCheck2, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
@@ -11,7 +11,6 @@ import { I18nProvider, useT } from "@/i18n";
 const ConfigDiscord = lazy(() => import("./pages/ConfigDiscord").then(m => ({ default: m.ConfigDiscord })));
 const ConfigPayOS = lazy(() => import("./pages/ConfigPayOS").then(m => ({ default: m.ConfigPayOS })));
 const ConfigChannels = lazy(() => import("./pages/ConfigChannels").then(m => ({ default: m.ConfigChannels })));
-const ConfigVoice = lazy(() => import("./pages/ConfigVoice").then(m => ({ default: m.ConfigVoice })));
 const BotSettings = lazy(() => import("./pages/BotSettings").then(m => ({ default: m.BotSettings })));
 const ProductsManager = lazy(() => import("./pages/ProductsManager").then(m => ({ default: m.ProductsManager })));
 const OrdersManager = lazy(() => import("./pages/OrdersManager").then(m => ({ default: m.OrdersManager })));
@@ -22,28 +21,12 @@ const FeedbackManager = lazy(() => import("./pages/FeedbackManager").then(m => (
 const UsersManager = lazy(() => import("./pages/UsersManager").then(m => ({ default: m.UsersManager })));
 const GiveawaysManager = lazy(() => import("./pages/GiveawaysManager").then(m => ({ default: m.GiveawaysManager })));
 const InviteTracking = lazy(() => import("./pages/InviteTracking").then(m => ({ default: m.InviteTracking })));
-const RankCardEditor = lazy(() => import("./pages/LevelingManager").then(m => ({ default: m.RankCardEditor })));
-
-const LevelingManager = lazy(() => import("./pages/LevelingManager").then(m => ({ default: m.LevelingManager })));
-
-const Leaderboard = lazy(() => import("./pages/Leaderboard").then(m => ({ default: m.Leaderboard })));
 const WarningsManager = lazy(() => import("./pages/WarningsManager").then(m => ({ default: m.WarningsManager })));
 const ModerationManager = lazy(() => import("./pages/ModerationManager").then(m => ({ default: m.ModerationManager })));
 const StickyManager = lazy(() => import("./pages/StickyManager").then(m => ({ default: m.StickyManager })));
 const StickyEditPage = lazy(() => import("./pages/sticky/StickyEditPage").then(m => ({ default: m.StickyEditPage })));
-const TicketsPage = lazy(() => import("./pages/TicketsPage").then(m => ({ default: m.TicketsPage })));
-const TicketPanels = lazy(() => import("./pages/TicketPanels").then(m => ({ default: m.TicketPanels })));
-const TicketConfig = lazy(() => import("./pages/TicketConfig").then(m => ({ default: m.TicketConfig })));
-const TicketForms = lazy(() => import("./pages/TicketForms").then(m => ({ default: m.TicketForms })));
-const TicketTeams = lazy(() => import("./pages/TicketTeams").then(m => ({ default: m.TicketTeams })));
 const CouponEditPage = lazy(() => import("./pages/coupons/CouponEditPage").then(m => ({ default: m.CouponEditPage })));
 const ProductEditPage = lazy(() => import("./pages/products/ProductEditPage").then(m => ({ default: m.ProductEditPage })));
-const TicketFormEditPage = lazy(() => import("./pages/ticket-forms/TicketFormEditPage").then(m => ({ default: m.TicketFormEditPage })));
-const TicketTeamEditPage = lazy(() => import("./pages/ticket-teams/TicketTeamEditPage").then(m => ({ default: m.TicketTeamEditPage })));
-const TicketFeedback = lazy(() => import("./pages/TicketFeedback").then(m => ({ default: m.TicketFeedback })));
-const TicketTranscripts = lazy(() => import("./pages/TicketTranscripts").then(m => ({ default: m.TicketTranscripts })));
-const TicketClaiming = lazy(() => import("./pages/TicketClaiming").then(m => ({ default: m.TicketClaiming })));
-const WelcomeConfig = lazy(() => import("./pages/WelcomeConfig").then(m => ({ default: m.WelcomeConfig })));
 const AutoRoleConfig = lazy(() => import("./pages/AutoRoleConfig").then(m => ({ default: m.AutoRoleConfig })));
 const ButtonRoles = lazy(() => import("./pages/ButtonRoles").then(m => ({ default: m.ButtonRoles })));
 const SelectMenuRoles = lazy(() => import("./pages/SelectMenuRoles").then(m => ({ default: m.SelectMenuRoles })));
@@ -75,13 +58,6 @@ const LandingPage = lazy(() => import("./pages/LandingPage").then(m => ({ defaul
 const PublicCommandsPage = lazy(() => import("./pages/PublicCommandsPage").then(m => ({ default: m.PublicCommandsPage })));
 const PublicPricingPage = lazy(() => import("./pages/PublicPricingPage").then(m => ({ default: m.PublicPricingPage })));
 const PublicStatusPage = lazy(() => import("./pages/PublicStatusPage").then(m => ({ default: m.PublicStatusPage })));
-// TempVoice pages
-const TempVoiceSetup = lazy(() => import("./pages/voice/TempVoiceSetup").then(m => ({ default: m.TempVoiceSetup })));
-const TempVoiceDefaults = lazy(() => import("./pages/voice/TempVoiceDefaults").then(m => ({ default: m.TempVoiceDefaults })));
-const TempVoicePermissions = lazy(() => import("./pages/voice/TempVoicePermissions").then(m => ({ default: m.TempVoicePermissions })));
-const TempVoiceCleanup = lazy(() => import("./pages/voice/TempVoiceCleanup").then(m => ({ default: m.TempVoiceCleanup })));
-const TempVoiceRooms = lazy(() => import("./pages/voice/TempVoiceRooms").then(m => ({ default: m.TempVoiceRooms })));
-const TempVoiceAnalytics = lazy(() => import("./pages/voice/TempVoiceAnalytics").then(m => ({ default: m.TempVoiceAnalytics })));
 const ShopChannels = lazy(() => import("./pages/ShopChannels").then(m => ({ default: m.ShopChannels })));
 const ShopStats = lazy(() => import("./pages/ShopStats").then(m => ({ default: m.ShopStats })));
 import { cn } from "./lib/utils";
@@ -119,25 +95,19 @@ const navGroups: NavGroup[] = [
       { to: "/coupons", icon: Tag, label: "nav_coupons" },
       { to: "/users", icon: Users, label: "nav_users" },
       { to: "/shop-stats", icon: Activity, label: "nav_shopStats" },
-      { to: "/leaderboard", icon: Trophy, label: "nav_leaderboard" },
       { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
       { to: "/config/shop-channels", icon: Hash, label: "nav_shopChannels", feature: "shop" },
     ],
   },
   {
     key: "ticket",
-    icon: Ticket,
-    label: "Ticket",
-    feature: "ticket",
+    icon: Users,
+    label: "Roles",
     items: [
-      { to: "/tickets", icon: Ticket, label: "nav_tickets" },
-      { to: "/ticket-panels", icon: Palette, label: "nav_panels" },
-      { to: "/ticket-forms", icon: ClipboardList, label: "nav_forms" },
-      { to: "/ticket-teams", icon: Users2, label: "nav_teams" },
-      { to: "/ticket-transcripts", icon: FileText, label: "nav_transcripts" },
-      { to: "/ticket-claiming", icon: UserCheck2, label: "nav_claiming" },
-      { to: "/ticket-feedback", icon: Star, label: "nav_feedback" },
-      { to: "/ticket-config", icon: Settings, label: "nav_ticketConfig" },
+      { to: "/autorole", icon: UserPlus, label: "Auto Role" },
+      { to: "/button-roles", icon: ToggleLeft, label: "nav_panels" },
+      { to: "/select-roles", icon: ListChecks, label: "Select Menu Roles" },
+      { to: "/reaction-roles", icon: Smile, label: "nav_rr" },
     ],
   },
   {
@@ -149,47 +119,6 @@ const navGroups: NavGroup[] = [
       { to: "/invites", icon: Link2, label: "nav_invite", feature: "invite_tracking" },
       { to: "/warnings", icon: ShieldAlert, label: "nav_warnings", feature: "moderation" },
       { to: "/starboard", icon: Star, label: "nav_starboard", feature: "starboard" },
-    ],
-  },
-  {
-    key: "leveling",
-    icon: Trophy,
-    label: "nav_level",
-    feature: "leveling",
-    items: [
-      { to: "/leveling/rank-card", icon: ImageIcon, label: "nav_rankCard" },
-      { to: "/leveling/config", icon: Settings, label: "nav_xpConfig" },
-      { to: "/leveling/filters", icon: Filter, label: "nav_filters" },
-      { to: "/leveling/leaderboard", icon: ListOrdered, label: "nav_leaderboard" },
-      { to: "/leveling/rewards", icon: Gift, label: "nav_rewards" },
-      { to: "/leveling/multipliers", icon: Zap, label: "nav_multipliers" },
-    ],
-  },
-  {
-    key: "welcome",
-    icon: Hand,
-    label: "nav_welcome",
-    feature: "welcome",
-    items: [
-      { to: "/welcome", icon: MessageSquare, label: "nav_welcome" },
-      { to: "/autorole", icon: UserPlus, label: "Auto Role" },
-      { to: "/button-roles", icon: ToggleLeft, label: "nav_panels" },
-      { to: "/select-roles", icon: ListChecks, label: "Select Menu Roles" },
-      { to: "/reaction-roles", icon: Smile, label: "nav_rr" },
-    ],
-  },
-  {
-    key: "tempvoice",
-    icon: Mic,
-    label: "nav_tempVoice",
-    feature: "temp_voice",
-    items: [
-      { to: "/voice/analytics", icon: BarChart2, label: "nav_voiceAnalytics" },
-      { to: "/voice/setup", icon: Settings, label: "nav_voiceSetup" },
-      { to: "/voice/defaults", icon: Wrench, label: "nav_voiceDefaults" },
-      { to: "/voice/permissions", icon: Shield, label: "nav_voicePermissions" },
-      { to: "/voice/cleanup", icon: Filter, label: "nav_voiceCleanup" },
-      { to: "/voice/rooms", icon: Mic, label: "nav_voiceRooms" },
     ],
   },
   {
@@ -669,7 +598,6 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/select-guild" element={<SelectGuildPage />} />
         <Route path="/" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/bot-status" element={<OwnerRoute><BotStatus /></OwnerRoute>} />
-        <Route path="/leveling/rank-card" element={<LevelingManager section="rank-card" />} />
         <Route path="/features" element={<Features />} />
         <Route path="/config" element={<Navigate to="/config/discord" replace />} />
         <Route path="/config/prefix" element={<Navigate to="/bot-settings" replace />} />
@@ -678,8 +606,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/bot-settings" element={<BotSettings />} />
         <Route path="/config/discord" element={<OwnerRoute><ConfigDiscord /></OwnerRoute>} />
         <Route path="/config/payos" element={<ConfigPayOS />} />
-        <Route path="/config/channels" element={<ConfigChannels />} />
-        <Route path="/config/voice" element={<ConfigVoice />} />
+        {/* Shop */}
         <Route path="/products" element={<ProductsManager />} />
         <Route path="/products/new" element={<ProductEditPage />} />
         <Route path="/products/:id/edit" element={<ProductEditPage />} />
@@ -689,37 +616,15 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/coupons/new" element={<CouponEditPage />} />
         <Route path="/coupons/:id/edit" element={<CouponEditPage />} />
         <Route path="/users" element={<UsersManager />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/config/shop-channels" element={<ShopChannels />} />
+        <Route path="/shop-stats" element={<ShopStats />} />
+        {/* Community */}
         <Route path="/warnings" element={<WarningsManager />} />
         <Route path="/moderation" element={<ModerationManager />} />
-        <Route path="/sticky" element={<StickyManager />} />
-        <Route path="/sticky/new" element={<StickyEditPage />} />
-        <Route path="/sticky/:id/edit" element={<StickyEditPage />} />
-        <Route path="/leveling" element={<Navigate to="/leveling/rank-card" replace />} />
-        <Route path="/leveling/rank-card-editor" element={<RankCardEditor />} />
-        <Route path="/leveling/config" element={<LevelingManager section="config" />} />
-        <Route path="/leveling/filters" element={<LevelingManager section="filters" />} />
-        <Route path="/leveling/leaderboard" element={<LevelingManager section="leaderboard" />} />
-        <Route path="/leveling/rewards" element={<LevelingManager section="rewards" />} />
-        <Route path="/leveling/multipliers" element={<LevelingManager section="multipliers" />} />
-
         <Route path="/giveaways" element={<GiveawaysManager />} />
         <Route path="/invites" element={<InviteTracking />} />
-        <Route path="/embeds" element={<EmbedsManager />} />
-        <Route path="/emojis" element={<EmojiManager />} />
-        <Route path="/tickets" element={<TicketsPage />} />
-        <Route path="/ticket-panels" element={<TicketPanels />} />
-        <Route path="/ticket-config" element={<TicketConfig />} />
-        <Route path="/ticket-forms" element={<TicketForms />} />
-        <Route path="/ticket-forms/new" element={<TicketFormEditPage />} />
-        <Route path="/ticket-forms/:id/edit" element={<TicketFormEditPage />} />
-        <Route path="/ticket-teams" element={<TicketTeams />} />
-        <Route path="/ticket-teams/new" element={<TicketTeamEditPage />} />
-        <Route path="/ticket-teams/:id/edit" element={<TicketTeamEditPage />} />
-        <Route path="/ticket-feedback" element={<TicketFeedback />} />
-        <Route path="/ticket-transcripts" element={<TicketTranscripts />} />
-        <Route path="/ticket-claiming" element={<TicketClaiming />} />
-        <Route path="/welcome" element={<WelcomeConfig />} />
+        <Route path="/starboard" element={<StarboardConfig />} />
+        {/* Roles */}
         <Route path="/autorole" element={<AutoRoleConfig />} />
         <Route path="/button-roles" element={<ButtonRoles />} />
         <Route path="/button-roles/new" element={<ButtonRoleEditPage />} />
@@ -727,13 +632,21 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/select-roles" element={<SelectMenuRoles />} />
         <Route path="/select-roles/new" element={<SelectMenuRoleEditPage />} />
         <Route path="/select-roles/:id/edit" element={<SelectMenuRoleEditPage />} />
-        <Route path="/logging" element={<LoggingConfig />} />
-        <Route path="/logs" element={<LogViewer />} />
-        <Route path="/starboard" element={<StarboardConfig />} />
-        <Route path="/automod" element={<AutoModConfig />} />
         <Route path="/reaction-roles" element={<ReactionRoles />} />
         <Route path="/reaction-roles/new" element={<ReactionRoleEditPage />} />
         <Route path="/reaction-roles/:id/edit" element={<ReactionRoleEditPage />} />
+        {/* Moderation */}
+        <Route path="/automod" element={<AutoModConfig />} />
+        <Route path="/logging" element={<LoggingConfig />} />
+        <Route path="/logs" element={<LogViewer />} />
+        {/* Security */}
+        <Route path="/verification" element={<VerificationManager />} />
+        <Route path="/server-backup" element={<OwnerRoute><ServerBackup /></OwnerRoute>} />
+        <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
+        {/* Utilities */}
+        <Route path="/sticky" element={<StickyManager />} />
+        <Route path="/sticky/new" element={<StickyEditPage />} />
+        <Route path="/sticky/:id/edit" element={<StickyEditPage />} />
         <Route path="/custom-commands" element={<CustomCommands />} />
         <Route path="/custom-commands/new" element={<CustomCommandEditPage />} />
         <Route path="/custom-commands/:id/edit" element={<CustomCommandEditPage />} />
@@ -743,21 +656,10 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/scheduled-messages" element={<ScheduledMessages />} />
         <Route path="/scheduled-messages/new" element={<ScheduledMessagesEditPage />} />
         <Route path="/scheduled-messages/:id/edit" element={<ScheduledMessagesEditPage />} />
+        <Route path="/embeds" element={<EmbedsManager />} />
+        <Route path="/emojis" element={<EmojiManager />} />
+        {/* Owner */}
         <Route path="/backup" element={<OwnerRoute><BackupRestore /></OwnerRoute>} />
-        <Route path="/server-backup" element={<OwnerRoute><ServerBackup /></OwnerRoute>} />
-        <Route path="/verification" element={<VerificationManager />} />
-        <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
-        {/* TempVoice */}
-        <Route path="/voice" element={<Navigate to="/voice/analytics" replace />} />
-        <Route path="/voice/setup" element={<TempVoiceSetup />} />
-        <Route path="/voice/defaults" element={<TempVoiceDefaults />} />
-        <Route path="/voice/permissions" element={<TempVoicePermissions />} />
-        <Route path="/voice/cleanup" element={<TempVoiceCleanup />} />
-        <Route path="/voice/rooms" element={<TempVoiceRooms />} />
-        <Route path="/voice/analytics" element={<TempVoiceAnalytics />} />
-        {/* Shop Channels */}
-        <Route path="/config/shop-channels" element={<ShopChannels />} />
-        <Route path="/shop-stats" element={<ShopStats />} />
       </Routes>
       </Suspense>
     </ProtectedRoute>

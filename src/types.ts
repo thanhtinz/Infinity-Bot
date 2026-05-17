@@ -41,6 +41,7 @@ export interface Product {
   description?: string;
   note?: string;
   image_url?: string;
+  emoji?: string;
   packages: ProductPackage[];
   active: boolean;
   price: number; // legacy

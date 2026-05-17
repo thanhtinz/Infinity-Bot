@@ -79,6 +79,29 @@ async def create_product(product_in: ProductBase, db=Depends(get_db), guild_id: 
     db.add(product)
     db.commit()
     db.refresh(product)
+
+    # Auto-create per-product EmbedTemplate
+    from src.models.models import EmbedTemplate
+    event_type = f"product_{product.id}"
+    existing = db.execute(
+        select(EmbedTemplate).where(EmbedTemplate.event_type == event_type)
+    ).scalars().first()
+    if not existing:
+        tmpl = EmbedTemplate(
+            guild_id=guild_id,
+            name=product.name or f"Sản phẩm #{product.id}",
+            event_type=event_type,
+            title=f"📦 {{product.name}}",
+            description="{product.description}",
+            color="#57F287",
+            footer="Liên hệ admin để đặt hàng",
+            thumbnail_url=product.image_url or "",
+            fields=[{"name": "🔹 {package.name}", "value": "💰 **{package.price}đ**\n{package.description}", "inline": False}],
+            enabled=True,
+        )
+        db.add(tmpl)
+        db.commit()
+
     await _refresh_bang_gia(db)
     return product
 
@@ -103,10 +126,50 @@ async def delete_product(product_id: int, db=Depends(get_db)):
     product = result.scalars().first()
     if not product:
         raise HTTPException(status_code=404, detail="Sản phẩm không tồn tại")
+    # Clean up per-product embed template
+    from src.models.models import EmbedTemplate
+    tmpl = db.execute(
+        select(EmbedTemplate).where(EmbedTemplate.event_type == f"product_{product_id}")
+    ).scalars().first()
+    if tmpl:
+        db.delete(tmpl)
     db.delete(product)
     db.commit()
     await _refresh_bang_gia(db)
     return {"ok": True}
+
+
+@router.post("/products/ensure-embeds")
+async def ensure_product_embeds(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    """Ensure all existing products have per-product EmbedTemplates."""
+    from src.models.models import EmbedTemplate
+    products = db.execute(
+        select(Product).where(Product.guild_id == guild_id)
+    ).scalars().all()
+    created = 0
+    for p in products:
+        event_type = f"product_{p.id}"
+        existing = db.execute(
+            select(EmbedTemplate).where(EmbedTemplate.event_type == event_type)
+        ).scalars().first()
+        if not existing:
+            tmpl = EmbedTemplate(
+                guild_id=guild_id,
+                name=p.name or f"Sản phẩm #{p.id}",
+                event_type=event_type,
+                title=f"📦 {{product.name}}",
+                description="{product.description}",
+                color="#57F287",
+                footer="Liên hệ admin để đặt hàng",
+                thumbnail_url=p.image_url or "",
+                fields=[{"name": "🔹 {package.name}", "value": "💰 **{package.price}đ**\n{package.description}", "inline": False}],
+                enabled=True,
+            )
+            db.add(tmpl)
+            created += 1
+    if created:
+        db.commit()
+    return {"ok": True, "created": created}
 
 
 # ── Orders ────────────────────────────────────────────────────────────────────

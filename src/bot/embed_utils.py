@@ -925,6 +925,9 @@ def build_response(
             )
     else:
         d = DEFAULTS.get(event_type, {})
+        # Per-product fallback: product_123 → san_pham_detail defaults
+        if not d and event_type.startswith("product_"):
+            d = DEFAULTS.get("san_pham_detail", {})
         color = _hex_to_int(d.get("color", "#5865F2"))
         embed = discord.Embed(
             title=_sub(d.get("title"), vars),

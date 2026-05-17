@@ -21,6 +21,7 @@ const productSchema = z.object({
   description: z.string().optional(),
   note: z.string().optional(),
   image_url: z.string().optional(),
+  emoji: z.string().optional(),
   active: z.boolean(),
 });
 type ProductForm = z.infer<typeof productSchema>;
@@ -49,7 +50,7 @@ export function ProductEditPage() {
 
   const form = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
-    defaultValues: { name: "", description: "", note: "", image_url: "", active: true },
+    defaultValues: { name: "", description: "", note: "", image_url: "", emoji: "", active: true },
   });
 
   const imageUrl = form.watch("image_url");
@@ -61,6 +62,7 @@ export function ProductEditPage() {
         description: item.description || "",
         note: item.note || "",
         image_url: item.image_url || "",
+        emoji: item.emoji || "",
         active: item.active,
       });
       setPackages(item.packages?.length ? item.packages.map((pkg) => ({ ...pkg })) : [emptyPackage()]);
@@ -172,6 +174,25 @@ export function ProductEditPage() {
                 <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                   <FormControl><Input {...field} placeholder="VD: VIP Discord" className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0" /></FormControl>
                   <EmojiPicker onSelect={(em) => field.onChange(field.value + em)} />
+                </div>
+                <FormMessage />
+              </FormItem>
+            )} />
+
+            {/* Emoji icon for dropdown */}
+            <FormField control={form.control} name="emoji" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Dropdown emoji <span className="text-xs text-muted-foreground font-normal">(hiển thị trong menu bảng giá)</span></FormLabel>
+                <div className="flex items-center gap-2">
+                  <div className="w-12 h-10 rounded border bg-muted flex items-center justify-center text-xl shrink-0">
+                    {field.value || "—"}
+                  </div>
+                  <EmojiPicker onSelect={(em) => field.onChange(em)} />
+                  {field.value && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => field.onChange("")}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
                 </div>
                 <FormMessage />
               </FormItem>

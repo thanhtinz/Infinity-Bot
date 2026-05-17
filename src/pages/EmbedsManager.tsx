@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useT } from "@/i18n";
 import { useGuild } from "@/contexts/GuildContext";
@@ -26,10 +26,11 @@ import {
   RotateCcw,
   Type, Layout,
   MessageSquare,
+  Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmojiPicker } from "@/components/EmojiPicker";
-import type { FormState, EmbedField, EmbedTemplate, EmbedsManagerProps } from "./embeds/embedTypes";
+import type { FormState, EmbedField, EmbedTemplate, EmbedsManagerProps, EmbedEventDef } from "./embeds/embedTypes";
 import { EMBED_EVENTS, EVENT_GROUPS, VARIABLES } from "./embeds/embedEvents";
 import { DiscordPreview, defaultForm } from "./embeds/DiscordPreview";
 import { CustomMessagesTab } from "./embeds/CustomMessagesTab";
@@ -43,11 +44,59 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
   const queryClient = useQueryClient();
   const { selectedGuildId } = useGuild();
   const [activeTab, setActiveTab] = useState<"events" | "custom">("events");
+
+  // ── Fetch products for dynamic per-product embed events ──
+  const { data: products = [] } = useQuery<{ id: number; name: string; emoji?: string }[]>({
+    queryKey: ["products", selectedGuildId],
+    queryFn: () => apiFetch("/api/products", {
+      credentials: "include",
+      headers: selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {},
+    }).then((r) => r.json()),
+    staleTime: 60_000,
+    enabled: !!selectedGuildId,
+  });
+
+  // Ensure product embed templates exist
+  useEffect(() => {
+    if (products.length > 0 && selectedGuildId) {
+      apiFetch("/api/products/ensure-embeds", {
+        method: "POST",
+        credentials: "include",
+        headers: selectedGuildId ? { "X-Guild-ID": selectedGuildId } : {},
+      }).catch(() => {});
+    }
+  }, [products.length, selectedGuildId]);
+
+  // Build dynamic product events
+  const productEvents: EmbedEventDef[] = useMemo(() =>
+    products.map((p) => ({
+      key: `product_${p.id}`,
+      label: p.emoji ? `${p.emoji} ${p.name}` : p.name,
+      labelEn: p.name,
+      icon: Package,
+      desc: `Embed chi tiết cho sản phẩm "${p.name}"`,
+      descEn: `Detail embed for product "${p.name}"`,
+    })), [products]);
+
+  const productGroup = useMemo(() => ({
+    label: "Sản phẩm",
+    labelEn: "Products",
+    keys: productEvents.map((e) => e.key),
+  }), [productEvents]);
+
+  // Merge static + dynamic events
+  const allEvents = useMemo(() => [...EMBED_EVENTS, ...productEvents], [productEvents]);
+  const allGroups = useMemo(() => {
+    const groups = [...EVENT_GROUPS];
+    if (productGroup.keys.length > 0) groups.splice(1, 0, productGroup); // after "Đơn hàng"
+    return groups;
+  }, [productGroup]);
+
   const allowedKeys = useMemo(() => eventKeys ? new Set(eventKeys) : null, [eventKeys]);
-  const visibleEvents = useMemo(() => allowedKeys ? EMBED_EVENTS.filter((event) => allowedKeys.has(event.key)) : EMBED_EVENTS, [allowedKeys]);
-  const visibleGroups = useMemo(() => EVENT_GROUPS
+  const visibleEvents = useMemo(() => allowedKeys ? allEvents.filter((event) => allowedKeys.has(event.key)) : allEvents, [allowedKeys, allEvents]);
+  const visibleGroups = useMemo(() => allGroups
     .map((group) => ({ ...group, keys: group.keys.filter((key) => !allowedKeys || allowedKeys.has(key)) }))
-    .filter((group) => group.keys.length > 0), [allowedKeys]);
+    .filter((group) => group.keys.length > 0), [allowedKeys, allGroups]);
 
   // ── Bot language from config ──
   const { data: _configData } = useQuery({

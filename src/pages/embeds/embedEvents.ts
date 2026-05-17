@@ -2,14 +2,14 @@ import type { EmbedEventDef } from "./embedTypes";
 import {
   ShoppingCart, Timer, Star, Gift,
   Trophy, Trash2,
-  Ticket, TicketX, UserCheck, UserMinus, Ban,
+  Ban,
   QrCode,
-  ShieldOff, LayoutGrid, ShieldAlert,
+  ShieldOff, ShieldAlert,
   LogOut, Pencil, Volume2, VolumeX, ArrowRightLeft,
   LogIn, Hash, Shield, Moon, Zap, AlertTriangle,
-  Heart, Mic, HelpCircle,
-  Mail, TrendingUp,
-  CheckCircle, Package, ClipboardList, Tag, FileText, UserPlus, Pin, BarChart3,
+  Heart, HelpCircle,
+  Mail,
+  CheckCircle, Package, ClipboardList, Tag, UserPlus, Pin, UserMinus,
   ShieldCheck, Archive, RotateCcw, Users,
 } from "lucide-react";
 
@@ -41,14 +41,6 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "invite_join",       label: "Thành viên qua invite",  labelEn: "Invite Join",         icon: UserPlus,     desc: "Khi thành viên tham gia qua invite" },
   { key: "invite_leaderboard",label: "BXH Invite",             labelEn: "Invite Leaderboard",  icon: Trophy,       desc: "Bảng xếp hạng mời thành viên" },
   { key: "giveaway_banned",   label: "Cấm tham gia Giveaway",  labelEn: "Giveaway Banned",     icon: Ban,          desc: "Khi user bị cấm tham gia giveaway" },
-  // ── Ticket ──
-  { key: "ticket_mo",         label: "Mở Ticket",              labelEn: "Ticket Opened",        icon: Ticket,       desc: "Khi user tạo ticket mới" },
-  { key: "ticket_dong",       label: "Đóng Ticket",            labelEn: "Ticket Closed",        icon: TicketX,      desc: "Khi ticket bị đóng" },
-  { key: "ticket_nhan",       label: "Nhận Ticket",            labelEn: "Ticket Claimed",       icon: UserCheck,    desc: "Khi staff nhận ticket (claim)" },
-  { key: "ticket_unclaim",    label: "Bỏ nhận Ticket",         labelEn: "Ticket Unclaimed",     icon: UserMinus,    desc: "Khi staff bỏ claim ticket" },
-  { key: "ticket_panel",      label: "Panel Ticket",           labelEn: "Ticket Panel",         icon: LayoutGrid,   desc: "Embed panel chứa buttons tạo ticket" },
-  { key: "ticket_transcript", label: "Transcript Ticket",      labelEn: "Ticket Transcript",    icon: FileText,     desc: "Gửi transcript khi đóng ticket" },
-  { key: "ticket_feedback",   label: "Đánh giá hỗ trợ",        labelEn: "Ticket Feedback",      icon: Star,         desc: "Embed đánh giá sau khi ticket đóng" },
   // ── Kiểm duyệt ──
   { key: "canh_bao",          label: "Cảnh báo thành viên",    labelEn: "Warning",              icon: ShieldAlert,  desc: "Khi admin dùng /warn" },
   { key: "kick",              label: "Kick thành viên",        labelEn: "Kick",                 icon: UserMinus,    desc: "Khi bot kick user" },
@@ -69,16 +61,7 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   // ── Tiện ích ──
   { key: "afk_set",           label: "Đặt AFK",               labelEn: "AFK Set",              icon: Moon,          desc: "Khi user đặt trạng thái AFK" },
   { key: "afk_return",        label: "Trở lại từ AFK",        labelEn: "AFK Return",           icon: Zap,           desc: "Khi user AFK quay lại" },
-  { key: "tempvoice_create",  label: "Tạo phòng voice",       labelEn: "Voice Created",        icon: Mic,           desc: "Khi bot tạo phòng voice tạm và gửi panel nút" },
-  { key: "tempvoice_panel",   label: "Panel Voice",           labelEn: "Voice Panel",          icon: Mic,           desc: "Panel điều khiển/temp voice do admin gửi" },
-  { key: "tempvoice_action",  label: "Log hành động voice",   labelEn: "Voice Action",         icon: Mic,           desc: "Khi user dùng nút điều khiển phòng voice" },
   { key: "sticky_message",    label: "Tin nhắn ghim (Sticky)", labelEn: "Sticky Message",       icon: Pin,           desc: "Embed sticky message tự động" },
-  // ── Leveling ──
-  { key: "level_up",          label: "Lên level",              labelEn: "Level Up",             icon: TrendingUp,   desc: "Khi user lên level mới" },
-  { key: "level_reward",      label: "Level Reward",          labelEn: "Level Reward",         icon: Gift,          desc: "Khi user nhận role reward theo level" },
-  { key: "leaderboard",       label: "Bảng xếp hạng XP",      labelEn: "XP Leaderboard",       icon: Trophy,        desc: "Embed bảng xếp hạng XP" },
-  { key: "rep_given",         label: "Tặng Rep",              labelEn: "Rep Given",            icon: Star,          desc: "Khi user tặng rep cho người khác" },
-  { key: "weekly_summary",    label: "Tổng kết tuần",         labelEn: "Weekly Summary",       icon: BarChart3,     desc: "Embed tổng kết XP hàng tuần" },
   // ── Help ──
   { key: "help_menu",         label: "Help — Menu chính",     labelEn: "Help Menu",            icon: HelpCircle,    desc: "Embed chào mừng khi dùng /help" },
   { key: "help_category",     label: "Help — Danh mục",       labelEn: "Help Category",        icon: HelpCircle,    desc: "Embed hiển thị lệnh trong một danh mục" },
@@ -182,10 +165,8 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
 export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] = [
   { label: "Đơn hàng",    labelEn: "Orders",         keys: ["don_hang_moi", "qr_thanh_toan", "don_hang_het_han", "ghi_chu_don_hang", "bang_gia", "san_pham_detail", "bxh_chi_tieu", "bxh_don_hang", "feedback", "thanh_toan", "giao_hang", "don_hang_chi_tiet", "coupon", "ban_shop", "unban_shop"] },
   { label: "Cộng đồng",   labelEn: "Community",      keys: ["giveaway", "ket_qua_giveaway", "dm_welcome", "reaction_role_panel", "starboard_post", "giveaway_banned", "invite_join", "invite_leaderboard"] },
-  { label: "Ticket",      labelEn: "Ticket",          keys: ["ticket_mo", "ticket_dong", "ticket_nhan", "ticket_unclaim", "ticket_panel", "ticket_transcript", "ticket_feedback"] },
   { label: "Kiểm duyệt", labelEn: "Moderation",      keys: ["canh_bao", "kick", "ban", "unban", "softban", "mute", "deafen", "rolepersist", "temprole", "lockdown_start", "lockdown_end", "automod_warn", "automod_mute", "automod_kick", "automod_delete", "timeout"] },
-  { label: "Tiện ích",    labelEn: "Utilities",       keys: ["afk_set", "afk_return", "tempvoice_create", "tempvoice_panel", "tempvoice_action", "sticky_message"] },
-  { label: "Leveling",    labelEn: "Leveling",        keys: ["level_up", "level_reward", "leaderboard", "rep_given", "weekly_summary"] },
+  { label: "Tiện ích",    labelEn: "Utilities",       keys: ["afk_set", "afk_return", "sticky_message"] },
   { label: "Help",        labelEn: "Help",            keys: ["help_menu", "help_category", "help_command"] },
   { label: "Logging",     labelEn: "Logging",         keys: ["log_message_delete", "log_message_edit", "log_message_bulk_delete", "log_voice_join", "log_voice_leave", "log_voice_move", "log_member_join", "log_member_leave", "log_nickname_change", "log_role_update", "log_channel_create", "log_channel_delete"] },
   { label: "Tương tác — Có mục tiêu", labelEn: "Interactions — Targeted", keys: ["interact_airkiss", "interact_angrystare", "interact_bite", "interact_brofist", "interact_cuddle", "interact_handhold", "interact_hug", "interact_kiss", "interact_lick", "interact_nom", "interact_nuzzle", "interact_pat", "interact_pinch", "interact_poke", "interact_punch", "interact_slap", "interact_smack", "interact_tickle", "interact_wave", "interact_wink", "interact_stare", "interact_peek"] },

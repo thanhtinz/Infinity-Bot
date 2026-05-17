@@ -137,13 +137,13 @@ def create_bot():
 
     _cog_modules = [
         "src.bot.cogs.shop", "src.bot.cogs.admin_shop", "src.bot.cogs.giveaway",
-        "src.bot.cogs.moderation", "src.bot.cogs.temp_voice", "src.bot.cogs.invite_tracking",
-        "src.bot.cogs.sticky", "src.bot.cogs.ticket", "src.bot.cogs.utility",
-        "src.bot.cogs.welcome", "src.bot.cogs.roles", "src.bot.cogs.logging_cog",
+        "src.bot.cogs.moderation", "src.bot.cogs.invite_tracking",
+        "src.bot.cogs.sticky", "src.bot.cogs.utility",
+        "src.bot.cogs.roles", "src.bot.cogs.logging_cog",
         "src.bot.cogs.afk", "src.bot.cogs.starboard", "src.bot.cogs.automod",
         "src.bot.cogs.custom_commands", "src.bot.cogs.reaction_roles",
         "src.bot.cogs.scheduler", "src.bot.cogs.autoresponder",
-        "src.bot.cogs.interactions", "src.bot.cogs.leveling", "src.bot.cogs.help_cog",
+        "src.bot.cogs.interactions", "src.bot.cogs.help_cog",
         "src.bot.cogs.channel_admin", "src.bot.cogs.onboarding",
         "src.bot.cogs.fun", "src.bot.cogs.moderation_ext",
         "src.bot.prefix_commands", "src.bot.embed_utils",
@@ -159,12 +159,9 @@ def create_bot():
     from src.bot.cogs.admin_shop import AdminShopCog
     from src.bot.cogs.giveaway import GiveawayCog
     from src.bot.cogs.moderation import ModerationCog
-    from src.bot.cogs.temp_voice import TempVoiceCog
     from src.bot.cogs.invite_tracking import InviteTrackingCog
     from src.bot.cogs.sticky import StickyCog
-    from src.bot.cogs.ticket import TicketCog
     from src.bot.cogs.utility import UtilityCog
-    from src.bot.cogs.welcome import WelcomeCog
     from src.bot.cogs.roles import RolesCog
     from src.bot.cogs.logging_cog import LoggingCog
     from src.bot.cogs.afk import AFKCog
@@ -175,7 +172,6 @@ def create_bot():
     from src.bot.cogs.scheduler import SchedulerCog
     from src.bot.cogs.autoresponder import AutoResponderCog
     from src.bot.cogs.interactions import InteractionCog
-    from src.bot.cogs.leveling import LevelingCog
     from src.bot.cogs.help_cog import HelpCog
     from src.bot.cogs.channel_admin import ChannelAdminCog
     from src.bot.cogs.onboarding import OnboardingCog
@@ -188,18 +184,15 @@ def create_bot():
         "ShopCog": "shop", "AdminShopCog": "shop",
         "GiveawayCog": "giveaway",
         "ModerationCog": "moderation", "AutoModCog": "moderation", "LoggingCog": "moderation",
-        "TempVoiceCog": "temp_voice",
         "InviteTrackingCog": "invite_tracking",
         "StickyCog": "sticky",
-        "TicketCog": "ticket",
         "UtilityCog": "utility", "AFKCog": "utility",
-        "WelcomeCog": "welcome", "RolesCog": "welcome", "ReactionRolesCog": "welcome",
+        "RolesCog": None, "ReactionRolesCog": None,
         "StarboardCog": "starboard",
         "CustomCommandsCog": "custom_commands",
         "SchedulerCog": "scheduler",
         "AutoResponderCog": "autoresponder",
         "InteractionCog": "interactions",
-        "LevelingCog": "leveling",
         "ChannelAdminCog": "moderation",
         "FunCog": "fun",
         "ModerationExtCog": "moderation",
@@ -209,16 +202,15 @@ def create_bot():
     cogs = [
         ShopCog(bot_client), AdminShopCog(bot_client),
         GiveawayCog(bot_client), ModerationCog(bot_client),
-        TempVoiceCog(bot_client), InviteTrackingCog(bot_client),
-        StickyCog(bot_client), TicketCog(bot_client),
-        UtilityCog(bot_client), WelcomeCog(bot_client),
+        InviteTrackingCog(bot_client),
+        StickyCog(bot_client),
+        UtilityCog(bot_client),
         RolesCog(bot_client), LoggingCog(bot_client),
         AFKCog(bot_client), StarboardCog(bot_client),
         AutoModCog(bot_client), CustomCommandsCog(bot_client),
         ReactionRolesCog(bot_client), SchedulerCog(bot_client),
         AutoResponderCog(bot_client),
         InteractionCog(bot_client),
-        LevelingCog(bot_client),
         ChannelAdminCog(bot_client),
         HelpCog(bot_client),
         OnboardingCog(bot_client),

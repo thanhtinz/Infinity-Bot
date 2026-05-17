@@ -236,6 +236,11 @@ async def init_db():
             if col not in cem:
                 all_stmts.append(stmt)
 
+        # products
+        pr = cols("products")
+        if "emoji" not in pr:
+            all_stmts.append("ALTER TABLE products ADD COLUMN emoji VARCHAR")
+
         # ── Thực thi tất cả ALTER trong 1 transaction ──
         if all_stmts:
             with engine.begin() as connection:
