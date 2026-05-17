@@ -31,7 +31,6 @@ const StickyManager = lazy(() => import("./pages/StickyManager").then(m => ({ de
 const StickyEditPage = lazy(() => import("./pages/sticky/StickyEditPage").then(m => ({ default: m.StickyEditPage })));
 const CouponEditPage = lazy(() => import("./pages/coupons/CouponEditPage").then(m => ({ default: m.CouponEditPage })));
 const ProductEditPage = lazy(() => import("./pages/products/ProductEditPage").then(m => ({ default: m.ProductEditPage })));
-const AutoRoleConfig = lazy(() => import("./pages/AutoRoleConfig").then(m => ({ default: m.AutoRoleConfig })));
 const ButtonRoles = lazy(() => import("./pages/ButtonRoles").then(m => ({ default: m.ButtonRoles })));
 const SelectMenuRoles = lazy(() => import("./pages/SelectMenuRoles").then(m => ({ default: m.SelectMenuRoles })));
 const LoggingConfig = lazy(() => import("./pages/LoggingConfig").then(m => ({ default: m.LoggingConfig })));
@@ -118,7 +117,6 @@ const navGroups: NavGroup[] = [
     icon: Users,
     label: "Roles",
     items: [
-      { to: "/autorole", icon: UserPlus, label: "Auto Role" },
       { to: "/button-roles", icon: ToggleLeft, label: "nav_panels" },
       { to: "/select-roles", icon: ListChecks, label: "Select Menu Roles" },
       { to: "/reaction-roles", icon: Smile, label: "nav_rr" },
@@ -510,11 +508,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!selectedGuildId && !guildFreeRoutes.includes(location.pathname)) {
     return <Navigate to="/select-guild" replace />;
   }
-  const isFullscreenEditor = location.pathname === "/leveling/rank-card-editor";
-  if (isFullscreenEditor) {
-    return <div className="min-h-screen bg-background text-foreground">{children}</div>;
-  }
-
   return (
     <div className="flex min-h-screen bg-background text-foreground flex-col md:flex-row overflow-x-hidden">
       <MobileNav />
@@ -658,7 +651,6 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/invites/log" element={<InviteLog />} />
         <Route path="/starboard" element={<StarboardConfig />} />
         {/* Roles */}
-        <Route path="/autorole" element={<AutoRoleConfig />} />
         <Route path="/button-roles" element={<ButtonRoles />} />
         <Route path="/button-roles/new" element={<ButtonRoleEditPage />} />
         <Route path="/button-roles/:id/edit" element={<ButtonRoleEditPage />} />

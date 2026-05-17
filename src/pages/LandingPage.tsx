@@ -1,7 +1,7 @@
 import { useT } from "@/i18n";
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Ticket, Gift, Shield, TrendingUp, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight } from "lucide-react";
+import { ShoppingBag, Gift, Shield, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 /* ── Terminal typing animation ───────────────────────────────── */
@@ -9,7 +9,7 @@ const COMMANDS = [
   { cmd: "/shop", out: "→  Opening server shop..." },
   { cmd: "/verify setup", out: "→  Verification enabled ✓" },
   { cmd: "/giveaway start", out: "→  Giveaway started! 🎉" },
-  { cmd: "/level rank", out: "→  Showing rank card..." },
+  { cmd: "/moderation cases", out: "→  Showing case list..." },
   { cmd: "/backup create", out: "→  Backup created ✓" },
 ];
 
@@ -116,10 +116,9 @@ function StatCard({ icon: Icon, value, label, suffix = "+" }: { icon: typeof Zap
 /* ── Feature cards ───────────────────────────────────────────── */
 const FEATURES = [
   { icon: ShoppingBag, titleKey: "landing_shopOrders", descKey: "landing_shopOrdersDesc", color: "#5865F2" },
-  { icon: Ticket, titleKey: "landing_ticketSystem", descKey: "landing_ticketSystemDesc", color: "#00d4aa" },
   { icon: Gift, titleKey: "landing_giveaway", descKey: "landing_giveawayDesc", color: "#f59e0b" },
   { icon: Shield, titleKey: "landing_moderation", descKey: "landing_moderationDesc", color: "#ef4444" },
-  { icon: TrendingUp, titleKey: "landing_leveling", descKey: "landing_levelingDesc", color: "#a855f7" },
+  { icon: Users, titleKey: "landing_verification", descKey: "landing_verificationDesc", color: "#a855f7" },
   { icon: Palette, titleKey: "landing_embedBuilder", descKey: "landing_embedBuilderDesc", color: "#ec4899" },
 ];
 

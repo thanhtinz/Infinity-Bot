@@ -1,6 +1,6 @@
 import { useT } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
-import { Bot, Gift, Hash, Heart, Info, Mic, Package, Pin, Search, Shield, Smile, Tags, TerminalSquare, Ticket, Trophy, Wrench, Zap } from "lucide-react";
+import { Bot, Gift, Hash, Heart, Info, Package, Pin, Search, Shield, Smile, Tags, TerminalSquare, Wrench, Zap } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 interface Command { name: string; description: string; usage?: string; admin?: boolean; }
@@ -14,15 +14,12 @@ const categoryIcons = {
   fun: Zap,
   shop: Package,
   info: Info,
-  level: Trophy,
   giveaway: Gift,
-  ticket: Ticket,
   misc: Wrench,
   sticky: Pin,
   moderator: Shield,
   modtools: Hash,
   role: Tags,
-  tempvoice: Mic,
   other: Bot,
 } as const;
 

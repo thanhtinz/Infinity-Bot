@@ -7,19 +7,15 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/i18n";
 import {
   ShoppingBag,
-  Ticket,
   Gift,
   Link2,
   Shield,
   Hand,
   Star,
-  Mic,
   Pin,
   Wrench,
   Terminal,
   Clock,
-  Trophy,
-  MessageCircleReply,
   Heart,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -36,19 +32,15 @@ interface Feature {
 
 const ICON_MAP: Record<string, LucideIcon> = {
   ShoppingBag,
-  Ticket,
   Gift,
   Link2,
   Shield,
   Hand,
   Star,
-  Mic,
   Pin,
   Wrench,
   Terminal,
   Clock,
-  Trophy,
-  MessageCircleReply,
   Heart,
 };
 

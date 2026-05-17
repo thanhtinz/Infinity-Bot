@@ -11,8 +11,8 @@ from src.api.deps import get_guild_id
 from src.models.models import (
     SystemConfig, AutoModConfig, StarboardConfig, ReactionRole,
     CustomCommand, ScheduledMessage, StickyMessage, EmbedTemplate,
-    WelcomeConfig, AutoRoleConfig, ButtonRole, SelectMenuRole,
-    LoggingConfig, TicketConfig, TicketPanel,
+    ButtonRole, SelectMenuRole,
+    LoggingConfig,
 )
 
 logger = logging.getLogger(__name__)
@@ -27,13 +27,9 @@ BACKUP_TABLES = [
     ("scheduled_messages", ScheduledMessage, True),
     ("sticky_messages", StickyMessage, True),
     ("embed_templates", EmbedTemplate, True),
-    ("welcome_config", WelcomeConfig, True),
-    ("auto_role_config", AutoRoleConfig, True),
     ("button_roles", ButtonRole, True),
     ("select_menu_roles", SelectMenuRole, True),
     ("logging_config", LoggingConfig, True),
-    ("ticket_configs", TicketConfig, True),
-    ("ticket_panels", TicketPanel, True),
 ]
 
 # Fields to exclude from export (internal IDs, etc.)

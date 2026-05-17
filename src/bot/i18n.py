@@ -20,10 +20,9 @@ STRINGS: dict[str, dict[str, str]] = {
         "welcome_desc": (
             "**{bot_name}** is a full-featured Discord bot. Here's what you can do:\n\n"
             "🛒 **Shop & Orders** — sell products, manage orders with PayOS\n"
-            "🎫 **Tickets** — multi-panel support ticket system\n"
             "🎉 **Giveaways** — professional giveaways with reroll\n"
             "🔨 **Moderation** — ban, kick, timeout, automod\n"
-            "🎙️ **TempVoice** — user-managed temporary voice channels\n"
+            "🛡️ **Verification** — OAuth2 verify, VPN/alt detection, firewall\n"
             "🎨 **Embed Builder** — customise every bot notification\n\n"
             "Use `/help` to see all commands."
         ),
@@ -89,10 +88,9 @@ STRINGS: dict[str, dict[str, str]] = {
         "welcome_desc": (
             "**{bot_name}** là bot Discord đa năng. Dưới đây là những gì bạn có thể làm:\n\n"
             "🛒 **Shop & Đơn hàng** — bán sản phẩm, quản lý đơn với PayOS\n"
-            "🎫 **Ticket** — hệ thống ticket hỗ trợ đa panel\n"
             "🎉 **Giveaway** — tổ chức giveaway chuyên nghiệp, reroll\n"
             "🔨 **Kiểm duyệt** — ban, kick, timeout, automod\n"
-            "🎙️ **TempVoice** — kênh voice tạm thời người dùng tự quản lý\n"
+            "🛡️ **Xác minh** — OAuth2 verify, VPN/alt detection, firewall\n"
             "🎨 **Embed Builder** — tuỳ chỉnh mọi thông báo của bot\n\n"
             "Dùng `/help` để xem tất cả lệnh."
         ),

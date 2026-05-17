@@ -29,18 +29,15 @@ def _build_welcome_embed(guild: discord.Guild, bot_name: str) -> discord.Embed:
 def _auto_create_guild_configs(guild_id: str, guild_name: str, guild_icon: str | None):
     """Auto-create default config rows for a new guild (idempotent)."""
     from src.models.models import (
-        SystemConfig, LevelingConfig, WelcomeConfig,
-        LoggingConfig, AutoModConfig, TempVoiceConfig,
-        TicketConfig, ModerationConfig, VerificationConfig,
+        SystemConfig,
+        LoggingConfig, AutoModConfig,
+        ModerationConfig, VerificationConfig,
     )
 
     config_models = [
         (SystemConfig, {"guild_id": guild_id, "guild_name": guild_name, "guild_icon": guild_icon}),
-        (LevelingConfig, {"guild_id": guild_id}),
-        (WelcomeConfig, {"guild_id": guild_id}),
         (LoggingConfig, {"guild_id": guild_id}),
         (AutoModConfig, {"guild_id": guild_id}),
-        (TempVoiceConfig, {"guild_id": guild_id}),
         (ModerationConfig, {"guild_id": guild_id}),
         (VerificationConfig, {"guild_id": guild_id}),
     ]
