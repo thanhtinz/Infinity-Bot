@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserCheck2, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply, Gavel, FileText } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserCheck2, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply, Gavel, FileText, Bell, Flame } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
@@ -56,6 +56,9 @@ const VerifyConfig = lazy(() => import("./pages/verification/VerifyConfig").then
 const VerifyPull = lazy(() => import("./pages/verification/VerifyPull").then(m => ({ default: m.VerifyPull })));
 const VerifyStats = lazy(() => import("./pages/verification/VerifyStats").then(m => ({ default: m.VerifyStats })));
 const SecurityConfig = lazy(() => import("./pages/SecurityConfig").then(m => ({ default: m.SecurityConfig })));
+const FirewallRules = lazy(() => import("./pages/firewall/FirewallRules").then(m => ({ default: m.FirewallRules })));
+const FirewallLogs = lazy(() => import("./pages/firewall/FirewallLogs").then(m => ({ default: m.FirewallLogs })));
+const AlertsConfig = lazy(() => import("./pages/AlertsConfig").then(m => ({ default: m.AlertsConfig })));
 const VerifyPage = lazy(() => import("./pages/VerifyPage").then(m => ({ default: m.VerifyPage })));
 const SelectGuildPage = lazy(() => import("./pages/SelectGuildPage").then(m => ({ default: m.SelectGuildPage })));
 const Features = lazy(() => import("./pages/Features"));
@@ -158,6 +161,9 @@ const navGroups: NavGroup[] = [
       { to: "/verification/pull", icon: UserPlus, label: "Kéo thành viên" },
       { to: "/verification/stats", icon: Activity, label: "Thống kê xác minh" },
       { to: "/security-config", icon: Shield, label: "nav_securityConfig" },
+      { to: "/firewall/rules", icon: Flame, label: "Firewall Rules" },
+      { to: "/firewall/logs", icon: ScrollText, label: "Firewall Logs" },
+      { to: "/alerts", icon: Bell, label: "Server Alerts" },
     ],
   },
   {
@@ -677,6 +683,9 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/backup/schedule" element={<OwnerRoute><BackupSchedule /></OwnerRoute>} />
         <Route path="/backup/history" element={<OwnerRoute><BackupHistory /></OwnerRoute>} />
         <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
+        <Route path="/firewall/rules" element={<FirewallRules />} />
+        <Route path="/firewall/logs" element={<FirewallLogs />} />
+        <Route path="/alerts" element={<AlertsConfig />} />
         <Route path="/staff-permissions" element={<StaffPermissions />} />
         {/* Utilities */}
         <Route path="/sticky" element={<StickyManager />} />

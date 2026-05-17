@@ -1,16 +1,16 @@
 import { useT } from "@/i18n";
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Ticket, Gift, Shield, Mic, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight } from "lucide-react";
+import { ShoppingBag, Ticket, Gift, Shield, TrendingUp, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 /* ── Terminal typing animation ───────────────────────────────── */
 const COMMANDS = [
   { cmd: "/shop", out: "→  Opening server shop..." },
-  { cmd: "/ticket open", out: "→  Ticket #1042 created" },
+  { cmd: "/verify setup", out: "→  Verification enabled ✓" },
   { cmd: "/giveaway start", out: "→  Giveaway started! 🎉" },
-  { cmd: "/ban @spam", out: "→  Banned spam#0000" },
-  { cmd: "/voice rename", out: "→  Channel renamed ✓" },
+  { cmd: "/level rank", out: "→  Showing rank card..." },
+  { cmd: "/backup create", out: "→  Backup created ✓" },
 ];
 
 function Terminal() {
@@ -119,7 +119,7 @@ const FEATURES = [
   { icon: Ticket, titleKey: "landing_ticketSystem", descKey: "landing_ticketSystemDesc", color: "#00d4aa" },
   { icon: Gift, titleKey: "landing_giveaway", descKey: "landing_giveawayDesc", color: "#f59e0b" },
   { icon: Shield, titleKey: "landing_moderation", descKey: "landing_moderationDesc", color: "#ef4444" },
-  { icon: Mic, titleKey: "landing_tempVoice", descKey: "landing_tempVoiceDesc", color: "#a855f7" },
+  { icon: TrendingUp, titleKey: "landing_leveling", descKey: "landing_levelingDesc", color: "#a855f7" },
   { icon: Palette, titleKey: "landing_embedBuilder", descKey: "landing_embedBuilderDesc", color: "#ec4899" },
 ];
 

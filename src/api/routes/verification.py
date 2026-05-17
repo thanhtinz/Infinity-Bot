@@ -48,6 +48,11 @@ def get_config(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_
         "block_vpn": cfg.block_vpn,
         "kick_on_deauth": cfg.kick_on_deauth,
         "close_page_after_verify": cfg.close_page_after_verify,
+        "page_footer_text": getattr(cfg, "page_footer_text", "") or "",
+        "page_theme": getattr(cfg, "page_theme", "dark") or "dark",
+        "custom_css": getattr(cfg, "custom_css", "") or "",
+        "redirect_url": getattr(cfg, "redirect_url", "") or "",
+        "terms_url": getattr(cfg, "terms_url", "") or "",
     }
 
 
@@ -60,6 +65,7 @@ def update_config(body: dict, guild_id: str = Depends(get_guild_id), db: Session
         "page_logo_url", "page_background_url", "button_text", "success_message",
         "captcha_enabled", "min_account_age_days", "block_vpn",
         "kick_on_deauth", "close_page_after_verify",
+        "page_footer_text", "page_theme", "custom_css", "redirect_url", "terms_url",
     ]
     for field in allowed:
         if field in body:
@@ -224,3 +230,56 @@ def get_stats(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_d
         "blacklisted": blacklisted,
         "pullable": pullable,
     }
+
+
+# ── Member Transfer ──
+
+@router.post("/verification/transfer")
+def transfer_members(body: dict, guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
+    """Transfer verified members from another guild to the current guild."""
+    source_guild_id = body.get("source_guild_id")
+    if not source_guild_id:
+        raise HTTPException(400, "source_guild_id is required")
+    if source_guild_id == guild_id:
+        raise HTTPException(400, "Cannot transfer to the same guild")
+
+    source_members = db.execute(
+        select(VerifiedMember).where(
+            VerifiedMember.guild_id == source_guild_id,
+            VerifiedMember.is_blacklisted == False,
+        )
+    ).scalars().all()
+
+    if not source_members:
+        return {"ok": True, "transferred": 0, "skipped": 0}
+
+    transferred = 0
+    skipped = 0
+    for member in source_members:
+        existing = db.execute(
+            select(VerifiedMember).where(
+                VerifiedMember.guild_id == guild_id,
+                VerifiedMember.discord_id == member.discord_id,
+            )
+        ).scalars().first()
+        if existing:
+            skipped += 1
+            continue
+
+        new_member = VerifiedMember(
+            guild_id=guild_id,
+            discord_id=member.discord_id,
+            username=member.username,
+            avatar=member.avatar,
+            email=member.email,
+            ip_address=member.ip_address,
+            access_token=member.access_token,
+            refresh_token=member.refresh_token,
+            roles=[],
+            is_blacklisted=False,
+        )
+        db.add(new_member)
+        transferred += 1
+
+    db.commit()
+    return {"ok": True, "transferred": transferred, "skipped": skipped}

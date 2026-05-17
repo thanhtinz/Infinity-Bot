@@ -41,6 +41,11 @@ export interface VerificationConfig {
   block_vpn: boolean;
   kick_on_deauth: boolean;
   close_page_after_verify: boolean;
+  page_footer_text: string;
+  page_theme: string;
+  custom_css: string;
+  redirect_url: string;
+  terms_url: string;
 }
 
 export interface VerificationStats {

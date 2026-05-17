@@ -55,17 +55,25 @@ def get_config(db=Depends(get_db)):
 
 
 def get_config_for_guild(guild_id: str, db) -> SystemConfig:
-    """Lấy config theo guild_id. Fallback về row đầu nếu không tìm thấy."""
+    """Get per-guild config. Auto-creates with defaults if missing."""
     config = db.execute(
         select(SystemConfig).where(SystemConfig.guild_id == guild_id)
     ).scalars().first()
-    if not config:
-        config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    if not config:
-        config = SystemConfig()
-        db.add(config)
-        db.commit()
-        db.refresh(config)
+    if config:
+        return config
+    # Auto-create per-guild config with sensible defaults
+    # Copy global fields (token, client_id/secret) from first row if available
+    first = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    config = SystemConfig(guild_id=guild_id)
+    if first:
+        config.discord_token = first.discord_token
+        config.discord_client_id = first.discord_client_id
+        config.discord_client_secret = first.discord_client_secret
+        config.public_app_url = first.public_app_url
+        config.support_server_url = first.support_server_url
+    db.add(config)
+    db.commit()
+    db.refresh(config)
     return config
 
 
