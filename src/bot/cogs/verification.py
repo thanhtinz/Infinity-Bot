@@ -95,11 +95,20 @@ class VerificationCog(commands.Cog):
                 await ctx.respond("❌ Verification is not enabled. Enable it in the dashboard.", ephemeral=True)
                 return
 
-            embed = discord.Embed(
-                title=cfg.page_title or "Verify",
-                description=cfg.page_description or "Click the button below to verify in this server.",
-                color=discord.Color.from_str(cfg.page_color or "#5865F2"),
-            )
+            embed = build_embed("verify_panel", session, vars={
+                "server": ctx.guild.name,
+                "server.name": ctx.guild.name,
+            })
+            # Override with config values if user hasn't customized via embed builder
+            if cfg.page_title:
+                embed.title = cfg.page_title
+            if cfg.page_description:
+                embed.description = cfg.page_description
+            if cfg.page_color:
+                try:
+                    embed.color = discord.Color.from_str(cfg.page_color)
+                except Exception:
+                    pass
             if cfg.page_logo_url:
                 embed.set_thumbnail(url=cfg.page_logo_url)
 
@@ -282,11 +291,11 @@ class VerificationCog(commands.Cog):
                     except Exception:
                         pass
 
-            embed = discord.Embed(
-                title="🚫 Member Blacklisted",
-                color=discord.Color.red(),
-                description=f"{member.mention} has been blacklisted from verification.\n**Reason:** {reason}",
-            )
+            embed = build_embed("verify_blacklist", session, vars={
+                "user": str(member), "user.mention": member.mention,
+                "user.id": str(member.id), "reason": reason,
+                "mod": str(ctx.author), "mod.mention": ctx.author.mention,
+            })
             await ctx.respond(embed=embed)
         finally:
             session.close()
@@ -314,11 +323,11 @@ class VerificationCog(commands.Cog):
             vm.is_blacklisted = False
             session.commit()
 
-            embed = discord.Embed(
-                title="✅ Member Whitelisted",
-                color=discord.Color.green(),
-                description=f"{member.mention} has been removed from the blacklist.",
-            )
+            embed = build_embed("verify_whitelist", session, vars={
+                "user": str(member), "user.mention": member.mention,
+                "user.id": str(member.id),
+                "mod": str(ctx.author), "mod.mention": ctx.author.mention,
+            })
             await ctx.respond(embed=embed)
         finally:
             session.close()

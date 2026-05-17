@@ -605,6 +605,26 @@ DEFAULTS: dict[str, dict] = {
         ],
     },
     # ── Security & Recovery ───────────────────────────────────────────────────
+    "verify_panel": {
+        "title": "Verify",
+        "description": "Click the button below to verify in this server.",
+        "color": "#5865F2",
+        "fields": [],
+    },
+    "verify_blacklist": {
+        "title": "🚫 Member Blacklisted",
+        "description": "{user.mention} has been blacklisted from verification.",
+        "color": "#ED4245",
+        "fields": [
+            {"name": "Reason", "value": "{reason}", "inline": False},
+        ],
+    },
+    "verify_whitelist": {
+        "title": "✅ Member Whitelisted",
+        "description": "{user.mention} has been removed from the blacklist.",
+        "color": "#57F287",
+        "fields": [],
+    },
     "verification_log": {
         "title": "✅ Xác minh thành công",
         "description": "{user.mention} đã xác minh thành công.",
