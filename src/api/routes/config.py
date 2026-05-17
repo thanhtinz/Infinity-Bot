@@ -145,9 +145,13 @@ def get_setup_status(request: Request, db=Depends(get_db)):
 # ── Managed Emojis (for EmojiPicker) ──────────────────────────────────────────
 
 @router.get("/managed-emojis")
-def get_managed_emojis(db=Depends(get_db)):
-    """Return only emojis tracked in the managed_emojis table."""
-    rows = db.execute(select(ManagedEmoji).order_by(ManagedEmoji.created_at.desc())).scalars().all()
+def get_managed_emojis(request: Request, db=Depends(get_db)):
+    """Return only emojis tracked in the managed_emojis table, filtered by guild."""
+    guild_id = request.headers.get("X-Guild-ID")
+    query = select(ManagedEmoji).order_by(ManagedEmoji.created_at.desc())
+    if guild_id:
+        query = query.where(ManagedEmoji.guild_id == guild_id)
+    rows = db.execute(query).scalars().all()
     return [
         {
             "id": r.discord_id,
@@ -161,14 +165,18 @@ def get_managed_emojis(db=Depends(get_db)):
 
 
 @router.post("/managed-emojis/sync")
-async def sync_managed_emojis(db=Depends(get_db)):
-    """Import all current server emojis into managed_emojis table."""
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    if not config or not config.discord_token or not config.guild_id:
+async def sync_managed_emojis(request: Request, db=Depends(get_db)):
+    """Import all current server emojis into managed_emojis table (per guild)."""
+    guild_id = request.headers.get("X-Guild-ID")
+    config = get_config_for_guild(guild_id, db) if guild_id else db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token:
         raise HTTPException(status_code=400, detail="Bot chưa cấu hình")
+    target_guild = guild_id or config.guild_id
+    if not target_guild:
+        raise HTTPException(status_code=400, detail="Thiếu guild_id")
     async with httpx.AsyncClient() as client:
         res = await client.get(
-            f"https://discord.com/api/guilds/{config.guild_id}/emojis",
+            f"https://discord.com/api/guilds/{target_guild}/emojis",
             headers={"Authorization": f"Bot {config.discord_token}"}
         )
         if res.status_code != 200:
@@ -186,6 +194,7 @@ async def sync_managed_emojis(db=Depends(get_db)):
                 name=e["name"],
                 animated=animated,
                 url=f"https://cdn.discordapp.com/emojis/{eid}.{'gif' if animated else 'png'}",
+                guild_id=target_guild,
             ))
             added += 1
     if added:
@@ -214,13 +223,17 @@ def _sticker_url(sticker_id: str, format_type: int) -> str:
 
 
 @router.get("/discord/stickers")
-async def get_discord_stickers(db=Depends(get_db)):
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    if not config or not config.discord_token or not config.guild_id:
+async def get_discord_stickers(request: Request, db=Depends(get_db)):
+    guild_id = request.headers.get("X-Guild-ID")
+    config = get_config_for_guild(guild_id, db) if guild_id else db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token:
+        return []
+    target_guild = guild_id or config.guild_id
+    if not target_guild:
         return []
     async with httpx.AsyncClient() as client:
         res = await client.get(
-            f"https://discord.com/api/guilds/{config.guild_id}/stickers",
+            f"https://discord.com/api/guilds/{target_guild}/stickers",
             headers={"Authorization": f"Bot {config.discord_token}"},
         )
         if res.status_code != 200:
@@ -241,9 +254,13 @@ async def get_discord_stickers(db=Depends(get_db)):
 
 @router.post("/discord/stickers")
 async def upload_discord_sticker(request: Request, db=Depends(get_db)):
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    if not config or not config.discord_token or not config.guild_id:
+    guild_id = request.headers.get("X-Guild-ID")
+    config = get_config_for_guild(guild_id, db) if guild_id else db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token:
         raise HTTPException(status_code=400, detail="Bot chưa cấu hình")
+    target_guild = guild_id or config.guild_id
+    if not target_guild:
+        raise HTTPException(status_code=400, detail="Thiếu guild_id")
     body = await request.json()
     name = body.get("name", "").strip()
     description = body.get("description", "").strip() or "\u200b"
@@ -274,7 +291,7 @@ async def upload_discord_sticker(request: Request, db=Depends(get_db)):
 
     async with httpx.AsyncClient() as client:
         res = await client.post(
-            f"https://discord.com/api/guilds/{config.guild_id}/stickers",
+            f"https://discord.com/api/guilds/{target_guild}/stickers",
             headers={"Authorization": f"Bot {config.discord_token}"},
             data={"name": name, "description": description, "tags": tags},
             files={"file": (filename, file_bytes, content_type)},
@@ -294,13 +311,17 @@ async def upload_discord_sticker(request: Request, db=Depends(get_db)):
 
 
 @router.delete("/discord/stickers/{sticker_id}")
-async def delete_discord_sticker(sticker_id: str, db=Depends(get_db)):
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    if not config or not config.discord_token or not config.guild_id:
+async def delete_discord_sticker(sticker_id: str, request: Request, db=Depends(get_db)):
+    guild_id = request.headers.get("X-Guild-ID")
+    config = get_config_for_guild(guild_id, db) if guild_id else db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if not config or not config.discord_token:
         raise HTTPException(status_code=400, detail="Bot chưa cấu hình")
+    target_guild = guild_id or config.guild_id
+    if not target_guild:
+        raise HTTPException(status_code=400, detail="Thiếu guild_id")
     async with httpx.AsyncClient() as client:
         res = await client.delete(
-            f"https://discord.com/api/guilds/{config.guild_id}/stickers/{sticker_id}",
+            f"https://discord.com/api/guilds/{target_guild}/stickers/{sticker_id}",
             headers={"Authorization": f"Bot {config.discord_token}"},
         )
         if res.status_code not in (200, 204):
