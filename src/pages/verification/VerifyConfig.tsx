@@ -549,7 +549,7 @@ export function VerifyConfig() {
             })}
           </Section>
 
-          {/* Multi-bot */}
+          {/* Custom Bot */}
           <Section title="Custom Bot" icon={Bot}>
             <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-4">
               <div className="flex items-start justify-between gap-3">
@@ -604,7 +604,7 @@ export function VerifyConfig() {
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
-                  onClick={() => guildBotSaveMutation.mutate(guildBotForm)}
+                  onClick={() => guildBotSaveMutation.mutate()}
                   disabled={guildBotSaveMutation.isPending}
                 >
                   {guildBotSaveMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Save className="mr-1.5 h-4 w-4" />}
@@ -638,72 +638,6 @@ export function VerifyConfig() {
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Account Requirements</p>
             <div>
               <div className="flex items-center justify-between mb-1">
-
-          <Section title="Guild Bot" icon={Bot}>
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-medium">Per-guild custom bot</p>
-                  <p className="text-xs text-muted-foreground">This guild can use its own Discord bot for verification OAuth instead of the main bot.</p>
-                </div>
-                <div className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] border ${guildBotQuery.data?.status === "active" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400" : guildBotQuery.data?.status === "error" ? "border-red-500/30 bg-red-500/10 text-red-400" : "border-white/10 bg-white/5 text-muted-foreground"}`}>
-                  {guildBotQuery.data?.status === "active" ? <ShieldCheck className="w-3.5 h-3.5" /> : guildBotQuery.data?.status === "error" ? <TriangleAlert className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
-                  {guildBotQuery.data?.status || "inactive"}
-                </div>
-              </div>
-
-              {guildBotQuery.data?.bot_name && (
-                <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-black/20 p-3">
-                  {guildBotQuery.data.bot_avatar_url ? (
-                    <img src={guildBotQuery.data.bot_avatar_url} alt="Bot avatar" className="w-10 h-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-                      <Bot className="w-5 h-5 text-indigo-400" />
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm font-medium">{guildBotQuery.data.bot_name}</p>
-                    <p className="text-xs text-muted-foreground">{guildBotQuery.data.last_validated_at ? `Validated ${new Date(guildBotQuery.data.last_validated_at).toLocaleString()}` : "Not validated yet"}</p>
-                  </div>
-                </div>
-              )}
-
-              {guildBotQuery.data?.error_message && (
-                <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-                  {guildBotQuery.data.error_message}
-                </div>
-              )}
-
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Client ID</Label>
-                <Input value={guildBotForm.client_id} onChange={e => setGuildBotForm(prev => ({ ...prev, client_id: e.target.value }))} placeholder="Discord application client ID" />
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Bot Token</Label>
-                <Input type="password" value={guildBotForm.bot_token} onChange={e => setGuildBotForm(prev => ({ ...prev, bot_token: e.target.value }))} placeholder={guildBotQuery.data?.has_token ? "Saved — enter new token to replace" : "Discord bot token"} />
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Client Secret</Label>
-                <Input type="password" value={guildBotForm.client_secret} onChange={e => setGuildBotForm(prev => ({ ...prev, client_secret: e.target.value }))} placeholder={guildBotQuery.data?.has_secret ? "Saved — enter new secret to replace" : "Discord OAuth client secret"} />
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <Button type="button" size="sm" onClick={() => guildBotSaveMutation.mutate()} disabled={guildBotSaveMutation.isPending}>
-                  {guildBotSaveMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
-                  Save Guild Bot
-                </Button>
-                <Button type="button" size="sm" variant="outline" onClick={() => guildBotValidateMutation.mutate()} disabled={guildBotValidateMutation.isPending || !guildBotQuery.data?.has_token}>
-                  {guildBotValidateMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-1.5" />}
-                  Validate Token
-                </Button>
-                <Button type="button" size="sm" variant="ghost" className="text-red-400 hover:text-red-300" onClick={() => guildBotDeleteMutation.mutate()} disabled={guildBotDeleteMutation.isPending || !guildBotQuery.data?.configured}>
-                  {guildBotDeleteMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Trash2 className="w-4 h-4 mr-1.5" />}
-                  Remove Custom Bot
-                </Button>
-              </div>
-            </div>
-          </Section>
-
                 <Label className="text-sm font-medium">Minimum account age</Label>
                 <div className="flex items-center gap-1.5">
                   <Input type="number" min={0} max={365} value={configForm.min_account_age_days}
