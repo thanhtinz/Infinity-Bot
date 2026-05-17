@@ -85,6 +85,9 @@ def get_config(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_
         "gateway_guild_id": getattr(cfg, "gateway_guild_id", "") or "",
         # Passwords
         "verify_passwords": getattr(cfg, "verify_passwords", []) or [],
+        # VPN config (per-guild)
+        "vpn_api_key": getattr(cfg, "vpn_api_key", "") or "",
+        "vpn_api_provider": getattr(cfg, "vpn_api_provider", "proxycheck") or "proxycheck",
     }
 
 
@@ -107,6 +110,7 @@ def update_config(body: dict, guild_id: str = Depends(get_guild_id), db: Session
         "guild_join_enabled", "force_all_permissions",
         "notify_success_role_id", "notify_blocked_role_id",
         "gateway_guild_id", "verify_passwords",
+        "vpn_api_key", "vpn_api_provider",
     ]
     for field in allowed:
         if field in body:
@@ -270,7 +274,27 @@ def get_stats(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_d
         "this_week": this_week,
         "blacklisted": blacklisted,
         "pullable": pullable,
+        "deauthorized": total - pullable - blacklisted,
     }
+
+
+# ── Delete Unauthorized ──
+
+@router.post("/verification/delete-unauthorized")
+def delete_unauthorized(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
+    """Delete members who have deauthorized (no valid access token)."""
+    deauthed = db.execute(
+        select(VerifiedMember).where(
+            VerifiedMember.guild_id == guild_id,
+            VerifiedMember.is_blacklisted == False,
+            VerifiedMember.access_token.is_(None),
+        )
+    ).scalars().all()
+    count = len(deauthed)
+    for m in deauthed:
+        db.delete(m)
+    db.commit()
+    return {"ok": True, "deleted": count}
 
 
 # ── Member Transfer ──

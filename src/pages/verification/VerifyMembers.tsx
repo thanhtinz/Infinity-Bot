@@ -1,5 +1,4 @@
-import { useState } from "react";
-import type { ChangeEvent } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
@@ -28,12 +27,16 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Users,
+  RefreshCw,
+  Trash2,
+  ArrowRightLeft,
   Search,
   ShieldCheck,
-  Trash2,
   Ban,
   ChevronLeft,
   ChevronRight,
@@ -42,11 +45,20 @@ import {
   Eye,
   AlertTriangle,
   Hash,
+  Square,
+  Loader2,
+  Users,
 } from "lucide-react";
 import {
   fetchMembers,
   blacklistMember,
   deleteMember,
+  deleteUnauthorized,
+  transferMembers,
+  fetchStats,
+  startPull,
+  stopPull,
+  fetchPullStatus,
   formatDate,
   riskBadge,
 } from "./shared";
@@ -56,17 +68,63 @@ export function VerifyMembers() {
   const { toast } = useToast();
   const qc = useQueryClient();
 
+  // ── State ──────────────────────────────────────────────────────────────
   const [memberSearch, setMemberSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [memberPage, setMemberPage] = useState(1);
   const [selectedMember, setSelectedMember] = useState<VerifiedMember | null>(null);
   const [memberDetailOpen, setMemberDetailOpen] = useState(false);
-  const perPage = 50;
+  const [showDeauthorized, setShowDeauthorized] = useState(false);
 
-  const membersQuery = useQuery({
-    queryKey: ["verification-members", memberPage, memberSearch],
-    queryFn: () => fetchMembers(memberPage, perPage, memberSearch),
+  // Pull dialog
+  const [pullDialogOpen, setPullDialogOpen] = useState(false);
+  const [pullRestoreRoles, setPullRestoreRoles] = useState(true);
+  const [pullDelay, setPullDelay] = useState(5);
+
+  // Delete unauthorized dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  // Transfer dialog
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+  const [transferGuildId, setTransferGuildId] = useState("");
+
+  const perPage = 50;
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // ── Debounced search ───────────────────────────────────────────────────
+  const handleSearchChange = useCallback((value: string) => {
+    setMemberSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(value);
+      setMemberPage(1);
+    }, 300);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  // ── Queries ────────────────────────────────────────────────────────────
+  const statsQuery = useQuery({
+    queryKey: ["verification-stats"],
+    queryFn: fetchStats,
   });
 
+  const membersQuery = useQuery({
+    queryKey: ["verification-members", memberPage, debouncedSearch, showDeauthorized],
+    queryFn: () => fetchMembers(memberPage, perPage, debouncedSearch, showDeauthorized || undefined),
+  });
+
+  const pullStatusQuery = useQuery({
+    queryKey: ["member-pull-status"],
+    queryFn: fetchPullStatus,
+    refetchInterval: 3000,
+  });
+
+  // ── Mutations ──────────────────────────────────────────────────────────
   const blacklistMutation = useMutation({
     mutationFn: ({ id, blacklisted }: { id: number; blacklisted: boolean }) =>
       blacklistMember(id, blacklisted),
@@ -88,37 +146,185 @@ export function VerifyMembers() {
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
+  const deleteUnauthorizedMutation = useMutation({
+    mutationFn: deleteUnauthorized,
+    onSuccess: (data) => {
+      toast({ title: `Deleted ${data.deleted} unauthorized member${data.deleted !== 1 ? "s" : ""}` });
+      setDeleteDialogOpen(false);
+      qc.invalidateQueries({ queryKey: ["verification-members"] });
+      qc.invalidateQueries({ queryKey: ["verification-stats"] });
+    },
+    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const transferMutation = useMutation({
+    mutationFn: transferMembers,
+    onSuccess: (data) => {
+      toast({ title: `Transferred ${data.transferred} member${data.transferred !== 1 ? "s" : ""}`, description: `${data.skipped} skipped` });
+      setTransferDialogOpen(false);
+      setTransferGuildId("");
+      qc.invalidateQueries({ queryKey: ["verification-members"] });
+      qc.invalidateQueries({ queryKey: ["verification-stats"] });
+    },
+    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const startPullMutation = useMutation({
+    mutationFn: startPull,
+    onSuccess: () => {
+      toast({ title: "Member pull started" });
+      setPullDialogOpen(false);
+      qc.invalidateQueries({ queryKey: ["member-pull-status"] });
+    },
+    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const stopPullMutation = useMutation({
+    mutationFn: stopPull,
+    onSuccess: () => {
+      toast({ title: "Member pull stopped" });
+      qc.invalidateQueries({ queryKey: ["member-pull-status"] });
+    },
+    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  // ── Helpers ────────────────────────────────────────────────────────────
   function openMemberDetail(m: VerifiedMember) {
     setSelectedMember(m);
     setMemberDetailOpen(true);
   }
 
+  const pullActive = pullStatusQuery.data?.active ?? false;
+  const pullProgress = pullStatusQuery.data
+    ? pullStatusQuery.data.total_members > 0
+      ? Math.round((pullStatusQuery.data.pulled_members / pullStatusQuery.data.total_members) * 100)
+      : 0
+    : 0;
+
+  // ── Render ─────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Users className="h-6 w-6" />
-            Verified Members
-          </h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Manage members who have verified their accounts.
-          </p>
-        </div>
-        <div className="relative w-72">
+    <div className="space-y-6">
+      {/* ── Action Buttons ──────────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-3">
+        {pullActive ? (
+          <div className="flex items-center gap-3 flex-1 min-w-[300px]">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-sm font-medium">
+                  Pulling members… {pullStatusQuery.data?.pulled_members ?? 0}/{pullStatusQuery.data?.total_members ?? 0}
+                </span>
+                <span className="text-sm text-muted-foreground">{pullProgress}%</span>
+              </div>
+              <Progress value={pullProgress} className="h-2" />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => stopPullMutation.mutate()}
+              disabled={stopPullMutation.isPending}
+              className="gap-1.5 shrink-0"
+            >
+              {stopPullMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Square className="h-4 w-4" />
+              )}
+              Stop
+            </Button>
+          </div>
+        ) : (
+          <Button
+            onClick={() => setPullDialogOpen(true)}
+            className="gap-2 bg-[#5865F2] hover:bg-[#4752C4] text-white"
+            size="lg"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Pull members
+          </Button>
+        )}
+
+        <Button
+          variant="outline"
+          onClick={() => setDeleteDialogOpen(true)}
+          className="gap-2"
+          size="lg"
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete Unauthorized
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={() => setTransferDialogOpen(true)}
+          className="gap-2"
+          size="lg"
+        >
+          <ArrowRightLeft className="h-4 w-4" />
+          Transfer members
+        </Button>
+      </div>
+
+      {/* ── Stats Card ──────────────────────────────────────────────────── */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Pullable:</span>
+              <span className="text-lg font-bold text-emerald-500">
+                {statsQuery.isLoading ? <Skeleton className="inline-block h-6 w-8" /> : statsQuery.data?.pullable ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Deauthorized:</span>
+              <span className="text-lg font-bold text-orange-500">
+                {statsQuery.isLoading ? <Skeleton className="inline-block h-6 w-8" /> : statsQuery.data?.deauthorized ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Total:</span>
+              <span className="text-lg font-bold">
+                {statsQuery.isLoading ? <Skeleton className="inline-block h-6 w-8" /> : statsQuery.data?.total ?? 0}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowDeauthorized((prev) => !prev);
+                setMemberPage(1);
+              }}
+              className="text-sm text-[#5865F2] hover:underline ml-auto"
+            >
+              {showDeauthorized ? "View all members" : "View deauthorized"}
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Search Bar ──────────────────────────────────────────────────── */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name, email, or IP..."
+            placeholder="Enter Discord ID, username, IP address, or email"
             value={memberSearch}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              setMemberSearch(e.target.value);
-              setMemberPage(1);
-            }}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9"
           />
         </div>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setDebouncedSearch(memberSearch);
+            setMemberPage(1);
+          }}
+          className="gap-1.5 shrink-0"
+        >
+          <Search className="h-4 w-4" />
+          Search
+        </Button>
       </div>
 
+      {/* ── Member Table ────────────────────────────────────────────────── */}
       {membersQuery.isLoading ? (
         <div className="space-y-2">
           {[1, 2, 3, 4, 5].map((i) => (
@@ -131,7 +337,7 @@ export function VerifyMembers() {
             <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />
             <h3 className="text-lg font-medium">No members found</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              {memberSearch ? "Try a different search term." : "Members will appear here once they verify."}
+              {debouncedSearch ? "Try a different search term." : "Members will appear here once they verify."}
             </p>
           </CardContent>
         </Card>
@@ -141,14 +347,10 @@ export function VerifyMembers() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10" />
+                  <TableHead>Discord ID</TableHead>
                   <TableHead>Username</TableHead>
-                  <TableHead className="hidden md:table-cell">Discord ID</TableHead>
-                  <TableHead className="hidden lg:table-cell">Email</TableHead>
-                  <TableHead className="hidden xl:table-cell">IP</TableHead>
-                  <TableHead>Roles</TableHead>
                   <TableHead className="hidden md:table-cell">Verified</TableHead>
-                  <TableHead>Risk</TableHead>
+                  <TableHead className="hidden lg:table-cell">Risk</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -161,48 +363,44 @@ export function VerifyMembers() {
                       className="cursor-pointer"
                       onClick={() => openMemberDetail(m)}
                     >
-                      <TableCell>
-                        <Avatar className="h-8 w-8">
-                          {m.avatar ? (
-                            <AvatarImage src={m.avatar} alt={m.username} />
-                          ) : null}
-                          <AvatarFallback className="text-xs">
-                            {m.username.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {m.discord_id}
                       </TableCell>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-1.5">
-                          {m.username}
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-7 w-7">
+                            {m.avatar ? (
+                              <AvatarImage src={m.avatar} alt={m.username} />
+                            ) : null}
+                            <AvatarFallback className="text-[10px]">
+                              {m.username.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{m.username}</span>
                           {m.is_blacklisted && (
                             <Ban className="h-3.5 w-3.5 text-red-500" />
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="hidden md:table-cell text-muted-foreground text-xs font-mono">
-                        {m.discord_id}
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell text-muted-foreground text-xs">
-                        {m.email || "—"}
-                      </TableCell>
-                      <TableCell className="hidden xl:table-cell text-muted-foreground text-xs font-mono">
-                        {m.ip_address || "—"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">
-                          {m.roles.length}
-                        </Badge>
-                      </TableCell>
                       <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
                         {formatDate(m.verified_at)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden lg:table-cell">
                         <Badge variant="outline" className={`text-xs ${risk.cls}`}>
                           {risk.label}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() => openMemberDetail(m)}
+                            title="View details"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -269,7 +467,144 @@ export function VerifyMembers() {
         </>
       )}
 
-      {/* Member Detail Dialog */}
+      {/* ── Pull Members Dialog ─────────────────────────────────────────── */}
+      <Dialog open={pullDialogOpen} onOpenChange={setPullDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Pull Members</DialogTitle>
+            <DialogDescription>
+              Pull members from your Discord server into the verification database.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-2">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Restore roles</Label>
+                <p className="text-xs text-muted-foreground">Re-assign roles to returning members</p>
+              </div>
+              <Switch
+                checked={pullRestoreRoles}
+                onCheckedChange={setPullRestoreRoles}
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>Join delay</Label>
+                <span className="text-sm text-muted-foreground">{pullDelay}s</span>
+              </div>
+              <Slider
+                value={[pullDelay]}
+                onValueChange={([v]) => setPullDelay(v)}
+                min={1}
+                max={10}
+                step={1}
+              />
+              <p className="text-xs text-muted-foreground">
+                Delay between each member join (1–10 seconds)
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPullDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() =>
+                startPullMutation.mutate({
+                  restore_roles: pullRestoreRoles,
+                  join_delay_seconds: pullDelay,
+                })
+              }
+              disabled={startPullMutation.isPending}
+              className="gap-1.5 bg-[#5865F2] hover:bg-[#4752C4] text-white"
+            >
+              {startPullMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              Start Pull
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Delete Unauthorized Dialog ──────────────────────────────────── */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Unauthorized Members</DialogTitle>
+            <DialogDescription>
+              This will permanently remove all deauthorized members from the database. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteUnauthorizedMutation.mutate()}
+              disabled={deleteUnauthorizedMutation.isPending}
+              className="gap-1.5"
+            >
+              {deleteUnauthorizedMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+              Delete All Unauthorized
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Transfer Members Dialog ─────────────────────────────────────── */}
+      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Transfer Members</DialogTitle>
+            <DialogDescription>
+              Import verified members from another Discord server.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <Label htmlFor="transfer-guild-id">Source Server ID</Label>
+            <Input
+              id="transfer-guild-id"
+              placeholder="Enter source guild ID"
+              value={transferGuildId}
+              onChange={(e) => setTransferGuildId(e.target.value)}
+              className="font-mono"
+            />
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setTransferDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => transferMutation.mutate(transferGuildId)}
+              disabled={!transferGuildId.trim() || transferMutation.isPending}
+              className="gap-1.5"
+            >
+              {transferMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowRightLeft className="h-4 w-4" />
+              )}
+              Transfer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Member Detail Dialog ────────────────────────────────────────── */}
       <Dialog open={memberDetailOpen} onOpenChange={setMemberDetailOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>

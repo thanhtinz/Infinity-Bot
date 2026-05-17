@@ -78,6 +78,9 @@ export interface VerificationConfig {
   gateway_guild_id: string;
   // Passwords
   verify_passwords: { password: string; label: string }[];
+  // VPN config (per-guild)
+  vpn_api_key: string;
+  vpn_api_provider: string;
 }
 
 export interface VerificationStats {
@@ -86,6 +89,7 @@ export interface VerificationStats {
   this_week: number;
   blacklisted: number;
   pullable: number;
+  deauthorized: number;
 }
 
 export interface MemberPullStatus {
@@ -163,6 +167,22 @@ export async function blacklistMember(id: number, blacklisted: boolean): Promise
 export async function deleteMember(id: number): Promise<void> {
   const res = await apiFetch(`/api/verification/members/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error("Failed to delete member");
+}
+
+export async function deleteUnauthorized(): Promise<{ deleted: number }> {
+  const res = await apiFetch("/api/verification/delete-unauthorized", { method: "POST" });
+  if (!res.ok) throw new Error("Failed to delete unauthorized");
+  return res.json();
+}
+
+export async function transferMembers(sourceGuildId: string): Promise<{ transferred: number; skipped: number }> {
+  const res = await apiFetch("/api/verification/transfer", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ source_guild_id: sourceGuildId }),
+  });
+  if (!res.ok) throw new Error("Failed to transfer members");
+  return res.json();
 }
 
 export async function fetchConfig(): Promise<VerificationConfig> {

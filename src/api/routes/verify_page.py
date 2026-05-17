@@ -28,10 +28,18 @@ def _get_oauth_config(db: Session):
     return cfg.discord_client_id, cfg.discord_client_secret, cfg.discord_token, cfg.public_app_url
 
 
-def _get_vpn_api_key(db: Session) -> str | None:
-    """Get VPN API key from SystemConfig."""
-    cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
-    return cfg.vpn_api_key if cfg else None
+def _get_vpn_api_key(db: Session, guild_id: str) -> tuple[str | None, str]:
+    """Get VPN API key from per-guild VerificationConfig."""
+    cfg = db.execute(
+        select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
+    ).scalars().first()
+    if cfg and getattr(cfg, "vpn_api_key", None):
+        return cfg.vpn_api_key, getattr(cfg, "vpn_api_provider", "proxycheck") or "proxycheck"
+    # Fallback to SystemConfig for backward compat
+    sc = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    if sc and sc.vpn_api_key:
+        return sc.vpn_api_key, getattr(sc, "vpn_api_provider", "proxycheck") or "proxycheck"
+    return None, "proxycheck"
 
 
 # ── Public config for verify page branding (no auth) ──
@@ -192,13 +200,9 @@ async def verify_callback(
 
         # 5a. VPN/Proxy detection
         if cfg.block_vpn and ip_address:
-            vpn_key = _get_vpn_api_key(db)
+            vpn_key, provider = _get_vpn_api_key(db, guild_id)
             if vpn_key:
                 try:
-                    # Use proxycheck.io by default (matches SystemConfig.vpn_api_provider)
-                    sys_cfg_vpn = db.execute(select(SystemConfig).limit(1)).scalars().first()
-                    provider = sys_cfg_vpn.vpn_api_provider if sys_cfg_vpn else "proxycheck"
-
                     is_vpn = False
                     if provider == "ipqualityscore":
                         vpn_res = await client.get(

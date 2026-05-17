@@ -1091,6 +1091,9 @@ class VerificationConfig(Base):
     gateway_guild_id = Column(String, nullable=True)       # add to extra server on verify
     # ── Passwords (JSON list of {password, label})
     verify_passwords = Column(JSON, default=list)
+    # ── VPN / Proxy detection (per-guild, NOT owner-level) ──
+    vpn_api_key = Column(String, nullable=True)
+    vpn_api_provider = Column(String, default="proxycheck")  # proxycheck | ipqualityscore
 
 
 class StaffPermission(Base):

@@ -528,6 +528,35 @@ export function VerifyConfig() {
               <p className="text-sm font-medium">Block VPN networks</p>
               <Switch checked={configForm.block_vpn} onCheckedChange={v => update({ block_vpn: v })} />
             </div>
+            {configForm.block_vpn && (
+              <div className="space-y-3 pl-2 border-l-2 border-blue-500/30 ml-1">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">VPN Detection Provider</Label>
+                  <select
+                    value={configForm.vpn_api_provider || "proxycheck"}
+                    onChange={e => update({ vpn_api_provider: e.target.value })}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
+                  >
+                    <option value="proxycheck">proxycheck.io</option>
+                    <option value="ipqualityscore">IPQualityScore</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">API Key</Label>
+                  <Input
+                    type="password"
+                    value={configForm.vpn_api_key || ""}
+                    onChange={e => update({ vpn_api_key: e.target.value })}
+                    placeholder="Enter your API key..."
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    {configForm.vpn_api_provider === "ipqualityscore"
+                      ? "Get a free key at ipqualityscore.com"
+                      : "Get a free key at proxycheck.io"}
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">Block mobile/wireless networks</p>
               <Switch checked={configForm.block_mobile} onCheckedChange={v => update({ block_mobile: v })} />
