@@ -64,6 +64,10 @@ def rank_card_settings(cfg: LevelingConfig | None, member_xp: MemberXP | None = 
         "xp_label": "XP",
         "server": "Discord Server",
         "custom_bg_path": None,
+        "gradient_theme": "",
+        "avatar_effect": "glow",
+        "frame": "none",
+        "badges": [],
     }
     if cfg and isinstance(cfg.rank_card_config, dict):
         saved = cfg.rank_card_config
@@ -71,7 +75,8 @@ def rank_card_settings(cfg: LevelingConfig | None, member_xp: MemberXP | None = 
                     "show_username", "show_server", "show_total_xp", "show_percent",
                     "show_rank", "show_level", "rank_label", "level_label", "xp_label",
                     "background", "panel_style", "progress_style", "avatar_shape",
-                    "card_radius", "panel_opacity", "glow_strength", "avatar_size"]:
+                    "card_radius", "panel_opacity", "glow_strength", "avatar_size",
+                    "gradient_theme", "avatar_effect", "frame", "badges"]:
             if key in saved:
                 settings[key] = saved[key]
         guild_id = cfg.guild_id
@@ -223,6 +228,18 @@ class LevelingCog(discord.Cog):
                 try:
                     await member.add_roles(role, reason=f"Level reward {reward.level}")
                     latest_reward = reward
+                    # DM user if dm_user is enabled on this reward
+                    if reward.dm_user:
+                        try:
+                            dm_embed = build_embed("level_reward", session, vars={
+                                "user": str(member), "user.mention": member.mention,
+                                "user.id": str(member.id), "level": str(reward.level),
+                                "reward.role": f"<@&{reward.role_id}>",
+                                "server": guild.name,
+                            })
+                            await member.send(embed=dm_embed)
+                        except Exception:
+                            pass
                 except Exception:
                     pass
         if cfg.remove_old_reward_roles and latest_reward:

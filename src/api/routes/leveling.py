@@ -85,6 +85,10 @@ def _rank_card_settings(cfg: LevelingConfig | None) -> dict:
         "display_name": "Lunar Architect",
         "server": "Infinity Mall",
         "custom_bg_url": None,
+        "gradient_theme": "",
+        "avatar_effect": "glow",
+        "frame": "none",
+        "badges": [],
     }
     if cfg and isinstance(cfg.rank_card_config, dict):
         base.update(cfg.rank_card_config)
@@ -155,6 +159,10 @@ class RankCardConfigIn(BaseModel):
     username: str = "lunar.dev"
     display_name: str = "Lunar Architect"
     server: str = "Infinity Mall"
+    gradient_theme: str = ""
+    avatar_effect: str = "glow"
+    frame: str = "none"
+    badges: list = []
 
 
 class RewardIn(BaseModel):
