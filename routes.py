@@ -44,7 +44,7 @@ def create_app(static_dir: str) -> FastAPI:
             "/api/public/invite",
         ]
         
-        if path.startswith("/static/"):
+        if path.startswith("/static/") or path.startswith("/api/files/"):
             return await call_next(request)
         
         if path in ["/api/config"]:
