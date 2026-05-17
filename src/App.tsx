@@ -547,7 +547,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const { selectedGuildId, isLoading: guildLoading } = useGuild();
 
-  if (isLoading || guildLoading) return <div className="h-screen flex items-center justify-center">Đang tải...</div>;
+  if (isLoading || guildLoading) return <div className="h-screen flex items-center justify-center">Loading...</div>;
   if (isError) return <Navigate to="/login" replace />;
 
   // Một số route owner không cần guild
@@ -597,7 +597,7 @@ function SetupGate() {
   });
 
   if (isLoading || !data) {
-    return <div className="h-screen flex items-center justify-center">Đang tải...</div>;
+    return <div className="h-screen flex items-center justify-center">Loading...</div>;
   }
 
   if (isError) {
