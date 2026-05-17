@@ -611,6 +611,111 @@ class ServerBackupCog(commands.Cog):
     async def _before_scheduled_backup(self):
         await self.bot.wait_until_ready()
 
+    # ── Instant Recovery (Denukify) ──
+    @backup_group.command(name="recover", description="[Admin] Instant recovery — rebuild from audit log (no backup needed)")
+    @commands.has_permissions(administrator=True)
+    async def instant_recover(
+        self,
+        ctx: discord.ApplicationContext,
+        lookback_hours: discord.Option(int, "Hours to look back in audit log", default=1, min_value=1, max_value=24),
+    ):
+        """Scan audit log for recently deleted channels/roles and recreate them."""
+        await ctx.defer()
+        guild = ctx.guild
+        cutoff = datetime.datetime.utcnow() - datetime.timedelta(hours=lookback_hours)
+        results = {"channels_restored": 0, "roles_restored": 0, "unbans": 0, "errors": []}
+
+        # 1. Restore deleted channels
+        try:
+            async for entry in guild.audit_logs(limit=300, action=discord.AuditLogAction.channel_delete, after=cutoff):
+                if not entry.target:
+                    continue
+                try:
+                    ch_name = entry.changes.before.name if entry.changes and hasattr(entry.changes, "before") and hasattr(entry.changes.before, "name") else f"recovered-{entry.target.id}"
+                except Exception:
+                    ch_name = f"recovered-{entry.target.id}"
+
+                # Check if a channel with same name already exists
+                existing = discord.utils.get(guild.channels, name=ch_name)
+                if existing:
+                    continue
+
+                try:
+                    # Try to determine channel type from extra data
+                    ch_type = getattr(entry.extra, "type", None) if entry.extra else None
+                    if ch_type == discord.ChannelType.voice:
+                        await guild.create_voice_channel(name=ch_name)
+                    elif ch_type == discord.ChannelType.category:
+                        await guild.create_category(name=ch_name)
+                    else:
+                        await guild.create_text_channel(name=ch_name)
+                    results["channels_restored"] += 1
+                except Exception as e:
+                    results["errors"].append(f"Channel {ch_name}: {str(e)[:100]}")
+        except discord.Forbidden:
+            results["errors"].append("No permission to read audit logs")
+        except Exception as e:
+            results["errors"].append(f"Channel scan: {str(e)[:100]}")
+
+        # 2. Restore deleted roles
+        try:
+            async for entry in guild.audit_logs(limit=300, action=discord.AuditLogAction.role_delete, after=cutoff):
+                try:
+                    role_name = entry.changes.before.name if entry.changes and hasattr(entry.changes, "before") and hasattr(entry.changes.before, "name") else f"recovered-role"
+                    role_color = entry.changes.before.colour if entry.changes and hasattr(entry.changes, "before") and hasattr(entry.changes.before, "colour") else discord.Color.default()
+                except Exception:
+                    role_name = "recovered-role"
+                    role_color = discord.Color.default()
+
+                existing = discord.utils.get(guild.roles, name=role_name)
+                if existing:
+                    continue
+
+                try:
+                    await guild.create_role(name=role_name, color=role_color)
+                    results["roles_restored"] += 1
+                except Exception as e:
+                    results["errors"].append(f"Role {role_name}: {str(e)[:100]}")
+        except Exception as e:
+            results["errors"].append(f"Role scan: {str(e)[:100]}")
+
+        # 3. Unban recently banned members (likely from nuker)
+        try:
+            async for entry in guild.audit_logs(limit=300, action=discord.AuditLogAction.ban, after=cutoff):
+                if entry.target:
+                    try:
+                        await guild.unban(entry.target, reason="Instant recovery — reversing nuke bans")
+                        results["unbans"] += 1
+                    except Exception:
+                        pass
+        except Exception as e:
+            results["errors"].append(f"Unban scan: {str(e)[:100]}")
+
+        # Build result embed
+        session = SessionLocal()
+        try:
+            embed = build_embed("restore_completed", session, vars={
+                "channels": str(results["channels_restored"]),
+                "roles": str(results["roles_restored"]),
+                "unbans": str(results["unbans"]),
+            })
+            if results["errors"]:
+                embed.add_field(
+                    name="⚠️ Errors",
+                    value="\n".join(results["errors"][:5]),
+                    inline=False,
+                )
+            embed.title = "🔄 Instant Recovery Complete"
+            embed.description = (
+                f"Scanned audit log ({lookback_hours}h lookback):\n"
+                f"📝 Channels restored: **{results['channels_restored']}**\n"
+                f"🎭 Roles restored: **{results['roles_restored']}**\n"
+                f"🔓 Members unbanned: **{results['unbans']}**"
+            )
+            await ctx.respond(embed=embed)
+        finally:
+            session.close()
+
 
 def setup(bot):
     bot.add_cog(ServerBackupCog(bot))
