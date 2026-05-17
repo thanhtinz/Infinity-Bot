@@ -1,7 +1,6 @@
 import { useT } from "@/i18n";
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { useT } from "@/i18n";
 import { ShoppingBag, Ticket, Gift, Shield, Mic, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 

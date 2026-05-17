@@ -1466,6 +1466,18 @@ const vi = {
   landing_support: "Hỗ trợ",
   landing_uptime: "Uptime",
   landing_viewCommands: "Xem lệnh",
+  landing_shopOrders: "Shop & Đơn hàng",
+  landing_shopOrdersDesc: "Cửa hàng tích hợp với PayOS, quản lý sản phẩm và theo dõi đơn hàng thời gian thực.",
+  landing_ticketSystem: "Hệ thống Ticket",
+  landing_ticketSystemDesc: "Ticket đa panel với claim, transcript, feedback và hỗ trợ team theo role.",
+  landing_giveaway: "Giveaway",
+  landing_giveawayDesc: "Giveaway chuyên nghiệp với yêu cầu tham gia, reroll và nhiều người thắng.",
+  landing_moderation: "Kiểm duyệt",
+  landing_moderationDesc: "Ban, kick, timeout, lọc nội dung automod và ghi log hành động đầy đủ.",
+  landing_tempVoice: "TempVoice",
+  landing_tempVoiceDesc: "Kênh thoại tạm thời người dùng tự quản lý: đổi tên, giới hạn, khóa, kick.",
+  landing_embedBuilder: "Embed Builder",
+  landing_embedBuilderDesc: "Tùy chỉnh mọi thông báo bot với Embed Builder trực quan và xem trước Discord trực tiếp.",
 
   // ─── Public Commands Page ───
   publicCmd_admin: "admin",
