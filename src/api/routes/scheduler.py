@@ -62,8 +62,8 @@ def create_scheduled_message(body: dict, db=Depends(get_db), guild_id: str = Dep
 
 
 @router.put("/scheduled-messages/{msg_id}")
-def update_scheduled_message(msg_id: int, body: dict, db=Depends(get_db)):
-    msg = db.get(ScheduledMessage, msg_id)
+def update_scheduled_message(msg_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    msg = db.execute(select(ScheduledMessage).where(ScheduledMessage.id == msg_id, ScheduledMessage.guild_id == guild_id)).scalars().first()
     if not msg:
         raise HTTPException(status_code=404, detail="Message not found")
 
@@ -83,8 +83,8 @@ def update_scheduled_message(msg_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.delete("/scheduled-messages/{msg_id}")
-def delete_scheduled_message(msg_id: int, db=Depends(get_db)):
-    msg = db.get(ScheduledMessage, msg_id)
+def delete_scheduled_message(msg_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    msg = db.execute(select(ScheduledMessage).where(ScheduledMessage.id == msg_id, ScheduledMessage.guild_id == guild_id)).scalars().first()
     if not msg:
         raise HTTPException(status_code=404, detail="Message not found")
     db.delete(msg)

@@ -52,8 +52,8 @@ def create_auto_responder(body: dict, db=Depends(get_db), guild_id: str = Depend
 
 
 @router.put("/auto-responders/{rule_id}")
-def update_auto_responder(rule_id: int, body: dict, db=Depends(get_db)):
-    rule = db.get(AutoResponder, rule_id)
+def update_auto_responder(rule_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    rule = db.execute(select(AutoResponder).where(AutoResponder.id == rule_id, AutoResponder.guild_id == guild_id)).scalars().first()
     if not rule:
         raise HTTPException(404, "Rule not found")
     fields = [
@@ -74,8 +74,8 @@ def update_auto_responder(rule_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.put("/auto-responders/{rule_id}/toggle")
-def toggle_auto_responder(rule_id: int, db=Depends(get_db)):
-    rule = db.get(AutoResponder, rule_id)
+def toggle_auto_responder(rule_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    rule = db.execute(select(AutoResponder).where(AutoResponder.id == rule_id, AutoResponder.guild_id == guild_id)).scalars().first()
     if not rule:
         raise HTTPException(404, "Rule not found")
     rule.enabled = not rule.enabled
@@ -84,8 +84,8 @@ def toggle_auto_responder(rule_id: int, db=Depends(get_db)):
 
 
 @router.delete("/auto-responders/{rule_id}")
-def delete_auto_responder(rule_id: int, db=Depends(get_db)):
-    rule = db.get(AutoResponder, rule_id)
+def delete_auto_responder(rule_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    rule = db.execute(select(AutoResponder).where(AutoResponder.id == rule_id, AutoResponder.guild_id == guild_id)).scalars().first()
     if not rule:
         raise HTTPException(404, "Rule not found")
     db.delete(rule)

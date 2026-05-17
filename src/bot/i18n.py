@@ -154,21 +154,80 @@ STRINGS: dict[str, dict[str, str]] = {
     },
 }
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ── Language cache (guild_id -> lang code) ────────────────────────────────────
+
+_lang_cache: dict[str, str] = {}
+
 
 def get_lang(guild_id: str | int) -> str:
-    """Always returns 'en'."""
-    return "en"
+    """Get language for a guild. Checks cache first, then DB, defaults to 'en'."""
+    gid = str(guild_id) if guild_id else ""
+    if not gid:
+        return "en"
+    if gid in _lang_cache:
+        return _lang_cache[gid]
+    # DB lookup
+    try:
+        from src.database.config import SessionLocal
+        from src.models.models import SystemConfig
+        if SessionLocal is None:
+            return "en"
+        db = SessionLocal()
+        try:
+            cfg = db.query(SystemConfig).filter(
+                SystemConfig.guild_id == gid
+            ).first()
+            lang = (cfg.language if cfg and cfg.language else "en")
+            _lang_cache[gid] = lang
+            return lang
+        finally:
+            db.close()
+    except Exception:
+        logger.debug("i18n: DB lookup failed for guild %s, defaulting to en", gid)
+        return "en"
 
 
 def set_lang(guild_id: str | int, lang: str) -> None:
-    """No-op — language is always English."""
-    pass
+    """Update language for a guild in DB + cache."""
+    gid = str(guild_id) if guild_id else ""
+    if not gid:
+        return
+    lang = lang if lang in STRINGS else "en"
+    _lang_cache[gid] = lang
+    try:
+        from src.database.config import SessionLocal
+        from src.models.models import SystemConfig
+        if SessionLocal is None:
+            return
+        db = SessionLocal()
+        try:
+            cfg = db.query(SystemConfig).filter(
+                SystemConfig.guild_id == gid
+            ).first()
+            if cfg:
+                cfg.language = lang
+                db.commit()
+        finally:
+            db.close()
+    except Exception:
+        logger.warning("i18n: failed to save language for guild %s", gid)
+
+
+def invalidate_lang_cache(guild_id: str | int | None = None) -> None:
+    """Clear language cache. Call when language changes via API."""
+    if guild_id:
+        _lang_cache.pop(str(guild_id), None)
+    else:
+        _lang_cache.clear()
 
 
 def t(guild_id: str | int, key: str, **kwargs) -> str:
-    """Translate key — always returns English."""
-    text = STRINGS["en"].get(key, key)
+    """Translate key using guild's configured language."""
+    lang = get_lang(guild_id)
+    text = STRINGS.get(lang, STRINGS["en"]).get(key)
+    if text is None:
+        # Fallback to English if key missing in target language
+        text = STRINGS["en"].get(key, key)
     if kwargs:
         try:
             text = text.format(**kwargs)

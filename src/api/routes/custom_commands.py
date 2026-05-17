@@ -101,8 +101,8 @@ def create_custom_command(body: dict, db=Depends(get_db), guild_id: str = Depend
 
 
 @router.put("/custom-commands/{cmd_id}")
-def update_custom_command(cmd_id: int, body: dict, db=Depends(get_db)):
-    cmd = db.get(CustomCommand, cmd_id)
+def update_custom_command(cmd_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cmd = db.execute(select(CustomCommand).where(CustomCommand.id == cmd_id, CustomCommand.guild_id == guild_id)).scalars().first()
     if not cmd:
         raise HTTPException(status_code=404, detail="Command not found")
 
@@ -123,8 +123,8 @@ def update_custom_command(cmd_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.delete("/custom-commands/{cmd_id}")
-def delete_custom_command(cmd_id: int, db=Depends(get_db)):
-    cmd = db.get(CustomCommand, cmd_id)
+def delete_custom_command(cmd_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cmd = db.execute(select(CustomCommand).where(CustomCommand.id == cmd_id, CustomCommand.guild_id == guild_id)).scalars().first()
     if not cmd:
         raise HTTPException(status_code=404, detail="Command not found")
     db.delete(cmd)

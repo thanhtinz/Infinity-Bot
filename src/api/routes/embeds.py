@@ -55,8 +55,8 @@ def create_embed(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gui
 
 
 @router.put("/embeds/{embed_id}")
-def update_embed(embed_id: int, body: dict, db=Depends(get_db)):
-    e = db.get(EmbedTemplate, embed_id)
+def update_embed(embed_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    e = db.execute(select(EmbedTemplate).where(EmbedTemplate.id == embed_id, EmbedTemplate.guild_id == guild_id)).scalars().first()
     if not e:
         raise HTTPException(status_code=404, detail="Not found")
     for k in ("name", "event_type", "title", "description", "color", "author",
@@ -70,8 +70,8 @@ def update_embed(embed_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.delete("/embeds/{embed_id}")
-def delete_embed(embed_id: int, db=Depends(get_db)):
-    e = db.get(EmbedTemplate, embed_id)
+def delete_embed(embed_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    e = db.execute(select(EmbedTemplate).where(EmbedTemplate.id == embed_id, EmbedTemplate.guild_id == guild_id)).scalars().first()
     if not e:
         raise HTTPException(status_code=404, detail="Not found")
     db.delete(e)
@@ -214,14 +214,15 @@ def _build_allowed_mentions(am_data: dict):
 
 
 @router.get("/embeds/custom")
-def list_custom_embeds(db=Depends(get_db)):
-    rows = db.execute(select(CustomEmbedMessage).order_by(CustomEmbedMessage.updated_at.desc())).scalars().all()
+def list_custom_embeds(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    rows = db.execute(select(CustomEmbedMessage).where(CustomEmbedMessage.guild_id == guild_id).order_by(CustomEmbedMessage.updated_at.desc())).scalars().all()
     return [_row_to_dict(r) for r in rows]
 
 
 @router.post("/embeds/custom")
-def create_custom_embed(body: dict, db=Depends(get_db)):
+def create_custom_embed(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     r = CustomEmbedMessage(
+        guild_id=guild_id,
         name=body.get("name") or "Embed mới",
         content=body.get("content"),
         webhook_username=body.get("webhook_username"),
@@ -243,8 +244,8 @@ def create_custom_embed(body: dict, db=Depends(get_db)):
 
 
 @router.put("/embeds/custom/{msg_id}")
-def update_custom_embed(msg_id: int, body: dict, db=Depends(get_db)):
-    r = db.get(CustomEmbedMessage, msg_id)
+def update_custom_embed(msg_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    r = db.execute(select(CustomEmbedMessage).where(CustomEmbedMessage.id == msg_id, CustomEmbedMessage.guild_id == guild_id)).scalars().first()
     if not r:
         raise HTTPException(status_code=404, detail="Not found")
     for k in ("name", "content", "webhook_username", "webhook_avatar_url", "thread_name", "embeds",
@@ -259,8 +260,8 @@ def update_custom_embed(msg_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.delete("/embeds/custom/{msg_id}")
-def delete_custom_embed(msg_id: int, db=Depends(get_db)):
-    r = db.get(CustomEmbedMessage, msg_id)
+def delete_custom_embed(msg_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    r = db.execute(select(CustomEmbedMessage).where(CustomEmbedMessage.id == msg_id, CustomEmbedMessage.guild_id == guild_id)).scalars().first()
     if not r:
         raise HTTPException(status_code=404, detail="Not found")
     db.delete(r); db.commit()
@@ -268,8 +269,8 @@ def delete_custom_embed(msg_id: int, db=Depends(get_db)):
 
 
 @router.post("/embeds/custom/{msg_id}/duplicate")
-def duplicate_custom_embed(msg_id: int, db=Depends(get_db)):
-    r = db.get(CustomEmbedMessage, msg_id)
+def duplicate_custom_embed(msg_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    r = db.execute(select(CustomEmbedMessage).where(CustomEmbedMessage.id == msg_id, CustomEmbedMessage.guild_id == guild_id)).scalars().first()
     if not r:
         raise HTTPException(status_code=404, detail="Not found")
     clone = CustomEmbedMessage(
@@ -292,9 +293,9 @@ def duplicate_custom_embed(msg_id: int, db=Depends(get_db)):
 
 
 @router.post("/embeds/custom/{msg_id}/send")
-async def send_custom_embed(msg_id: int, body: dict, db=Depends(get_db)):
+async def send_custom_embed(msg_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Gửi embed lên Discord channel. Body: { channel_id: str }"""
-    r = db.get(CustomEmbedMessage, msg_id)
+    r = db.execute(select(CustomEmbedMessage).where(CustomEmbedMessage.id == msg_id, CustomEmbedMessage.guild_id == guild_id)).scalars().first()
     if not r:
         raise HTTPException(status_code=404, detail="Not found")
 
@@ -355,9 +356,9 @@ async def send_custom_embed(msg_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.post("/embeds/custom/{msg_id}/update-message")
-async def update_discord_message(msg_id: int, db=Depends(get_db)):
+async def update_discord_message(msg_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Cập nhật tin nhắn Discord đã gửi với nội dung embed mới nhất trong DB."""
-    r = db.get(CustomEmbedMessage, msg_id)
+    r = db.execute(select(CustomEmbedMessage).where(CustomEmbedMessage.id == msg_id, CustomEmbedMessage.guild_id == guild_id)).scalars().first()
     if not r:
         raise HTTPException(status_code=404, detail="Not found")
     if not r.channel_id or not r.message_id:
@@ -398,7 +399,7 @@ async def update_discord_message(msg_id: int, db=Depends(get_db)):
 
 
 @router.post("/embeds/custom/load-link")
-async def load_from_link(body: dict, db=Depends(get_db)):
+async def load_from_link(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """
     Nhận Discord message link, parse channel_id + message_id,
     fetch message từ Discord, trả về embed data.
@@ -488,10 +489,10 @@ async def load_from_link(body: dict, db=Depends(get_db)):
 # ── Export / Import ───────────────────────────────────────────────────────────
 
 @router.get("/embeds/custom/{msg_id}/export")
-def export_custom_embed(msg_id: int, db=Depends(get_db)):
+def export_custom_embed(msg_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Trả về JSON export của message (Discohook-compatible format)."""
     from fastapi.responses import JSONResponse
-    r = db.get(CustomEmbedMessage, msg_id)
+    r = db.execute(select(CustomEmbedMessage).where(CustomEmbedMessage.id == msg_id, CustomEmbedMessage.guild_id == guild_id)).scalars().first()
     if not r:
         raise HTTPException(status_code=404, detail="Not found")
     data = _row_to_dict(r)
@@ -514,10 +515,11 @@ def export_custom_embed(msg_id: int, db=Depends(get_db)):
 
 
 @router.post("/embeds/custom/import")
-def import_custom_embed(body: dict, db=Depends(get_db)):
+def import_custom_embed(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Import message từ JSON body (Discohook-compatible). Tạo record mới."""
     name = body.get("name") or "Imported Message"
     r = CustomEmbedMessage(
+        guild_id=guild_id,
         name=name,
         content=body.get("content") or "",
         webhook_username=body.get("webhook_username") or "",

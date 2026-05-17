@@ -41,12 +41,12 @@ def list_users(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
 
 
 @router.get("/users/{user_id}/orders")
-def get_user_orders(user_id: int, db=Depends(get_db)):
+def get_user_orders(user_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     user = db.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Not found")
     orders = db.execute(
-        select(Order).where(Order.user_id == user_id).order_by(Order.created_at.desc()).limit(20)
+        select(Order).where(Order.user_id == user_id, Order.guild_id == guild_id).order_by(Order.created_at.desc()).limit(20)
     ).scalars().all()
     result = []
     for o in orders:
@@ -96,7 +96,7 @@ def unban_user(user_id: int, db=Depends(get_db), guild_id: str = Depends(get_gui
 # ── Invite Tracking ───────────────────────────────────────────────────────────
 
 @router.get("/invites")
-def list_invites(db=Depends(get_db)):
+def list_invites(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     rows = db.execute(
         select(
             InviteTracking.inviter_id,
@@ -104,7 +104,7 @@ def list_invites(db=Depends(get_db)):
             func.sum(case((InviteTracking.left == False, 1), else_=0)).label("active"),
             func.sum(case((InviteTracking.left == True, 1), else_=0)).label("left"),
             func.sum(case((InviteTracking.is_fake == True, 1), else_=0)).label("fake"),
-        ).group_by(InviteTracking.inviter_id).order_by(func.count().desc())
+        ).where(InviteTracking.guild_id == guild_id).group_by(InviteTracking.inviter_id).order_by(func.count().desc())
     ).all()
     return [
         {
@@ -119,14 +119,14 @@ def list_invites(db=Depends(get_db)):
 
 
 @router.get("/invites/leaderboard")
-def invites_leaderboard(db=Depends(get_db)):
-    return list_invites(db=db)
+def invites_leaderboard(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    return list_invites(db=db, guild_id=guild_id)
 
 
 @router.get("/invites/log")
-def invites_log(db=Depends(get_db)):
+def invites_log(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     rows = db.execute(
-        select(InviteTracking).order_by(InviteTracking.joined_at.desc()).limit(100)
+        select(InviteTracking).where(InviteTracking.guild_id == guild_id).order_by(InviteTracking.joined_at.desc()).limit(100)
     ).scalars().all()
     return [
         {
@@ -145,9 +145,9 @@ def invites_log(db=Depends(get_db)):
 # ── Giveaways Manager ────────────────────────────────────────────────────────
 
 @router.get("/giveaways")
-def list_giveaways(db=Depends(get_db)):
+def list_giveaways(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     rows = db.execute(
-        select(Giveaway).order_by(Giveaway.created_at.desc()).limit(50)
+        select(Giveaway).where(Giveaway.guild_id == guild_id).order_by(Giveaway.created_at.desc()).limit(50)
     ).scalars().all()
     result = []
     for g in rows:
@@ -170,8 +170,8 @@ def list_giveaways(db=Depends(get_db)):
 
 
 @router.delete("/giveaways/{giveaway_id}")
-def delete_giveaway(giveaway_id: int, db=Depends(get_db)):
-    g = db.get(Giveaway, giveaway_id)
+def delete_giveaway(giveaway_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    g = db.execute(select(Giveaway).where(Giveaway.id == giveaway_id, Giveaway.guild_id == guild_id)).scalars().first()
     if not g:
         raise HTTPException(status_code=404, detail="Not found")
     db.delete(g)
@@ -182,9 +182,9 @@ def delete_giveaway(giveaway_id: int, db=Depends(get_db)):
 # ── Warnings ──────────────────────────────────────────────────────────────────
 
 @router.get("/warnings")
-def list_warnings(db=Depends(get_db)):
+def list_warnings(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     rows = db.execute(
-        select(Warning).order_by(Warning.created_at.desc()).limit(200)
+        select(Warning).where(Warning.guild_id == guild_id).order_by(Warning.created_at.desc()).limit(200)
     ).scalars().all()
     return [
         {
@@ -197,8 +197,8 @@ def list_warnings(db=Depends(get_db)):
 
 
 @router.delete("/warnings/{warning_id}")
-def delete_warning(warning_id: int, db=Depends(get_db)):
-    w = db.get(Warning, warning_id)
+def delete_warning(warning_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    w = db.execute(select(Warning).where(Warning.id == warning_id, Warning.guild_id == guild_id)).scalars().first()
     if not w:
         raise HTTPException(status_code=404, detail="Not found")
     db.delete(w)
@@ -209,9 +209,9 @@ def delete_warning(warning_id: int, db=Depends(get_db)):
 # ── Feedback ──────────────────────────────────────────────────────────────────
 
 @router.get("/feedback")
-def list_feedback(db=Depends(get_db)):
+def list_feedback(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     rows = db.execute(
-        select(Feedback).order_by(Feedback.created_at.desc()).limit(200)
+        select(Feedback).where(Feedback.guild_id == guild_id).order_by(Feedback.created_at.desc()).limit(200)
     ).scalars().all()
     result = []
     for r in rows:
@@ -232,8 +232,8 @@ def list_feedback(db=Depends(get_db)):
 
 
 @router.delete("/feedback/{feedback_id}")
-async def delete_feedback(feedback_id: int, db=Depends(get_db)):
-    fb = db.get(Feedback, feedback_id)
+async def delete_feedback(feedback_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    fb = db.execute(select(Feedback).where(Feedback.id == feedback_id, Feedback.guild_id == guild_id)).scalars().first()
     if not fb:
         raise HTTPException(status_code=404, detail="Not found")
     if fb.discord_message_id:
@@ -261,8 +261,8 @@ async def delete_feedback(feedback_id: int, db=Depends(get_db)):
 # ── Sticky Messages ──────────────────────────────────────────────────────────
 
 @router.get("/sticky")
-def list_stickies(db=Depends(get_db)):
-    stickies = db.execute(select(StickyMessage).order_by(StickyMessage.created_at.desc())).scalars().all()
+def list_stickies(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    stickies = db.execute(select(StickyMessage).where(StickyMessage.guild_id == guild_id).order_by(StickyMessage.created_at.desc())).scalars().all()
     out = []
     for s in stickies:
         out.append({
@@ -329,8 +329,8 @@ def create_sticky(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gu
 
 
 @router.put("/sticky/{sticky_id}")
-def update_sticky(sticky_id: int, body: dict, db=Depends(get_db)):
-    sticky = db.get(StickyMessage, sticky_id)
+def update_sticky(sticky_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    sticky = db.execute(select(StickyMessage).where(StickyMessage.id == sticky_id, StickyMessage.guild_id == guild_id)).scalars().first()
     if not sticky:
         raise HTTPException(status_code=404, detail="Sticky not found")
     for field in ["content", "embed_enabled", "embed_title", "embed_description",
@@ -343,8 +343,8 @@ def update_sticky(sticky_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.delete("/sticky/{sticky_id}")
-def delete_sticky(sticky_id: int, db=Depends(get_db)):
-    sticky = db.get(StickyMessage, sticky_id)
+def delete_sticky(sticky_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    sticky = db.execute(select(StickyMessage).where(StickyMessage.id == sticky_id, StickyMessage.guild_id == guild_id)).scalars().first()
     if not sticky:
         raise HTTPException(status_code=404, detail="Sticky not found")
     try:
@@ -368,8 +368,8 @@ def delete_sticky(sticky_id: int, db=Depends(get_db)):
 
 
 @router.post("/sticky/{sticky_id}/resend")
-def resend_sticky(sticky_id: int, db=Depends(get_db)):
-    sticky = db.get(StickyMessage, sticky_id)
+def resend_sticky(sticky_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    sticky = db.execute(select(StickyMessage).where(StickyMessage.id == sticky_id, StickyMessage.guild_id == guild_id)).scalars().first()
     if not sticky:
         raise HTTPException(status_code=404, detail="Sticky not found")
     try:
@@ -387,8 +387,8 @@ def resend_sticky(sticky_id: int, db=Depends(get_db)):
 
 
 @router.get("/sticky/stats")
-def sticky_stats(db=Depends(get_db)):
-    stickies = db.execute(select(StickyMessage)).scalars().all()
+def sticky_stats(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    stickies = db.execute(select(StickyMessage).where(StickyMessage.guild_id == guild_id)).scalars().all()
     return {
         "total": len(stickies),
         "active": sum(1 for s in stickies if s.is_enabled),

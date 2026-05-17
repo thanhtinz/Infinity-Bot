@@ -61,8 +61,8 @@ def create_reaction_role(body: dict, db=Depends(get_db), guild_id: str = Depends
 
 
 @router.put("/reaction-roles/{panel_id}")
-def update_reaction_role(panel_id: int, body: dict, db=Depends(get_db)):
-    panel = db.get(ReactionRole, panel_id)
+def update_reaction_role(panel_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    panel = db.execute(select(ReactionRole).where(ReactionRole.id == panel_id, ReactionRole.guild_id == guild_id)).scalars().first()
     if not panel:
         raise HTTPException(status_code=404, detail="Panel not found")
 
@@ -75,8 +75,8 @@ def update_reaction_role(panel_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.delete("/reaction-roles/{panel_id}")
-def delete_reaction_role(panel_id: int, db=Depends(get_db)):
-    panel = db.get(ReactionRole, panel_id)
+def delete_reaction_role(panel_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    panel = db.execute(select(ReactionRole).where(ReactionRole.id == panel_id, ReactionRole.guild_id == guild_id)).scalars().first()
     if not panel:
         raise HTTPException(status_code=404, detail="Panel not found")
 
@@ -102,9 +102,9 @@ def delete_reaction_role(panel_id: int, db=Depends(get_db)):
 
 
 @router.post("/reaction-roles/{panel_id}/send")
-def send_reaction_role_panel(panel_id: int, body: dict, db=Depends(get_db)):
+def send_reaction_role_panel(panel_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Send the reaction role panel embed to a channel and add reactions."""
-    panel = db.get(ReactionRole, panel_id)
+    panel = db.execute(select(ReactionRole).where(ReactionRole.id == panel_id, ReactionRole.guild_id == guild_id)).scalars().first()
     if not panel:
         raise HTTPException(status_code=404, detail="Panel not found")
 

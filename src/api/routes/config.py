@@ -381,6 +381,9 @@ def update_config(config_in: SystemConfigBase, request: Request, db=Depends(get_
                 setattr(config, key, value)
     db.commit()
     db.refresh(config)
+    # Invalidate language cache if language might have changed
+    from src.bot.i18n import invalidate_lang_cache
+    invalidate_lang_cache(config.guild_id)
     return SystemConfigSafe(
         id=config.id,
         bot_status=config.bot_status or "offline",

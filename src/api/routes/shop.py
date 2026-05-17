@@ -107,8 +107,8 @@ async def create_product(product_in: ProductBase, db=Depends(get_db), guild_id: 
 
 
 @router.put("/products/{product_id}", response_model=ProductResponse)
-async def update_product(product_id: int, product_in: ProductBase, db=Depends(get_db)):
-    result = db.execute(select(Product).where(Product.id == product_id))
+async def update_product(product_id: int, product_in: ProductBase, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    result = db.execute(select(Product).where(Product.id == product_id, Product.guild_id == guild_id))
     product = result.scalars().first()
     if not product:
         raise HTTPException(status_code=404, detail="Sản phẩm không tồn tại")
@@ -121,8 +121,8 @@ async def update_product(product_id: int, product_in: ProductBase, db=Depends(ge
 
 
 @router.delete("/products/{product_id}")
-async def delete_product(product_id: int, db=Depends(get_db)):
-    result = db.execute(select(Product).where(Product.id == product_id))
+async def delete_product(product_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    result = db.execute(select(Product).where(Product.id == product_id, Product.guild_id == guild_id))
     product = result.scalars().first()
     if not product:
         raise HTTPException(status_code=404, detail="Sản phẩm không tồn tại")
@@ -203,7 +203,7 @@ def get_orders(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
 
 
 @router.post("/orders")
-def create_order(body: dict, db=Depends(get_db)):
+def create_order(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Tạo đơn hàng thủ công từ Discord UID. Hỗ trợ custom product."""
     discord_uid = str(body.get("discord_uid", "")).strip()
     product_id = body.get("product_id")
@@ -228,6 +228,7 @@ def create_order(body: dict, db=Depends(get_db)):
         product_id = None
 
     order = Order(
+        guild_id=guild_id,
         user_id=user.id,
         product_id=product_id,
         quantity=body.get("quantity", 1),
@@ -333,8 +334,8 @@ def create_order(body: dict, db=Depends(get_db)):
 
 
 @router.put("/orders/{order_id}/status")
-def update_order_status(order_id: int, body: dict, db=Depends(get_db)):
-    result = db.execute(select(Order).where(Order.id == order_id))
+def update_order_status(order_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    result = db.execute(select(Order).where(Order.id == order_id, Order.guild_id == guild_id))
     order = result.scalars().first()
     if not order:
         raise HTTPException(status_code=404, detail="Đơn hàng không tồn tại")
@@ -348,10 +349,10 @@ def update_order_status(order_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.post("/orders/{order_id}/deliver")
-async def deliver_order(order_id: int, body: dict, db=Depends(get_db)):
+async def deliver_order(order_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     result = db.execute(
         select(Order).options(joinedload(Order.user), joinedload(Order.product))
-        .where(Order.id == order_id)
+        .where(Order.id == order_id, Order.guild_id == guild_id)
     )
     order = result.unique().scalars().first()
     if not order:
@@ -449,8 +450,8 @@ def create_coupon(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gu
 
 
 @router.put("/coupons/{coupon_id}")
-def update_coupon(coupon_id: int, body: dict, db=Depends(get_db)):
-    coupon = db.execute(select(Coupon).where(Coupon.id == coupon_id)).scalars().first()
+def update_coupon(coupon_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    coupon = db.execute(select(Coupon).where(Coupon.id == coupon_id, Coupon.guild_id == guild_id)).scalars().first()
     if not coupon:
         raise HTTPException(status_code=404, detail="Không tìm thấy coupon")
     for field in ("discount_percent", "discount_amount", "max_uses", "is_public"):
@@ -464,8 +465,8 @@ def update_coupon(coupon_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.delete("/coupons/{coupon_id}")
-def delete_coupon(coupon_id: int, db=Depends(get_db)):
-    coupon = db.execute(select(Coupon).where(Coupon.id == coupon_id)).scalars().first()
+def delete_coupon(coupon_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    coupon = db.execute(select(Coupon).where(Coupon.id == coupon_id, Coupon.guild_id == guild_id)).scalars().first()
     if not coupon:
         raise HTTPException(status_code=404, detail="Không tìm thấy coupon")
     db.delete(coupon)
@@ -476,10 +477,10 @@ def delete_coupon(coupon_id: int, db=Depends(get_db)):
 # ── Stats / Dashboard ────────────────────────────────────────────────────────
 
 @router.get("/stats")
-def get_stats(db=Depends(get_db)):
+def get_stats(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     since = datetime.datetime.utcnow() - datetime.timedelta(days=14)
     orders = db.execute(
-        select(Order).where(Order.created_at >= since).order_by(Order.created_at)
+        select(Order).where(Order.guild_id == guild_id, Order.created_at >= since).order_by(Order.created_at)
     ).scalars().all()
 
     days: dict[str, dict] = {}
@@ -494,10 +495,10 @@ def get_stats(db=Depends(get_db)):
             if o.status == "PAID":
                 days[d]["revenue"] += float(o.total_price)
 
-    all_orders = db.execute(select(Order)).scalars().all()
+    all_orders = db.execute(select(Order).where(Order.guild_id == guild_id)).scalars().all()
     total_revenue = sum(float(o.total_price) for o in all_orders if o.status == "PAID")
-    total_users = db.execute(select(func.count(User.id))).scalar() or 0
-    total_products = db.execute(select(func.count(Product.id))).scalar() or 0
+    total_users = db.execute(select(func.count(User.id)).where(User.guild_id == guild_id)).scalar() or 0
+    total_products = db.execute(select(func.count(Product.id)).where(Product.guild_id == guild_id)).scalar() or 0
 
     return {
         "chart": list(days.values()),
@@ -513,11 +514,12 @@ def get_stats(db=Depends(get_db)):
 def get_leaderboard(
     loai: str = "chi_tieu",
     time: str = "all",
-    db=Depends(get_db)
+    db=Depends(get_db),
+    guild_id: str = Depends(get_guild_id),
 ):
     from src.models.models import User as UserM
     now = datetime.datetime.utcnow()
-    sys_cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    sys_cfg = db.execute(select(SystemConfig).where(SystemConfig.guild_id == guild_id)).scalars().first()
     shop_reset_at = sys_cfg.shop_leaderboard_reset_at if sys_cfg else None
 
     since_map = {
@@ -538,7 +540,7 @@ def get_leaderboard(
         Order.user_id,
         func.count(Order.id).label("don_count"),
         func.sum(Order.total_price).label("total_spent"),
-    ).where(Order.status == "PAID")
+    ).where(Order.status == "PAID", Order.guild_id == guild_id)
     if since:
         query = query.where(Order.created_at >= since)
     query = query.group_by(Order.user_id)
@@ -565,8 +567,8 @@ def get_leaderboard(
 
 
 @router.post("/leaderboard/reset")
-def reset_shop_leaderboard(db=Depends(get_db)):
-    sys_cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
+def reset_shop_leaderboard(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    sys_cfg = db.execute(select(SystemConfig).where(SystemConfig.guild_id == guild_id)).scalars().first()
     if not sys_cfg:
         raise HTTPException(status_code=404, detail="Chưa cấu hình bot")
     sys_cfg.shop_leaderboard_reset_at = datetime.datetime.utcnow()
@@ -748,8 +750,8 @@ def create_milestone(body: dict, db=Depends(get_db), guild_id: str = Depends(get
 
 
 @router.put("/milestones/{milestone_id}")
-def update_milestone(milestone_id: int, body: dict, db=Depends(get_db)):
-    m = db.execute(select(SpendingMilestone).where(SpendingMilestone.id == milestone_id)).scalars().first()
+def update_milestone(milestone_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    m = db.execute(select(SpendingMilestone).where(SpendingMilestone.id == milestone_id, SpendingMilestone.guild_id == guild_id)).scalars().first()
     if not m:
         raise HTTPException(404, "Milestone not found")
     for k in ("name", "threshold", "role_id", "emoji", "active"):
@@ -760,8 +762,8 @@ def update_milestone(milestone_id: int, body: dict, db=Depends(get_db)):
 
 
 @router.delete("/milestones/{milestone_id}")
-def delete_milestone(milestone_id: int, db=Depends(get_db)):
-    m = db.execute(select(SpendingMilestone).where(SpendingMilestone.id == milestone_id)).scalars().first()
+def delete_milestone(milestone_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    m = db.execute(select(SpendingMilestone).where(SpendingMilestone.id == milestone_id, SpendingMilestone.guild_id == guild_id)).scalars().first()
     if not m:
         raise HTTPException(404, "Milestone not found")
     db.delete(m)
