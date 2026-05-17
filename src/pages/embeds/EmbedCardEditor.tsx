@@ -73,13 +73,13 @@ export function EmbedCardEditor({
                         <Label className="text-xs text-muted-foreground">{t("embed_authorName")} <span className="text-[10px]">{emb.author.length}/256</span></Label>
                         <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                           <Input className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm" placeholder={t("embed_authorName")} maxLength={256}
-                            value={emb.author} onChange={(e) => onUpdateEmbed(idx, { author: e.target.value })} />
+                            value={emb.author ?? ""} onChange={(e) => onUpdateEmbed(idx, { author: e.target.value })} />
                           <EmojiPicker onSelect={(em) => onUpdateEmbed(idx, { author: emb.author + em })} />
                         </div>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground">{t("embed_iconUrl")}</Label>
-                        <Input className="text-sm" placeholder="https://..." value={emb.author_icon_url} onChange={(e) => onUpdateEmbed(idx, { author_icon_url: e.target.value })} />
+                        <Input className="text-sm" placeholder="https://..." value={emb.author_icon_url ?? ""} onChange={(e) => onUpdateEmbed(idx, { author_icon_url: e.target.value })} />
                       </div>
                     </div>
                   )}
@@ -94,7 +94,7 @@ export function EmbedCardEditor({
                     </div>
                     <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Input className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm" placeholder={t("embed_titleEmbedPlaceholder")} maxLength={256}
-                        value={emb.title} onChange={(e) => onUpdateEmbed(idx, { title: e.target.value })} />
+                        value={emb.title ?? ""} onChange={(e) => onUpdateEmbed(idx, { title: e.target.value })} />
                       <EmojiPicker onSelect={(em) => onUpdateEmbed(idx, { title: emb.title + em })} />
                     </div>
                   </div>
@@ -105,16 +105,16 @@ export function EmbedCardEditor({
                     </div>
                     <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                       <Textarea className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 text-sm resize-y" placeholder={t("embed_descriptionPlaceholder")} rows={4} maxLength={4096}
-                        value={emb.description} onChange={(e) => onUpdateEmbed(idx, { description: e.target.value })} />
+                        value={emb.description ?? ""} onChange={(e) => onUpdateEmbed(idx, { description: e.target.value })} />
                       <EmojiPicker onSelect={(em) => onUpdateEmbed(idx, { description: emb.description + em })} />
                     </div>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">{t("embed_colors")}</Label>
                     <div className="flex items-center gap-2">
-                      <input type="color" value={emb.color} onChange={(e) => onUpdateEmbed(idx, { color: e.target.value })}
+                      <input type="color" value={emb.color ?? ""} onChange={(e) => onUpdateEmbed(idx, { color: e.target.value })}
                         className="h-8 w-8 rounded cursor-pointer border-0 p-0" />
-                      <Input value={emb.color} onChange={(e) => onUpdateEmbed(idx, { color: e.target.value })}
+                      <Input value={emb.color ?? ""} onChange={(e) => onUpdateEmbed(idx, { color: e.target.value })}
                         className="w-28 font-mono text-xs" maxLength={7} />
                     </div>
                   </div>
@@ -131,11 +131,11 @@ export function EmbedCardEditor({
                     <div className="px-3 pb-3 space-y-2">
                       <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground">{t("embed_thumbnailUrl")}</Label>
-                        <Input className="text-sm" placeholder="https://..." value={emb.thumbnail_url} onChange={(e) => onUpdateEmbed(idx, { thumbnail_url: e.target.value })} />
+                        <Input className="text-sm" placeholder="https://..." value={emb.thumbnail_url ?? ""} onChange={(e) => onUpdateEmbed(idx, { thumbnail_url: e.target.value })} />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground">{t("embed_imageUrlLarge")}</Label>
-                        <Input className="text-sm" placeholder="https://..." value={emb.image_url} onChange={(e) => onUpdateEmbed(idx, { image_url: e.target.value })} />
+                        <Input className="text-sm" placeholder="https://..." value={emb.image_url ?? ""} onChange={(e) => onUpdateEmbed(idx, { image_url: e.target.value })} />
                       </div>
                     </div>
                   )}
@@ -149,7 +149,7 @@ export function EmbedCardEditor({
                   </div>
                   <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm" placeholder={t("embed_footerContent")} maxLength={2048}
-                      value={emb.footer} onChange={(e) => onUpdateEmbed(idx, { footer: e.target.value })} />
+                      value={emb.footer ?? ""} onChange={(e) => onUpdateEmbed(idx, { footer: e.target.value })} />
                     <EmojiPicker onSelect={(em) => onUpdateEmbed(idx, { footer: emb.footer + em })} />
                   </div>
                 </div>
@@ -173,12 +173,12 @@ export function EmbedCardEditor({
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                              <Input placeholder={t("embed_nameFieldPlaceholder")} value={field.name} onChange={(e) => onUpdateField(idx, fi, "name", e.target.value)}
+                              <Input placeholder={t("embed_nameFieldPlaceholder")} value={field.name ?? ""} onChange={(e) => onUpdateField(idx, fi, "name", e.target.value)}
                                 className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
                               <EmojiPicker onSelect={(em) => onUpdateField(idx, fi, "name", field.name + em)} />
                             </div>
                             <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                              <Input placeholder={t("embed_value")} value={field.value} onChange={(e) => onUpdateField(idx, fi, "value", e.target.value)}
+                              <Input placeholder={t("embed_value")} value={field.value ?? ""} onChange={(e) => onUpdateField(idx, fi, "value", e.target.value)}
                                 className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
                               <EmojiPicker onSelect={(em) => onUpdateField(idx, fi, "value", field.value + em)} />
                             </div>

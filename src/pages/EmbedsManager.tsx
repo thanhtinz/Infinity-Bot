@@ -152,16 +152,16 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
     const saved = savedMap.get(key);
     if (saved) {
       setForm({
-        name: saved.name,
+        name: saved.name ?? "",
         event_type: saved.event_type,
-        title: saved.title,
-        description: saved.description,
-        color: saved.color,
-        author: saved.author,
+        title: saved.title ?? "",
+        description: saved.description ?? "",
+        color: saved.color ?? "#5865F2",
+        author: saved.author ?? "",
         author_icon_url: saved.author_icon_url ?? "",
-        footer: saved.footer,
-        thumbnail_url: saved.thumbnail_url,
-        image_url: saved.image_url,
+        footer: saved.footer ?? "",
+        thumbnail_url: saved.thumbnail_url ?? "",
+        image_url: saved.image_url ?? "",
         fields: saved.fields.map((f) => ({ ...f })),
         enabled: saved.enabled,
         response_mode: saved.response_mode || "embed",
@@ -370,7 +370,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                   </div>
                 </div>
                 <Textarea
-                  value={form.text_template}
+                  value={form.text_template ?? ""}
                   onChange={(e) => setForm((f) => ({ ...f, text_template: e.target.value }))}
                   placeholder="Message content text with {variable}...&#10;&#10;E.g. **Order #{order.id}** by {user.mention} has been created!"
                   rows={8}
@@ -434,7 +434,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                     <Input
                       className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       placeholder={t("embeds_title_field") + "..."}
-                      value={form.title}
+                      value={form.title ?? ""}
                       onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                     />
                     <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, title: f.title + em }))} />
@@ -449,7 +449,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                   <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Textarea
                       placeholder={t("embeds_description") + "..."}
-                      value={form.description}
+                      value={form.description ?? ""}
                       onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                       rows={5}
                       className="resize-y flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -485,7 +485,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                     <Input
                       className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       placeholder={t("embeds_footer")}
-                      value={form.footer}
+                      value={form.footer ?? ""}
                       onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
                     />
                     <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, footer: f.footer + em }))} />
@@ -515,7 +515,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                     <Input
                       className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       placeholder={t("authorName")}
-                      value={form.author}
+                      value={form.author ?? ""}
                       onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
                     />
                     <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, author: f.author + em }))} />
@@ -525,7 +525,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                   <Label className="text-xs text-muted-foreground">{t("authorIconUrl")}</Label>
                   <Input
                     placeholder="https://example.com/icon.png"
-                    value={form.author_icon_url}
+                    value={form.author_icon_url ?? ""}
                     onChange={(e) => setForm((f) => ({ ...f, author_icon_url: e.target.value }))}
                   />
                 </div>
@@ -551,7 +551,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                   <Label className="text-xs text-muted-foreground">{t("thumbnailUrl")}</Label>
                   <Input
                     placeholder="https://example.com/thumb.png"
-                    value={form.thumbnail_url}
+                    value={form.thumbnail_url ?? ""}
                     onChange={(e) => setForm((f) => ({ ...f, thumbnail_url: e.target.value }))}
                   />
                 </div>
@@ -559,7 +559,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                   <Label className="text-xs text-muted-foreground">{t("imageUrl")}</Label>
                   <Input
                     placeholder="https://example.com/image.png"
-                    value={form.image_url}
+                    value={form.image_url ?? ""}
                     onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
                   />
                 </div>

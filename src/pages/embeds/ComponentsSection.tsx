@@ -103,7 +103,7 @@ export function ComponentsSection({ components, onChange }: ComponentsSectionPro
                 <div className="flex gap-2">
                   <div className="flex-1 space-y-1">
                     <Label className="text-[10px] text-muted-foreground">{t("embed_label")}</Label>
-                    <Input className="h-7 text-xs" placeholder={t("embed_buttonLabelPlaceholder")} value={btn.label}
+                    <Input className="h-7 text-xs" placeholder={t("embed_buttonLabelPlaceholder")} value={btn.label ?? ""}
                       onChange={(e) => {
                         updateRows(rows => rows.map((r, ri) => ri === rowIdx ? {
                           ...r, components: r.components.map((b, bi) => bi === btnIdx ? { ...b, label: e.target.value } : b),

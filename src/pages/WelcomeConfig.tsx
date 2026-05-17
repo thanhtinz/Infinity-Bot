@@ -261,7 +261,7 @@ function EmbedEditor({
             style={{ backgroundColor: form.color || "#5865F2" }}
           />
           <Input
-            value={form.color}
+            value={form.color ?? "#5865F2"}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange((prev) => ({ ...prev, color: e.target.value }))
             }
@@ -277,7 +277,7 @@ function EmbedEditor({
         <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
           <Input
             className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            value={form.title}
+            value={form.title ?? ""}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange((prev) => ({ ...prev, title: e.target.value }))
             }
@@ -292,7 +292,7 @@ function EmbedEditor({
         <Label>{t("welcome_descEmbed")}</Label>
         <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
           <Textarea
-            value={form.description}
+            value={form.description ?? ""}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
               onChange((prev) => ({ ...prev, description: e.target.value }))
             }
@@ -313,7 +313,7 @@ function EmbedEditor({
         <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
           <Input
             className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            value={form.footer}
+            value={form.footer ?? ""}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange((prev) => ({ ...prev, footer: e.target.value }))
             }
@@ -474,10 +474,10 @@ export function WelcomeConfig() {
     if (welcomeSaved) {
       setWelcomeEmbedForm({
         existingId: welcomeSaved.id,
-        title: welcomeSaved.title,
-        description: welcomeSaved.description,
-        color: welcomeSaved.color,
-        footer: welcomeSaved.footer,
+        title: welcomeSaved.title ?? "",
+        description: welcomeSaved.description ?? "",
+        color: welcomeSaved.color ?? "#5865F2",
+        footer: welcomeSaved.footer ?? "",
         fields: welcomeSaved.fields.map((f) => ({ ...f })),
       });
     }
@@ -488,10 +488,10 @@ export function WelcomeConfig() {
     if (goodbyeSaved) {
       setGoodbyeEmbedForm({
         existingId: goodbyeSaved.id,
-        title: goodbyeSaved.title,
-        description: goodbyeSaved.description,
-        color: goodbyeSaved.color,
-        footer: goodbyeSaved.footer,
+        title: goodbyeSaved.title ?? "",
+        description: goodbyeSaved.description ?? "",
+        color: goodbyeSaved.color ?? "#ED4245",
+        footer: goodbyeSaved.footer ?? "",
         fields: goodbyeSaved.fields.map((f) => ({ ...f })),
       });
     }

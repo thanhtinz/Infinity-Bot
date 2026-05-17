@@ -42,7 +42,7 @@ export function MessageContentBlock({
           </div>
           <Textarea
             placeholder={t("embed_contentPlaceholder")}
-            value={form.content}
+            value={form.content ?? ""}
             onChange={(e) => onFormChange((f) => ({ ...f, content: e.target.value }))}
             rows={3}
             maxLength={2000}
@@ -59,7 +59,7 @@ export function MessageContentBlock({
           </button>
           {threadOpen && (
             <div className="px-4 pb-4">
-              <Input placeholder={t("embed_nameThreadPlaceholder")} value={form.thread_name}
+              <Input placeholder={t("embed_nameThreadPlaceholder")} value={form.thread_name ?? ""}
                 onChange={(e) => onFormChange((f) => ({ ...f, thread_name: e.target.value }))} className="text-sm" />
             </div>
           )}
@@ -76,12 +76,12 @@ export function MessageContentBlock({
             <div className="px-4 pb-4 space-y-2">
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">{t("embed_webhookUsername")}</Label>
-                <Input placeholder={t("embed_displayNamePlaceholder")} value={form.webhook_username}
+                <Input placeholder={t("embed_displayNamePlaceholder")} value={form.webhook_username ?? ""}
                   onChange={(e) => onFormChange((f) => ({ ...f, webhook_username: e.target.value }))} className="text-sm" />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">{t("embed_webhookAvatarUrl")}</Label>
-                <Input placeholder="https://..." value={form.webhook_avatar_url}
+                <Input placeholder="https://..." value={form.webhook_avatar_url ?? ""}
                   onChange={(e) => onFormChange((f) => ({ ...f, webhook_avatar_url: e.target.value }))} className="text-sm" />
               </div>
             </div>

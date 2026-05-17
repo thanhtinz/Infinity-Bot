@@ -56,28 +56,28 @@ export function GroupEditDialog({
         <div className="mt-6 space-y-4">
           <div className="space-y-1.5">
             <Label>{t("ticketPanels_groupName")} <span className="text-destructive">*</span></Label>
-            <Input value={groupForm.name} onChange={e => setGroupForm(f => ({...f, name: e.target.value}))} placeholder={t("ticketPanels_groupNamePlaceholder")} />
+            <Input value={groupForm.name ?? ""} onChange={e => setGroupForm(f => ({...f, name: e.target.value}))} placeholder={t("ticketPanels_groupNamePlaceholder")} />
           </div>
           <div className="space-y-1.5">
             <Label>{t("ticketPanels_sendChannel")}</Label>
-            <ChannelSelect value={groupForm.channel_id} onChange={v => setGroupForm(f => ({...f, channel_id: v === "__clear__" ? "" : v}))} placeholder={t("selectChannel")} filter="text" />
+            <ChannelSelect value={groupForm.channel_id ?? ""} onChange={v => setGroupForm(f => ({...f, channel_id: v === "__clear__" ? "" : v}))} placeholder={t("selectChannel")} filter="text" />
           </div>
 
           <Separator />
 
           <div className="space-y-1.5">
             <Label>{t("ticketPanels_titleEmbed")}</Label>
-            <Input value={groupForm.title} onChange={e => setGroupForm(f => ({...f, title: e.target.value}))} placeholder="Support" />
+            <Input value={groupForm.title ?? ""} onChange={e => setGroupForm(f => ({...f, title: e.target.value}))} placeholder="Support" />
           </div>
           <div className="space-y-1.5">
             <Label>{t("description")}</Label>
-            <Textarea value={groupForm.description} onChange={e => setGroupForm(f => ({...f, description: e.target.value}))} placeholder={t("ticketPanels_descEmbedPlaceholder")} rows={3} />
+            <Textarea value={groupForm.description ?? ""} onChange={e => setGroupForm(f => ({...f, description: e.target.value}))} placeholder={t("ticketPanels_descEmbedPlaceholder")} rows={3} />
           </div>
           <div className="space-y-1.5">
             <Label>{t("color")}</Label>
             <div className="flex gap-2 items-center">
-              <input type="color" value={groupForm.color} onChange={e => setGroupForm(f => ({...f, color: e.target.value}))} className="h-9 w-12 rounded border cursor-pointer shrink-0" />
-              <Input value={groupForm.color} onChange={e => setGroupForm(f => ({...f, color: e.target.value}))} className="w-28 font-mono" />
+              <input type="color" value={groupForm.color ?? ""} onChange={e => setGroupForm(f => ({...f, color: e.target.value}))} className="h-9 w-12 rounded border cursor-pointer shrink-0" />
+              <Input value={groupForm.color ?? ""} onChange={e => setGroupForm(f => ({...f, color: e.target.value}))} className="w-28 font-mono" />
             </div>
           </div>
 
