@@ -1,3 +1,4 @@
+import { useT } from "@/i18n";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -73,6 +74,7 @@ function formatDate(iso: string) {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function TicketFeedback() {
+  const { t } = useT();
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [search, setSearch] = useState("");
@@ -154,15 +156,15 @@ export function TicketFeedback() {
     return (
       <div className="space-y-6 p-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Ticket Feedback</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("ticketFeedback_title")}</h1>
           <p className="text-muted-foreground text-sm">
-            User ratings after closing a ticket
+            {t("ticketFeedback_userRatings")}
           </p>
         </div>
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <MessageCircleHeart className="h-12 w-12 mb-3 opacity-40" />
-          <p className="text-lg font-medium">No ratings yet</p>
-          <p className="text-sm">Ratings will appear when users submit feedback after closing a ticket</p>
+          <p className="text-lg font-medium">{t("ticketFeedback_noRatingsYet")}</p>
+          <p className="text-sm">{t("ticketFeedback_ratingsAppear")}</p>
         </div>
       </div>
     );
@@ -173,9 +175,9 @@ export function TicketFeedback() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Ticket Feedback</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("ticketFeedback_title")}</h1>
           <p className="text-muted-foreground text-sm">
-            User ratings after closing a ticket
+            {t("ticketFeedback_userRatings")}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -185,7 +187,7 @@ export function TicketFeedback() {
           <Badge variant="secondary" className="text-sm">
             {avgRating} / 5
           </Badge>
-          <Badge variant="outline">{total} ratings</Badge>
+          <Badge variant="outline">{total} {t("ticketFeedback_ratings")}</Badge>
         </div>
       </div>
 
@@ -193,25 +195,25 @@ export function TicketFeedback() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-4 pb-4">
-            <p className="text-xs text-muted-foreground">Total ratings</p>
+            <p className="text-xs text-muted-foreground">{t("ticketFeedback_totalRatings")}</p>
             <p className="text-2xl font-bold">{total}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4">
-            <p className="text-xs text-muted-foreground">Average score</p>
+            <p className="text-xs text-muted-foreground">{t("ticketFeedback_averageScore")}</p>
             <p className="text-2xl font-bold">{avgRating}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4">
-            <p className="text-xs text-muted-foreground">5 sao</p>
+            <p className="text-xs text-muted-foreground">{t("ticketFeedback_fiveStar")}</p>
             <p className="text-2xl font-bold text-yellow-500">{fiveStar}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4">
-            <p className="text-xs text-muted-foreground">1-2 sao</p>
+            <p className="text-xs text-muted-foreground">{t("ticketFeedback_lowStar")}</p>
             <p className="text-2xl font-bold text-red-500">{lowStar}</p>
           </CardContent>
         </Card>
@@ -220,7 +222,7 @@ export function TicketFeedback() {
       {/* Rating distribution */}
       <Card>
         <CardContent className="pt-4 pb-4 space-y-2">
-          <p className="text-sm font-medium mb-3">Rating distribution</p>
+          <p className="text-sm font-medium mb-3">{t("ticketFeedback_ratingDistribution")}</p>
           {[5, 4, 3, 2, 1].map((star) => {
             const count = byRating[String(star)] ?? 0;
             const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
@@ -245,7 +247,7 @@ export function TicketFeedback() {
       {/* Search */}
       <div className="flex items-center gap-2">
         <Input
-          placeholder="Search by Ticket ID, User ID, or comment..."
+          placeholder={t("ticketFeedback_searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
@@ -263,25 +265,25 @@ export function TicketFeedback() {
                   onClick={() => toggleSort("ticket_id")}
                 >
                   <span className="inline-flex items-center gap-1">
-                    Ticket ID <ArrowUpDown className="h-3 w-3" />
+                    {t("ticketFeedback_ticketId")} <ArrowUpDown className="h-3 w-3" />
                   </span>
                 </TableHead>
-                <TableHead>User ID</TableHead>
+                <TableHead>{t("ticketFeedback_userId")}</TableHead>
                 <TableHead
                   className="cursor-pointer select-none"
                   onClick={() => toggleSort("rating")}
                 >
                   <span className="inline-flex items-center gap-1">
-                    Rating <ArrowUpDown className="h-3 w-3" />
+                    {t("ticketFeedback_rating")} <ArrowUpDown className="h-3 w-3" />
                   </span>
                 </TableHead>
-                <TableHead>Comment</TableHead>
+                <TableHead>{t("ticketFeedback_comment")}</TableHead>
                 <TableHead
                   className="cursor-pointer select-none"
                   onClick={() => toggleSort("created_at")}
                 >
                   <span className="inline-flex items-center gap-1">
-                    Date <ArrowUpDown className="h-3 w-3" />
+                    {t("ticketFeedback_date")} <ArrowUpDown className="h-3 w-3" />
                   </span>
                 </TableHead>
               </TableRow>
@@ -305,7 +307,7 @@ export function TicketFeedback() {
               {sortedItems.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    No results found
+                    {t("ticketFeedback_noResults")}
                   </TableCell>
                 </TableRow>
               )}

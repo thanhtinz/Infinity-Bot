@@ -1,3 +1,4 @@
+import { useT } from "@/i18n";
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -69,27 +70,27 @@ interface LogStats {
 
 const CATEGORY_META: Record<
   string,
-  { label: string; icon: React.ElementType; color: string }
+  { labelKey: string; icon: React.ElementType; color: string }
 > = {
-  message: { label: "Messages", icon: MessageSquare, color: "text-blue-500" },
-  voice: { label: "Voice", icon: Mic, color: "text-green-500" },
-  member: { label: "Members", icon: Users, color: "text-purple-500" },
-  server: { label: "Server", icon: Server, color: "text-orange-500" },
+  message: { labelKey: "logViewer_messages", icon: MessageSquare, color: "text-blue-500" },
+  voice: { labelKey: "logViewer_voice", icon: Mic, color: "text-green-500" },
+  member: { labelKey: "logViewer_members", icon: Users, color: "text-purple-500" },
+  server: { labelKey: "logViewer_server", icon: Server, color: "text-orange-500" },
 };
 
-const EVENT_BADGE: Record<string, { label: string; variant: string }> = {
-  log_message_delete: { label: "Delete tin", variant: "destructive" },
-  log_message_edit: { label: "Edit tin", variant: "amber" },
-  log_message_bulk_delete: { label: "Bulk delete", variant: "destructive" },
-  log_voice_join: { label: "Voice join", variant: "green" },
-  log_voice_leave: { label: "Voice leave", variant: "gray" },
-  log_voice_move: { label: "Voice move", variant: "amber" },
-  log_member_join: { label: "Member join", variant: "green" },
-  log_member_leave: { label: "Member leave", variant: "gray" },
-  log_nickname_change: { label: "Nick change", variant: "amber" },
-  log_role_update: { label: "Role update", variant: "amber" },
-  log_channel_create: { label: "Channel create", variant: "green" },
-  log_channel_delete: { label: "Delete channel", variant: "destructive" },
+const EVENT_BADGE: Record<string, { labelKey: string; variant: string }> = {
+  log_message_delete: { labelKey: "logViewer_deleteMsg", variant: "destructive" },
+  log_message_edit: { labelKey: "logViewer_editMsg", variant: "amber" },
+  log_message_bulk_delete: { labelKey: "logViewer_bulkDelete", variant: "destructive" },
+  log_voice_join: { labelKey: "logViewer_voiceJoin", variant: "green" },
+  log_voice_leave: { labelKey: "logViewer_voiceLeave", variant: "gray" },
+  log_voice_move: { labelKey: "logViewer_voiceMove", variant: "amber" },
+  log_member_join: { labelKey: "logViewer_memberJoin", variant: "green" },
+  log_member_leave: { labelKey: "logViewer_memberLeave", variant: "gray" },
+  log_nickname_change: { labelKey: "logViewer_nickChange", variant: "amber" },
+  log_role_update: { labelKey: "logViewer_roleUpdate", variant: "amber" },
+  log_channel_create: { labelKey: "logViewer_channelCreate", variant: "green" },
+  log_channel_delete: { labelKey: "logViewer_channelDelete", variant: "destructive" },
 };
 
 const EVENT_ICON: Record<string, React.ElementType> = {
@@ -109,7 +110,7 @@ const EVENT_ICON: Record<string, React.ElementType> = {
 
 /* ───────── Helpers ───────── */
 
-function relativeTime(dateStr: string): string {
+function relativeTime(dateStr: string, t: (key: string) => string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
   const diff = Math.max(0, now - then);
@@ -118,14 +119,14 @@ function relativeTime(dateStr: string): string {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (seconds < 60) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 30) return `${days}d ago`;
+  if (seconds < 60) return t("logViewer_justNow");
+  if (minutes < 60) return `${minutes}${t("logViewer_minutesAgo")}`;
+  if (hours < 24) return `${hours}${t("logViewer_hoursAgo")}`;
+  if (days < 30) return `${days}${t("logViewer_daysAgo")}`;
   return new Date(dateStr).toLocaleDateString("vi-VN");
 }
 
-function BadgeForEvent({ eventType }: { eventType: string }) {
+function BadgeForEvent({ eventType, t }: { eventType: string; t: (key: string) => string }) {
   const meta = EVENT_BADGE[eventType];
   if (!meta) return <Badge variant="secondary">{eventType}</Badge>;
 
@@ -140,7 +141,7 @@ function BadgeForEvent({ eventType }: { eventType: string }) {
 
   return (
     <Badge className={cn("text-[10px] px-1.5 py-0 font-medium border", cls)}>
-      {meta.label}
+      {t(meta.labelKey)}
     </Badge>
   );
 }
@@ -148,6 +149,7 @@ function BadgeForEvent({ eventType }: { eventType: string }) {
 /* ───────── Component ───────── */
 
 export function LogViewer() {
+  const { t } = useT();
   const [category, setCategory] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -203,7 +205,7 @@ export function LogViewer() {
       {/* ── Header ── */}
       <div className="flex items-center gap-2">
         <ScrollText className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">Activity Log</h2>
+        <h2 className="text-2xl font-bold">{t("logViewer_title")}</h2>
       </div>
 
       {/* ── Stats Cards ── */}
@@ -214,7 +216,7 @@ export function LogViewer() {
               <ScrollText className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Total</p>
+              <p className="text-xs text-muted-foreground">{t("total")}</p>
               {statsLoading ? (
                 <Skeleton className="h-5 w-10" />
               ) : (
@@ -232,7 +234,7 @@ export function LogViewer() {
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{meta.label}</p>
+                  <p className="text-xs text-muted-foreground">{t(meta.labelKey)}</p>
                   {statsLoading ? (
                     <Skeleton className="h-5 w-10" />
                   ) : (
@@ -251,21 +253,21 @@ export function LogViewer() {
       <div className="flex flex-col sm:flex-row gap-3">
         <Select value={category} onValueChange={handleCategoryChange}>
           <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t("logViewer_category")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="message">Messages</SelectItem>
-            <SelectItem value="voice">Voice</SelectItem>
-            <SelectItem value="member">Members</SelectItem>
-            <SelectItem value="server">Server</SelectItem>
+            <SelectItem value="all">{t("all")}</SelectItem>
+            <SelectItem value="message">{t("logViewer_messages")}</SelectItem>
+            <SelectItem value="voice">{t("logViewer_voice")}</SelectItem>
+            <SelectItem value="member">{t("logViewer_members")}</SelectItem>
+            <SelectItem value="server">{t("logViewer_server")}</SelectItem>
           </SelectContent>
         </Select>
 
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search logs..."
+            placeholder={t("logViewer_searchLogs")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -296,9 +298,9 @@ export function LogViewer() {
         <Card>
           <CardContent className="py-16 flex flex-col items-center gap-3 text-muted-foreground">
             <Inbox className="h-10 w-10" />
-            <p className="text-sm font-medium">No logs yet</p>
+            <p className="text-sm font-medium">{t("logViewer_noLogsYet")}</p>
             <p className="text-xs">
-              Server activities will be recorded here.
+              {t("logViewer_serverActivities")}
             </p>
           </CardContent>
         </Card>
@@ -335,9 +337,9 @@ export function LogViewer() {
                         <span className="font-medium text-sm truncate max-w-[200px]">
                           {entry.actor_name}
                         </span>
-                        <BadgeForEvent eventType={entry.event_type} />
+                        <BadgeForEvent eventType={entry.event_type} t={t} />
                         <span className="text-xs text-muted-foreground ml-auto shrink-0">
-                          {relativeTime(entry.created_at)}
+                          {relativeTime(entry.created_at, t)}
                         </span>
                       </div>
 
@@ -357,7 +359,7 @@ export function LogViewer() {
                           {hasBefore && (
                             <div className="rounded-md bg-red-500/10 border border-red-500/20 px-3 py-2 text-xs whitespace-pre-wrap break-words font-mono overflow-x-auto text-red-400">
                               <span className="font-semibold text-red-500 mr-1.5">
-                                Previous:
+                                {t("logViewer_previous")}
                               </span>
                               {String(details.before)}
                             </div>
@@ -365,7 +367,7 @@ export function LogViewer() {
                           {hasAfter && (
                             <div className="rounded-md bg-green-500/10 border border-green-500/20 px-3 py-2 text-xs whitespace-pre-wrap break-words font-mono overflow-x-auto text-green-400">
                               <span className="font-semibold text-green-500 mr-1.5">
-                                Sau:
+                                {t("logViewer_after")}
                               </span>
                               {String(details.after)}
                             </div>
@@ -397,7 +399,7 @@ export function LogViewer() {
       {!entriesLoading && entries.length > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Page {page} / {totalPages}
+            {t("logViewer_page")} {page} / {totalPages}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -407,7 +409,7 @@ export function LogViewer() {
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
-              Previous
+              {t("previous")}
             </Button>
             <Button
               variant="outline"
@@ -415,7 +417,7 @@ export function LogViewer() {
               disabled={page >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
-              Sau
+              {t("next")}
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>

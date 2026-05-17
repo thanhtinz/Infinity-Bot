@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useT } from "@/i18n";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ interface WarningRow {
 }
 
 export function WarningsManager() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
@@ -36,9 +38,9 @@ export function WarningsManager() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["warnings"] });
       setDeleteTarget(null);
-      toast({ title: "Warning deleted" });
+      toast({ title: t("toast_warningDeleted") });
     },
-    onError: () => toast({ title: "Delete failed", variant: "destructive" }),
+    onError: () => toast({ title: t("error"), variant: "destructive" }),
   });
 
   const filtered = useMemo(() => {
@@ -60,10 +62,10 @@ export function WarningsManager() {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <ShieldAlert className="h-6 w-6 text-orange-500" />
-          Manage warnings
+          {t("warnings_title")}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Warnings are created by admins via the bot command <code className="bg-muted px-1 rounded text-xs">/warn</code>. Deleting here does not DM the user.
+          {t("warnings_title")} <code className="bg-muted px-1 rounded text-xs">/warn</code>. Deleting here does not DM the user.
         </p>
       </div>
 
@@ -76,7 +78,7 @@ export function WarningsManager() {
             </div>
             <div>
               <p className="text-2xl font-bold">{totalWarnings}</p>
-              <p className="text-xs text-muted-foreground">Total warnings</p>
+              <p className="text-xs text-muted-foreground">{t("warnings_total")}</p>
             </div>
           </CardContent>
         </Card>
@@ -87,7 +89,7 @@ export function WarningsManager() {
             </div>
             <div>
               <p className="text-2xl font-bold">{uniqueUsers}</p>
-              <p className="text-xs text-muted-foreground">Warned user</p>
+              <p className="text-xs text-muted-foreground">{t("warnings_warned")}</p>
             </div>
           </CardContent>
         </Card>
@@ -98,7 +100,7 @@ export function WarningsManager() {
             </div>
             <div>
               <p className="text-2xl font-bold">{uniqueMods}</p>
-              <p className="text-xs text-muted-foreground">Issued by mod</p>
+              <p className="text-xs text-muted-foreground">{t("warnings_mods")}</p>
             </div>
           </CardContent>
         </Card>
@@ -108,7 +110,7 @@ export function WarningsManager() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search by Discord ID or reason..."
+          placeholder={t("search")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -117,14 +119,14 @@ export function WarningsManager() {
 
       {/* ── Loading ── */}
       {isLoading && (
-        <div className="text-center py-12 text-muted-foreground">Loading...</div>
+        <div className="text-center py-12 text-muted-foreground">{t("loading")}</div>
       )}
 
       {/* ── Empty ── */}
       {!isLoading && filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <ShieldCheck className="h-12 w-12 mb-3 text-green-500/60" />
-          <p className="text-lg font-medium">No warnings</p>
+          <p className="text-lg font-medium">{t("warnings_empty")}</p>
         </div>
       )}
 
@@ -152,13 +154,13 @@ export function WarningsManager() {
                   {w.reason ? (
                     <p className="text-sm text-muted-foreground italic truncate">{w.reason}</p>
                   ) : (
-                    <p className="text-sm text-muted-foreground/40 italic">No reason</p>
+                    <p className="text-sm text-muted-foreground/40 italic">{t("warnings_noReason")}</p>
                   )}
                 </div>
 
                 {/* Right: mod + delete */}
                 <div className="flex flex-col items-end gap-2 shrink-0">
-                  <p className="text-[11px] text-muted-foreground">Mod: {w.moderator_id}</p>
+                  <p className="text-[11px] text-muted-foreground">{t("warnings_by")} {w.moderator_id}</p>
                   <Button
                     size="icon"
                     variant="ghost"
@@ -178,19 +180,19 @@ export function WarningsManager() {
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete this warning?</DialogTitle>
+            <DialogTitle>{t("warnings_delete")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            This action cannot be undone.
+            {t("thisCannotBeUndone")}
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>{t("cancel")}</Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Confirm"}
+              {deleteMutation.isPending ? t("deleting") : t("confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>

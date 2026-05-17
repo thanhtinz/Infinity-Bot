@@ -1,3 +1,4 @@
+import { useT } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { Bot, Gift, Hash, Heart, Info, Mic, Package, Pin, Search, Shield, Smile, Tags, TerminalSquare, Ticket, Trophy, Wrench, Zap } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
@@ -35,6 +36,7 @@ function getCommandIcon(catKey?: string, admin?: boolean) {
 }
 
 export function PublicCommandsPage() {
+  const { t } = useT();
   useLandingFonts();
   const [cats, setCats] = useState<Category[]>([]);
   const [q, setQ] = useState("");
@@ -42,14 +44,14 @@ export function PublicCommandsPage() {
 
   useEffect(() => {
     fetch("/api/public/commands").then(r => r.json()).then(d => setCats(d.categories || []));
-    document.title = "Bot Commands — Infinity Bot";
+    document.title = t("publicCmd_botCommands");
   }, []);
 
   const allCommands = useMemo(() => cats.flatMap(cat => cat.commands.map(cmd => ({ ...cmd, category: cat }))), [cats]);
   const totalCommands = allCommands.length;
 
   const tabs = useMemo(() => [
-    { key: "all", label: "All", count: totalCommands },
+    { key: "all", label: t("all"), count: totalCommands },
     ...cats.map(cat => ({ key: cat.key || cat.name, label: cat.name, count: cat.commands.length })),
   ], [cats, totalCommands]);
 
@@ -78,10 +80,10 @@ export function PublicCommandsPage() {
 
         <div className="relative text-center mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#5865F2]/25 bg-[#5865F2]/10 text-[#aeb6ff] text-xs font-bold tracking-[0.16em] uppercase mb-5">
-            <Zap className="w-3.5 h-3.5" /> Slash command index
+            <Zap className="w-3.5 h-3.5" /> {t("publicCmd_slashCommandIndex")}
           </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-3 tracking-tight">Command List</h1>
-          <p className="text-white/40 max-w-xl mx-auto">Full Infinity Bot command catalog with search, admin tags, usages and category filters.</p>
+          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-3 tracking-tight">{t("publicCmd_commandList")}</h1>
+          <p className="text-white/40 max-w-xl mx-auto">{t("publicCmd_commandCatalog")}</p>
         </div>
 
         <div className="relative rounded-3xl border border-white/10 bg-[#10131a]/80 shadow-2xl shadow-black/30 overflow-hidden mb-7">
@@ -91,13 +93,13 @@ export function PublicCommandsPage() {
               <input
                 value={q}
                 onChange={e => setQ(e.target.value)}
-                placeholder="Search commands, usage, category..."
+                placeholder={t("publicCmd_searchCommands")}
                 className="w-full h-12 pl-11 pr-4 rounded-2xl border border-white/10 bg-white/[0.04] text-white text-sm placeholder:text-white/30 outline-none focus:border-[#5865F2]/60 focus:bg-white/[0.06] transition-colors"
               />
             </div>
             <div className="flex items-center gap-2 text-xs text-white/45">
               <TerminalSquare className="w-4 h-4 text-[#aeb6ff]" />
-              <span>{visibleCount}/{totalCommands} commands</span>
+              <span>{visibleCount}/{totalCommands} {t("publicCmd_commandsCount")}</span>
             </div>
           </div>
 
@@ -135,7 +137,7 @@ export function PublicCommandsPage() {
                     <CategoryIcon className="w-5 h-5 text-[#aeb6ff]" />
                     <span>{cat.name}</span>
                   </h2>
-                  <p className="text-xs text-white/35 mt-1">{cat.commands.length} visible commands</p>
+                  <p className="text-xs text-white/35 mt-1">{cat.commands.length} {t("publicCmd_visibleCommands")}</p>
                 </div>
                 <span className="hidden sm:inline-flex text-xs text-white/35 border border-white/10 rounded-full px-3 py-1 bg-black/20">
                   {cat.key || "category"}
@@ -158,7 +160,7 @@ export function PublicCommandsPage() {
                           </code>
                           {cmd.admin && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[#fbbf24] text-[10px] font-bold uppercase tracking-[0.12em]">
-                              <Shield className="w-3 h-3" /> admin
+                              <Shield className="w-3 h-3" /> {t("publicCmd_admin")}
                             </span>
                           )}
                         </div>
@@ -180,7 +182,7 @@ export function PublicCommandsPage() {
 
           {filtered.length === 0 && (
             <div className="text-center py-16 rounded-3xl border border-white/10 bg-white/[0.025]">
-              <p className="text-white/35">No commands found for “{q}”.</p>
+              <p className="text-white/35">{t("publicCmd_noCommandsFound")} “{q}”.</p>
             </div>
           )}
         </div>

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useT } from "@/i18n";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,6 +65,7 @@ function AvatarInitial({ username }: { username: string }) {
 }
 
 export function FeedbackManager() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
@@ -82,9 +84,9 @@ export function FeedbackManager() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["feedback"] });
       setDeleteTarget(null);
-      toast({ title: "Deleted feedback." });
+      toast({ title: t("toast_feedbackDeleted") });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: t("error"), description: e.message }),
   });
 
   const filtered = useMemo(() => {
@@ -108,7 +110,7 @@ export function FeedbackManager() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">Loading...</div>
+      <div className="flex items-center justify-center h-64 text-muted-foreground">{t("loading")}</div>
     );
   }
 
@@ -116,7 +118,7 @@ export function FeedbackManager() {
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <MessageSquare className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">Feedback</h2>
+        <h2 className="text-2xl font-bold">{t("feedback_title")}</h2>
       </div>
 
       {/* ── Stat Cards ── */}
@@ -124,7 +126,7 @@ export function FeedbackManager() {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold">{stats.total}</p>
-            <p className="text-xs text-muted-foreground">Total feedback</p>
+            <p className="text-xs text-muted-foreground">{t("feedback_title")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -132,19 +134,19 @@ export function FeedbackManager() {
             <p className="text-2xl font-bold flex items-center justify-center gap-1">
               <StarIcon className="h-5 w-5 text-yellow-400 fill-yellow-400" /> {stats.avg.toFixed(1)}
             </p>
-            <p className="text-xs text-muted-foreground">Medium sao</p>
+            <p className="text-xs text-muted-foreground">{t("feedback_rating")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold text-yellow-600">{stats.fiveStars}</p>
-            <p className="text-xs text-muted-foreground">5 sao</p>
+            <p className="text-xs text-muted-foreground">5 ⭐</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-bold text-red-500">{stats.lowStars}</p>
-            <p className="text-xs text-muted-foreground">1-2 sao</p>
+            <p className="text-xs text-muted-foreground">1-2 ⭐</p>
           </CardContent>
         </Card>
       </div>
@@ -153,7 +155,7 @@ export function FeedbackManager() {
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search by username, content..."
+          placeholder={t("search")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -165,8 +167,8 @@ export function FeedbackManager() {
         <Card>
           <CardContent className="p-8 text-center text-sm text-muted-foreground">
             {feedbacks.length === 0
-              ? "No feedback yet"
-              : "No matching feedback found"}
+              ? t("feedback_empty")
+              : t("noResults")}
           </CardContent>
         </Card>
       ) : (
@@ -228,19 +230,19 @@ export function FeedbackManager() {
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete feedback?</DialogTitle>
+            <DialogTitle>{t("confirmDelete")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            This will permanently delete the message from the Discord channel. <strong>This cannot be undone.</strong>
+            {t("thisCannotBeUndone")}
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>{t("cancel")}</Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? t("deleting") : t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

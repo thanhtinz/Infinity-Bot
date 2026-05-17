@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useT } from "@/i18n";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ interface Coupon {
 }
 
 export function CouponsManager() {
+  const { t } = useT();
   const navigate = useNavigate();
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -36,13 +38,13 @@ export function CouponsManager() {
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
       apiFetch(`/api/coupons/${id}`, { method: "DELETE", credentials: "include" }).then((r) => r.json()),
-    onSuccess: () => { invalidate(); setDeleteTarget(null); toast({ title: "Coupon deleted." }); },
-    onError: () => toast({ variant: "destructive", title: "Delete error." }),
+    onSuccess: () => { invalidate(); setDeleteTarget(null); toast({ title: t("toast_couponDeleted") }); },
+    onError: () => toast({ variant: "destructive", title: t("error") }),
   });
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast({ title: "Copied: " + code });
+    toast({ title: t("copied") + ": " + code });
   };
 
   const usageColor = (c: Coupon) => {
@@ -56,19 +58,19 @@ export function CouponsManager() {
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-3xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Coupon</h1>
+        <h1 className="text-xl font-semibold">{t("coupons_title")}</h1>
         <Button size="sm" onClick={() => navigate('/coupons/new')}>
-          <Plus className="mr-2 h-4 w-4" /> Add Coupon
+          <Plus className="mr-2 h-4 w-4" /> {t("coupons_add")}
         </Button>
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground text-sm">Loading...</p>
+        <p className="text-muted-foreground text-sm">{t("loading")}</p>
       ) : coupons.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
           <Tag className="h-10 w-10 opacity-30" />
-          <p className="text-sm">No coupons yet</p>
-          <Button variant="outline" size="sm" onClick={() => navigate('/coupons/new')}>Create now</Button>
+          <p className="text-sm">{t("coupons_empty")}</p>
+          <Button variant="outline" size="sm" onClick={() => navigate('/coupons/new')}>{t("create")}</Button>
         </div>
       ) : (
         <div className="space-y-2">
@@ -82,19 +84,19 @@ export function CouponsManager() {
                     <button
                       onClick={() => copyCode(c.code)}
                       className="font-mono font-bold text-base tracking-widest hover:text-primary transition-colors flex items-center gap-1"
-                      title="Click to copy"
+                      title={t("copy")}
                     >
                       {c.code}
                       <Copy className="h-3 w-3 opacity-50" />
                     </button>
-                    {c.is_public && <Badge variant="secondary" className="text-xs">Public</Badge>}
-                    {exhausted && <Badge variant="destructive" className="text-xs">Exhausted</Badge>}
+                    {c.is_public && <Badge variant="secondary" className="text-xs">{t("all")}</Badge>}
+                    {exhausted && <Badge variant="destructive" className="text-xs">{t("expired")}</Badge>}
                   </div>
 
                   {/* Discount info */}
                   <div className="flex items-center gap-4 text-sm flex-wrap">
                     <div className="text-center">
-                      <p className="text-xs text-muted-foreground">Discount</p>
+                      <p className="text-xs text-muted-foreground">{t("coupons_discount")}</p>
                       <p className="font-semibold">
                         {c.discount_percent
                           ? `${c.discount_percent}%`
@@ -104,7 +106,7 @@ export function CouponsManager() {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-xs text-muted-foreground">Used</p>
+                      <p className="text-xs text-muted-foreground">{t("coupons_used")}</p>
                       <p className={cn("font-semibold tabular-nums", usageColor(c))}>
                         {c.used_count}/{c.max_uses}
                       </p>
@@ -135,19 +137,19 @@ export function CouponsManager() {
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent className="max-w-xs">
           <DialogHeader>
-            <DialogTitle>Delete coupon?</DialogTitle>
+            <DialogTitle>{t("confirmDelete")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Code <strong className="font-mono">{deleteTarget?.code}</strong> will be permanently deleted.
+            {t("coupons_code")} <strong className="font-mono">{deleteTarget?.code}</strong> {t("thisCannotBeUndone")}
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>{t("cancel")}</Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              Delete
+              {t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,9 +1,11 @@
+import { useT } from "@/i18n";
 import { useGuild } from "@/contexts/GuildContext";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Server, Loader2 } from "lucide-react";
 
 export function SelectGuildPage() {
+  const { t } = useT();
   const { guilds, setSelectedGuildId, isLoading } = useGuild();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -38,14 +40,14 @@ export function SelectGuildPage() {
         {/* Header */}
         <div className="text-center mb-6">
           <Server className="w-10 h-10 mx-auto mb-3 text-primary" />
-          <h1 className="text-xl font-bold">Select server</h1>
-          <p className="text-muted-foreground text-sm mt-1">Select a Discord server to manage</p>
+          <h1 className="text-xl font-bold">{t("selectGuild_selectServer")}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t("selectGuild_selectDiscord")}</p>
         </div>
 
         {guilds.length === 0 ? (
           <div className="text-center py-8 space-y-4">
             <p className="text-muted-foreground">
-              The bot is not in any server yet. Please invite the bot to a server first.
+              {t("selectGuild_noGuildsDesc")}
             </p>
             {inviteUrl && (
               <a
@@ -55,7 +57,7 @@ export function SelectGuildPage() {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors"
               >
                 <ExternalLink className="w-4 h-4" />
-                Invite bot to server
+                {t("selectGuild_inviteBot")}
               </a>
             )}
           </div>

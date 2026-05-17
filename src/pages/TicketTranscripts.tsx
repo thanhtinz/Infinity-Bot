@@ -1,3 +1,4 @@
+import { useT } from "@/i18n";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -56,6 +57,7 @@ function formatDate(iso: string) {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function TicketTranscripts() {
+  const { t } = useT();
   const [search, setSearch] = useState("");
   const [viewTranscript, setViewTranscript] = useState<TranscriptItem | null>(null);
 
@@ -111,15 +113,15 @@ export function TicketTranscripts() {
     return (
       <div className="space-y-6 p-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Transcripts</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("ticketTranscript_title")}</h1>
           <p className="text-muted-foreground text-sm">
-            Chat history of closed tickets
+            {t("ticketTranscript_chatHistory")}
           </p>
         </div>
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <FileText className="h-12 w-12 mb-3 opacity-40" />
-          <p className="text-lg font-medium">No transcripts yet</p>
-          <p className="text-sm">Transcripts are saved automatically when a ticket is closed</p>
+          <p className="text-lg font-medium">{t("ticketTranscript_noTranscriptsYet")}</p>
+          <p className="text-sm">{t("ticketTranscript_transcriptsSaved")}</p>
         </div>
       </div>
     );
@@ -130,9 +132,9 @@ export function TicketTranscripts() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Transcripts</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("ticketTranscript_title")}</h1>
           <p className="text-muted-foreground text-sm">
-            Chat history of closed tickets
+            {t("ticketTranscript_chatHistory")}
           </p>
         </div>
       </div>
@@ -142,7 +144,7 @@ export function TicketTranscripts() {
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by Ticket ID, channel, or participant..."
+            placeholder={t("ticketTranscript_searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -156,12 +158,12 @@ export function TicketTranscripts() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Ticket ID</TableHead>
-                <TableHead>Channel</TableHead>
-                <TableHead>Messages</TableHead>
-                <TableHead>Participants</TableHead>
-                <TableHead>Closed at</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("ticketTranscript_ticketId")}</TableHead>
+                <TableHead>{t("ticketTranscript_channel")}</TableHead>
+                <TableHead>{t("ticketTranscript_messages")}</TableHead>
+                <TableHead>{t("ticketTranscript_participants")}</TableHead>
+                <TableHead>{t("ticketTranscript_closedAt")}</TableHead>
+                <TableHead className="text-right">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -196,7 +198,7 @@ export function TicketTranscripts() {
                       onClick={() => setViewTranscript(t)}
                     >
                       <Eye className="h-4 w-4 mr-1" />
-                      View
+                      {t("ticketTranscript_view")}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -204,7 +206,7 @@ export function TicketTranscripts() {
               {filtered.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Not found transcript
+                    {t("ticketTranscript_notFound")}
                   </TableCell>
                 </TableRow>
               )}
@@ -221,11 +223,11 @@ export function TicketTranscripts() {
         <DialogContent className="max-w-3xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>
-              Transcript — Ticket #{viewTranscript?.ticket_id}
+              {t("ticketTranscript_transcriptTicket")} #{viewTranscript?.ticket_id}
             </DialogTitle>
             <DialogDescription>
-              {viewTranscript?.channel_name && `Channel: ${viewTranscript.channel_name}`}
-              {viewTranscript?.message_count != null && ` • ${viewTranscript.message_count} message${viewTranscript.message_count !== 1 ? "s" : ""}`}
+              {viewTranscript?.channel_name && `${t("ticketTranscript_channelLabel")} ${viewTranscript.channel_name}`}
+              {viewTranscript?.message_count != null && ` • ${viewTranscript.message_count} ${viewTranscript.message_count !== 1 ? t("ticketTranscript_messagesLabel") : t("ticketTranscript_message")}`}
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh] mt-2">
@@ -237,7 +239,7 @@ export function TicketTranscripts() {
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <FileText className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                <p>No transcript content</p>
+                <p>{t("ticketTranscript_noContent")}</p>
               </div>
             )}
           </ScrollArea>
@@ -245,11 +247,11 @@ export function TicketTranscripts() {
             {viewTranscript?.content_html && (
               <Button variant="outline" onClick={() => downloadHtml(viewTranscript)}>
                 <Download className="h-4 w-4 mr-2" />
-                Download HTML
+                {t("ticketTranscript_downloadHtml")}
               </Button>
             )}
             <Button variant="outline" onClick={() => setViewTranscript(null)}>
-              Closed
+              {t("close")}
             </Button>
           </div>
         </DialogContent>

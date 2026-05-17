@@ -1,3 +1,4 @@
+import { useT } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { Activity, Clock, Database, Search, Server, Users, Wifi, WifiOff, Zap } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
@@ -30,11 +31,12 @@ interface BotStatus {
   clusters?: ClusterInfo[];
 }
 
-function secondsAgo(iso?: string | null) {
+function secondsAgo(iso?: string | null, t?: (key: string) => string) {
   if (!iso) return "—";
   const seconds = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
-  if (seconds < 1) return "just now";
-  return `${seconds} second${seconds === 1 ? "" : "s"} ago`;
+  if (seconds < 1) return t ? t("publicStatus_justNow") : "just now";
+  if (seconds === 1) return t ? `1 ${t("publicStatus_secondAgo")}` : "1 second ago";
+  return t ? `${seconds} ${t("publicStatus_secondsAgo")}` : `${seconds} seconds ago`;
 }
 
 function compactShards(shards: number[]) {
@@ -42,13 +44,14 @@ function compactShards(shards: number[]) {
 }
 
 export function PublicStatusPage() {
+  const { t } = useT();
   useLandingFonts();
   const [status, setStatus] = useState<BotStatus | null>(null);
   const [query, setQuery] = useState("");
   const [, setTick] = useState(0);
 
   useEffect(() => {
-    document.title = "Status — Infinity Bot";
+    document.title = t("publicStatus_title");
     const load = () =>
       fetch("/api/public/status").then(r => r.json()).then(setStatus).catch(() => {});
     load();
@@ -93,10 +96,10 @@ export function PublicStatusPage() {
         <div className="relative text-center mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-white/50 text-xs mb-5">
             <span className={`w-1.5 h-1.5 rounded-full ${online ? "bg-[#00d4aa] animate-pulse" : "bg-red-400"}`} />
-            Live infrastructure monitor
+            {t("publicStatus_liveMonitor")}
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-3 tracking-tight">Bot Status</h1>
-          <p className="text-white/40 text-sm">Clusters, shards, memory and latency. Updates every 15 seconds.</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-3 tracking-tight">{t("publicStatus_botStatusTitle")}</h1>
+          <p className="text-white/40 text-sm">{t("publicStatus_statusDesc")}</p>
         </div>
 
         <div className={`relative flex items-center gap-3 p-4 rounded-2xl border mb-5 ${online ? "border-[#00d4aa]/20 bg-[#00d4aa]/5" : "border-red-500/20 bg-red-500/5"}`}>
@@ -105,14 +108,14 @@ export function PublicStatusPage() {
             : <WifiOff className="w-5 h-5 text-red-400" />}
           <div className="flex-1">
             <p className={`font-bold ${online ? "text-[#00d4aa]" : "text-red-400"}`}>
-              {status === null ? "Checking..." : online ? "Operational" : "Offline"}
+              {status === null ? t("publicStatus_checking") : online ? t("publicStatus_operational") : t("publicStatus_offline")}
             </p>
             {status?.username && <p className="text-white/40 text-sm">{status.username}</p>}
           </div>
           {status !== null && (
             <div className="hidden sm:flex items-center gap-2 text-xs text-white/35">
               <Clock className="w-3.5 h-3.5" />
-              Last updated {secondsAgo(status.last_updated_at)}
+              {t("publicStatus_lastUpdated")} {secondsAgo(status.last_updated_at, t)}
             </div>
           )}
         </div>
@@ -120,10 +123,10 @@ export function PublicStatusPage() {
         {online && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             {[
-              { icon: Server, label: "Servers", value: status?.guild_count?.toLocaleString() ?? "—" },
-              { icon: Users, label: "Cached users", value: status?.member_count?.toLocaleString() ?? "—" },
-              { icon: Activity, label: "Latency", value: status?.latency_ms != null ? `${status.latency_ms} ms` : "—" },
-              { icon: Zap, label: "Shards", value: status?.shard_count?.toLocaleString() ?? "—" },
+              { icon: Server, label: t("publicStatus_servers"), value: status?.guild_count?.toLocaleString() ?? "—" },
+              { icon: Users, label: t("publicStatus_cachedUsers"), value: status?.member_count?.toLocaleString() ?? "—" },
+              { icon: Activity, label: t("publicStatus_latency"), value: status?.latency_ms != null ? `${status.latency_ms} ms` : "—" },
+              { icon: Zap, label: t("publicStatus_shards"), value: status?.shard_count?.toLocaleString() ?? "—" },
             ].map((s, i) => (
               <div key={i} className="p-4 rounded-2xl border border-white/5 bg-white/[0.025] shadow-2xl shadow-black/10">
                 <s.icon className="w-4 h-4 text-[#818cf8] mb-3" />
@@ -138,15 +141,15 @@ export function PublicStatusPage() {
           <div className="relative rounded-3xl border border-white/10 bg-[#10131a]/80 overflow-hidden shadow-2xl shadow-black/30">
             <div className="p-5 md:p-6 border-b border-white/10 flex flex-col md:flex-row md:items-center gap-4 justify-between">
               <div>
-                <p className="text-[#818cf8] text-xs font-bold tracking-[0.2em] uppercase">Clusters</p>
-                <h2 className="text-2xl font-extrabold text-white mt-1">Shard distribution</h2>
+                <p className="text-[#818cf8] text-xs font-bold tracking-[0.2em] uppercase">{t("publicStatus_clusters")}</p>
+                <h2 className="text-2xl font-extrabold text-white mt-1">{t("publicStatus_shardDistribution")}</h2>
               </div>
               <div className="relative md:w-72">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                 <input
                   value={query}
                   onChange={e => setQuery(e.target.value)}
-                  placeholder="Search cluster or shard..."
+                  placeholder={t("publicStatus_searchCluster")}
                   className="w-full h-11 rounded-xl border border-white/10 bg-white/[0.04] pl-10 pr-3 text-sm text-white placeholder:text-white/25 outline-none focus:border-[#5865F2]/60 focus:bg-white/[0.06] transition-colors"
                 />
               </div>
@@ -157,24 +160,24 @@ export function PublicStatusPage() {
                 <div key={cluster.id} className="group rounded-2xl border border-white/10 bg-white/[0.025] p-5 hover:bg-white/[0.04] transition-colors">
                   <div className="flex flex-col lg:flex-row lg:items-start gap-5 justify-between">
                     <div className="min-w-44">
-                      <p className="text-white text-xl font-extrabold lowercase">cluster {cluster.id}</p>
+                      <p className="text-white text-xl font-extrabold lowercase">{t("publicStatus_cluster")} {cluster.id}</p>
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {cluster.shards.length ? cluster.shards.map(shard => (
                           <span key={shard} className="w-7 h-7 rounded-lg bg-[#5865F2]/15 border border-[#5865F2]/20 text-[#aeb6ff] text-xs font-bold flex items-center justify-center">
                             {shard}
                           </span>
-                        )) : <span className="text-white/30 text-sm">no shards</span>}
+                        )) : <span className="text-white/30 text-sm">{t("publicStatus_noShards")}</span>}
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 flex-1">
                       {[
-                        { label: "shards", value: compactShards(cluster.shards), icon: Zap },
-                        { label: "servers", value: cluster.servers.toLocaleString(), icon: Server },
-                        { label: "cached users", value: cluster.cached_users?.toLocaleString() ?? "—", icon: Users },
-                        { label: "latency", value: cluster.latency_ms != null ? `${cluster.latency_ms} ms` : "—", icon: Activity },
-                        { label: "uptime", value: cluster.uptime ?? "—", icon: Clock },
-                        { label: "mem usage", value: cluster.mem_usage_mb != null ? `${cluster.mem_usage_mb} mb` : "—", icon: Database },
+                        { label: t("publicStatus_shards"), value: compactShards(cluster.shards), icon: Zap },
+                        { label: t("publicStatus_servers"), value: cluster.servers.toLocaleString(), icon: Server },
+                        { label: t("publicStatus_cachedUsers"), value: cluster.cached_users?.toLocaleString() ?? "—", icon: Users },
+                        { label: t("publicStatus_latency"), value: cluster.latency_ms != null ? `${cluster.latency_ms} ms` : "—", icon: Activity },
+                        { label: t("uptime"), value: cluster.uptime ?? "—", icon: Clock },
+                        { label: t("publicStatus_memUsage"), value: cluster.mem_usage_mb != null ? `${cluster.mem_usage_mb} mb` : "—", icon: Database },
                       ].map(item => (
                         <div key={item.label} className="rounded-xl bg-black/20 border border-white/5 p-3">
                           <div className="flex items-center gap-1.5 text-white/35 mb-2">
@@ -186,12 +189,12 @@ export function PublicStatusPage() {
                       ))}
                     </div>
                   </div>
-                  <p className="text-xs text-white/30 mt-4">last updated: {secondsAgo(cluster.last_updated_at)}</p>
+                  <p className="text-xs text-white/30 mt-4">{t("publicStatus_lastUpdatedLabel")} {secondsAgo(cluster.last_updated_at, t)}</p>
                 </div>
               ))}
 
               {clusters.length === 0 && (
-                <div className="text-center py-10 text-white/40 text-sm">No clusters match your search.</div>
+                <div className="text-center py-10 text-white/40 text-sm">{t("publicStatus_noClusters")}</div>
               )}
             </div>
           </div>

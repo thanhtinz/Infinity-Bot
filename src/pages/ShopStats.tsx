@@ -1,3 +1,4 @@
+import { useT } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -42,6 +43,7 @@ function StatCard({
 }
 
 export function ShopStats() {
+  const { t } = useT();
   const { data: stats, isLoading } = useQuery<Stats>({
     queryKey: ["stats"],
     queryFn: () => apiFetch("/api/stats").then((r) => r.json()),
@@ -58,35 +60,35 @@ export function ShopStats() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <h1 className="text-xl font-semibold">Thống kê Shop</h1>
+      <h1 className="text-xl font-semibold">{t("shopStats_title")}</h1>
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           icon={TrendingUp}
-          label="Doanh thu"
+          label={t("shopStats_totalRevenue")}
           value={stats ? fmtMoney(stats.total_revenue) : "—"}
           highlight
         />
         <StatCard
           icon={ShoppingCart}
-          label="Tổng đơn hàng"
+          label={t("shopStats_totalOrders")}
           value={stats?.total_orders ?? "—"}
-          sub={stats ? `${stats.pending_orders} chờ xử lý` : undefined}
+          sub={stats ? `${stats.pending_orders} ${t("shopStats_pendingOrders")}` : undefined}
         />
-        <StatCard icon={Users} label="Người dùng" value={stats?.total_users ?? "—"} />
-        <StatCard icon={Package} label="Sản phẩm" value={stats?.total_products ?? "—"} />
+        <StatCard icon={Users} label={t("shopStats_totalUsers")} value={stats?.total_users ?? "—"} />
+        <StatCard icon={Package} label={t("shopStats_products")} value={stats?.total_products ?? "—"} />
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Doanh thu 14 ngày</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("shopStats_revenue14")}</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {isLoading || !stats ? (
-              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
+              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">{t("loading")}</div>
             ) : (
               <ResponsiveContainer width="100%" height={180}>
                 <AreaChart data={stats.chart} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -104,7 +106,7 @@ export function ShopStats() {
                     tickFormatter={(v) => v >= 1000 ? `${v / 1000}K` : v}
                   />
                   <Tooltip
-                    formatter={(v: unknown) => [(v as number).toLocaleString("vi-VN") + " đ", "Doanh thu"]}
+                    formatter={(v: unknown) => [(v as number).toLocaleString("vi-VN") + " đ", t("shopStats_totalRevenue")]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} />
@@ -116,11 +118,11 @@ export function ShopStats() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Đơn hàng 14 ngày</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("shopStats_orders14")}</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {isLoading || !stats ? (
-              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
+              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">{t("loading")}</div>
             ) : (
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={stats.chart} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -128,7 +130,7 @@ export function ShopStats() {
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" />
                   <YAxis tick={{ fontSize: 10 }} className="fill-muted-foreground" allowDecimals={false} />
                   <Tooltip
-                    formatter={(v: unknown) => [v as number, "Đơn hàng"]}
+                    formatter={(v: unknown) => [v as number, t("shopStats_ordersLabel")]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Bar dataKey="orders" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />

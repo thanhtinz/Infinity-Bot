@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useT } from "@/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,7 @@ function StatCard({
 }
 
 export function DashboardHome() {
+  const { t } = useT();
   const { data: config, isLoading: configLoading } = useQuery<SystemConfig>({
     queryKey: ["config"],
     queryFn: () => apiFetch("/api/config").then((r) => r.json()),
@@ -60,7 +62,7 @@ export function DashboardHome() {
     staleTime: 60_000,
   });
 
-  if (configLoading) return <div className="p-8 text-muted-foreground">Loading...</div>;
+  if (configLoading) return <div className="p-8 text-muted-foreground">{t("loading")}</div>;
 
   const isRunning = config?.bot_status === "running";
 
@@ -73,24 +75,24 @@ export function DashboardHome() {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
-      <h1 className="text-xl font-semibold">Overview</h1>
+      <h1 className="text-xl font-semibold">{t("dashboard_title")}</h1>
 
       {/* ── Stats grid ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           icon={TrendingUp}
-          label="Revenue"
+          label={t("dashboard_revenue")}
           value={stats ? fmtMoney(stats.total_revenue) : "—"}
           highlight
         />
         <StatCard
           icon={ShoppingCart}
-          label="Total Orders"
+          label={t("dashboard_totalOrders")}
           value={stats?.total_orders ?? "—"}
-          sub={stats ? `${stats.pending_orders} pending` : undefined}
+          sub={stats ? `${stats.pending_orders} ${t("pending")}` : undefined}
         />
-        <StatCard icon={Users} label="Users" value={stats?.total_users ?? "—"} />
-        <StatCard icon={Package} label="Products" value={stats?.total_products ?? "—"} />
+        <StatCard icon={Users} label={t("dashboard_users")} value={stats?.total_users ?? "—"} />
+        <StatCard icon={Package} label={t("dashboard_products")} value={stats?.total_products ?? "—"} />
       </div>
 
       {/* ── Charts ── */}
@@ -98,11 +100,11 @@ export function DashboardHome() {
         {/* Doanh thu */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Doanh thu 14 days</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard_revenue")} (14d)</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {statsLoading || !stats ? (
-              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
+              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">{t("loading")}</div>
             ) : (
               <ResponsiveContainer width="100%" height={180}>
                 <AreaChart data={stats.chart} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -120,7 +122,7 @@ export function DashboardHome() {
                     tickFormatter={(v) => v >= 1000 ? `${v / 1000}K` : v}
                   />
                   <Tooltip
-                    formatter={(v: unknown) => [(v as number).toLocaleString("vi-VN") + " đ", "Revenue"]}
+                    formatter={(v: unknown) => [(v as number).toLocaleString("vi-VN") + " đ", t("dashboard_revenue")]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Area
@@ -139,11 +141,11 @@ export function DashboardHome() {
         {/* Orders */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Orders (14 days)</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("orders_title")} (14d)</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {statsLoading || !stats ? (
-              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">Loading...</div>
+              <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">{t("loading")}</div>
             ) : (
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={stats.chart} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -151,7 +153,7 @@ export function DashboardHome() {
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" />
                   <YAxis tick={{ fontSize: 10 }} className="fill-muted-foreground" allowDecimals={false} />
                   <Tooltip
-                    formatter={(v: unknown) => [v as number, "Orders"]}
+                    formatter={(v: unknown) => [v as number, t("orders_title")]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Bar dataKey="orders" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
@@ -172,14 +174,14 @@ export function DashboardHome() {
               )}
               <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isRunning ? "bg-green-500" : "bg-red-500"}`} />
             </span>
-            <span className="text-sm font-medium">Bot Discord</span>
+            <span className="text-sm font-medium">{t("nav_discordBot")}</span>
             <Badge variant={isRunning ? "default" : "secondary"} className="text-xs">
-              {isRunning ? "Online" : "Offline"}
+              {isRunning ? t("botStatus_online") : t("botStatus_offline")}
             </Badge>
           </div>
           <Button size="sm" variant="outline" asChild>
             <Link to="/bot-status">
-              <Activity className="mr-1 h-3.5 w-3.5" /> Manage
+              <Activity className="mr-1 h-3.5 w-3.5" /> {t("settings")}
             </Link>
           </Button>
         </CardContent>

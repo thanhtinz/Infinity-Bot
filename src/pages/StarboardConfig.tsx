@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { useT } from "@/i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +44,7 @@ async function saveStarboardConfig(data: StarboardConfigData): Promise<{ ok: boo
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function StarboardConfig() {
+  const { t } = useT();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -79,17 +81,17 @@ export function StarboardConfig() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["starboard-config"] });
-      toast({ title: "Starboard configuration saved" });
+      toast({ title: t("toast_starboardSaved") });
     },
     onError: () => {
-      toast({ title: "Save failed", variant: "destructive" });
+      toast({ title: t("toast_saveFailed"), variant: "destructive" });
     },
   });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20 text-muted-foreground">
-        Loading...
+        {t("loading")}
       </div>
     );
   }
@@ -100,28 +102,28 @@ export function StarboardConfig() {
       <div className="space-y-1">
         <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           <Star className="h-6 w-6 text-yellow-500" />
-          Starboard
+          {t("starboard_title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Pin highly-reacted messages to a dedicated channel
+          {t("starboard_title")}
         </p>
       </div>
 
       {/* Config Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Config chung</CardTitle>
+          <CardTitle className="text-base">{t("config")}</CardTitle>
           <CardDescription>
-            Configure the channel and conditions for messages to appear on Starboard.
+            {t("starboard_title")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Enabled toggle */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Enable Starboard</p>
+              <p className="font-medium">{t("enable")} Starboard</p>
               <p className="text-sm text-muted-foreground">
-                Enable the highlighted message pinning feature.
+                {t("starboard_title")}
               </p>
             </div>
             <Switch checked={enabled} onCheckedChange={setEnabled} />
@@ -129,23 +131,23 @@ export function StarboardConfig() {
 
           {/* Channel */}
           <div className="space-y-2">
-            <Label>Channel Starboard</Label>
+            <Label>{t("starboard_channel")}</Label>
             <p className="text-xs text-muted-foreground">
-              Channel where highlighted messages will be pinned.
+              {t("starboard_channel")}
             </p>
             <ChannelSelect
               value={channelId}
               onChange={setChannelId}
-              placeholder="Select channel..."
+              placeholder={t("selectChannel")}
               filter="text"
             />
           </div>
 
           {/* Emoji */}
           <div className="space-y-2">
-            <Label>Emoji</Label>
+            <Label>{t("starboard_emoji")}</Label>
             <p className="text-xs text-muted-foreground">
-              Emoji used to vote on messages.
+              {t("starboard_emoji")}
             </p>
             <Input
               value={emoji}
@@ -156,9 +158,9 @@ export function StarboardConfig() {
 
           {/* Threshold */}
           <div className="space-y-2">
-            <Label>Min reactions</Label>
+            <Label>{t("starboard_minStars")}</Label>
             <p className="text-xs text-muted-foreground">
-              Number of reactions required for a message to reach Starboard.
+              {t("starboard_minStars")}
             </p>
             <Input
               type="number"
@@ -175,9 +177,9 @@ export function StarboardConfig() {
           {/* Self-star toggle */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Allow self-react</p>
+              <p className="font-medium">{t("starboard_selfStarAllowed")}</p>
               <p className="text-sm text-muted-foreground">
-                Count reactions from the message author.
+                {t("starboard_selfStarAllowed")}
               </p>
             </div>
             <Switch checked={selfStar} onCheckedChange={setSelfStar} />
@@ -191,7 +193,7 @@ export function StarboardConfig() {
         disabled={saveMutation.isPending}
         className="w-full"
       >
-        {saveMutation.isPending ? "Saving..." : "Save Config"}
+        {saveMutation.isPending ? t("saving") : t("save")}
       </Button>
     </div>
   );

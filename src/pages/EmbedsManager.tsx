@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useT } from "@/i18n";
 import { useGuild } from "@/contexts/GuildContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ import { apiFetch } from "@/hooks/useApi";
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsManagerProps = {}) {
+  const { t } = useT();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { selectedGuildId } = useGuild();
@@ -135,12 +137,12 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
       }
     },
     onSuccess: (data) => {
-      toast({ title: "Saved", description: "Embed saved successfully." });
+      toast({ title: t("toast_saved"), description: t("toast_embedSaved") });
       queryClient.invalidateQueries({ queryKey: ["embeds"] });
       setForm((f) => ({ ...f, existingId: data.id ?? f.existingId }));
     },
     onError: () => {
-      toast({ title: "Error", description: "Could not save embed. Please try again.", variant: "destructive" });
+      toast({ title: t("error"), description: t("toast_embedFailed"), variant: "destructive" });
     },
   });
 
@@ -239,7 +241,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
           )}
         >
           <MessageSquare className="h-3.5 w-3.5" />
-          Messages
+          {t("messages")}
         </button>
       </div>
 
@@ -254,7 +256,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
         <div className="w-full sm:w-64 shrink-0">
           <Select value={selectedKey} onValueChange={(v) => selectEvent(v)}>
             <SelectTrigger className="h-9">
-              <SelectValue placeholder="Select event...">
+              <SelectValue placeholder={t("embeds_selectEvent")}>
                 {currentEvent && (() => {
                   const Icon = currentEvent.icon;
                   return (
@@ -263,7 +265,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                       {botLang === "en" ? (currentEvent.labelEn ?? currentEvent.label) : currentEvent.label}
                       {savedMap.has(selectedKey) && (
                         <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0 text-[10px] px-1.5 py-0 h-4">
-                          Customize
+                          {t("edit")}
                         </Badge>
                       )}
                     </span>
@@ -304,14 +306,14 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             className="text-muted-foreground"
           >
             <RotateCcw className="h-3.5 w-3.5 sm:mr-1.5" />
-            <span className="hidden sm:inline">Reset</span>
+            <span className="hidden sm:inline">{t("reset")}</span>
           </Button>
           <Button
             size="sm"
             onClick={() => saveMutation.mutate(form)}
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "..." : "Save"}
+            {saveMutation.isPending ? "..." : t("save")}
           </Button>
         </div>
       </div>
@@ -346,7 +348,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
               )}
             >
               <Type className="h-4 w-4" />
-              Text
+              {t("text")}
             </button>
           </div>
 
@@ -355,10 +357,10 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             <div className="rounded-lg border overflow-hidden" style={{ borderLeftWidth: 4, borderLeftColor: form.color || "#5865F2" }}>
               <div className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold">Content Text</span>
+                  <span className="text-sm font-semibold">{t("messageContent")}</span>
                   <div className="flex items-center gap-2">
                     <Label htmlFor="text-enabled" className="text-xs text-muted-foreground cursor-pointer">
-                      {form.enabled ? "Enable" : "Disable"}
+                      {form.enabled ? t("enable") : t("disable")}
                     </Label>
                     <Switch
                       id="text-enabled"
@@ -389,7 +391,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                         <span className="bg-[#5865F2] text-white text-[10px] font-medium px-1 py-0.5 rounded leading-none">BOT</span>
                       </div>
                       <p className="text-[#DBDEE1] mt-1 whitespace-pre-wrap text-sm">
-                        {form.text_template || "Enter content..."}
+                        {form.text_template || t("messageContent")}
                       </p>
                     </div>
                   </div>
@@ -410,11 +412,11 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             >
               <span className="flex items-center gap-2">
                 <ChevronDown className={cn("h-4 w-4 transition-transform", embedOpen && "rotate-180")} />
-                Embed — {form.title || "No title"}
+                Embed — {form.title || t("embeds_title_field")}
               </span>
               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 <Label htmlFor="embed-enabled" className="text-xs text-muted-foreground cursor-pointer">
-                  {form.enabled ? "Enable" : "Disable"}
+                  {form.enabled ? t("enable") : t("disable")}
                 </Label>
                 <Switch
                   id="embed-enabled"
@@ -427,11 +429,11 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
               <div className="px-4 pb-4 space-y-4">
                 {/* Title */}
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Title</Label>
+                  <Label className="text-xs text-muted-foreground">{t("embeds_title_field")}</Label>
                   <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
                       className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder="Enter embed title..."
+                      placeholder={t("embeds_title_field") + "..."}
                       value={form.title}
                       onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                     />
@@ -441,12 +443,12 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                 {/* Description with char count */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Description</Label>
+                    <Label className="text-xs text-muted-foreground">{t("embeds_description")}</Label>
                     <span className="text-[11px] text-muted-foreground">{form.description.length}/4096</span>
                   </div>
                   <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Textarea
-                      placeholder="Enter embed description..."
+                      placeholder={t("embeds_description") + "..."}
                       value={form.description}
                       onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                       rows={5}
@@ -457,7 +459,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                 </div>
                 {/* Color */}
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Colors</Label>
+                  <Label className="text-xs text-muted-foreground">{t("embeds_color")}</Label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -476,13 +478,13 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                 {/* Footer with char count */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Footer</Label>
+                    <Label className="text-xs text-muted-foreground">{t("embeds_footer")}</Label>
                     <span className="text-[11px] text-muted-foreground">{form.footer.length}/2048</span>
                   </div>
                   <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
                       className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder="Footer content"
+                      placeholder={t("embeds_footer")}
                       value={form.footer}
                       onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
                     />
@@ -508,11 +510,11 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             {authorOpen && (
               <div className="px-4 pb-4 space-y-3">
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Author name</Label>
+                  <Label className="text-xs text-muted-foreground">{t("authorName")}</Label>
                   <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                     <Input
                       className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder="Author name (shown above title)"
+                      placeholder={t("authorName")}
                       value={form.author}
                       onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
                     />
@@ -520,7 +522,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Icon URL</Label>
+                  <Label className="text-xs text-muted-foreground">{t("authorIconUrl")}</Label>
                   <Input
                     placeholder="https://example.com/icon.png"
                     value={form.author_icon_url}
@@ -546,7 +548,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             {imagesOpen && (
               <div className="px-4 pb-4 space-y-3">
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Thumbnail URL</Label>
+                  <Label className="text-xs text-muted-foreground">{t("thumbnailUrl")}</Label>
                   <Input
                     placeholder="https://example.com/thumb.png"
                     value={form.thumbnail_url}
@@ -554,7 +556,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Image URL</Label>
+                  <Label className="text-xs text-muted-foreground">{t("imageUrl")}</Label>
                   <Input
                     placeholder="https://example.com/image.png"
                     value={form.image_url}
@@ -574,7 +576,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             >
               <span className="flex items-center gap-2">
                 <ChevronDown className={cn("h-4 w-4 transition-transform", fieldsOpen && "rotate-180")} />
-                Fields ({form.fields.length}/25)
+                {t("embeds_fields")} ({form.fields.length}/25)
               </span>
             </button>
             {fieldsOpen && (
@@ -582,7 +584,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                 {form.fields.map((field, i) => (
                   <div key={i} className="rounded-md border bg-muted/30 p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">Field {i + 1}</span>
+                      <span className="text-xs font-medium text-muted-foreground">{t("embeds_addField")} {i + 1}</span>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -595,7 +597,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                         <Input
-                          placeholder="Name field"
+                          placeholder={t("fieldName")}
                           value={field.name}
                           onChange={(e) => updateField(i, "name", e.target.value)}
                           className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -604,7 +606,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                       </div>
                       <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                         <Input
-                          placeholder="Value"
+                          placeholder={t("value")}
                           value={field.value}
                           onChange={(e) => updateField(i, "value", e.target.value)}
                           className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -619,7 +621,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                         onChange={(e) => updateField(i, "inline", e.target.checked)}
                         className="rounded border-input"
                       />
-                      Inline (display side by side)
+                      {t("inline")}
                     </label>
                   </div>
                 ))}
@@ -631,7 +633,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                     className="w-full border-dashed"
                   >
                     <Plus className="h-3.5 w-3.5 mr-1.5" />
-                    Add field
+                    {t("embeds_addField")}
                   </Button>
                 )}
                 {form.fields.length >= 25 && (
@@ -681,13 +683,13 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             >
               <span className="flex items-center gap-2">
                 <ChevronDown className={cn("h-4 w-4 transition-transform", showPreview && "rotate-180")} />
-                Preview Discord
+                {t("embeds_preview")} Discord
               </span>
             </button>
             {showPreview && (
               <div className="p-4">
                 <DiscordPreview form={form} />
-                <p className="text-[11px] text-muted-foreground italic mt-3">* Preview uses sample data</p>
+                <p className="text-[11px] text-muted-foreground italic mt-3">* {t("embeds_preview")}</p>
               </div>
             )}
           </div>
@@ -700,15 +702,15 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
       <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Reset to default?</AlertDialogTitle>
+            <AlertDialogTitle>{t("embeds_reset")}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Embed &quot;{botLang === "en" ? (currentEvent?.labelEn ?? currentEvent?.label) : currentEvent?.label}&quot; will be reset to default content. Unsaved changes will be lost.
+              {t("embeds_reset")} &quot;{botLang === "en" ? (currentEvent?.labelEn ?? currentEvent?.label) : currentEvent?.label}&quot;
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleReset} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Reset
+              {t("reset")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

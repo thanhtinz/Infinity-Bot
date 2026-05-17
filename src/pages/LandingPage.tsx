@@ -1,5 +1,7 @@
+import { useT } from "@/i18n";
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useT } from "@/i18n";
 import { ShoppingBag, Ticket, Gift, Shield, Mic, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
@@ -114,16 +116,17 @@ function StatCard({ icon: Icon, value, label, suffix = "+" }: { icon: typeof Zap
 
 /* ── Feature cards ───────────────────────────────────────────── */
 const FEATURES = [
-  { icon: ShoppingBag, title: "Shop & Orders", desc: "Integrated storefront with PayOS, product management, and real-time order tracking.", color: "#5865F2" },
-  { icon: Ticket, title: "Ticket System", desc: "Multi-panel tickets with claim, transcript, feedback, and role-based team support.", color: "#00d4aa" },
-  { icon: Gift, title: "Giveaway", desc: "Professional giveaways with entry requirements, reroll, and multiple winners.", color: "#f59e0b" },
-  { icon: Shield, title: "Moderation", desc: "Ban, kick, timeout, automod content filtering, and full action logging.", color: "#ef4444" },
-  { icon: Mic, title: "TempVoice", desc: "Temporary voice channels users manage themselves: rename, limit, lock, kick.", color: "#a855f7" },
-  { icon: Palette, title: "Embed Builder", desc: "Customize every bot notification with an intuitive Embed Builder and live Discord preview.", color: "#ec4899" },
+  { icon: ShoppingBag, titleKey: "landing_shopOrders", descKey: "landing_shopOrdersDesc", color: "#5865F2" },
+  { icon: Ticket, titleKey: "landing_ticketSystem", descKey: "landing_ticketSystemDesc", color: "#00d4aa" },
+  { icon: Gift, titleKey: "landing_giveaway", descKey: "landing_giveawayDesc", color: "#f59e0b" },
+  { icon: Shield, titleKey: "landing_moderation", descKey: "landing_moderationDesc", color: "#ef4444" },
+  { icon: Mic, titleKey: "landing_tempVoice", descKey: "landing_tempVoiceDesc", color: "#a855f7" },
+  { icon: Palette, titleKey: "landing_embedBuilder", descKey: "landing_embedBuilderDesc", color: "#ec4899" },
 ];
 
 /* ── Main Landing Page ───────────────────────────────────────── */
 export function LandingPage() {
+  const { t } = useT();
   useLandingFonts();
 
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
@@ -157,39 +160,39 @@ export function LandingPage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#5865F2]/30 bg-[#5865F2]/10 text-[#818cf8] text-xs font-medium mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-[#00d4aa] animate-pulse" />
-              The all-in-one Discord bot for your server
+              {t("landing_allInOne")}
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.08] mb-6 tracking-tight">
-              Manage your server
+              {t("landing_manageServer")}
               <br />
               <span style={{ background: "linear-gradient(135deg, #5865F2, #00d4aa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                effortlessly
+                {t("landing_effortlessly")}
               </span>
             </h1>
 
             <p className="text-lg text-white/50 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Infinity Bot brings everything you need: shop, tickets, giveaways, moderation, and more — all in one intuitive dashboard.
+              {t("landing_heroDesc")}
             </p>
 
             <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
               {inviteUrl && (
                 <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#5865F2] hover:bg-[#4752c4] text-white font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#5865F2]/25">
-                  <Zap className="w-4 h-4" /> Add to Server
+                  <Zap className="w-4 h-4" /> {t("landing_addToServer")}
                 </a>
               )}
               <Link to="/dashboard"
                 className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]">
-                Go to Dashboard <ChevronRight className="w-4 h-4" />
+                {t("landing_goToDashboard")} <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
 
             {/* Stats */}
             <div className="flex gap-8 mt-10 justify-center lg:justify-start">
-              <StatCard icon={Server} value={500} label="Servers" />
-              <StatCard icon={Users} value={50000} label="Members" />
-              <StatCard icon={Activity} value={99} label="Uptime" suffix="%" />
+              <StatCard icon={Server} value={500} label={t("landing_servers")} />
+              <StatCard icon={Users} value={50000} label={t("landing_members")} />
+              <StatCard icon={Activity} value={99} label={t("landing_uptime")} suffix="%" />
             </div>
           </div>
 
@@ -204,12 +207,12 @@ export function LandingPage() {
       <section className="relative px-4 py-24">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
-            <p className="text-[#5865F2] text-sm font-semibold tracking-widest uppercase mb-3">Features</p>
+            <p className="text-[#5865F2] text-sm font-semibold tracking-widest uppercase mb-3">{t("landing_features")}</p>
             <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
-              Everything you need
+              {t("landing_everythingYouNeed")}
             </h2>
             <p className="text-white/40 text-lg max-w-xl mx-auto">
-              From community management to in-Discord commerce — all built-in and ready to go.
+              {t("landing_featuresDesc")}
             </p>
           </div>
 
@@ -225,8 +228,8 @@ export function LandingPage() {
                     style={{ background: `${f.color}20`, border: `1px solid ${f.color}30` }}>
                     <f.icon className="w-5 h-5" style={{ color: f.color }} />
                   </div>
-                  <h3 className="text-white font-bold mb-2">{f.title}</h3>
-                  <p className="text-white/40 text-sm leading-relaxed">{f.desc}</p>
+                  <h3 className="text-white font-bold mb-2">{t(f.titleKey)}</h3>
+                  <p className="text-white/40 text-sm leading-relaxed">{t(f.descKey)}</p>
                 </div>
               </div>
             ))}
@@ -242,19 +245,19 @@ export function LandingPage() {
             <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 0%, rgba(88,101,242,0.2), transparent 70%)" }} />
             <div className="relative">
               <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
-                Ready to get started?
+                {t("landing_readyToStart")}
               </h2>
-              <p className="text-white/50 mb-8 text-lg">Add Infinity Bot to your server and experience it today.</p>
+              <p className="text-white/50 mb-8 text-lg">{t("landing_ctaDesc")}</p>
               <div className="flex flex-wrap gap-3 justify-center">
                 {inviteUrl && (
                   <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#5865F2] hover:bg-[#4752c4] text-white font-bold text-sm transition-all hover:scale-[1.02] shadow-xl shadow-[#5865F2]/30">
-                    <Zap className="w-4 h-4" /> Add Bot for free
+                    <Zap className="w-4 h-4" /> {t("landing_addBotFree")}
                   </a>
                 )}
                 <Link to="/commands"
                   className="flex items-center gap-2 px-8 py-3.5 rounded-xl border border-white/15 text-white font-bold text-sm hover:bg-white/5 transition-all hover:scale-[1.02]">
-                  View commands <ArrowRight className="w-4 h-4" />
+                  {t("landing_viewCommands")} <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
@@ -269,14 +272,14 @@ export function LandingPage() {
             <div className="w-5 h-5 rounded bg-[#5865F2] flex items-center justify-center">
               <Zap className="w-3 h-3 text-white" />
             </div>
-            <span>© 2025 Infinity Bot</span>
+            <span>{t("landing_copyright")}</span>
           </div>
           <div className="flex items-center gap-5 text-sm text-white/30">
-            <Link to="/commands" className="hover:text-white/60 transition-colors">Commands</Link>
-            <Link to="/pricing" className="hover:text-white/60 transition-colors">Pricing</Link>
-            <Link to="/status" className="hover:text-white/60 transition-colors">Status</Link>
+            <Link to="/commands" className="hover:text-white/60 transition-colors">{t("landing_commands")}</Link>
+            <Link to="/pricing" className="hover:text-white/60 transition-colors">{t("landing_pricing")}</Link>
+            <Link to="/status" className="hover:text-white/60 transition-colors">{t("landing_status")}</Link>
             {supportUrl && (
-              <a href={supportUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white/60 transition-colors">Support</a>
+              <a href={supportUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white/60 transition-colors">{t("landing_support")}</a>
             )}
           </div>
         </div>
