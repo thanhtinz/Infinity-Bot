@@ -17,7 +17,7 @@ import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect, MultiChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect, RoleSelect } from "@/components/RoleSelect";
-import { Filter, Gift, Hash, ImagePlus, ListOrdered, Settings, Shield, Sparkles, User, X, Zap, Layers, MousePointer2, Type, Square, CircleUserRound, Wand2, MessageSquareText, Maximize2, ZoomIn, ZoomOut, RotateCcw, ArrowLeft, Save, Copy, Trash2, Eye, EyeOff, Plus, RefreshCw, Upload } from "lucide-react";
+import { Filter, Gift, Hash, ImagePlus, ListOrdered, Settings, Shield, Sparkles, User, X, Zap, Layers, MousePointer2, Type, Square, CircleUserRound, Wand2, MessageSquareText, Maximize2, ZoomIn, ZoomOut, RotateCcw, ArrowLeft, Save, Copy, Trash2, Eye, EyeOff, Plus, RefreshCw, Upload, Mic, Star, Calendar, BarChart3, MessageCircle } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
 
 interface LevelingConfig {
@@ -517,7 +517,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
 
   return <div className="space-y-4 sm:space-y-6">
     <Tabs value={section || "rank-card"} className="space-y-4">
-      {!section && <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 sm:flex sm:flex-wrap sm:justify-start"><TabsTrigger value="rank-card" className="text-xs sm:text-sm">Rank Card</TabsTrigger><TabsTrigger value="config" className="text-xs sm:text-sm">XP Config</TabsTrigger><TabsTrigger value="voice-xp" className="text-xs sm:text-sm">🔊 Voice XP</TabsTrigger><TabsTrigger value="filters" className="text-xs sm:text-sm">Filters</TabsTrigger><TabsTrigger value="leaderboard" className="text-xs sm:text-sm">Leaderboard</TabsTrigger><TabsTrigger value="rewards" className="text-xs sm:text-sm">Rewards</TabsTrigger><TabsTrigger value="multipliers" className="text-xs sm:text-sm">Multipliers</TabsTrigger><TabsTrigger value="analytics" className="text-xs sm:text-sm">📊 Analytics</TabsTrigger></TabsList>}
+      {!section && <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 sm:flex sm:flex-wrap sm:justify-start"><TabsTrigger value="rank-card" className="text-xs sm:text-sm">Rank Card</TabsTrigger><TabsTrigger value="config" className="text-xs sm:text-sm">XP Config</TabsTrigger><TabsTrigger value="voice-xp" className="text-xs sm:text-sm"><Mic className="mr-1 h-3.5 w-3.5" />Voice XP</TabsTrigger><TabsTrigger value="filters" className="text-xs sm:text-sm">Filters</TabsTrigger><TabsTrigger value="leaderboard" className="text-xs sm:text-sm">Leaderboard</TabsTrigger><TabsTrigger value="rewards" className="text-xs sm:text-sm">Rewards</TabsTrigger><TabsTrigger value="multipliers" className="text-xs sm:text-sm">Multipliers</TabsTrigger><TabsTrigger value="analytics" className="text-xs sm:text-sm"><BarChart3 className="mr-1 h-3.5 w-3.5" />Analytics</TabsTrigger></TabsList>}
 
       <TabsContent value="rank-card" className="space-y-4">
         {rankCard && (
@@ -655,6 +655,63 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                     <div className="flex items-center gap-4">
                       <Slider min={60} max={130} step={2} value={[rankCard.avatar_size]} onValueChange={([v]) => setRankCard({ ...rankCard, avatar_size: v })} className="flex-1" />
                       <span className="w-10 text-right text-sm font-mono">{rankCard.avatar_size}px</span>
+                    </div>
+                  </div>
+
+                  {/* Gradient Theme */}
+                  <div className="rounded-2xl border bg-muted/20 p-4">
+                    <p className="mb-3 text-sm font-semibold">Gradient Theme</p>
+                    <p className="mb-2 text-xs text-muted-foreground">Applied when no custom background is set.</p>
+                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+                      {[
+                        { key: "", label: "None", colors: ["#3A3A45", "#24242B"] },
+                        { key: "sunset", label: "Sunset", colors: ["#FF5E4D", "#FF9A00"] },
+                        { key: "ocean", label: "Ocean", colors: ["#0096C7", "#00458E"] },
+                        { key: "forest", label: "Forest", colors: ["#228B22", "#006400"] },
+                        { key: "neon", label: "Neon", colors: ["#FF00FF", "#00FFFF"] },
+                        { key: "pastel", label: "Pastel", colors: ["#FFB3BA", "#BAE1FF"] },
+                        { key: "midnight", label: "Midnight", colors: ["#191970", "#483D8B"] },
+                        { key: "aurora", label: "Aurora", colors: ["#00D2BE", "#5F2CFF"] },
+                        { key: "fire", label: "Fire", colors: ["#FF4500", "#FFA500"] },
+                      ].map(t => (
+                        <button key={t.key} type="button" onClick={() => setRankCard({ ...rankCard, gradient_theme: t.key })}
+                          className={`relative overflow-hidden rounded-xl border-2 p-2 text-center text-[10px] font-medium transition ${(rankCard as any).gradient_theme === t.key ? "border-primary ring-2 ring-primary/40" : "border-transparent hover:border-muted-foreground/40"}`}
+                          style={{ background: `linear-gradient(135deg, ${t.colors[0]}, ${t.colors[1]})` }}>
+                          <span className="relative text-white drop-shadow">{t.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Avatar Effect & Frame */}
+                  <div className="rounded-2xl border bg-muted/20 p-4">
+                    <p className="mb-3 text-sm font-semibold">Avatar Style</p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <Label className="text-xs">Avatar Effect</Label>
+                        <Select value={(rankCard as any).avatar_effect || "glow"} onValueChange={v => setRankCard({ ...rankCard, avatar_effect: v } as any)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="glow">Glow</SelectItem>
+                            <SelectItem value="shadow">Shadow</SelectItem>
+                            <SelectItem value="ring_pulse">Ring Pulse</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Avatar Frame</Label>
+                        <Select value={(rankCard as any).frame || "none"} onValueChange={v => setRankCard({ ...rankCard, frame: v } as any)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="gold">Gold</SelectItem>
+                            <SelectItem value="diamond">Diamond</SelectItem>
+                            <SelectItem value="fire">Fire</SelectItem>
+                            <SelectItem value="rainbow">Rainbow</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -829,7 +886,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
         <Button onClick={() => saveConfig.mutate()} disabled={saveConfig.isPending}>Save config</Button>
       </CardContent></Card></TabsContent>
 
-      <TabsContent value="voice-xp"><Card><CardHeader><CardTitle className="flex items-center gap-2">🔊 Voice XP</CardTitle><CardDescription>Configure XP earned from voice channel activity.</CardDescription></CardHeader><CardContent className="space-y-5">
+      <TabsContent value="voice-xp"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Mic className="h-4 w-4" /> Voice XP</CardTitle><CardDescription>Configure XP earned from voice channel activity.</CardDescription></CardHeader><CardContent className="space-y-5">
         <div className="flex items-center justify-between rounded-2xl border p-4"><div><p className="font-medium">Enable Voice XP</p><p className="text-sm text-muted-foreground">Members earn XP while in voice channels.</p></div><Switch checked={form.voice_xp_enabled ?? true} onCheckedChange={v => setForm({...form, voice_xp_enabled: v})} /></div>
         <div className="grid md:grid-cols-3 gap-4">
           <div><Label>XP per minute</Label><Input type="number" min={1} max={100} value={form.voice_xp_per_minute ?? 5} onChange={e => setForm({...form, voice_xp_per_minute: Number(e.target.value)})} /></div>
@@ -842,7 +899,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
         </div>
         <div className="flex items-center justify-between rounded-2xl border p-4"><div><p className="font-medium">Solo XP</p><p className="text-sm text-muted-foreground">Allow XP when alone in voice channel (no other humans).</p></div><Switch checked={form.voice_solo_xp ?? false} onCheckedChange={v => setForm({...form, voice_solo_xp: v})} /></div>
         <div className="rounded-2xl border p-4">
-          <div className="mb-3"><Label className="flex items-center gap-2">🔇 Ignored voice channels</Label><p className="text-sm text-muted-foreground">No voice XP earned in these channels.</p></div>
+          <div className="mb-3"><Label className="flex items-center gap-2"><Mic className="h-4 w-4" /> Ignored voice channels</Label><p className="text-sm text-muted-foreground">No voice XP earned in these channels.</p></div>
           <MultiChannelSelect value={form.voice_ignored_channels || []} onChange={v => setForm({...form, voice_ignored_channels: v})} filter="voice" placeholder="Add ignored voice channel..." />
         </div>
         <Button onClick={() => saveConfig.mutate()} disabled={saveConfig.isPending}>Save config</Button>
@@ -876,7 +933,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
         </Card>
       </TabsContent>
 
-      <TabsContent value="leaderboard"><Card><CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="flex items-center gap-2"><ListOrdered className="w-4 h-4" /> Leaderboard</CardTitle><AlertDialog><AlertDialogTrigger asChild><Button variant="destructive" size="sm"><RotateCcw className="h-3.5 w-3.5 mr-1.5" />Reset LB</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Reset Level Leaderboard?</AlertDialogTitle><AlertDialogDescription>The leaderboard will only count members active after this point. XP data is preserved.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => resetLeaderboard.mutate()}>Confirm reset</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></div>{leaderboard?.reset_at && <CardDescription>Last reset: {new Date(leaderboard.reset_at).toLocaleString()}</CardDescription>}</CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Rank</TableHead><TableHead>User</TableHead><TableHead>Level</TableHead><TableHead>XP</TableHead><TableHead>📝 Msgs</TableHead><TableHead>🔊 Voice</TableHead><TableHead>⭐ Rep</TableHead><TableHead>📅 Weekly</TableHead></TableRow></TableHeader><TableBody>{leaderboard?.items?.map(i => <TableRow key={i.discord_id}><TableCell>#{i.rank}</TableCell><TableCell className="font-medium">{i.username || i.discord_id}</TableCell><TableCell>{i.level}</TableCell><TableCell>{i.xp.toLocaleString()}</TableCell><TableCell>{i.message_count}</TableCell><TableCell>{(i.voice_minutes || 0) >= 60 ? `${Math.floor((i.voice_minutes || 0) / 60)}h ${(i.voice_minutes || 0) % 60}m` : `${i.voice_minutes || 0}m`}</TableCell><TableCell>{i.rep_score || 0}</TableCell><TableCell>{(i.weekly_xp || 0).toLocaleString()}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
+      <TabsContent value="leaderboard"><Card><CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="flex items-center gap-2"><ListOrdered className="w-4 h-4" /> Leaderboard</CardTitle><AlertDialog><AlertDialogTrigger asChild><Button variant="destructive" size="sm"><RotateCcw className="h-3.5 w-3.5 mr-1.5" />Reset LB</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Reset Level Leaderboard?</AlertDialogTitle><AlertDialogDescription>The leaderboard will only count members active after this point. XP data is preserved.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => resetLeaderboard.mutate()}>Confirm reset</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></div>{leaderboard?.reset_at && <CardDescription>Last reset: {new Date(leaderboard.reset_at).toLocaleString()}</CardDescription>}</CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Rank</TableHead><TableHead>User</TableHead><TableHead>Level</TableHead><TableHead>XP</TableHead><TableHead><span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />Msgs</span></TableHead><TableHead><span className="flex items-center gap-1"><Mic className="h-3.5 w-3.5" />Voice</span></TableHead><TableHead><span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" />Rep</span></TableHead><TableHead><span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />Weekly</span></TableHead></TableRow></TableHeader><TableBody>{leaderboard?.items?.map(i => <TableRow key={i.discord_id}><TableCell>#{i.rank}</TableCell><TableCell className="font-medium">{i.username || i.discord_id}</TableCell><TableCell>{i.level}</TableCell><TableCell>{i.xp.toLocaleString()}</TableCell><TableCell>{i.message_count}</TableCell><TableCell>{(i.voice_minutes || 0) >= 60 ? `${Math.floor((i.voice_minutes || 0) / 60)}h ${(i.voice_minutes || 0) % 60}m` : `${i.voice_minutes || 0}m`}</TableCell><TableCell>{i.rep_score || 0}</TableCell><TableCell>{(i.weekly_xp || 0).toLocaleString()}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
 
       <TabsContent value="rewards"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Gift className="w-4 h-4" /> Role Rewards</CardTitle></CardHeader><CardContent className="space-y-4"><div className="grid md:grid-cols-[120px_1fr_120px] gap-3 items-end"><div><Label>Level</Label><Input type="number" value={reward.level} onChange={e => setReward({...reward, level: Number(e.target.value)})} /></div><div><Label>Role</Label><RoleSelect value={reward.role_id} onChange={v => setReward({...reward, role_id: v})} /></div><Button onClick={() => addReward.mutate()} disabled={!reward.role_id}>Add</Button></div><Table><TableHeader><TableRow><TableHead>Level</TableHead><TableHead>Role</TableHead><TableHead></TableHead></TableRow></TableHeader><TableBody>{rewards.map(r => <TableRow key={r.id}><TableCell>{r.level}</TableCell><TableCell>{r.role_name || r.role_id}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => delReward.mutate(r.id)}>Delete</Button></TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
 
@@ -923,8 +980,8 @@ function AnalyticsTab() {
     {/* XP Breakdown */}
     <div className="grid md:grid-cols-3 gap-3">
       <Card><CardContent className="p-4 text-center"><p className="text-xl font-bold">{analytics.total_xp.toLocaleString()}</p><p className="text-xs text-muted-foreground">Total XP</p></CardContent></Card>
-      <Card><CardContent className="p-4 text-center"><p className="text-xl font-bold text-blue-400">{analytics.total_text_xp.toLocaleString()}</p><p className="text-xs text-muted-foreground">📝 Text XP</p></CardContent></Card>
-      <Card><CardContent className="p-4 text-center"><p className="text-xl font-bold text-green-400">{analytics.total_voice_xp.toLocaleString()}</p><p className="text-xs text-muted-foreground">🔊 Voice XP</p></CardContent></Card>
+      <Card><CardContent className="p-4 text-center"><p className="text-xl font-bold text-blue-400">{analytics.total_text_xp.toLocaleString()}</p><p className="text-xs text-muted-foreground flex items-center justify-center gap-1"><MessageCircle className="h-3 w-3" />Text XP</p></CardContent></Card>
+      <Card><CardContent className="p-4 text-center"><p className="text-xl font-bold text-green-400">{analytics.total_voice_xp.toLocaleString()}</p><p className="text-xs text-muted-foreground flex items-center justify-center gap-1"><Mic className="h-3 w-3" />Voice XP</p></CardContent></Card>
     </div>
 
     {/* Level Distribution */}
@@ -966,7 +1023,7 @@ function AnalyticsTab() {
       <CardHeader><CardTitle className="text-sm">Top Members</CardTitle></CardHeader>
       <CardContent>
         <Table>
-          <TableHeader><TableRow><TableHead>#</TableHead><TableHead>User</TableHead><TableHead>Level</TableHead><TableHead>XP</TableHead><TableHead>📝 Msgs</TableHead><TableHead>🔊 Voice</TableHead><TableHead>⭐ Rep</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>#</TableHead><TableHead>User</TableHead><TableHead>Level</TableHead><TableHead>XP</TableHead><TableHead><span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />Msgs</span></TableHead><TableHead><span className="flex items-center gap-1"><Mic className="h-3.5 w-3.5" />Voice</span></TableHead><TableHead><span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" />Rep</span></TableHead></TableRow></TableHeader>
           <TableBody>{analytics.top_members.map((m, i) => (
             <TableRow key={m.discord_id}>
               <TableCell>{i + 1}</TableCell>
