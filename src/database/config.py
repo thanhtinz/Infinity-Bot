@@ -46,6 +46,7 @@ async def get_db():
 
 async def init_db():
     if engine:
+        import src.models.models  # noqa: F401 — ensure all models registered
         Base.metadata.create_all(bind=engine)
 
         # ── Lấy toàn bộ column info trong 1 query duy nhất (thay vì inspector.get_columns() từng bảng) ──
