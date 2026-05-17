@@ -167,35 +167,35 @@ export function TicketTranscripts() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((t) => (
-                <TableRow key={t.id}>
-                  <TableCell className="font-mono">#{t.ticket_id}</TableCell>
-                  <TableCell>{t.channel_name || "—"}</TableCell>
+              {filtered.map((tr) => (
+                <TableRow key={tr.id}>
+                  <TableCell className="font-mono">#{tr.ticket_id}</TableCell>
+                  <TableCell>{tr.channel_name || "—"}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{t.message_count}</Badge>
+                    <Badge variant="secondary">{tr.message_count}</Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {(t.participants ?? []).slice(0, 3).map((p) => (
+                      {(tr.participants ?? []).slice(0, 3).map((p) => (
                         <Badge key={p} variant="outline" className="text-xs">
                           {p}
                         </Badge>
                       ))}
-                      {(t.participants?.length ?? 0) > 3 && (
+                      {(tr.participants?.length ?? 0) > 3 && (
                         <Badge variant="outline" className="text-xs">
-                          +{t.participants.length - 3}
+                          +{tr.participants.length - 3}
                         </Badge>
                       )}
                     </div>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {formatDate(t.created_at)}
+                    {formatDate(tr.created_at)}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setViewTranscript(t)}
+                      onClick={() => setViewTranscript(tr)}
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       {t("ticketTranscript_view")}

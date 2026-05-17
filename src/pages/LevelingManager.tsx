@@ -108,6 +108,7 @@ export interface RankCardConfig {
   display_name: string;
   server: string;
   custom_bg_url?: string | null;
+  gradient_theme?: string;
 }
 
 const defaultLayout = (): RankCardLayout => ({

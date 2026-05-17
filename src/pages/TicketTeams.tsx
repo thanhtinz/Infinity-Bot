@@ -109,30 +109,30 @@ export function TicketTeams() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teamList.map((t) => (
+          {teamList.map((team) => (
             <Card
-              key={t.id}
+              key={team.id}
               className="cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
-              onClick={() => navigate('/ticket-teams/' + t.id + '/edit')}
+              onClick={() => navigate('/ticket-teams/' + team.id + '/edit')}
             >
               <div
                 className="h-1.5"
-                style={{ backgroundColor: t.color || "#5865F2" }}
+                style={{ backgroundColor: team.color || "#5865F2" }}
               />
               <CardContent className="pt-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <h3 className="font-semibold">{t.name}</h3>
-                    {t.description && (
+                    <h3 className="font-semibold">{team.name}</h3>
+                    {team.description && (
                       <p className="text-xs text-muted-foreground line-clamp-2">
-                        {t.description}
+                        {team.description}
                       </p>
                     )}
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Badge variant="secondary">{t.role_ids?.length ?? 0} {t("ticketTeams_roles")}</Badge>
-                  <Badge variant="outline">{t.panel_ids?.length ?? 0} {t("ticketTeams_panels")}</Badge>
+                  <Badge variant="secondary">{team.role_ids?.length ?? 0} {t("ticketTeams_roles")}</Badge>
+                  <Badge variant="outline">{team.panel_ids?.length ?? 0} {t("ticketTeams_panels")}</Badge>
                 </div>
                 <div className="flex gap-1.5">
                   <Button
@@ -141,7 +141,7 @@ export function TicketTeams() {
                     className="h-8 w-8"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate('/ticket-teams/' + t.id + '/edit');
+                      navigate('/ticket-teams/' + team.id + '/edit');
                     }}
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -152,7 +152,7 @@ export function TicketTeams() {
                     className="h-8 w-8 text-destructive"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setDeleteTarget(t);
+                      setDeleteTarget(team);
                     }}
                   >
                     <Trash2 className="h-3.5 w-3.5" />

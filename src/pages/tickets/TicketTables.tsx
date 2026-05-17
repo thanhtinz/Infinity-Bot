@@ -54,11 +54,11 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tickets.map((t) => (
-            <TableRow key={t.id}>
-              <TableCell className="font-mono text-sm">#{t.id}</TableCell>
+          {tickets.map((ticket) => (
+            <TableRow key={ticket.id}>
+              <TableCell className="font-mono text-sm">#{ticket.id}</TableCell>
               <TableCell className="max-w-[200px] truncate">
-                {t.subject || (
+                {ticket.subject || (
                   <span className="text-muted-foreground italic">
                     {t("ticket_noSubject")}
                   </span>
@@ -66,50 +66,50 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
               </TableCell>
               <TableCell>
                 <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                  {t.creator_id}
+                  {ticket.creator_id}
                 </code>
               </TableCell>
               <TableCell>
                 <Badge
                   variant="outline"
-                  className={cn("text-[11px]", STATUS_CONFIG[t.status]?.cls)}
+                  className={cn("text-[11px]", STATUS_CONFIG[ticket.status]?.cls)}
                 >
-                  {t(STATUS_CONFIG[t.status]?.label ?? t.status)}
+                  {t(STATUS_CONFIG[ticket.status]?.label ?? ticket.status)}
                 </Badge>
               </TableCell>
               <TableCell>
                 <Badge
                   variant="outline"
-                  className={cn("text-[11px]", PRIORITY_CONFIG[t.priority]?.cls)}
+                  className={cn("text-[11px]", PRIORITY_CONFIG[ticket.priority]?.cls)}
                 >
-                  {t(PRIORITY_CONFIG[t.priority]?.label ?? t.priority)}
+                  {t(PRIORITY_CONFIG[ticket.priority]?.label ?? ticket.priority)}
                 </Badge>
               </TableCell>
               <TableCell>
-                {t.claimed_by ? (
+                {ticket.claimed_by ? (
                   <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                    {t.claimed_by}
+                    {ticket.claimed_by}
                   </code>
                 ) : (
                   <span className="text-muted-foreground text-xs">—</span>
                 )}
               </TableCell>
               <TableCell className="text-sm">
-                {t.panel_id != null
-                  ? panelMap.get(t.panel_id) ?? (
-                      <span className="text-muted-foreground">#{t.panel_id}</span>
+                {ticket.panel_id != null
+                  ? panelMap.get(ticket.panel_id) ?? (
+                      <span className="text-muted-foreground">#{ticket.panel_id}</span>
                     )
                   : "—"}
               </TableCell>
               <TableCell className="text-sm whitespace-nowrap">
-                {formatDate(t.created_at)}
+                {formatDate(ticket.created_at)}
               </TableCell>
               <TableCell className="text-right">
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-7 text-xs"
-                  onClick={() => onViewDetail(t.id)}
+                  onClick={() => onViewDetail(ticket.id)}
                 >
                   {t("tickets_viewDetail")}
                 </Button>

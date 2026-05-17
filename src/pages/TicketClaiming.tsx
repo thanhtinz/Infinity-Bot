@@ -224,15 +224,15 @@ export function TicketClaiming() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {claimedTickets.map((t) => (
-                  <TableRow key={t.id}>
-                    <TableCell className="font-mono text-xs">#{t.id}</TableCell>
-                    <TableCell>{t.subject || "—"}</TableCell>
+                {claimedTickets.map((ticket) => (
+                  <TableRow key={ticket.id}>
+                    <TableCell className="font-mono text-xs">#{ticket.id}</TableCell>
+                    <TableCell>{ticket.subject || "—"}</TableCell>
                     <TableCell>
-                      <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{t.claimed_by || "—"}</code>
+                      <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{ticket.claimed_by || "—"}</code>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {t.claimed_at ? new Date(t.claimed_at).toLocaleDateString("vi-VN") : "—"}
+                      {ticket.claimed_at ? new Date(ticket.claimed_at).toLocaleDateString("vi-VN") : "—"}
                     </TableCell>
                     <TableCell>
                       <Button
@@ -240,7 +240,7 @@ export function TicketClaiming() {
                         variant="ghost"
                         className="text-destructive hover:text-destructive"
                         disabled={unclaimMutation.isPending}
-                        onClick={() => unclaimMutation.mutate(t.id)}
+                        onClick={() => unclaimMutation.mutate(ticket.id)}
                       >
                         <UserX className="w-4 h-4 mr-1" /> {t("ticketClaiming_unclaim")}
                       </Button>

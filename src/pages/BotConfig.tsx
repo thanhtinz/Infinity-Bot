@@ -171,7 +171,7 @@ export function BotConfig() {
   });
 
   // ── Mutations ──
-  const makeToast = (label: string, savedKey: string) => ({
+  const makeToast = (_label: string, savedKey: string) => ({
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["config"] }); toast({ title: t("save"), description: t(savedKey) }); },
     onError: () => { toast({ variant: "destructive", title: t("error"), description: t("toast_configFailed") }); },
   });

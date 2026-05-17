@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n";
-import { useT } from "@/i18n";
 
 // ─── Rule Card ───────────────────────────────────────────────────────────────
 

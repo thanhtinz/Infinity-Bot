@@ -50,7 +50,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
     .filter((group) => group.keys.length > 0), [allowedKeys]);
 
   // ── Bot language from config ──
-  const { data: configData } = useQuery({
+  const { data: _configData } = useQuery({
     queryKey: ["config", selectedGuildId],
     queryFn: () =>
       apiFetch("/api/config", {

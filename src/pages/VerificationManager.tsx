@@ -41,11 +41,9 @@ import { apiFetch } from "@/hooks/useApi";
 import {
   Users,
   Settings2,
-  UserPlus,
   BarChart3,
   Search,
   ShieldCheck,
-  ShieldAlert,
   Trash2,
   Ban,
   CheckCircle2,
@@ -58,7 +56,6 @@ import {
   Lock,
   Globe,
   Eye,
-  UserX,
   Clock,
   ArrowDownToLine,
   AlertTriangle,
@@ -163,7 +160,7 @@ function riskBadge(score: number): { cls: string; label: string } {
   return { cls: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30", label: "Low" };
 }
 
-const DEFAULT_CONFIG: VerificationConfig = {
+const _DEFAULT_CONFIG: VerificationConfig = {
   enabled: false,
   verified_role_id: "",
   unverified_role_id: "",
@@ -202,7 +199,7 @@ async function fetchMembers(
   return res.json();
 }
 
-async function fetchMemberDetail(id: number): Promise<VerifiedMember> {
+async function _fetchMemberDetail(id: number): Promise<VerifiedMember> {
   const res = await apiFetch(`/api/verification/members/${id}`);
   if (!res.ok) throw new Error("Failed to load member");
   return res.json();
