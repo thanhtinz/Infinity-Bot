@@ -272,6 +272,7 @@ async def init_db():
             "tilt_effect": "ALTER TABLE verification_configs ADD COLUMN tilt_effect BOOLEAN DEFAULT FALSE",
             "bio_description": "ALTER TABLE verification_configs ADD COLUMN bio_description TEXT",
             "socials": "ALTER TABLE verification_configs ADD COLUMN socials JSON DEFAULT '{}'",
+            "custom_domain": "ALTER TABLE verification_configs ADD COLUMN custom_domain VARCHAR",
         }.items():
             if col not in vc:
                 all_stmts.append(stmt)

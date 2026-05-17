@@ -81,6 +81,7 @@ export interface VerificationConfig {
   // VPN config (per-guild)
   vpn_api_key: string;
   vpn_api_provider: string;
+  custom_domain: string;
 }
 
 export interface VerificationStats {

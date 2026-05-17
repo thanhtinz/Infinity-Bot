@@ -88,6 +88,7 @@ def get_config(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_
         # VPN config (per-guild)
         "vpn_api_key": getattr(cfg, "vpn_api_key", "") or "",
         "vpn_api_provider": getattr(cfg, "vpn_api_provider", "proxycheck") or "proxycheck",
+        "custom_domain": getattr(cfg, "custom_domain", "") or "",
     }
 
 
@@ -111,6 +112,7 @@ def update_config(body: dict, guild_id: str = Depends(get_guild_id), db: Session
         "notify_success_role_id", "notify_blocked_role_id",
         "gateway_guild_id", "verify_passwords",
         "vpn_api_key", "vpn_api_provider",
+        "custom_domain",
     ]
     for field in allowed:
         if field in body:

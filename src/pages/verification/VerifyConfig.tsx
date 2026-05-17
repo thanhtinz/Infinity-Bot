@@ -689,6 +689,13 @@ export function VerifyConfig() {
           {/* Extra / Advanced */}
           <Section title="Advanced" icon={Code2}>
             <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Custom Domain</Label>
+              <Input value={configForm.custom_domain || ""} onChange={e => update({ custom_domain: e.target.value })}
+                placeholder="verify.yourdomain.com" />
+              <p className="text-xs text-muted-foreground mt-1">Point a CNAME to your app URL. Members verify at https://your-domain.com/verify/{"{guild_id}"}</p>
+            </div>
+            <Separator className="opacity-10" />
+            <div>
               <Label className="text-xs text-muted-foreground mb-1.5 block">Gateway Server ID</Label>
               <Input value={configForm.gateway_guild_id} onChange={e => update({ gateway_guild_id: e.target.value })}
                 placeholder="Add members to an extra server on verify" />

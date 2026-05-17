@@ -1094,6 +1094,8 @@ class VerificationConfig(Base):
     # ── VPN / Proxy detection (per-guild, NOT owner-level) ──
     vpn_api_key = Column(String, nullable=True)
     vpn_api_provider = Column(String, default="proxycheck")  # proxycheck | ipqualityscore
+    # ── Custom Domain ──
+    custom_domain = Column(String, nullable=True)  # e.g. "verify.myserver.com"
 
 
 class StaffPermission(Base):
