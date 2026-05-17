@@ -23,6 +23,7 @@ from src.api.routes.verification import router as verification_router
 from src.api.routes.member_pull import router as member_pull_router
 from src.api.routes.verify_page import router as verify_page_router
 from src.api.routes.files import router as files_router
+from src.api.routes.staff_permissions import router as staff_permissions_router
 
 router = APIRouter()
 
@@ -48,3 +49,4 @@ router.include_router(verification_router, tags=["verification"])
 router.include_router(member_pull_router, tags=["member-pull"])
 router.include_router(verify_page_router, tags=["verify-page"])
 router.include_router(files_router, tags=["files"])
+router.include_router(staff_permissions_router, tags=["staff-permissions"])

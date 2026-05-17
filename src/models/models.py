@@ -1024,3 +1024,24 @@ class VerificationConfig(Base):
     block_vpn = Column(Boolean, default=False)
     kick_on_deauth = Column(Boolean, default=False)
     close_page_after_verify = Column(Boolean, default=True)
+
+
+class StaffPermission(Base):
+    """Per-guild staff permission overrides — role-based access to dashboard sections."""
+    __tablename__ = "staff_permissions"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, index=True)
+    role_id = Column(String, nullable=False)
+    role_name = Column(String, nullable=True)  # cached for display
+    # Granular permissions (each is a feature section)
+    can_shop = Column(Boolean, default=False)
+    can_moderation = Column(Boolean, default=False)
+    can_verification = Column(Boolean, default=False)
+    can_community = Column(Boolean, default=False)
+    can_embeds = Column(Boolean, default=False)
+    can_roles = Column(Boolean, default=False)
+    can_utilities = Column(Boolean, default=False)
+    can_backup = Column(Boolean, default=False)
+    can_config = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    __table_args__ = (UniqueConstraint("guild_id", "role_id"),)

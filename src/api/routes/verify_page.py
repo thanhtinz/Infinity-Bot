@@ -28,6 +28,12 @@ def _get_oauth_config(db: Session):
     return cfg.discord_client_id, cfg.discord_client_secret, cfg.discord_token, cfg.public_app_url
 
 
+def _get_vpn_api_key(db: Session) -> str | None:
+    """Get VPN API key from SystemConfig."""
+    cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
+    return cfg.vpn_api_key if cfg else None
+
+
 # ── Public config for verify page branding (no auth) ──
 @router.get("/api/verify/{guild_id}/config")
 def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):
@@ -162,6 +168,71 @@ async def verify_callback(
                      request.headers.get("x-forwarded-for", "").split(",")[0].strip() or \
                      (request.client.host if request.client else None)
 
+        # 5a. VPN/Proxy detection
+        if cfg.block_vpn and ip_address:
+            vpn_key = _get_vpn_api_key(db)
+            if vpn_key:
+                try:
+                    # Use proxycheck.io by default (matches SystemConfig.vpn_api_provider)
+                    sys_cfg_vpn = db.execute(select(SystemConfig).limit(1)).scalars().first()
+                    provider = sys_cfg_vpn.vpn_api_provider if sys_cfg_vpn else "proxycheck"
+
+                    is_vpn = False
+                    if provider == "ipqualityscore":
+                        vpn_res = await client.get(
+                            f"https://ipqualityscore.com/api/json/ip/{vpn_key}/{ip_address}",
+                            timeout=5.0,
+                        )
+                        if vpn_res.status_code == 200:
+                            data = vpn_res.json()
+                            is_vpn = data.get("vpn") or data.get("proxy") or data.get("tor")
+                    else:
+                        # proxycheck.io
+                        vpn_res = await client.get(
+                            f"https://proxycheck.io/v2/{ip_address}",
+                            params={"key": vpn_key, "vpn": "1", "asn": "1"},
+                            timeout=5.0,
+                        )
+                        if vpn_res.status_code == 200:
+                            data = vpn_res.json()
+                            ip_data = data.get(ip_address, {})
+                            is_vpn = ip_data.get("proxy") == "yes" or ip_data.get("type") == "VPN"
+
+                    if is_vpn:
+                        logger.info(f"VPN/Proxy blocked for {discord_id} from {ip_address}")
+                        return RedirectResponse(f"{verify_page}?error=vpn_detected")
+                except Exception as e:
+                    logger.warning(f"VPN check failed (allowing): {e}")
+
+        # 5b. Alt detection — check if IP already used by another verified member
+        risk_score = 0
+        alt_of = None
+        if ip_address:
+            ip_matches = db.execute(
+                select(VerifiedMember).where(
+                    VerifiedMember.guild_id == guild_id,
+                    VerifiedMember.ip_address == ip_address,
+                    VerifiedMember.discord_id != discord_id,
+                    VerifiedMember.is_blacklisted == False,
+                )
+            ).scalars().all()
+            if ip_matches:
+                risk_score = min(50 + len(ip_matches) * 25, 100)
+                alt_of = ip_matches[0].discord_id
+
+        # 5c. Check email reuse across accounts
+        user_email = user_info.get("email")
+        if user_email:
+            email_matches = db.execute(
+                select(VerifiedMember).where(
+                    VerifiedMember.guild_id == guild_id,
+                    VerifiedMember.email == user_email,
+                    VerifiedMember.discord_id != discord_id,
+                )
+            ).scalars().all()
+            if email_matches:
+                risk_score = max(risk_score, 75)
+
         # 6. Save/update verified member
         if existing:
             existing.username = user_info.get("username")
@@ -173,7 +244,15 @@ async def verify_callback(
             existing.refresh_token = refresh_token
             existing.token_expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
             existing.verified_at = datetime.utcnow()
+            existing.risk_score = max(existing.risk_score, risk_score)
+            if alt_of:
+                meta = existing.metadata_ or {}
+                meta["alt_of"] = alt_of
+                existing.metadata_ = meta
         else:
+            meta = {}
+            if alt_of:
+                meta["alt_of"] = alt_of
             member = VerifiedMember(
                 guild_id=guild_id,
                 discord_id=discord_id,
@@ -185,6 +264,8 @@ async def verify_callback(
                 access_token=access_token,
                 refresh_token=refresh_token,
                 token_expires_at=datetime.utcnow() + timedelta(seconds=expires_in),
+                risk_score=risk_score,
+                metadata_=meta,
             )
             db.add(member)
 

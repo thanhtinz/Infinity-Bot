@@ -69,6 +69,7 @@ const PublicStatusPage = lazy(() => import("./pages/PublicStatusPage").then(m =>
 const ShopChannels = lazy(() => import("./pages/ShopChannels").then(m => ({ default: m.ShopChannels })));
 const ShopStats = lazy(() => import("./pages/ShopStats").then(m => ({ default: m.ShopStats })));
 const SpendingMilestones = lazy(() => import("./pages/SpendingMilestones"));
+const StaffPermissions = lazy(() => import("./pages/StaffPermissions").then(m => ({ default: m.StaffPermissions })));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -179,6 +180,7 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/bot-settings", icon: Settings, label: "nav_botSettings" },
       { to: "/config/payos", icon: CreditCard, label: "nav_payos", feature: "shop" },
+      { to: "/staff-permissions", icon: Shield, label: "Staff Permissions" },
     ],
   },
   {
@@ -675,6 +677,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/backup/schedule" element={<OwnerRoute><BackupSchedule /></OwnerRoute>} />
         <Route path="/backup/history" element={<OwnerRoute><BackupHistory /></OwnerRoute>} />
         <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
+        <Route path="/staff-permissions" element={<StaffPermissions />} />
         {/* Utilities */}
         <Route path="/sticky" element={<StickyManager />} />
         <Route path="/sticky/new" element={<StickyEditPage />} />

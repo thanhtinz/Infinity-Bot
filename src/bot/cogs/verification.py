@@ -237,6 +237,176 @@ class VerificationCog(commands.Cog):
         finally:
             session.close()
 
+    # ── Blacklist / Whitelist ──
+    @verify_group.command(name="blacklist", description="Blacklist a member from verification")
+    @commands.has_permissions(administrator=True)
+    async def blacklist_member(
+        self,
+        ctx: discord.ApplicationContext,
+        member: discord.Option(discord.Member, description="Member to blacklist"),
+        reason: discord.Option(str, description="Reason for blacklist", required=False, default="No reason"),
+    ):
+        session = SessionLocal()
+        try:
+            guild_id = str(ctx.guild.id)
+            vm = session.execute(
+                select(VerifiedMember).where(
+                    VerifiedMember.guild_id == guild_id,
+                    VerifiedMember.discord_id == str(member.id),
+                )
+            ).scalars().first()
+            if not vm:
+                # Create a blacklist record even if not verified
+                vm = VerifiedMember(
+                    guild_id=guild_id,
+                    discord_id=str(member.id),
+                    username=str(member),
+                    is_blacklisted=True,
+                    risk_score=100,
+                )
+                session.add(vm)
+            else:
+                vm.is_blacklisted = True
+
+            session.commit()
+
+            # Remove verified role if configured
+            cfg = session.execute(
+                select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
+            ).scalars().first()
+            if cfg and cfg.verified_role_id:
+                role = ctx.guild.get_role(int(cfg.verified_role_id))
+                if role and role in member.roles:
+                    try:
+                        await member.remove_roles(role, reason=f"Blacklisted: {reason}")
+                    except Exception:
+                        pass
+
+            embed = discord.Embed(
+                title="🚫 Member Blacklisted",
+                color=discord.Color.red(),
+                description=f"{member.mention} has been blacklisted from verification.\n**Reason:** {reason}",
+            )
+            await ctx.respond(embed=embed)
+        finally:
+            session.close()
+
+    @verify_group.command(name="whitelist", description="Remove a member from the blacklist")
+    @commands.has_permissions(administrator=True)
+    async def whitelist_member(
+        self,
+        ctx: discord.ApplicationContext,
+        member: discord.Option(discord.Member, description="Member to whitelist"),
+    ):
+        session = SessionLocal()
+        try:
+            guild_id = str(ctx.guild.id)
+            vm = session.execute(
+                select(VerifiedMember).where(
+                    VerifiedMember.guild_id == guild_id,
+                    VerifiedMember.discord_id == str(member.id),
+                )
+            ).scalars().first()
+            if not vm or not vm.is_blacklisted:
+                await ctx.respond("❌ Member is not blacklisted.", ephemeral=True)
+                return
+
+            vm.is_blacklisted = False
+            session.commit()
+
+            embed = discord.Embed(
+                title="✅ Member Whitelisted",
+                color=discord.Color.green(),
+                description=f"{member.mention} has been removed from the blacklist.",
+            )
+            await ctx.respond(embed=embed)
+        finally:
+            session.close()
+
+    # ── /delunauthed ──
+    @discord.slash_command(name="delunauthed", description="Kick all unverified members from the server")
+    @commands.has_permissions(administrator=True)
+    async def del_unauthed(
+        self,
+        ctx: discord.ApplicationContext,
+        dry_run: discord.Option(bool, description="Preview only (don't actually kick)?", default=True),
+    ):
+        await ctx.defer()
+        session = SessionLocal()
+        try:
+            guild_id = str(ctx.guild.id)
+            cfg = session.execute(
+                select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
+            ).scalars().first()
+            if not cfg or not cfg.enabled:
+                await ctx.followup.send("❌ Verification is not enabled.", ephemeral=True)
+                return
+
+            # Get all verified discord IDs for this guild
+            verified_ids = set(
+                row[0] for row in session.execute(
+                    select(VerifiedMember.discord_id).where(
+                        VerifiedMember.guild_id == guild_id,
+                        VerifiedMember.is_blacklisted == False,
+                    )
+                ).all()
+            )
+
+            unverified = []
+            for member in ctx.guild.members:
+                if member.bot:
+                    continue
+                if str(member.id) not in verified_ids:
+                    unverified.append(member)
+
+            if not unverified:
+                await ctx.followup.send("✅ All members are verified!")
+                return
+
+            if dry_run:
+                preview = "\n".join(
+                    f"• {m} (`{m.id}`)" for m in unverified[:25]
+                )
+                remaining = len(unverified) - 25
+                embed = discord.Embed(
+                    title="🔍 Unverified Members Preview",
+                    color=discord.Color.orange(),
+                    description=(
+                        f"Found **{len(unverified)}** unverified members.\n\n"
+                        f"{preview}"
+                        f"{f'\n... and {remaining} more' if remaining > 0 else ''}\n\n"
+                        f"Run `/delunauthed dry_run:False` to kick them."
+                    ),
+                )
+                await ctx.followup.send(embed=embed)
+                return
+
+            # Actually kick
+            kicked = 0
+            failed = 0
+            for member in unverified:
+                try:
+                    await member.kick(reason="Unverified member — /delunauthed")
+                    kicked += 1
+                except Exception:
+                    failed += 1
+                # Rate limit
+                if kicked % 5 == 0:
+                    await asyncio.sleep(1)
+
+            embed = discord.Embed(
+                title="🧹 Unverified Members Removed",
+                color=discord.Color.green(),
+                description=(
+                    f"✅ Kicked: **{kicked}**\n"
+                    f"❌ Failed: **{failed}**\n"
+                    f"Total unverified: **{len(unverified)}**"
+                ),
+            )
+            await ctx.followup.send(embed=embed)
+        finally:
+            session.close()
+
     # ── Events ──
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
