@@ -7,6 +7,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { useT } from "@/i18n";
 import type { TicketPanel, TicketPanelGroup } from "./tpTypes";
 
 // ─── Delete Panel Dialog ─────────────────────────────────────────────────────
@@ -19,23 +20,22 @@ export interface DeletePanelDialogProps {
 }
 
 export function DeletePanelDialog({ target, onClose, onConfirm, isPending }: DeletePanelDialogProps) {
+  const { t } = useT();
   return (
     <Dialog open={!!target} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Delete panel?</DialogTitle>
+          <DialogTitle>{t("ticketPanels_deletePanel")}</DialogTitle>
           <DialogDescription>
-            Panel{" "}
-            <strong className="text-foreground">{target?.name}</strong>{" "}
-            will be permanently deleted. This action cannot be undone.
+            {t("ticketPanels_deletePanelDesc")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t("cancel")}
           </Button>
           <Button variant="destructive" disabled={isPending} onClick={onConfirm}>
-            {isPending ? "Deleting..." : "Delete"}
+            {isPending ? t("deleting") : t("delete")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -53,19 +53,20 @@ export interface DeleteGroupDialogProps {
 }
 
 export function DeleteGroupDialog({ target, onClose, onConfirm, isPending }: DeleteGroupDialogProps) {
+  const { t } = useT();
   return (
     <Dialog open={!!target} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Delete panel group?</DialogTitle>
+          <DialogTitle>{t("ticketPanels_deleteGroup")}</DialogTitle>
           <DialogDescription>
-            Group <strong className="text-foreground">{target?.name}</strong> will be deleted. Panels inside will become standalone panels.
+            {t("ticketPanels_deleteGroupDesc")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
           <Button variant="destructive" disabled={isPending} onClick={onConfirm}>
-            {isPending ? "Deleting..." : "Delete"}
+            {isPending ? t("deleting") : t("delete")}
           </Button>
         </DialogFooter>
       </DialogContent>

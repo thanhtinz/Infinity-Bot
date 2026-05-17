@@ -29,6 +29,7 @@ import {
   Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 import type { UseMutationResult } from "@tanstack/react-query";
 import type { TicketRow } from "./ticketHelpers";
 import {
@@ -61,6 +62,7 @@ export function TicketDetailDialog({
   setDetailTab,
   updateMutation,
 }: TicketDetailDialogProps) {
+  const { t } = useT();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -85,7 +87,7 @@ export function TicketDetailDialog({
                     —
                   </span>
                   <span className="truncate">
-                    {detail.subject || "No subject"}
+                    {detail.subject || t("ticket_noSubject")}
                   </span>
                 </DialogTitle>
                 <DialogDescription className="flex items-center gap-2 mt-1">
@@ -122,15 +124,15 @@ export function TicketDetailDialog({
                 <TabsList className="w-full">
                   <TabsTrigger value="info" className="flex-1 gap-1.5">
                     <Ticket className="h-3.5 w-3.5" />
-                    Info
+                    {t("ticket_info")}
                   </TabsTrigger>
                   <TabsTrigger value="notes" className="flex-1 gap-1.5">
                     <StickyNote className="h-3.5 w-3.5" />
-                    Notes
+                    {t("ticket_notes")}
                   </TabsTrigger>
                   <TabsTrigger value="members" className="flex-1 gap-1.5">
                     <Users className="h-3.5 w-3.5" />
-                    Members
+                    {t("ticket_members")}
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -144,7 +146,7 @@ export function TicketDetailDialog({
                   {/* Channel ID */}
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">
-                      Channel ID
+                      {t("ticket_channelId")}
                     </p>
                     {detail.channel_id ? (
                       <CopyableId value={detail.channel_id} />
@@ -156,7 +158,7 @@ export function TicketDetailDialog({
                   {/* Creator ID */}
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">
-                      Creator ID
+                      {t("ticket_creatorId")}
                     </p>
                     <CopyableId value={detail.creator_id} />
                   </div>
@@ -164,13 +166,13 @@ export function TicketDetailDialog({
                   {/* Claimed by */}
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">
-                      Claimed by
+                      {t("ticketClaiming_claimedBy")}
                     </p>
                     {detail.claimed_by ? (
                       <CopyableId value={detail.claimed_by} />
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        Unclaimed
+                        {t("ticket_unclaimed")}
                       </p>
                     )}
                   </div>
@@ -180,7 +182,7 @@ export function TicketDetailDialog({
                   {/* Status selector */}
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium text-muted-foreground">
-                      Status
+                      {t("status")}
                     </p>
                     <Select
                       value={detail.status}
@@ -195,9 +197,9 @@ export function TicketDetailDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="open">Open</SelectItem>
-                        <SelectItem value="closed">Closed</SelectItem>
-                        <SelectItem value="deleted">Deleted</SelectItem>
+                        <SelectItem value="open">{t("tickets_open")}</SelectItem>
+                        <SelectItem value="closed">{t("tickets_closed")}</SelectItem>
+                        <SelectItem value="deleted">{t("tickets_deleted")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -205,7 +207,7 @@ export function TicketDetailDialog({
                   {/* Priority selector */}
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium text-muted-foreground">
-                      Priority
+                      {t("tickets_priority")}
                     </p>
                     <Select
                       value={detail.priority}
@@ -220,12 +222,12 @@ export function TicketDetailDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="low">{t("tickets_low")}</SelectItem>
                         <SelectItem value="normal">
-                          Normal
+                          {t("tickets_normal")}
                         </SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
+                        <SelectItem value="high">{t("tickets_high")}</SelectItem>
+                        <SelectItem value="urgent">{t("tickets_urgent")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -236,12 +238,12 @@ export function TicketDetailDialog({
                   {detail.status === "closed" && (
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground">
-                        Close reason
+                        {t("ticket_closeReason")}
                       </p>
                       <p className="text-sm">
                         {detail.close_reason || (
                           <span className="text-muted-foreground italic">
-                            No reason
+                            {t("ticket_noReason")}
                           </span>
                         )}
                       </p>
@@ -252,7 +254,7 @@ export function TicketDetailDialog({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground">
-                        Created
+                        {t("ticket_created")}
                       </p>
                       <p className="text-sm">
                         {formatDate(detail.created_at)}
@@ -261,7 +263,7 @@ export function TicketDetailDialog({
                     {detail.closed_at && (
                       <div className="space-y-1">
                         <p className="text-xs font-medium text-muted-foreground">
-                          Closed at
+                          {t("tickets_closedAt")}
                         </p>
                         <p className="text-sm">
                           {formatDate(detail.closed_at)}
@@ -274,7 +276,7 @@ export function TicketDetailDialog({
                   {detail.tags.length > 0 && (
                     <div className="space-y-1.5">
                       <p className="text-xs font-medium text-muted-foreground">
-                        Tags
+                        {t("ticket_tags")}
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {detail.tags.map((tag, i) => (
@@ -299,7 +301,7 @@ export function TicketDetailDialog({
                   {!detail.notes || detail.notes.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                       <StickyNote className="h-10 w-10 mb-2 opacity-40" />
-                      <p className="text-sm">No notes yet</p>
+                      <p className="text-sm">{t("ticket_noNotesYet")}</p>
                     </div>
                   ) : (
                     detail.notes.map((note) => (

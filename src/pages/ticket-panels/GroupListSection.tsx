@@ -9,6 +9,7 @@ import {
   Trash2,
   Hash,
 } from "lucide-react";
+import { useT } from "@/i18n";
 import type { TicketPanel, TicketPanelGroup } from "./tpTypes";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
@@ -30,20 +31,21 @@ export function GroupListSection({
   onEditGroup,
   onDeleteGroup,
 }: GroupListSectionProps) {
+  const { t } = useT();
   return (
     <>
       <Separator />
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h2 className="text-lg font-semibold tracking-tight">Multi-Panel Groups</h2>
+            <h2 className="text-lg font-semibold tracking-tight">{t("ticketPanels_multiPanelGroups")}</h2>
             <p className="text-sm text-muted-foreground">
-              Combine multiple panels into one embed message on Discord
+              {t("ticket_combineDesc")}
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={onCreateGroup}>
             <Plus className="h-3.5 w-3.5 mr-1" />
-            Create Group
+            {t("ticketPanels_createGroup")}
           </Button>
         </div>
 
@@ -51,7 +53,7 @@ export function GroupListSection({
           <div className="rounded-lg border border-dashed p-6 text-center">
             <LayoutGrid className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
-              No groups yet. Create a group to combine multiple panel buttons into one message.
+              {t("ticketPanels_noGroupsYet")}
             </p>
           </div>
         ) : (
@@ -80,12 +82,12 @@ export function GroupListSection({
                       {memberPanels.length > 0 ? memberPanels.map(p => (
                         <Badge key={p.id} variant="secondary" className="text-xs">{p.name}</Badge>
                       )) : (
-                        <span className="text-xs text-muted-foreground italic">No panels in this group yet</span>
+                        <span className="text-xs text-muted-foreground italic">{t("ticketPanels_noPanelsInGroup")}</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Badge variant={g.is_sent ? "default" : "outline"} className="text-[10px]">
-                        {g.is_sent ? "Sent" : "Not sent"}
+                        {g.is_sent ? t("ticketPanels_sent") : t("ticketPanels_notSent")}
                       </Badge>
                       {g.channel_id && (
                         <span className="flex items-center gap-1"><Hash className="h-3 w-3" />{g.channel_id}</span>

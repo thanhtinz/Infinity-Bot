@@ -13,6 +13,7 @@ import {
   Smile,
 } from "lucide-react";
 import { DEFAULT_COLOR, formatDate } from "./ccConstants";
+import { useT } from "@/i18n";
 
 export function CommandCard({
   command,
@@ -27,6 +28,7 @@ export function CommandCard({
   onToggle: () => void;
   togglePending: boolean;
 }) {
+  const { t } = useT();
   return (
     <Card className="overflow-hidden group transition-shadow hover:shadow-md">
       <CardContent className="p-0">
@@ -48,12 +50,12 @@ export function CommandCard({
             {command.response_type === "text" ? (
               <Badge variant="outline" className="text-[10px] px-1.5 shrink-0">
                 <Type className="h-3 w-3 mr-0.5" />
-                Text
+                {t("cc_text")}
               </Badge>
             ) : (
               <Badge variant="outline" className="text-[10px] px-1.5 shrink-0">
                 <Layout className="h-3 w-3 mr-0.5" />
-                Embed
+                {t("cc_embed")}
               </Badge>
             )}
           </div>
@@ -70,7 +72,7 @@ export function CommandCard({
         {/* Description */}
         <div className="px-4 pb-2">
           <p className="text-xs text-muted-foreground line-clamp-2">
-            {command.description || "No description"}
+            {command.description || t("cc_noDescription")}
           </p>
         </div>
 
@@ -106,11 +108,11 @@ export function CommandCard({
         <div className="mx-4 mb-2 flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
           {command.ephemeral && (
             <span className="flex items-center gap-1">
-              Hidden (Ephemeral)
+              {t("cc_hiddenEphemeral")}
             </span>
           )}
           {command.required_roles?.length > 0 && (
-            <span>{command.required_roles.length} required role(s)</span>
+            <span>{command.required_roles.length} {t("cc_requiredRoles")}</span>
           )}
           {(command.cooldown ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-amber-600">
@@ -119,11 +121,11 @@ export function CommandCard({
           )}
           {(command.allowed_channels?.length ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-blue-600">
-              📌 {command.allowed_channels.length} channel
+              📌 {command.allowed_channels.length} {t("cc_channel")}
             </span>
           )}
           {command.delete_trigger && (
-            <span className="text-rose-600">Delete original message</span>
+            <span className="text-rose-600">{t("cc_deleteOriginalMessage")}</span>
           )}
           {command.auto_react && (
             <span className="flex items-center gap-1">
@@ -153,7 +155,7 @@ export function CommandCard({
               onClick={onEdit}
             >
               <Pencil className="h-3.5 w-3.5 mr-1" />
-              Edit
+              {t("edit")}
             </Button>
             <Button
               variant="ghost"
@@ -162,7 +164,7 @@ export function CommandCard({
               onClick={onDelete}
             >
               <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Delete
+              {t("delete")}
             </Button>
           </div>
         </div>

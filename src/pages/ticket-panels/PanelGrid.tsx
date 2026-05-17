@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LayoutGrid, Plus } from "lucide-react";
+import { useT } from "@/i18n";
 import type { TicketPanel, TicketPanelGroup } from "./tpTypes";
 import { PanelCard } from "./tpComponents";
 
@@ -19,6 +20,7 @@ export interface PanelGridProps {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function PanelGrid({ panels, groups, isLoading, onCreate, onEdit, onDelete }: PanelGridProps) {
+  const { t } = useT();
   // Build a map of panel -> group for badge display
   const panelGroupMap = new Map<number, TicketPanelGroup>();
   for (const g of groups) {
@@ -44,13 +46,13 @@ export function PanelGrid({ panels, groups, isLoading, onCreate, onEdit, onDelet
           <div className="rounded-full bg-muted p-4 mb-4">
             <LayoutGrid className="h-8 w-8 text-muted-foreground" />
           </div>
-          <p className="text-lg font-medium">No panels yet</p>
+          <p className="text-lg font-medium">{t("ticketPanels_noPanelsYet")}</p>
           <p className="text-sm text-muted-foreground mt-1 mb-4">
-            Create your first Panel to start managing tickets
+            {t("ticketPanels_createFirstPanel")}
           </p>
           <Button onClick={onCreate}>
             <Plus className="h-4 w-4 mr-1.5" />
-            Create Panel
+            {t("ticketPanels_createPanel")}
           </Button>
         </CardContent>
       </Card>

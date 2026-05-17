@@ -20,6 +20,7 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 import type { TicketButton, TicketPanel, PanelForm } from "./tpTypes";
 import {
   DISCORD_BG,
@@ -43,6 +44,7 @@ export function DiscordPreview({
   form: PanelForm;
   buttons: TicketButton[];
 }) {
+  const { t } = useT();
   return (
     <div
       className="rounded-md overflow-hidden text-sm"
@@ -124,7 +126,7 @@ export function DiscordPreview({
                       style={{ backgroundColor: s.bg, color: s.text }}
                     >
                       {btn.emoji && <span>{btn.emoji}</span>}
-                      {btn.label || "Button"}
+                      {btn.label || t("ticketPanels_button")}
                     </div>
                   );
                 })}
@@ -197,6 +199,7 @@ export function PanelCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useT();
   const isSent = !!panel.message_id;
   const btns = panel.buttons ?? [];
 
@@ -230,14 +233,14 @@ export function PanelCard({
           {isSent ? (
             <Badge className="bg-green-500/15 text-green-600 border border-green-500/30 shrink-0 text-[10px] px-1.5">
               <CheckCircle2 className="h-3 w-3 mr-0.5" />
-              Sent
+              {t("ticketPanels_sent")}
             </Badge>
           ) : (
             <Badge
               variant="outline"
               className="text-muted-foreground shrink-0 text-[10px] px-1.5"
             >
-              Not sent
+              {t("ticketPanels_notSent")}
             </Badge>
           )}
         </div>
@@ -251,10 +254,10 @@ export function PanelCard({
             />
             <div className="p-2.5 flex-1 min-w-0 bg-muted/30">
               <p className="font-semibold text-xs leading-tight">
-                {panel.title || "Title"}
+                {panel.title || t("ticketPanels_title")}
               </p>
               <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
-                {panel.description || "Description..."}
+                {panel.description || t("ticketPanels_descriptionPlaceholder")}
               </p>
             </div>
           </div>
@@ -271,17 +274,17 @@ export function PanelCard({
                 style={{ backgroundColor: s.bg, color: s.text }}
               >
                 {btn.emoji && <span>{btn.emoji}</span>}
-                {btn.label || "Button"}
+                {btn.label || t("ticketPanels_button")}
               </span>
             );
           })}
           {btns.length === 0 && (
             <span className="text-[11px] text-muted-foreground">
-              0 buttons
+              {t("ticketPanels_zeroButtons")}
             </span>
           )}
           <Badge variant="secondary" className="text-[10px] px-1.5 shrink-0">
-            {btns.length} buttons
+            {btns.length} {t("ticketPanels_buttons")}
           </Badge>
         </div>
 
@@ -293,7 +296,7 @@ export function PanelCard({
               {panel.channel_id}
             </code>
           ) : (
-            <span>Not sent</span>
+            <span>{t("ticketPanels_notSent")}</span>
           )}
         </div>
 
@@ -317,7 +320,7 @@ export function PanelCard({
               onClick={onEdit}
             >
               <Pencil className="h-3.5 w-3.5 mr-1" />
-              Edit
+              {t("edit")}
             </Button>
             <Button
               variant="ghost"
@@ -326,7 +329,7 @@ export function PanelCard({
               onClick={onDelete}
             >
               <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Delete
+              {t("delete")}
             </Button>
           </div>
         </div>
@@ -346,6 +349,7 @@ export function CollapsibleSection({
   hasContent: boolean;
   children: ReactNode;
 }) {
+  const { t } = useT();
   const [open, setOpen] = useState(hasContent);
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -354,7 +358,7 @@ export function CollapsibleSection({
           <span className="text-sm font-medium">{title}</span>
           {hasContent && (
             <Badge variant="secondary" className="text-[10px] px-1.5">
-              Customize
+              {t("ticketPanels_customize")}
             </Badge>
           )}
         </div>

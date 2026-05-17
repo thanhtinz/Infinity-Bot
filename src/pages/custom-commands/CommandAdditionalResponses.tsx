@@ -10,6 +10,7 @@ import { Plus, X, ChevronDown, ChevronRight, ListPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { emptyEmbed } from "./ccConstants";
 import type { CommandForm } from "./ccTypes";
+import { useT } from "@/i18n";
 
 interface CommandAdditionalResponsesProps {
   form: CommandForm;
@@ -19,13 +20,14 @@ interface CommandAdditionalResponsesProps {
 }
 
 export function CommandAdditionalResponses({ form, onFormChange, open, onOpenChange }: CommandAdditionalResponsesProps) {
+  const { t } = useT();
   return (
     <Collapsible open={open} onOpenChange={onOpenChange}>
       <CollapsibleTrigger asChild>
         <button type="button" className="flex items-center justify-between w-full">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
             <ListPlus className="h-3.5 w-3.5" />
-            Additional Responses (optional)
+            {t("cc_additionalResponses")}
           </p>
           {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
         </button>

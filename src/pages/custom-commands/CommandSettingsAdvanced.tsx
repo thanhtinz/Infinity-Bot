@@ -12,6 +12,7 @@ import { ChannelSelect } from "@/components/ChannelSelect";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ChevronDown, ChevronRight, Hash, X } from "lucide-react";
 import type { CommandForm } from "./ccTypes";
+import { useT } from "@/i18n";
 
 interface CommandSettingsAdvancedProps {
   form: CommandForm;
@@ -40,6 +41,7 @@ export function CommandSettingsAdvanced({
   open,
   onOpenChange,
 }: CommandSettingsAdvancedProps) {
+  const { t } = useT();
   return (
     <Collapsible open={open} onOpenChange={onOpenChange}>
       <CollapsibleTrigger asChild>
@@ -52,13 +54,13 @@ export function CommandSettingsAdvanced({
           ) : (
             <ChevronRight className="h-3.5 w-3.5" />
           )}
-          Advanced settings
+          {t("cc_advancedSettings")}
         </button>
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-4 pt-3">
         {/* Aliaseses */}
         <div className="space-y-2">
-          <Label>Aliases</Label>
+          <Label>{t("cc_aliases")}</Label>
           <div className="flex flex-wrap gap-1.5 min-h-[28px] p-2 rounded-md border bg-background">
             {form.aliases.map((alias) => (
               <Badge
@@ -81,18 +83,18 @@ export function CommandSettingsAdvanced({
               onChange={(e) => onAliasesInputChange(e.target.value)}
               onKeyDown={onAliasesKeyDown}
               onBlur={aliasInput.trim() ? onAddAliases : undefined}
-              placeholder={form.aliases.length === 0 ? "Type an alias and press Enter..." : "Add..."}
+              placeholder={form.aliases.length === 0 ? t("cc_aliasPlaceholder") : t("add") + "..."}
               className="flex-1 min-w-[80px] bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
             />
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Alternative names for this command. e.g. add "hi" so !hi also works like !{form.name || "command"}
+            {t("cc_aliasDesc")}
           </p>
         </div>
 
         {/* Cooldown */}
         <div className="space-y-2">
-          <Label>Cooldown</Label>
+          <Label>{t("cc_cooldown")}</Label>
           <div className="flex items-center gap-2">
             <Input
               type="number"
@@ -104,19 +106,19 @@ export function CommandSettingsAdvanced({
                   cooldown: Math.max(0, parseInt(e.target.value) || 0),
                 }))
               }
-              placeholder="0 = unlimited"
+              placeholder={t("cc_cooldownPlaceholder")}
               className="w-28"
             />
-            <span className="text-sm text-muted-foreground">seconds</span>
+            <span className="text-sm text-muted-foreground">{t("cc_seconds")}</span>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Cooldown between uses (0 = unlimited)
+            {t("cc_cooldownDesc")}
           </p>
         </div>
 
         {/* Allowed Channels */}
         <div className="space-y-2">
-          <Label>Channel restriction</Label>
+          <Label>{t("cc_channelRestriction")}</Label>
           {form.allowed_channels.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {form.allowed_channels.map((chId) => (
@@ -142,19 +144,19 @@ export function CommandSettingsAdvanced({
             filter="text"
             value=""
             onChange={onAddChannel}
-            placeholder="Select channels..."
+            placeholder={t("cc_selectChannels")}
           />
           <p className="text-[11px] text-muted-foreground">
-            Empty = allow all channels
+            {t("cc_emptyAllowAll")}
           </p>
         </div>
 
         {/* Delete Trigger */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label>Delete command message</Label>
+            <Label>{t("cc_deleteCommandMessage")}</Label>
             <p className="text-[11px] text-muted-foreground">
-              Delete the !command message after responding
+              {t("cc_deleteCommandMessageDesc")}
             </p>
           </div>
           <Switch
@@ -167,7 +169,7 @@ export function CommandSettingsAdvanced({
 
         {/* Auto React */}
         <div className="space-y-2">
-          <Label>Auto react</Label>
+          <Label>{t("cc_autoReact")}</Label>
           <div className="flex items-center gap-2">
             <EmojiPicker
               onSelect={(emoji) =>
@@ -192,7 +194,7 @@ export function CommandSettingsAdvanced({
             )}
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Emoji to react to the response message
+            {t("cc_autoReactDesc")}
           </p>
         </div>
       </CollapsibleContent>
