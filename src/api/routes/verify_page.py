@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
-from src.models.models import SystemConfig, VerificationConfig, VerifiedMember
+from src.models.models import SystemConfig, VerificationConfig, VerifiedMember, FirewallRule, FirewallLog
 from src.api.auth import get_public_base_url
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):
 
 # ── Start OAuth2 flow ──
 @router.get("/api/verify/{guild_id}/start")
-def start_verification(guild_id: str, request: Request, db: Session = Depends(get_db)):
+def start_verification(guild_id: str, request: Request, fp: str = "", db: Session = Depends(get_db)):
     cfg = db.execute(
         select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
     ).scalars().first()
@@ -108,6 +108,9 @@ def start_verification(guild_id: str, request: Request, db: Session = Depends(ge
     base_url = public_app_url or get_public_base_url(request)
     redirect_uri = f"{base_url.rstrip('/')}/api/verify/{guild_id}/callback"
 
+    # Encode fingerprint in state: "guild_id:fp"
+    state = f"{guild_id}:{fp}" if fp else guild_id
+
     # Scopes: identify (user info) + email + guilds.join (add to server)
     scopes = "identify email guilds.join"
     params = urlencode({
@@ -115,7 +118,7 @@ def start_verification(guild_id: str, request: Request, db: Session = Depends(ge
         "redirect_uri": redirect_uri,
         "response_type": "code",
         "scope": scopes,
-        "state": guild_id,
+        "state": state,
     })
     return RedirectResponse(f"https://discord.com/api/oauth2/authorize?{params}")
 
@@ -126,8 +129,14 @@ async def verify_callback(
     guild_id: str,
     code: str,
     request: Request,
+    state: str = "",
     db: Session = Depends(get_db),
 ):
+    # Extract fingerprint from state: "guild_id:fp"
+    _fp_from_state = ""
+    if ":" in state:
+        _, _fp_from_state = state.split(":", 1)
+
     cfg = db.execute(
         select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
     ).scalars().first()
@@ -230,7 +239,66 @@ async def verify_callback(
                 except Exception as e:
                     logger.warning(f"VPN check failed (allowing): {e}")
 
-        # 5b. Alt detection — check if IP already used by another verified member
+        # 5a2. Firewall rule enforcement (IP, ASN, Country, user_id, email_domain)
+        ip_country = None
+        ip_asn = None
+        if ip_address:
+            # Try to get country/ASN from proxycheck or ipapi
+            try:
+                geo_res = await client.get(f"http://ip-api.com/json/{ip_address}?fields=countryCode,as", timeout=3.0)
+                if geo_res.status_code == 200:
+                    geo = geo_res.json()
+                    ip_country = geo.get("countryCode")
+                    ip_asn = geo.get("as", "").split()[0] if geo.get("as") else None  # e.g. "AS13335"
+            except Exception:
+                pass
+
+        # Check firewall block rules
+        block_rules = db.execute(
+            select(FirewallRule).where(
+                FirewallRule.guild_id == guild_id,
+                FirewallRule.rule_type == "block",
+            )
+        ).scalars().all()
+
+        user_email = user_info.get("email")
+        email_domain = user_email.split("@")[1] if user_email and "@" in user_email else None
+
+        for rule in block_rules:
+            matched = False
+            if rule.target_type == "user_id" and rule.target_value == discord_id:
+                matched = True
+            elif rule.target_type == "ip" and rule.target_value == ip_address:
+                matched = True
+            elif rule.target_type == "country" and ip_country and rule.target_value.upper() == ip_country.upper():
+                matched = True
+            elif rule.target_type == "asn" and ip_asn and rule.target_value.upper() == ip_asn.upper():
+                matched = True
+            elif rule.target_type == "email_domain" and email_domain and rule.target_value.lower() == email_domain.lower():
+                matched = True
+
+            if matched:
+                # Log the block
+                log = FirewallLog(
+                    guild_id=guild_id,
+                    discord_id=discord_id,
+                    username=user_info.get("username"),
+                    avatar_url=f"https://cdn.discordapp.com/avatars/{discord_id}/{user_info.get('avatar')}.png" if user_info.get("avatar") else None,
+                    ip_address=ip_address,
+                    country=ip_country,
+                    blocked_by="firewall",
+                    rule_id=rule.id,
+                    details={"rule_type": rule.target_type, "rule_value": rule.target_value, "reason": rule.reason},
+                )
+                db.add(log)
+                db.commit()
+                logger.info(f"Firewall blocked {discord_id}: {rule.target_type}={rule.target_value}")
+                return RedirectResponse(f"{verify_page}?error=blocked")
+
+        # 5a3. Browser fingerprint for alt detection
+        fingerprint = _fp_from_state or request.query_params.get("fp", "")  # From OAuth state or query param
+
+        # 5b. Alt detection — check if IP or fingerprint already used by another verified member
         risk_score = 0
         alt_of = None
         if ip_address:
@@ -246,8 +314,23 @@ async def verify_callback(
                 risk_score = min(50 + len(ip_matches) * 25, 100)
                 alt_of = ip_matches[0].discord_id
 
+        # Fingerprint-based alt detection
+        if fingerprint and not alt_of:
+            fp_matches = db.execute(
+                select(VerifiedMember).where(
+                    VerifiedMember.guild_id == guild_id,
+                    VerifiedMember.discord_id != discord_id,
+                    VerifiedMember.is_blacklisted == False,
+                ).filter(
+                    VerifiedMember.metadata_.op("->>")("fingerprint") == fingerprint
+                )
+            ).scalars().all()
+            if fp_matches:
+                risk_score = max(risk_score, min(60 + len(fp_matches) * 20, 100))
+                if not alt_of:
+                    alt_of = fp_matches[0].discord_id
+
         # 5c. Check email reuse across accounts
-        user_email = user_info.get("email")
         if user_email:
             email_matches = db.execute(
                 select(VerifiedMember).where(
@@ -265,20 +348,32 @@ async def verify_callback(
             existing.discriminator = user_info.get("discriminator")
             existing.avatar = user_info.get("avatar")
             existing.email = user_info.get("email")
-            existing.ip_address = ip_address
+            existing.ip_address = ip_address if not getattr(cfg, "no_save_ip", False) else None
             existing.access_token = access_token
             existing.refresh_token = refresh_token
             existing.token_expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
             existing.verified_at = datetime.utcnow()
             existing.risk_score = max(existing.risk_score, risk_score)
+            meta = existing.metadata_ or {}
             if alt_of:
-                meta = existing.metadata_ or {}
                 meta["alt_of"] = alt_of
-                existing.metadata_ = meta
+            if fingerprint:
+                meta["fingerprint"] = fingerprint
+            if ip_country:
+                meta["country"] = ip_country
+            if ip_asn:
+                meta["asn"] = ip_asn
+            existing.metadata_ = meta
         else:
             meta = {}
             if alt_of:
                 meta["alt_of"] = alt_of
+            if fingerprint:
+                meta["fingerprint"] = fingerprint
+            if ip_country:
+                meta["country"] = ip_country
+            if ip_asn:
+                meta["asn"] = ip_asn
             member = VerifiedMember(
                 guild_id=guild_id,
                 discord_id=discord_id,
@@ -286,7 +381,7 @@ async def verify_callback(
                 discriminator=user_info.get("discriminator"),
                 avatar=user_info.get("avatar"),
                 email=user_info.get("email"),
-                ip_address=ip_address,
+                ip_address=ip_address if not getattr(cfg, "no_save_ip", False) else None,
                 access_token=access_token,
                 refresh_token=refresh_token,
                 token_expires_at=datetime.utcnow() + timedelta(seconds=expires_in),

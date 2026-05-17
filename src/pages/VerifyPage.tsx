@@ -160,9 +160,43 @@ export function VerifyPage() {
   const [config, setConfig] = useState<VerifyConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [fingerprint, setFingerprint] = useState("");
 
   const isSuccess = searchParams.get("success") === "true";
   const urlError = searchParams.get("error");
+
+  // Generate browser fingerprint for alt detection
+  useEffect(() => {
+    try {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.textBaseline = "top";
+        ctx.font = "14px 'Arial'";
+        ctx.fillStyle = "#f60";
+        ctx.fillRect(125, 1, 62, 20);
+        ctx.fillStyle = "#069";
+        ctx.fillText("InfinityBot fp", 2, 15);
+        ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+        ctx.fillText("InfinityBot fp", 4, 17);
+      }
+      const dataUrl = canvas.toDataURL();
+      // Simple hash
+      let hash = 0;
+      for (let i = 0; i < dataUrl.length; i++) {
+        const chr = dataUrl.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0;
+      }
+      const info = `${navigator.userAgent}|${screen.width}x${screen.height}|${Intl.DateTimeFormat().resolvedOptions().timeZone}|${navigator.language}|${hash}`;
+      let fpHash = 0;
+      for (let i = 0; i < info.length; i++) {
+        fpHash = ((fpHash << 5) - fpHash) + info.charCodeAt(i);
+        fpHash |= 0;
+      }
+      setFingerprint(Math.abs(fpHash).toString(36));
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     if (!guildId) { setError("Invalid verification link."); setLoading(false); return; }
@@ -348,7 +382,7 @@ export function VerifyPage() {
 
         {/* Verify button */}
         <a
-          href={`/api/verify/${guildId}/start`}
+          href={`/api/verify/${guildId}/start${fingerprint ? `?fp=${fingerprint}` : ""}`}
           className="inline-flex items-center justify-center gap-2 w-full rounded-xl px-6 py-3.5 text-base font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98] shadow-lg"
           style={{
             backgroundColor: btnColor,
