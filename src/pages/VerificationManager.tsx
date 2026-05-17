@@ -160,26 +160,6 @@ function riskBadge(score: number): { cls: string; label: string } {
   return { cls: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30", label: "Low" };
 }
 
-const _DEFAULT_CONFIG: VerificationConfig = {
-  enabled: false,
-  verified_role_id: "",
-  unverified_role_id: "",
-  verify_channel_id: "",
-  log_channel_id: "",
-  page_title: "Verify Your Account",
-  page_description: "Please verify your Discord account to gain access to the server.",
-  page_color: "#5865F2",
-  page_logo_url: "",
-  page_background_url: "",
-  button_text: "Verify with Discord",
-  success_message: "You have been verified successfully!",
-  captcha_enabled: false,
-  min_account_age_days: 0,
-  block_vpn: false,
-  kick_on_deauth: false,
-  close_page_after_verify: false,
-};
-
 // ── API ────────────────────────────────────────────────────────────────────
 
 async function fetchMembers(
@@ -196,12 +176,6 @@ async function fetchMembers(
   if (blacklisted !== undefined) params.set("blacklisted", String(blacklisted));
   const res = await apiFetch(`/api/verification/members?${params}`);
   if (!res.ok) throw new Error("Failed to load members");
-  return res.json();
-}
-
-async function _fetchMemberDetail(id: number): Promise<VerifiedMember> {
-  const res = await apiFetch(`/api/verification/members/${id}`);
-  if (!res.ok) throw new Error("Failed to load member");
   return res.json();
 }
 
