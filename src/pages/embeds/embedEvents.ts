@@ -10,6 +10,7 @@ import {
   Heart, Mic, HelpCircle,
   Mail, TrendingUp,
   CheckCircle, Package, ClipboardList, Tag, FileText, UserPlus, Pin, BarChart3,
+  ShieldCheck, Archive, RotateCcw, Users,
 } from "lucide-react";
 
 // ─── Event definitions ───────────────────────────────────────────────────────
@@ -166,6 +167,14 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "interact_yawn",       label: "Yawn", labelEn: "Yawn",          icon: Heart, desc: "Ngáp", descEn: "Yawn" },
   { key: "interact_yay",        label: "Yay", labelEn: "Yay",           icon: Heart, desc: "Yay!", descEn: "Yay!" },
   { key: "interact_yes",        label: "Yes", labelEn: "Yes",           icon: Heart, desc: "Gật đầu", descEn: "Nod yes" },
+  // ── Bảo mật & Khôi phục ──
+  { key: "verification_log",       label: "Xác minh thành công",     labelEn: "Verification Success",   icon: ShieldCheck,  desc: "Khi user xác minh thành công qua OAuth2" },
+  { key: "verification_denied",    label: "Xác minh bị từ chối",     labelEn: "Verification Denied",    icon: ShieldAlert,  desc: "Khi user bị từ chối xác minh" },
+  { key: "backup_completed",       label: "Sao lưu hoàn tất",        labelEn: "Backup Completed",       icon: Archive,      desc: "Khi sao lưu server hoàn tất" },
+  { key: "restore_started",        label: "Đang khôi phục",          labelEn: "Restore Started",        icon: RotateCcw,    desc: "Khi bắt đầu khôi phục server" },
+  { key: "restore_completed",      label: "Khôi phục hoàn tất",      labelEn: "Restore Completed",      icon: CheckCircle,  desc: "Khi khôi phục server hoàn tất" },
+  { key: "member_pull_started",    label: "Đang kéo thành viên",     labelEn: "Member Pull Started",    icon: Users,        desc: "Khi bắt đầu kéo thành viên về server" },
+  { key: "member_pull_completed",  label: "Kéo thành viên hoàn tất", labelEn: "Member Pull Completed",  icon: UserPlus,     desc: "Khi kéo thành viên về server hoàn tất" },
 ];
 
 // ─── Event groups ────────────────────────────────────────────────────────────
@@ -181,6 +190,7 @@ export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] 
   { label: "Logging",     labelEn: "Logging",         keys: ["log_message_delete", "log_message_edit", "log_message_bulk_delete", "log_voice_join", "log_voice_leave", "log_voice_move", "log_member_join", "log_member_leave", "log_nickname_change", "log_role_update", "log_channel_create", "log_channel_delete"] },
   { label: "Tương tác — Có mục tiêu", labelEn: "Interactions — Targeted", keys: ["interact_airkiss", "interact_angrystare", "interact_bite", "interact_brofist", "interact_cuddle", "interact_handhold", "interact_hug", "interact_kiss", "interact_lick", "interact_nom", "interact_nuzzle", "interact_pat", "interact_pinch", "interact_poke", "interact_punch", "interact_slap", "interact_smack", "interact_tickle", "interact_wave", "interact_wink", "interact_stare", "interact_peek"] },
   { label: "Tương tác — Biểu cảm", labelEn: "Interactions — Expressions", keys: ["interact_bleh", "interact_blush", "interact_celebrate", "interact_cheers", "interact_clap", "interact_confused", "interact_cool", "interact_cry", "interact_dance", "interact_drool", "interact_evillaugh", "interact_facepalm", "interact_happy", "interact_headbang", "interact_huh", "interact_laugh", "interact_love", "interact_mad", "interact_nervous", "interact_no", "interact_nosebleed", "interact_nyah", "interact_pout", "interact_roll", "interact_run", "interact_sad", "interact_scared", "interact_shout", "interact_shrug", "interact_shy", "interact_sigh", "interact_sip", "interact_sleep", "interact_slowclap", "interact_smile", "interact_smug", "interact_sneeze", "interact_sorry", "interact_stop", "interact_surprised", "interact_sweat", "interact_thumbsup", "interact_tired", "interact_woah", "interact_yawn", "interact_yay", "interact_yes"] },
+  { label: "Bảo mật & Khôi phục", labelEn: "Security & Recovery", keys: ["verification_log", "verification_denied", "backup_completed", "restore_started", "restore_completed", "member_pull_started", "member_pull_completed"] },
 ];
 
 // ─── Variables reference ─────────────────────────────────────────────────────
@@ -278,4 +288,15 @@ export const VARIABLES: { token: string; desc: string; descEn: string }[] = [
   { token: "{expires_at}",        desc: "Thời gian hết hạn (temprole)",     descEn: "Expiry time (temprole)" },
   { token: "{case_number}",       desc: "Số case xử phạt",                  descEn: "Moderation case number" },
   { token: "{note_id}",           desc: "ID ghi chú mod",                   descEn: "Moderation note ID" },
+  { token: "{email}",             desc: "Email xác minh",                   descEn: "Verification email" },
+  { token: "{ip}",                desc: "Địa chỉ IP xác minh",             descEn: "Verification IP address" },
+  { token: "{risk_score}",        desc: "Điểm rủi ro xác minh",            descEn: "Verification risk score" },
+  { token: "{user.tag}",          desc: "Tag Discord (user#0001)",          descEn: "Discord tag (user#0001)" },
+  { token: "{backup_type}",       desc: "Loại sao lưu (full/config/discord)", descEn: "Backup type (full/config/discord)" },
+  { token: "{channel_count}",     desc: "Số kênh trong backup",             descEn: "Channel count in backup" },
+  { token: "{role_count}",        desc: "Số role trong backup",              descEn: "Role count in backup" },
+  { token: "{total_members}",     desc: "Tổng thành viên cần kéo",          descEn: "Total members to pull" },
+  { token: "{pulled}",            desc: "Số thành viên kéo thành công",     descEn: "Members pulled successfully" },
+  { token: "{failed}",            desc: "Số thành viên kéo thất bại",       descEn: "Members pull failed" },
+  { token: "{total}",             desc: "Tổng cộng",                        descEn: "Total" },
 ];
