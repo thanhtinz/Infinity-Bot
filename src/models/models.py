@@ -1053,6 +1053,28 @@ class VerificationConfig(Base):
     terms_url = Column(String, nullable=True)
     # Access control
     verify_password = Column(String, nullable=True)
+    # ── Advanced Customization ──
+    # Media
+    banner_url = Column(String, nullable=True)
+    cursor_url = Column(String, nullable=True)
+    # Appearance
+    font_family = Column(String, default="Inter")
+    bg_effect = Column(String, default="none")        # none | stars | particles | gradient | rain
+    # Colors
+    bg_color = Column(String, default="#0b0d14")
+    text_color = Column(String, default="#ffffff")
+    btn_color = Column(String, default="#5865F2")
+    btn_border_color = Column(String, default="#5865F2")
+    card_border_color = Column(String, default="#1a1d2e")
+    card_bg_color = Column(String, default="#1a1d2e")
+    # Effects
+    typewriter_effect = Column(Boolean, default=False)
+    glow_effect = Column(Boolean, default=False)
+    tilt_effect = Column(Boolean, default=False)
+    # Content
+    bio_description = Column(Text, nullable=True)
+    # Socials (JSON: {"twitter": "url", "github": "url", ...})
+    socials = Column(JSON, default=dict)
 
 
 class StaffPermission(Base):

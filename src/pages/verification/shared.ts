@@ -46,6 +46,22 @@ export interface VerificationConfig {
   custom_css: string;
   redirect_url: string;
   terms_url: string;
+  // Advanced customization
+  banner_url: string;
+  cursor_url: string;
+  font_family: string;
+  bg_effect: string;
+  bg_color: string;
+  text_color: string;
+  btn_color: string;
+  btn_border_color: string;
+  card_border_color: string;
+  card_bg_color: string;
+  typewriter_effect: boolean;
+  glow_effect: boolean;
+  tilt_effect: boolean;
+  bio_description: string;
+  socials: Record<string, string>;
 }
 
 export interface VerificationStats {
