@@ -14,21 +14,21 @@ router = APIRouter()
 # key → (label, description, cog_names)
 # cog_names: bot cogs to load/unload when toggled
 FEATURE_DEFS: list[dict] = [
-    {"key": "shop",            "label": "Shop",                "desc": "Sản phẩm, đơn hàng, coupon, feedback, BXH", "icon": "ShoppingBag",   "cogs": ["ShopCog", "AdminShopCog"]},
-    {"key": "ticket",          "label": "Ticket",              "desc": "Hệ thống ticket hỗ trợ",                    "icon": "Ticket",        "cogs": ["TicketCog"]},
-    {"key": "giveaway",        "label": "Giveaway",            "desc": "Tạo và quản lý giveaway",                   "icon": "Gift",          "cogs": ["GiveawayCog"]},
-    {"key": "invite_tracking", "label": "Invite Tracking",     "desc": "Theo dõi invite, BXH mời",                  "icon": "Link2",         "cogs": ["InviteTrackingCog"]},
-    {"key": "leveling",        "label": "Leveling",            "desc": "XP, rank, leaderboard, role rewards",        "icon": "Trophy",        "cogs": ["LevelingCog"]},
-    {"key": "moderation",      "label": "Kiểm duyệt",         "desc": "Ban, kick, warn, automod, logging",          "icon": "Shield",        "cogs": ["ModerationCog", "AutoModCog", "LoggingCog"]},
-    {"key": "welcome",         "label": "Chào mừng & Roles",   "desc": "Welcome/goodbye, auto role, button/select/reaction roles", "icon": "Hand", "cogs": ["WelcomeCog", "RolesCog", "ReactionRolesCog"]},
-    {"key": "starboard",       "label": "Starboard",           "desc": "Ghim tin nhắn nhiều reaction",               "icon": "Star",          "cogs": ["StarboardCog"]},
-    {"key": "temp_voice",      "label": "Temp Voice",          "desc": "Phòng voice tạm thời",                       "icon": "Mic",           "cogs": ["TempVoiceCog"]},
-    {"key": "sticky",          "label": "Sticky Message",      "desc": "Ghim tin nhắn tự động",                      "icon": "Pin",           "cogs": ["StickyCog"]},
-    {"key": "utility",         "label": "Tiện ích",            "desc": "Avatar, serverinfo, poll, QR, AFK",          "icon": "Wrench",        "cogs": ["UtilityCog", "AFKCog"]},
-    {"key": "custom_commands", "label": "Custom Commands",     "desc": "Tạo lệnh tùy chỉnh",                        "icon": "Terminal",      "cogs": ["CustomCommandsCog"]},
-    {"key": "autoresponder",  "label": "Auto Responder",      "desc": "Tự động trả lời theo keyword",               "icon": "MessageCircleReply", "cogs": ["AutoResponderCog"]},
-    {"key": "scheduler",       "label": "Tin nhắn hẹn giờ",   "desc": "Gửi tin nhắn theo lịch",                     "icon": "Clock",         "cogs": ["SchedulerCog"]},
-    {"key": "interactions",    "label": "Tương tác",          "desc": "Lệnh tương tác anime GIF (hug, kiss, slap…)",  "icon": "Heart",             "cogs": ["InteractionCog"]},
+    {"key": "shop",            "label": "Shop",                "desc": "Products, orders, coupons, feedback, leaderboard", "icon": "ShoppingBag",   "cogs": ["ShopCog", "AdminShopCog"]},
+    {"key": "ticket",          "label": "Ticket",              "desc": "Support ticket system",                     "icon": "Ticket",        "cogs": ["TicketCog"]},
+    {"key": "giveaway",        "label": "Giveaway",            "desc": "Create and manage giveaways",               "icon": "Gift",          "cogs": ["GiveawayCog"]},
+    {"key": "invite_tracking", "label": "Invite Tracking",     "desc": "Track invites, invite leaderboard",         "icon": "Link2",         "cogs": ["InviteTrackingCog"]},
+    {"key": "leveling",        "label": "Leveling",            "desc": "XP, rank, leaderboard, role rewards",       "icon": "Trophy",        "cogs": ["LevelingCog"]},
+    {"key": "moderation",      "label": "Moderation",          "desc": "Ban, kick, warn, automod, logging",         "icon": "Shield",        "cogs": ["ModerationCog", "AutoModCog", "LoggingCog"]},
+    {"key": "welcome",         "label": "Welcome & Roles",     "desc": "Welcome/goodbye, auto role, button/select/reaction roles", "icon": "Hand", "cogs": ["WelcomeCog", "RolesCog", "ReactionRolesCog"]},
+    {"key": "starboard",       "label": "Starboard",           "desc": "Pin messages with many reactions",          "icon": "Star",          "cogs": ["StarboardCog"]},
+    {"key": "temp_voice",      "label": "Temp Voice",          "desc": "Temporary voice channels",                  "icon": "Mic",           "cogs": ["TempVoiceCog"]},
+    {"key": "sticky",          "label": "Sticky Message",      "desc": "Auto-pinned sticky messages",               "icon": "Pin",           "cogs": ["StickyCog"]},
+    {"key": "utility",         "label": "Utility",             "desc": "Avatar, serverinfo, poll, QR, AFK",         "icon": "Wrench",        "cogs": ["UtilityCog", "AFKCog"]},
+    {"key": "custom_commands", "label": "Custom Commands",     "desc": "Create custom commands",                    "icon": "Terminal",      "cogs": ["CustomCommandsCog"]},
+    {"key": "autoresponder",  "label": "Auto Responder",      "desc": "Auto-reply based on keywords",              "icon": "MessageCircleReply", "cogs": ["AutoResponderCog"]},
+    {"key": "scheduler",       "label": "Scheduled Messages",  "desc": "Send messages on a schedule",               "icon": "Clock",         "cogs": ["SchedulerCog"]},
+    {"key": "interactions",    "label": "Interactions",        "desc": "Anime GIF interaction commands (hug, kiss, slap…)", "icon": "Heart",   "cogs": ["InteractionCog"]},
 ]
 
 
