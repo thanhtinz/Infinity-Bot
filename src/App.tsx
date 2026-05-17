@@ -9,7 +9,7 @@ import { I18nProvider, useT } from "@/i18n";
 
 // ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
 const ConfigDiscord = lazy(() => import("./pages/ConfigDiscord").then(m => ({ default: m.ConfigDiscord })));
-const ConfigPayOS = lazy(() => import("./pages/ConfigPayOS").then(m => ({ default: m.ConfigPayOS })));
+const PaymentConfig = lazy(() => import("./pages/PaymentConfig").then(m => ({ default: m.PaymentConfig })));
 const ConfigChannels = lazy(() => import("./pages/ConfigChannels").then(m => ({ default: m.ConfigChannels })));
 const BotSettings = lazy(() => import("./pages/BotSettings").then(m => ({ default: m.BotSettings })));
 const ProductsManager = lazy(() => import("./pages/ProductsManager").then(m => ({ default: m.ProductsManager })));
@@ -179,7 +179,7 @@ const navGroups: NavGroup[] = [
     label: "nav_botSettings",
     items: [
       { to: "/bot-settings", icon: Settings, label: "nav_botSettings" },
-      { to: "/config/payos", icon: CreditCard, label: "nav_payos", feature: "shop" },
+      { to: "/config/payments", icon: CreditCard, label: "Payments", feature: "shop" },
       { to: "/staff-permissions", icon: Shield, label: "Staff Permissions" },
     ],
   },
@@ -625,7 +625,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/config/voice" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/bot-settings" element={<BotSettings />} />
         <Route path="/config/discord" element={<OwnerRoute><ConfigDiscord /></OwnerRoute>} />
-        <Route path="/config/payos" element={<ConfigPayOS />} />
+        <Route path="/config/payments" element={<PaymentConfig />} />
         {/* Shop */}
         <Route path="/products" element={<ProductsManager />} />
         <Route path="/products/new" element={<ProductEditPage />} />

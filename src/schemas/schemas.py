@@ -31,7 +31,7 @@ class SystemConfigResponse(SystemConfigBase):
 
 
 class SystemConfigSafe(BaseModel):
-    """Safe response — không trả về secrets, dùng cho GET /api/config."""
+    """Safe response — does not expose secrets, used for GET /api/config."""
     id: int
     bot_status: str
     # Non-secret fields
@@ -47,13 +47,30 @@ class SystemConfigSafe(BaseModel):
     bang_gia_channel_id: Optional[str] = None
     welcome_channel_id: Optional[str] = None
     command_prefix: Optional[str] = "!"
-    # Booleans thay cho secrets thực
+    # Booleans for secrets
     has_discord_token: bool = False
     has_discord_client_secret: bool = False
     has_payos_api_key: bool = False
     has_payos_checksum_key: bool = False
     bot_invisible: bool = False
     language: str = "en"
+    # VPN / Security
+    vpn_api_key: Optional[str] = None
+    vpn_api_provider: Optional[str] = "proxycheck"
+    # Currency & Payment
+    currency: str = "VND"
+    currency_symbol: str = "₫"
+    payment_methods: Optional[List[str]] = []
+    has_paypal_client_id: bool = False
+    has_paypal_client_secret: bool = False
+    paypal_mode: str = "sandbox"
+    has_crypto_api_key: bool = False
+    crypto_provider: str = "nowpayments"
+    manual_qr_image_id: Optional[str] = None
+    manual_bank_name: Optional[str] = None
+    manual_account_holder: Optional[str] = None
+    manual_account_number: Optional[str] = None
+    manual_instructions: Optional[str] = None
 
     class Config:
         from_attributes = True

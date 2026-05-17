@@ -12,11 +12,11 @@ class UtilityCog(discord.Cog):
         self.bot = bot
 
     # ── /avatar ──────────────────────────────────────────────
-    @discord.slash_command(name="avatar", description="Xem avatar của thành viên")
+    @discord.slash_command(name="avatar", description="View a member's avatar")
     async def avatar_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "Thành viên", required=False) = None,
+        user: discord.Option(discord.Member, "Member", required=False) = None,
     ):
         target = user or ctx.author
         embed = discord.Embed(
@@ -46,11 +46,11 @@ class UtilityCog(discord.Cog):
         await ctx.respond(embed=embed)
 
     # ── /banner ──────────────────────────────────────────────
-    @discord.slash_command(name="banner", description="Xem banner của thành viên")
+    @discord.slash_command(name="banner", description="View a member's banner")
     async def banner_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "Thành viên", required=False) = None,
+        user: discord.Option(discord.Member, "Member", required=False) = None,
     ):
         target = user or ctx.author
         # Need to fetch full user object for banner
@@ -68,7 +68,7 @@ class UtilityCog(discord.Cog):
         await ctx.respond(embed=embed)
 
     # ── /serverinfo ──────────────────────────────────────────
-    @discord.slash_command(name="serverinfo", description="Thông tin server")
+    @discord.slash_command(name="serverinfo", description="Server information")
     async def serverinfo_cmd(self, ctx: discord.ApplicationContext):
         g = ctx.guild
         embed = discord.Embed(
@@ -114,11 +114,11 @@ class UtilityCog(discord.Cog):
         await ctx.respond(embed=embed)
 
     # ── /userinfo ────────────────────────────────────────────
-    @discord.slash_command(name="userinfo", description="Thông tin thành viên")
+    @discord.slash_command(name="userinfo", description="Member information")
     async def userinfo_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "Thành viên", required=False) = None,
+        user: discord.Option(discord.Member, "Member", required=False) = None,
     ):
         target = user or ctx.author
         embed = discord.Embed(
@@ -184,17 +184,17 @@ class UtilityCog(discord.Cog):
         await ctx.respond(embed=embed)
 
     # ── /poll ────────────────────────────────────────────────
-    @discord.slash_command(name="poll", description="Tạo bình chọn nhanh")
+    @discord.slash_command(name="poll", description="Create a quick poll")
     async def poll_cmd(
         self,
         ctx: discord.ApplicationContext,
-        question: discord.Option(str, "Câu hỏi bình chọn"),
-        option1: discord.Option(str, "Lựa chọn 1"),
-        option2: discord.Option(str, "Lựa chọn 2"),
-        option3: discord.Option(str, "Lựa chọn 3", required=False) = None,
-        option4: discord.Option(str, "Lựa chọn 4", required=False) = None,
-        option5: discord.Option(str, "Lựa chọn 5", required=False) = None,
-        option6: discord.Option(str, "Lựa chọn 6", required=False) = None,
+        question: discord.Option(str, "Poll question"),
+        option1: discord.Option(str, "Option 1"),
+        option2: discord.Option(str, "Option 2"),
+        option3: discord.Option(str, "Option 3", required=False) = None,
+        option4: discord.Option(str, "Option 4", required=False) = None,
+        option5: discord.Option(str, "Option 5", required=False) = None,
+        option6: discord.Option(str, "Option 6", required=False) = None,
     ):
         number_emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣"]
         options = [o for o in [option1, option2, option3, option4, option5, option6] if o]
@@ -217,11 +217,11 @@ class UtilityCog(discord.Cog):
             await msg.add_reaction(number_emojis[i])
 
     # ── /qr ──────────────────────────────────────────────────
-    @discord.slash_command(name="qr", description="Tạo mã QR")
+    @discord.slash_command(name="qr", description="Generate a QR code")
     async def qr_cmd(
         self,
         ctx: discord.ApplicationContext,
-        text: discord.Option(str, "Nội dung cần tạo QR (URL hoặc text)"),
+        text: discord.Option(str, "Content to encode (URL or text)"),
     ):
         # Use goqr.me free API
         qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={discord.utils.escape_markdown(text)}"

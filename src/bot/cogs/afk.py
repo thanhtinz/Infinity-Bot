@@ -36,11 +36,11 @@ class AFKCog(discord.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
 
-    @discord.slash_command(name="afk", description="Đặt trạng thái AFK")
+    @discord.slash_command(name="afk", description="Set AFK status")
     async def afk_cmd(
         self,
         ctx: discord.ApplicationContext,
-        reason: discord.Option(str, "Lý do AFK", required=False, default="AFK"),
+        reason: discord.Option(str, "AFK reason", required=False, default="AFK"),
     ):
         session = get_session()
         try:

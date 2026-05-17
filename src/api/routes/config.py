@@ -331,12 +331,8 @@ async def delete_discord_sticker(sticker_id: str, request: Request, db=Depends(g
 
 # ── System Config CRUD ────────────────────────────────────────────────────────
 
-@router.get("/config", response_model=SystemConfigSafe)
-def read_config(request: Request, db=Depends(get_db)):
-    """Trả về config — secrets được ẩn, chỉ expose boolean has_*.
-    Nếu có X-Guild-ID header thì trả config theo guild đó."""
-    guild_id = request.headers.get("X-Guild-ID")
-    config = get_config_for_guild(guild_id, db) if guild_id else get_config(db)
+def _config_to_safe(config) -> SystemConfigSafe:
+    """Convert SystemConfig ORM object to safe response (no secrets exposed)."""
     return SystemConfigSafe(
         id=config.id,
         bot_status=config.bot_status or "offline",
@@ -358,7 +354,29 @@ def read_config(request: Request, db=Depends(get_db)):
         has_payos_checksum_key=bool(config.payos_checksum_key),
         bot_invisible=bool(config.bot_invisible),
         language=config.language or "en",
+        vpn_api_key=config.vpn_api_key,
+        vpn_api_provider=config.vpn_api_provider or "proxycheck",
+        currency=getattr(config, "currency", None) or "VND",
+        currency_symbol=getattr(config, "currency_symbol", None) or "₫",
+        payment_methods=getattr(config, "payment_methods", None) or [],
+        has_paypal_client_id=bool(getattr(config, "paypal_client_id", None)),
+        has_paypal_client_secret=bool(getattr(config, "paypal_client_secret", None)),
+        paypal_mode=getattr(config, "paypal_mode", None) or "sandbox",
+        has_crypto_api_key=bool(getattr(config, "crypto_api_key", None)),
+        crypto_provider=getattr(config, "crypto_provider", None) or "nowpayments",
+        manual_qr_image_id=getattr(config, "manual_qr_image_id", None),
+        manual_bank_name=getattr(config, "manual_bank_name", None),
+        manual_account_holder=getattr(config, "manual_account_holder", None),
+        manual_account_number=getattr(config, "manual_account_number", None),
+        manual_instructions=getattr(config, "manual_instructions", None),
     )
+
+
+@router.get("/config", response_model=SystemConfigSafe)
+def read_config(request: Request, db=Depends(get_db)):
+    guild_id = request.headers.get("X-Guild-ID")
+    config = get_config_for_guild(guild_id, db) if guild_id else get_config(db)
+    return _config_to_safe(config)
 
 
 @router.post("/config", response_model=SystemConfigSafe)
@@ -384,28 +402,7 @@ def update_config(config_in: SystemConfigBase, request: Request, db=Depends(get_
     # Invalidate language cache if language might have changed
     from src.bot.i18n import invalidate_lang_cache
     invalidate_lang_cache(config.guild_id)
-    return SystemConfigSafe(
-        id=config.id,
-        bot_status=config.bot_status or "offline",
-        support_server_url=config.support_server_url,
-        discord_client_id=config.discord_client_id,
-        public_app_url=config.public_app_url,
-        payos_client_id=config.payos_client_id,
-        guild_id=config.guild_id,
-        admin_role_id=config.admin_role_id,
-        don_hang_channel_id=config.don_hang_channel_id,
-        feedback_channel_id=config.feedback_channel_id,
-        coupon_channel_id=config.coupon_channel_id,
-        bang_gia_channel_id=config.bang_gia_channel_id,
-        welcome_channel_id=config.welcome_channel_id,
-        command_prefix=config.command_prefix or "!",
-        has_discord_token=bool(config.discord_token),
-        has_discord_client_secret=bool(config.discord_client_secret),
-        has_payos_api_key=bool(config.payos_api_key),
-        has_payos_checksum_key=bool(config.payos_checksum_key),
-        bot_invisible=bool(config.bot_invisible),
-        language=config.language or "en",
-    )
+    return _config_to_safe(config)
 
 
 # ── Bot management ────────────────────────────────────────────────────────────

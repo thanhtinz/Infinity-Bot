@@ -163,15 +163,15 @@ class RolesCog(discord.Cog):
 
     # ── Deploy commands ───────────────────────────────────────────────────
 
-    roles_group = discord.SlashCommandGroup("roles", "Quản lý role panels")
+    roles_group = discord.SlashCommandGroup("roles", "Manage role panels")
 
-    @roles_group.command(name="deploy-button", description="[Admin] Deploy button role panel lên kênh")
+    @roles_group.command(name="deploy-button", description="[Admin] Deploy button role panel to channel")
     @discord.default_permissions(manage_roles=True)
     async def deploy_button(
         self,
         ctx: discord.ApplicationContext,
-        panel_id: discord.Option(int, "ID của panel"),
-        channel: discord.Option(discord.TextChannel, "Kênh deploy") = None,
+        panel_id: discord.Option(int, "Panel ID"),
+        channel: discord.Option(discord.TextChannel, "Deploy channel") = None,
     ):
         target_ch = channel or ctx.channel
         db = SessionLocal()
@@ -196,13 +196,13 @@ class RolesCog(discord.Cog):
         finally:
             db.close()
 
-    @roles_group.command(name="deploy-select", description="[Admin] Deploy select menu role panel lên kênh")
+    @roles_group.command(name="deploy-select", description="[Admin] Deploy select menu role panel to channel")
     @discord.default_permissions(manage_roles=True)
     async def deploy_select(
         self,
         ctx: discord.ApplicationContext,
-        panel_id: discord.Option(int, "ID của panel"),
-        channel: discord.Option(discord.TextChannel, "Kênh deploy") = None,
+        panel_id: discord.Option(int, "Panel ID"),
+        channel: discord.Option(discord.TextChannel, "Deploy channel") = None,
     ):
         target_ch = channel or ctx.channel
         db = SessionLocal()

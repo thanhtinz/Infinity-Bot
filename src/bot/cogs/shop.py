@@ -117,7 +117,7 @@ class ShopCog(discord.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @discord.slash_command(name="support", description="Hướng dẫn liên hệ hỗ trợ")
+    @discord.slash_command(name="support", description="Contact support")
     async def support_cmd(self, ctx: discord.ApplicationContext):
         session = get_session()
         try:
@@ -141,11 +141,11 @@ class ShopCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="orders", description="Xem đơn hàng của bạn")
+    @discord.slash_command(name="orders", description="View your orders")
     async def orders_cmd(
         self,
         ctx: discord.ApplicationContext,
-        id: discord.Option(int, "ID đơn hàng cụ thể (để trống = xem 5 đơn gần nhất)", required=False, default=None),
+        id: discord.Option(int, "Specific order ID (leave empty = last 5 orders)", required=False, default=None),
     ):
         session = get_session()
         try:
@@ -219,7 +219,7 @@ class ShopCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="feedback", description="Đánh giá sản phẩm đã mua")
+    @discord.slash_command(name="feedback", description="Rate a purchased product")
     async def feedback_cmd(self, ctx: discord.ApplicationContext):
         session = get_session()
         try:
@@ -260,17 +260,17 @@ class ShopCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="bxh", description="Bảng xếp hạng mua hàng")
+    @discord.slash_command(name="bxh", description="Purchase leaderboard")
     async def bxh_cmd(
         self,
         ctx: discord.ApplicationContext,
         loai: discord.Option(
-            str, "Loại bảng xếp hạng",
+            str, "Leaderboard type",
             choices=["chi_tieu", "don_hang"],
             default="chi_tieu",
         ),
         thoi_gian: discord.Option(
-            str, "Thời gian",
+            str, "Time period",
             choices=["daily", "7days", "30days", "all"],
             default="all",
         ),
@@ -332,7 +332,7 @@ class ShopCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="milestones", description="Xem các mốc chi tiêu & tiến độ của bạn")
+    @discord.slash_command(name="milestones", description="View your spending milestones & progress")
     async def milestones_cmd(self, ctx: discord.ApplicationContext):
         if not check_feature(self): return
         session = get_session()

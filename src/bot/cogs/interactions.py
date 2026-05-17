@@ -200,12 +200,12 @@ class InteractionCog(discord.Cog):
         await _send_interaction(message.channel, message.author, cmd_name, meta, target)
 
     # ── Admin command: set prefix ─────────────────────────────────────────
-    @discord.slash_command(name="setprefix", description="🔧 Đặt prefix cho lệnh tương tác (Admin)")
+    @discord.slash_command(name="setprefix", description="🔧 Set interaction command prefix (Admin)")
     @discord.default_permissions(administrator=True)
     async def setprefix_cmd(
         self,
         ctx: discord.ApplicationContext,
-        prefix: discord.Option(str, "Prefix mới (vd: ! . ? >)", required=True, max_length=5),  # type: ignore
+        prefix: discord.Option(str, "New prefix (e.g. ! . ? >)", required=True, max_length=5),  # type: ignore
     ):
         prefix = prefix.strip()
         if not prefix:
@@ -234,7 +234,7 @@ def _make_command(reaction_key: str, meta: dict):
         async def _cmd(
             self: InteractionCog,
             ctx: discord.ApplicationContext,
-            user: discord.Option(discord.Member, "Người bạn muốn tương tác", required=True),  # type: ignore
+            user: discord.Option(discord.Member, "User to interact with", required=True),  # type: ignore
         ):
             if user.id == ctx.author.id:
                 await ctx.respond("Bạn không thể tự tương tác với chính mình! 😅", ephemeral=True)
@@ -284,7 +284,7 @@ def _make_command(reaction_key: str, meta: dict):
                 await ctx.respond(embed=result)
     # Set nice description
     if meta["targeted"]:
-        desc = f"{meta['emoji']} {meta['label'].capitalize()} một người"
+        desc = f"{meta['emoji']} {meta['label'].capitalize()} someone"
     else:
         desc = f"{meta['emoji']} {meta['label'].capitalize()}"
 

@@ -18,14 +18,14 @@ class ModerationCog(discord.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @discord.slash_command(name="ban", description="[Admin] Ban thành viên")
+    @discord.slash_command(name="ban", description="[Admin] Ban a member")
     @discord.default_permissions(ban_members=True)
     async def ban_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "Thành viên cần ban"),
-        reason: discord.Option(str, "Lý do", required=False, default="Không có lý do"),
-        delete_messages: discord.Option(int, "Xóa tin nhắn (ngày)", required=False, default=0, min_value=0, max_value=7),
+        user: discord.Option(discord.Member, "Member to ban"),
+        reason: discord.Option(str, "Reason", required=False, default="No reason"),
+        delete_messages: discord.Option(int, "Delete message days", required=False, default=0, min_value=0, max_value=7),
     ):
         try:
             await user.ban(reason=reason, delete_message_days=delete_messages)
@@ -42,13 +42,13 @@ class ModerationCog(discord.Cog):
         except discord.Forbidden:
             await ctx.respond("❌ Bot không có quyền ban thành viên này.", ephemeral=True)
 
-    @discord.slash_command(name="unban", description="[Admin] Unban thành viên")
+    @discord.slash_command(name="unban", description="[Admin] Unban a member")
     @discord.default_permissions(ban_members=True)
     async def unban_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user_id: discord.Option(str, "Discord ID của người cần unban"),
-        reason: discord.Option(str, "Lý do", required=False, default="Không có lý do"),
+        user_id: discord.Option(str, "Discord ID of the user to unban"),
+        reason: discord.Option(str, "Reason", required=False, default="No reason"),
     ):
         try:
             user = await self.bot.fetch_user(int(user_id))
@@ -67,13 +67,13 @@ class ModerationCog(discord.Cog):
         except Exception as e:
             await ctx.respond(f"❌ Lỗi: {e}", ephemeral=True)
 
-    @discord.slash_command(name="kick", description="[Admin] Kick thành viên")
+    @discord.slash_command(name="kick", description="[Admin] Kick a member")
     @discord.default_permissions(kick_members=True)
     async def kick_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "Thành viên cần kick"),
-        reason: discord.Option(str, "Lý do", required=False, default="Không có lý do"),
+        user: discord.Option(discord.Member, "Member to kick"),
+        reason: discord.Option(str, "Reason", required=False, default="No reason"),
     ):
         try:
             await user.kick(reason=reason)
@@ -90,13 +90,13 @@ class ModerationCog(discord.Cog):
         except discord.Forbidden:
             await ctx.respond("❌ Bot không có quyền kick thành viên này.", ephemeral=True)
 
-    @discord.slash_command(name="warn", description="[Admin] Cảnh cáo thành viên")
+    @discord.slash_command(name="warn", description="[Admin] Warn a member")
     @discord.default_permissions(manage_messages=True)
     async def warn_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "Thành viên cần cảnh cáo"),
-        reason: discord.Option(str, "Lý do"),
+        user: discord.Option(discord.Member, "Member to warn"),
+        reason: discord.Option(str, "Reason"),
     ):
         session = get_session()
         try:
@@ -140,13 +140,13 @@ class ModerationCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="unwarn", description="[Admin] Xóa cảnh cáo")
+    @discord.slash_command(name="unwarn", description="[Admin] Remove a warning")
     @discord.default_permissions(manage_messages=True)
     async def unwarn_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "Thành viên"),
-        warn_id: discord.Option(int, "ID cảnh cáo (xem /warnings)"),
+        user: discord.Option(discord.Member, "Member"),
+        warn_id: discord.Option(int, "Warning ID (see /warnings)"),
     ):
         session = get_session()
         try:
@@ -162,12 +162,12 @@ class ModerationCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="warnings", description="[Admin] Xem lịch sử cảnh cáo")
+    @discord.slash_command(name="warnings", description="[Admin] View warning history")
     @discord.default_permissions(manage_messages=True)
     async def warnings_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "Thành viên", required=False, default=None),
+        user: discord.Option(discord.Member, "Member", required=False, default=None),
     ):
         target = user or ctx.author
 

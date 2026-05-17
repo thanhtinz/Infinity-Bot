@@ -790,7 +790,7 @@ class HelpCog(commands.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
 
-    @discord.slash_command(name="help", description="Xem danh sách lệnh bot")
+    @discord.slash_command(name="help", description="View bot command list")
     async def help_cmd(self, ctx: discord.ApplicationContext):
         is_admin = _is_admin(ctx.author)
         lang = get_lang(str(ctx.guild.id)) if ctx.guild else "en"

@@ -45,6 +45,23 @@ class SystemConfig(Base):
     # ── Security / VPN detection API config ──
     vpn_api_key = Column(String, nullable=True)
     vpn_api_provider = Column(String, default="proxycheck")  # proxycheck | ipqualityscore
+    # ── Currency & Payment ──
+    currency = Column(String, default="VND")            # ISO 4217
+    currency_symbol = Column(String, default="₫")
+    payment_methods = Column(JSON, default=list)        # enabled: payos, paypal, crypto, manual
+    # PayPal
+    paypal_client_id = Column(String, nullable=True)
+    paypal_client_secret = Column(String, nullable=True)
+    paypal_mode = Column(String, default="sandbox")     # sandbox | live
+    # Crypto (NOWPayments)
+    crypto_api_key = Column(String, nullable=True)
+    crypto_provider = Column(String, default="nowpayments")  # nowpayments | coingate
+    # Manual / QR Payment
+    manual_qr_image_id = Column(String, nullable=True)  # UploadedFile ID
+    manual_bank_name = Column(String, nullable=True)
+    manual_account_holder = Column(String, nullable=True)
+    manual_account_number = Column(String, nullable=True)
+    manual_instructions = Column(Text, nullable=True)
 
 class User(Base):
     __tablename__ = "users"
@@ -78,12 +95,16 @@ class Order(Base):
     product_id = Column(Integer, ForeignKey("products.id"))
     quantity = Column(Integer, default=1)
     total_price = Column(Float)
-    status = Column(String, default="PENDING") # PENDING, PAID, DELIVERED, CANCELLED, ERROR
-    payos_order_code = Column(String, nullable=True) # orderCode from payos (must be unique integer mapped to string)
-    checkout_url = Column(String, nullable=True)     # PayOS checkout link, lưu để hiện trên dashboard
+    status = Column(String, default="PENDING") # PENDING, PENDING_MANUAL, PAID, DELIVERED, CANCELLED, ERROR
+    payos_order_code = Column(String, nullable=True)
+    checkout_url = Column(String, nullable=True)
     discord_message_id = Column(String, nullable=True)
     discord_channel_id = Column(String, nullable=True)
-    package_name = Column(String, nullable=True)  # tên gói đã mua
+    package_name = Column(String, nullable=True)
+    # Multi-payment support
+    currency = Column(String, default="VND")
+    payment_method = Column(String, default="payos")  # payos | paypal | crypto | manual
+    payment_id = Column(String, nullable=True)         # PayPal order ID / crypto invoice ID
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
     user = relationship("User", back_populates="orders")
@@ -922,7 +943,7 @@ class AutoResponder(Base):
 
 
 # ═══════════════════════════════════════════════════════════════
-# Security & Recovery (VaultCord-style)
+# ── Security & Recovery ──
 # ═══════════════════════════════════════════════════════════════
 
 class ServerBackup(Base):
@@ -1024,6 +1045,14 @@ class VerificationConfig(Base):
     block_vpn = Column(Boolean, default=False)
     kick_on_deauth = Column(Boolean, default=False)
     close_page_after_verify = Column(Boolean, default=True)
+    # Extra branding
+    page_footer_text = Column(String, nullable=True)
+    page_theme = Column(String, default="dark")       # dark | light | glass
+    custom_css = Column(Text, nullable=True)
+    redirect_url = Column(String, nullable=True)
+    terms_url = Column(String, nullable=True)
+    # Access control
+    verify_password = Column(String, nullable=True)
 
 
 class StaffPermission(Base):
@@ -1045,3 +1074,58 @@ class StaffPermission(Base):
     can_config = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     __table_args__ = (UniqueConstraint("guild_id", "role_id"),)
+
+
+# ── Firewall System ───────────────────────────────────────────────────────
+
+class FirewallRule(Base):
+    __tablename__ = "firewall_rules"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, index=True)
+    rule_type = Column(String, nullable=False)       # block | allow
+    target_type = Column(String, nullable=False)     # user_id | ip | country | email_domain | asn
+    target_value = Column(String, nullable=False)
+    reason = Column(String, nullable=True)
+    created_by = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+class FirewallLog(Base):
+    __tablename__ = "firewall_logs"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, index=True)
+    discord_id = Column(String, nullable=True)
+    username = Column(String, nullable=True)
+    avatar_url = Column(String, nullable=True)
+    ip_address = Column(String, nullable=True)
+    country = Column(String, nullable=True)
+    blocked_by = Column(String, nullable=False)      # vpn | alt | firewall | age | captcha
+    rule_id = Column(Integer, nullable=True)
+    details = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+# ── Server Alerts ─────────────────────────────────────────────────────────
+
+class ServerAlert(Base):
+    __tablename__ = "server_alerts"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, index=True)
+    alert_type = Column(String, nullable=False)      # nuke_detect | mass_ban | mass_kick | channel_delete | role_delete
+    enabled = Column(Boolean, default=True)
+    webhook_url = Column(String, nullable=True)
+    threshold = Column(Integer, default=3)
+    window_minutes = Column(Integer, default=5)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+class AlertHistory(Base):
+    __tablename__ = "alert_history"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, index=True)
+    alert_type = Column(String, nullable=False)
+    actor_id = Column(String, nullable=True)
+    actor_name = Column(String, nullable=True)
+    details = Column(JSON, nullable=True)
+    severity = Column(String, default="warning")     # info | warning | critical
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)

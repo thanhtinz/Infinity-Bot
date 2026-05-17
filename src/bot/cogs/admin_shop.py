@@ -267,7 +267,7 @@ class BangGiaSelect(discord.ui.Select):
             options.append(opt)
         super().__init__(
             placeholder="🔍 Chọn sản phẩm để xem chi tiết...",
-            options=options or [discord.SelectOption(label="Không có sản phẩm", value="_")],
+            options=options or [discord.SelectOption(label="No products available", value="_")],
             min_values=1,
             max_values=1,
             custom_id="bang_gia_select_persistent",
@@ -373,16 +373,16 @@ class AdminShopCog(discord.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @discord.slash_command(name="tao_don", description="[Admin] Tạo đơn hàng + link PayOS cho user")
+    @discord.slash_command(name="createorder", description="[Admin] Create order + payment link for user")
     @discord.default_permissions(administrator=True)
     async def tao_don_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "Chọn thành viên"),
-        product_id: discord.Option(int, "ID sản phẩm (xem /san_pham)"),
-        package_name: discord.Option(str, "Tên gói (để trống = gói đầu tiên)", required=False, default=""),
-        quantity: discord.Option(int, "Số lượng", required=False, default=1, min_value=1, max_value=99),
-        channel: discord.Option(discord.TextChannel, "Kênh gửi QR (để trống = gửi tại kênh hiện tại)", required=False, default=None),
+        user: discord.Option(discord.Member, "Select a member"),
+        product_id: discord.Option(int, "Product ID (see /product)"),
+        package_name: discord.Option(str, "Package name (leave empty = first package)", required=False, default=""),
+        quantity: discord.Option(int, "Quantity", required=False, default=1, min_value=1, max_value=99),
+        channel: discord.Option(discord.TextChannel, "QR channel (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer()
         session = get_session()
@@ -536,13 +536,13 @@ class AdminShopCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="san_pham", description="Xem chi tiết sản phẩm")
+    @discord.slash_command(name="product", description="View product details")
     async def san_pham_cmd(
         self,
         ctx: discord.ApplicationContext,
         ten: discord.Option(
             str,
-            "Tên sản phẩm",
+            "Product name",
             required=True,
             autocomplete=_autocomplete_product_names,
         ),
@@ -611,12 +611,12 @@ class AdminShopCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="bang_gia", description="[Admin] Gửi/cập nhật bảng giá sản phẩm vào kênh")
+    @discord.slash_command(name="pricelist", description="[Admin] Send/update product price list to channel")
     @discord.default_permissions(administrator=True)
     async def bang_gia_cmd(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh gửi bảng giá (để trống = kênh hiện tại)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Price list channel (leave empty = current channel)", required=False, default=None),
     ):
         session = get_session()
         try:
@@ -676,17 +676,17 @@ class AdminShopCog(discord.Cog):
             session.close()
 
 
-    @discord.slash_command(name="tao_don_custom", description="[Admin] Tạo đơn custom (tên SP tự nhập, không cần SP trong hệ thống)")
+    @discord.slash_command(name="createorder_custom", description="[Admin] Create custom order (custom name, no product in system required)")
     @discord.default_permissions(administrator=True)
     async def tao_don_custom_cmd(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "Chọn thành viên"),
-        san_pham: discord.Option(str, "Tên sản phẩm tự nhập"),
-        gia: discord.Option(int, "Giá tiền (VNĐ)", min_value=1000),
-        ghi_chu: discord.Option(str, "Ghi chú / mô tả thêm (tuỳ chọn)", required=False, default=""),
-        so_luong: discord.Option(int, "Số lượng", required=False, default=1, min_value=1, max_value=99),
-        channel: discord.Option(discord.TextChannel, "Kênh gửi QR (để trống = gửi tại kênh hiện tại)", required=False, default=None),
+        user: discord.Option(discord.Member, "Select a member"),
+        san_pham: discord.Option(str, "Custom product name"),
+        gia: discord.Option(int, "Price (VND)", min_value=1000),
+        ghi_chu: discord.Option(str, "Note / additional description (optional)", required=False, default=""),
+        so_luong: discord.Option(int, "Quantity", required=False, default=1, min_value=1, max_value=99),
+        channel: discord.Option(discord.TextChannel, "QR channel (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer()
         session = get_session()

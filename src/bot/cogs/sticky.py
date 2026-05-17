@@ -172,26 +172,26 @@ class StickyCog(discord.Cog):
 
     sticky = discord.SlashCommandGroup(
         "sticky",
-        "Quản lý sticky message",
+        "Manage sticky messages",
         default_member_permissions=discord.Permissions(manage_channels=True),
     )
 
     # ── CREATE ───────────────────────────────────────────────────────────────
 
-    @sticky.command(name="create", description="Tạo sticky message văn bản cho kênh")
+    @sticky.command(name="create", description="Create a text sticky message for channel")
     async def sticky_create(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh cần gắn sticky", required=False),
+        channel: discord.Option(discord.TextChannel, "Channel to attach sticky to", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.send_modal(StickyContentModal(channel_id=str(ch.id)))
 
-    @sticky.command(name="embed", description="Tạo sticky dạng embed cho kênh")
+    @sticky.command(name="embed", description="Create an embed sticky message for channel")
     async def sticky_embed(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh cần gắn sticky", required=False),
+        channel: discord.Option(discord.TextChannel, "Channel to attach sticky to", required=False),
     ):
         ch = channel or ctx.channel
         session = get_session()
@@ -206,11 +206,11 @@ class StickyCog(discord.Cog):
 
     # ── EDIT ─────────────────────────────────────────────────────────────────
 
-    @sticky.command(name="edit", description="Chỉnh sửa nội dung sticky hiện tại")
+    @sticky.command(name="edit", description="Edit existing sticky content")
     async def sticky_edit(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh chứa sticky", required=False),
+        channel: discord.Option(discord.TextChannel, "Channel with sticky", required=False),
     ):
         ch = channel or ctx.channel
         session = get_session()
@@ -230,11 +230,11 @@ class StickyCog(discord.Cog):
 
     # ── REMOVE ───────────────────────────────────────────────────────────────
 
-    @sticky.command(name="remove", description="Xóa sticky của kênh")
+    @sticky.command(name="remove", description="Remove sticky from channel")
     async def sticky_remove(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh chứa sticky", required=False),
+        channel: discord.Option(discord.TextChannel, "Channel with sticky", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -261,11 +261,11 @@ class StickyCog(discord.Cog):
 
     # ── ENABLE / DISABLE ─────────────────────────────────────────────────────
 
-    @sticky.command(name="enable", description="Bật sticky của kênh")
+    @sticky.command(name="enable", description="Enable sticky in channel")
     async def sticky_enable(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -284,11 +284,11 @@ class StickyCog(discord.Cog):
         finally:
             session.close()
 
-    @sticky.command(name="disable", description="Tắt sticky của kênh (không xóa)")
+    @sticky.command(name="disable", description="Disable sticky in channel (does not delete)")
     async def sticky_disable(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -316,7 +316,7 @@ class StickyCog(discord.Cog):
 
     # ── LIST ─────────────────────────────────────────────────────────────────
 
-    @sticky.command(name="list", description="Xem danh sách tất cả sticky trong server")
+    @sticky.command(name="list", description="List all sticky messages in server")
     async def sticky_list(self, ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
         session = get_session()
@@ -348,11 +348,11 @@ class StickyCog(discord.Cog):
 
     # ── VIEW ─────────────────────────────────────────────────────────────────
 
-    @sticky.command(name="view", description="Xem sticky hiện tại của kênh")
+    @sticky.command(name="view", description="View current sticky in channel")
     async def sticky_view(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -388,7 +388,7 @@ class StickyCog(discord.Cog):
 
     # ── CLEAR ────────────────────────────────────────────────────────────────
 
-    @sticky.command(name="clear", description="Xóa TẤT CẢ sticky trong server")
+    @sticky.command(name="clear", description="Delete ALL sticky messages in server")
     @discord.default_permissions(administrator=True)
     async def sticky_clear(self, ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
@@ -415,12 +415,12 @@ class StickyCog(discord.Cog):
 
     # ── INTERVAL ─────────────────────────────────────────────────────────────
 
-    @sticky.command(name="interval", description="Gửi lại sticky sau mỗi X phút (0 = tắt)")
+    @sticky.command(name="interval", description="Re-send sticky every X minutes (0 = off)")
     async def sticky_interval(
         self,
         ctx: discord.ApplicationContext,
-        minutes: discord.Option(int, "Số phút (0 để tắt)", min_value=0, max_value=10080),
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        minutes: discord.Option(int, "Minutes (0 to disable)", min_value=0, max_value=10080),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -443,12 +443,12 @@ class StickyCog(discord.Cog):
 
     # ── MESSAGES (count trigger) ──────────────────────────────────────────────
 
-    @sticky.command(name="messages", description="Gửi lại sticky sau mỗi X tin nhắn mới")
+    @sticky.command(name="messages", description="Re-send sticky every X new messages")
     async def sticky_messages(
         self,
         ctx: discord.ApplicationContext,
-        count: discord.Option(int, "Số tin nhắn (mặc định 1)", min_value=1, max_value=500),
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        count: discord.Option(int, "Message count (default 1)", min_value=1, max_value=500),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -468,12 +468,12 @@ class StickyCog(discord.Cog):
 
     # ── COLOR ─────────────────────────────────────────────────────────────────
 
-    @sticky.command(name="color", description="Đổi màu embed sticky")
+    @sticky.command(name="color", description="Change sticky embed color")
     async def sticky_color(
         self,
         ctx: discord.ApplicationContext,
-        color: discord.Option(str, "Mã màu hex, VD: #FF5733"),
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        color: discord.Option(str, "Hex color code, e.g. #FF5733"),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -494,12 +494,12 @@ class StickyCog(discord.Cog):
 
     # ── IMAGE ─────────────────────────────────────────────────────────────────
 
-    @sticky.command(name="image", description="Đặt ảnh cho embed sticky")
+    @sticky.command(name="image", description="Set image for sticky embed")
     async def sticky_image(
         self,
         ctx: discord.ApplicationContext,
-        url: discord.Option(str, "URL ảnh (bỏ trống để xóa)", required=False, default=""),
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        url: discord.Option(str, "Image URL (leave empty to remove)", required=False, default=""),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -520,12 +520,12 @@ class StickyCog(discord.Cog):
 
     # ── THUMBNAIL ─────────────────────────────────────────────────────────────
 
-    @sticky.command(name="thumbnail", description="Đặt thumbnail cho embed sticky")
+    @sticky.command(name="thumbnail", description="Set thumbnail for sticky embed")
     async def sticky_thumbnail(
         self,
         ctx: discord.ApplicationContext,
-        url: discord.Option(str, "URL thumbnail (bỏ trống để xóa)", required=False, default=""),
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        url: discord.Option(str, "Thumbnail URL (leave empty to remove)", required=False, default=""),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -546,12 +546,12 @@ class StickyCog(discord.Cog):
 
     # ── FOOTER ────────────────────────────────────────────────────────────────
 
-    @sticky.command(name="footer", description="Đặt footer cho embed sticky")
+    @sticky.command(name="footer", description="Set footer for sticky embed")
     async def sticky_footer(
         self,
         ctx: discord.ApplicationContext,
-        text: discord.Option(str, "Nội dung footer (bỏ trống để xóa)", required=False, default=""),
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        text: discord.Option(str, "Footer text (leave empty to remove)", required=False, default=""),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -572,11 +572,11 @@ class StickyCog(discord.Cog):
 
     # ── PIN / UNPIN ──────────────────────────────────────────────────────────
 
-    @sticky.command(name="pin", description="Ghim tin nhắn sticky (cần quyền Manage Messages)")
+    @sticky.command(name="pin", description="Pin sticky message (requires Manage Messages)")
     async def sticky_pin(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -601,11 +601,11 @@ class StickyCog(discord.Cog):
         finally:
             session.close()
 
-    @sticky.command(name="unpin", description="Bỏ ghim sticky")
+    @sticky.command(name="unpin", description="Unpin sticky message")
     async def sticky_unpin(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -631,7 +631,7 @@ class StickyCog(discord.Cog):
 
     # ── SYNC (force resend all) ───────────────────────────────────────────────
 
-    @sticky.command(name="sync", description="Gửi lại TẤT CẢ sticky ngay bây giờ")
+    @sticky.command(name="sync", description="Re-send ALL sticky messages now")
     @discord.default_permissions(administrator=True)
     async def sticky_sync(self, ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
@@ -654,12 +654,12 @@ class StickyCog(discord.Cog):
 
     # ── EXPIRE ───────────────────────────────────────────────────────────────
 
-    @sticky.command(name="expire", description="Đặt thời gian tự động xóa sticky (VD: 60 = 60 phút)")
+    @sticky.command(name="expire", description="Set auto-delete timer for sticky (e.g. 60 = 60 minutes)")
     async def sticky_expire(
         self,
         ctx: discord.ApplicationContext,
-        minutes: discord.Option(int, "Số phút tồn tại (0 = không giới hạn)", min_value=0),
-        channel: discord.Option(discord.TextChannel, "Kênh", required=False),
+        minutes: discord.Option(int, "Minutes to live (0 = unlimited)", min_value=0),
+        channel: discord.Option(discord.TextChannel, "Channel", required=False),
     ):
         ch = channel or ctx.channel
         await ctx.defer(ephemeral=True)
@@ -684,12 +684,12 @@ class StickyCog(discord.Cog):
 
     # ── MOVE / COPY ───────────────────────────────────────────────────────────
 
-    @sticky.command(name="move", description="Chuyển sticky sang kênh khác")
+    @sticky.command(name="move", description="Move sticky to another channel")
     async def sticky_move(
         self,
         ctx: discord.ApplicationContext,
-        source: discord.Option(discord.TextChannel, "Kênh nguồn"),
-        target: discord.Option(discord.TextChannel, "Kênh đích"),
+        source: discord.Option(discord.TextChannel, "Source channel"),
+        target: discord.Option(discord.TextChannel, "Target channel"),
     ):
         await ctx.defer(ephemeral=True)
         session = get_session()
@@ -723,12 +723,12 @@ class StickyCog(discord.Cog):
         finally:
             session.close()
 
-    @sticky.command(name="copy", description="Sao chép sticky sang kênh khác")
+    @sticky.command(name="copy", description="Copy sticky to another channel")
     async def sticky_copy(
         self,
         ctx: discord.ApplicationContext,
-        source: discord.Option(discord.TextChannel, "Kênh nguồn"),
-        target: discord.Option(discord.TextChannel, "Kênh đích"),
+        source: discord.Option(discord.TextChannel, "Source channel"),
+        target: discord.Option(discord.TextChannel, "Target channel"),
     ):
         await ctx.defer(ephemeral=True)
         session = get_session()
@@ -771,11 +771,11 @@ class StickyCog(discord.Cog):
 
     # ── STATS ─────────────────────────────────────────────────────────────────
 
-    @sticky.command(name="stats", description="Xem thống kê sticky")
+    @sticky.command(name="stats", description="View sticky statistics")
     async def sticky_stats(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh cụ thể (bỏ trống = toàn server)", required=False),
+        channel: discord.Option(discord.TextChannel, "Specific channel (leave empty = whole server)", required=False),
     ):
         await ctx.defer(ephemeral=True)
         session = get_session()
@@ -819,10 +819,10 @@ class StickyCog(discord.Cog):
 
     # ── CHANNEL (alias create for a specific channel) ─────────────────────────
 
-    @sticky.command(name="channel", description="Tạo sticky cho kênh chỉ định")
+    @sticky.command(name="channel", description="Create sticky for a specific channel")
     async def sticky_channel(
         self,
         ctx: discord.ApplicationContext,
-        channel: discord.Option(discord.TextChannel, "Kênh đích"),
+        channel: discord.Option(discord.TextChannel, "Target channel"),
     ):
         await ctx.send_modal(StickyContentModal(channel_id=str(channel.id)))

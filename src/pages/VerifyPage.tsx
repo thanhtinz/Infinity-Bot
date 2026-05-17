@@ -209,7 +209,7 @@ export function VerifyPage() {
 
         {/* Footer */}
         <p className="mt-6 text-white/25 text-xs">
-          Powered by VaultCord Security
+          {config?.page_footer_text || "Secure Verification"}
         </p>
       </div>
     </div>

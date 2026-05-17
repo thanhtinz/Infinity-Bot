@@ -117,9 +117,9 @@ class InviteTrackingCog(commands.Cog):
 
     # ── Slash commands ──────────────────────────────────────────────────────
 
-    invite_group = SlashCommandGroup("invites", "Lệnh invite tracking")
+    invite_group = SlashCommandGroup("invites", "Invite tracking commands")
 
-    @invite_group.command(name="me", description="Xem số invite của bạn")
+    @invite_group.command(name="me", description="View your invite count")
     async def invites_me(self, ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
         db = SessionLocal()
@@ -148,11 +148,11 @@ class InviteTrackingCog(commands.Cog):
         embed.set_footer(text=f"ID: {ctx.author.id}")
         await ctx.respond(embed=embed, ephemeral=True)
 
-    @invite_group.command(name="info", description="Xem invite của một thành viên")
+    @invite_group.command(name="info", description="View a member's invite count")
     async def invites_info(
         self,
         ctx: discord.ApplicationContext,
-        member: discord.Option(discord.Member, "Thành viên cần xem"),
+        member: discord.Option(discord.Member, "Member to look up"),
     ):
         await ctx.defer()
         db = SessionLocal()
@@ -182,7 +182,7 @@ class InviteTrackingCog(commands.Cog):
         embed.set_thumbnail(url=member.display_avatar.url)
         await ctx.respond(embed=embed)
 
-    @invite_group.command(name="leaderboard", description="Bảng xếp hạng invite server")
+    @invite_group.command(name="leaderboard", description="Server invite leaderboard")
     async def invites_leaderboard(self, ctx: discord.ApplicationContext):
         await ctx.defer()
         db = SessionLocal()
@@ -225,12 +225,12 @@ class InviteTrackingCog(commands.Cog):
         embed.set_footer(text=f"Server: {ctx.guild.name}")
         await ctx.respond(embed=embed)
 
-    @invite_group.command(name="fake", description="Đánh dấu invite của user là fake (Admin)")
+    @invite_group.command(name="fake", description="Mark a user's invite as fake (Admin)")
     @commands.has_permissions(administrator=True)
     async def invites_fake(
         self,
         ctx: discord.ApplicationContext,
-        member: discord.Option(discord.Member, "Thành viên bị đánh fake"),
+        member: discord.Option(discord.Member, "Member to mark as fake"),
     ):
         await ctx.defer(ephemeral=True)
         db = SessionLocal()

@@ -240,7 +240,7 @@ def create_bot():
                 raise Exception("Feature disabled")
 
     # ── Legacy commands (status, san_pham, account) ──────────
-    @bot_client.slash_command(name="status", description="Xem trạng thái bot hiện tại")
+    @bot_client.slash_command(name="status", description="View current bot status")
     async def status_cmd(ctx: discord.ApplicationContext):
         session = get_session()
         try:
@@ -256,7 +256,7 @@ def create_bot():
         finally:
             session.close()
 
-    @bot_client.slash_command(name="account", description="Xem thông tin tài khoản & lịch sử mua hàng")
+    @bot_client.slash_command(name="account", description="View account info & purchase history")
     async def account_cmd(ctx: discord.ApplicationContext):
         await ctx.defer(ephemeral=True)
         session = get_session()

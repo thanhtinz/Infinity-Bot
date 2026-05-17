@@ -210,16 +210,16 @@ class GiveawayCog(discord.Cog):
 
     # ── Slash commands ────────────────────────────────────────────────────
 
-    @discord.slash_command(name="giveaway", description="[Admin] Tạo giveaway")
+    @discord.slash_command(name="giveaway", description="[Admin] Create a giveaway")
     @discord.default_permissions(administrator=True)
     async def giveaway_cmd(
         self,
         ctx: discord.ApplicationContext,
-        title: discord.Option(str, "Tên giveaway"),
-        prize: discord.Option(str, "Phần thưởng"),
-        duration: discord.Option(str, "Thời gian (VD: 10m, 2h, 1d)"),
-        winners: discord.Option(int, "Số người thắng", default=1, min_value=1, max_value=20),
-        description: discord.Option(str, "Mô tả (tuỳ chọn)", required=False, default=""),
+        title: discord.Option(str, "Giveaway title"),
+        prize: discord.Option(str, "Prize"),
+        duration: discord.Option(str, "Duration (e.g. 10m, 2h, 1d)"),
+        winners: discord.Option(int, "Number of winners", default=1, min_value=1, max_value=20),
+        description: discord.Option(str, "Description (optional)", required=False, default=""),
     ):
         seconds = parse_duration(duration)
         ends_at = datetime.datetime.utcnow() + datetime.timedelta(seconds=seconds)
@@ -263,17 +263,17 @@ class GiveawayCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="giveaway_reroll", description="[Admin] Chọn lại người thắng giveaway")
+    @discord.slash_command(name="giveaway_reroll", description="[Admin] Reroll giveaway winner")
     @discord.default_permissions(administrator=True)
     async def reroll_cmd(
         self,
         ctx: discord.ApplicationContext,
-        id: discord.Option(int, "ID giveaway"),
+        id: discord.Option(int, "Giveaway ID"),
     ):
         await end_giveaway(self.bot, id, reroll=True)
         await ctx.respond(f"✅ Đã reroll giveaway #{id}.", ephemeral=True)
 
-    @discord.slash_command(name="giveaway_list", description="Xem giveaway đang chạy")
+    @discord.slash_command(name="giveaway_list", description="View active giveaways")
     async def list_cmd(self, ctx: discord.ApplicationContext):
         session = get_session()
         try:
@@ -301,21 +301,21 @@ class GiveawayCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="giveaway_end", description="[Admin] Kết thúc sớm giveaway")
+    @discord.slash_command(name="giveaway_end", description="[Admin] End a giveaway early")
     @discord.default_permissions(administrator=True)
-    async def end_cmd(self, ctx: discord.ApplicationContext, id: discord.Option(int, "ID giveaway")):
+    async def end_cmd(self, ctx: discord.ApplicationContext, id: discord.Option(int, "Giveaway ID")):
         if id in self._tasks:
             self._tasks[id].cancel()
         await end_giveaway(self.bot, id)
         await ctx.respond(f"✅ Đã kết thúc giveaway #{id}.", ephemeral=True)
 
-    @discord.slash_command(name="giveaway_ban", description="[Admin] Cấm user tham gia giveaway")
+    @discord.slash_command(name="giveaway_ban", description="[Admin] Ban user from giveaway")
     @discord.default_permissions(administrator=True)
     async def ban_cmd(
         self,
         ctx: discord.ApplicationContext,
-        id: discord.Option(int, "ID giveaway"),
-        user: discord.Option(discord.Member, "User cần ban"),
+        id: discord.Option(int, "Giveaway ID"),
+        user: discord.Option(discord.Member, "User to ban"),
     ):
         session = get_session()
         try:
@@ -332,13 +332,13 @@ class GiveawayCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="giveaway_unban", description="[Admin] Bỏ ban user khỏi giveaway")
+    @discord.slash_command(name="giveaway_unban", description="[Admin] Unban user from giveaway")
     @discord.default_permissions(administrator=True)
     async def unban_cmd(
         self,
         ctx: discord.ApplicationContext,
-        id: discord.Option(int, "ID giveaway"),
-        user: discord.Option(discord.Member, "User cần unban"),
+        id: discord.Option(int, "Giveaway ID"),
+        user: discord.Option(discord.Member, "User to unban"),
     ):
         session = get_session()
         try:

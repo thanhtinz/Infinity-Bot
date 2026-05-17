@@ -404,7 +404,7 @@ class LoggingCog(discord.Cog):
 
     # ── Snipe Commands ────────────────────────────────────────────────────
 
-    @discord.slash_command(name="snipe", description="[Admin] Xem tin nhắn bị xóa gần nhất trong kênh")
+    @discord.slash_command(name="snipe", description="[Admin] View the last deleted message in channel")
     @discord.default_permissions(manage_messages=True)
     async def snipe_cmd(self, ctx: discord.ApplicationContext):
         data = self.snipe_cache.get(ctx.channel.id, {})
@@ -420,7 +420,7 @@ class LoggingCog(discord.Cog):
         embed.set_footer(text=f"#{msg.channel.name}")
         await ctx.respond(embed=embed)
 
-    @discord.slash_command(name="editsnipe", description="[Admin] Xem tin nhắn bị sửa gần nhất trong kênh")
+    @discord.slash_command(name="editsnipe", description="[Admin] View the last edited message in channel")
     @discord.default_permissions(manage_messages=True)
     async def editsnipe_cmd(self, ctx: discord.ApplicationContext):
         data = self.snipe_cache.get(ctx.channel.id, {})

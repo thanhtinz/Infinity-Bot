@@ -27,13 +27,13 @@ class ChannelAdminCog(discord.Cog):
         self._image_only: set[int] = set()
 
     # ── /purge ────────────────────────────────────────────────────────────────
-    @discord.slash_command(name="purge", description="[Admin] Xóa hàng loạt tin nhắn trong kênh")
+    @discord.slash_command(name="purge", description="[Admin] Bulk delete messages in channel")
     @discord.default_permissions(manage_messages=True)
     async def purge_cmd(
         self,
         ctx: discord.ApplicationContext,
-        so_luong: discord.Option(int, "Số tin nhắn cần xóa (1–300)", min_value=1, max_value=300),
-        thanh_vien: discord.Option(discord.Member, "Chỉ xóa tin nhắn của thành viên này", required=False, default=None),
+        so_luong: discord.Option(int, "Number of messages to delete (1–300)", min_value=1, max_value=300),
+        thanh_vien: discord.Option(discord.Member, "Only delete messages from this member", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         def check(m: discord.Message):
@@ -51,12 +51,12 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi khi xóa tin nhắn.", ephemeral=True)
 
     # ── /nuke ─────────────────────────────────────────────────────────────────
-    @discord.slash_command(name="nuke", description="[Admin] Xóa toàn bộ tin nhắn trong kênh (clone lại kênh)")
+    @discord.slash_command(name="nuke", description="[Admin] Delete all messages in channel (clone channel)")
     @discord.default_permissions(administrator=True)
     async def nuke_cmd(
         self,
         ctx: discord.ApplicationContext,
-        kenh: discord.Option(discord.TextChannel, "Kênh cần nuke (để trống = kênh hiện tại)", required=False, default=None),
+        kenh: discord.Option(discord.TextChannel, "Channel to nuke (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         target = kenh or ctx.channel
@@ -81,13 +81,13 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi khi nuke kênh.", ephemeral=True)
 
     # ── /lock ─────────────────────────────────────────────────────────────────
-    @discord.slash_command(name="lock", description="[Admin] Khóa kênh — chặn @everyone gửi tin")
+    @discord.slash_command(name="lock", description="[Admin] Lock channel — block @everyone from sending")
     @discord.default_permissions(manage_channels=True)
     async def lock_cmd(
         self,
         ctx: discord.ApplicationContext,
-        kenh: discord.Option(discord.TextChannel, "Kênh cần khóa (để trống = kênh hiện tại)", required=False, default=None),
-        ly_do: discord.Option(str, "Lý do khóa", required=False, default=""),
+        kenh: discord.Option(discord.TextChannel, "Channel to lock (leave empty = current channel)", required=False, default=None),
+        ly_do: discord.Option(str, "Reason for locking", required=False, default=""),
     ):
         await ctx.defer(ephemeral=True)
         target = kenh or ctx.channel
@@ -110,12 +110,12 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi khi khóa kênh.", ephemeral=True)
 
     # ── /unlock ───────────────────────────────────────────────────────────────
-    @discord.slash_command(name="unlock", description="[Admin] Mở khóa kênh")
+    @discord.slash_command(name="unlock", description="[Admin] Unlock channel")
     @discord.default_permissions(manage_channels=True)
     async def unlock_cmd(
         self,
         ctx: discord.ApplicationContext,
-        kenh: discord.Option(discord.TextChannel, "Kênh cần mở khóa (để trống = kênh hiện tại)", required=False, default=None),
+        kenh: discord.Option(discord.TextChannel, "Channel to unlock (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         target = kenh or ctx.channel
@@ -138,13 +138,13 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi.", ephemeral=True)
 
     # ── /hide_channel ─────────────────────────────────────────────────────────
-    @discord.slash_command(name="hide_channel", description="[Admin] Ẩn kênh khỏi tầm nhìn của role/user")
+    @discord.slash_command(name="hide_channel", description="[Admin] Hide channel from role/user")
     @discord.default_permissions(manage_channels=True)
     async def hide_channel_cmd(
         self,
         ctx: discord.ApplicationContext,
-        doi_tuong: discord.Option(str, "Mention @role hoặc @user cần ẩn khỏi", required=False, default=None),
-        kenh: discord.Option(discord.TextChannel, "Kênh cần ẩn (để trống = kênh hiện tại)", required=False, default=None),
+        doi_tuong: discord.Option(str, "Mention @role or @user to hide from", required=False, default=None),
+        kenh: discord.Option(discord.TextChannel, "Channel to hide (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         target_ch = kenh or ctx.channel
@@ -171,13 +171,13 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi.", ephemeral=True)
 
     # ── /show_channel ─────────────────────────────────────────────────────────
-    @discord.slash_command(name="show_channel", description="[Admin] Hiện lại kênh cho role/user")
+    @discord.slash_command(name="show_channel", description="[Admin] Show channel to role/user")
     @discord.default_permissions(manage_channels=True)
     async def show_channel_cmd(
         self,
         ctx: discord.ApplicationContext,
-        doi_tuong: discord.Option(str, "Mention @role hoặc @user cần hiện lại", required=False, default=None),
-        kenh: discord.Option(discord.TextChannel, "Kênh cần hiện (để trống = kênh hiện tại)", required=False, default=None),
+        doi_tuong: discord.Option(str, "Mention @role or @user to show to", required=False, default=None),
+        kenh: discord.Option(discord.TextChannel, "Channel to show (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         target_ch = kenh or ctx.channel
@@ -202,15 +202,15 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi.", ephemeral=True)
 
     # ── /block_channel ────────────────────────────────────────────────────────
-    @discord.slash_command(name="block_channel", description="[Admin] Chặn role/user gửi tin trong kênh")
+    @discord.slash_command(name="block_channel", description="[Admin] Block role/user from sending messages in channel")
     @discord.default_permissions(manage_channels=True)
     async def block_channel_cmd(
         self,
         ctx: discord.ApplicationContext,
-        thanh_vien: discord.Option(discord.Member, "Thành viên cần chặn", required=False, default=None),
-        role: discord.Option(discord.Role, "Role cần chặn", required=False, default=None),
-        kenh: discord.Option(discord.TextChannel, "Kênh cần chặn (để trống = kênh hiện tại)", required=False, default=None),
-        ly_do: discord.Option(str, "Lý do", required=False, default=""),
+        thanh_vien: discord.Option(discord.Member, "Member to block", required=False, default=None),
+        role: discord.Option(discord.Role, "Role to block", required=False, default=None),
+        kenh: discord.Option(discord.TextChannel, "Channel to block in (leave empty = current channel)", required=False, default=None),
+        ly_do: discord.Option(str, "Reason", required=False, default=""),
     ):
         await ctx.defer(ephemeral=True)
         target_ch = kenh or ctx.channel
@@ -227,14 +227,14 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi.", ephemeral=True)
 
     # ── /unblock_channel ──────────────────────────────────────────────────────
-    @discord.slash_command(name="unblock_channel", description="[Admin] Bỏ chặn role/user trong kênh")
+    @discord.slash_command(name="unblock_channel", description="[Admin] Unblock role/user in channel")
     @discord.default_permissions(manage_channels=True)
     async def unblock_channel_cmd(
         self,
         ctx: discord.ApplicationContext,
-        thanh_vien: discord.Option(discord.Member, "Thành viên cần bỏ chặn", required=False, default=None),
-        role: discord.Option(discord.Role, "Role cần bỏ chặn", required=False, default=None),
-        kenh: discord.Option(discord.TextChannel, "Kênh (để trống = kênh hiện tại)", required=False, default=None),
+        thanh_vien: discord.Option(discord.Member, "Member to unblock", required=False, default=None),
+        role: discord.Option(discord.Role, "Role to unblock", required=False, default=None),
+        kenh: discord.Option(discord.TextChannel, "Channel (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         target_ch = kenh or ctx.channel
@@ -251,13 +251,13 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi.", ephemeral=True)
 
     # ── /slowmode ─────────────────────────────────────────────────────────────
-    @discord.slash_command(name="slowmode", description="[Admin] Đặt chế độ chờ giữa các tin nhắn trong kênh")
+    @discord.slash_command(name="slowmode", description="[Admin] Set slowmode in channel")
     @discord.default_permissions(manage_channels=True)
     async def slowmode_cmd(
         self,
         ctx: discord.ApplicationContext,
-        giay: discord.Option(int, "Số giây chờ (0 = tắt, tối đa 21600)", min_value=0, max_value=21600),
-        kenh: discord.Option(discord.TextChannel, "Kênh cần đặt slowmode (để trống = kênh hiện tại)", required=False, default=None),
+        giay: discord.Option(int, "Slowmode seconds (0 = off, max 21600)", min_value=0, max_value=21600),
+        kenh: discord.Option(discord.TextChannel, "Channel to set slowmode (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         target = kenh or ctx.channel
@@ -281,13 +281,13 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi.", ephemeral=True)
 
     # ── /image_only ───────────────────────────────────────────────────────────
-    @discord.slash_command(name="image_only", description="[Admin] Kênh chỉ cho phép gửi ảnh/video/file")
+    @discord.slash_command(name="image_only", description="[Admin] Set channel to image/video/file only")
     @discord.default_permissions(manage_channels=True)
     async def image_only_cmd(
         self,
         ctx: discord.ApplicationContext,
-        bat_tat: discord.Option(str, "Bật hoặc tắt chế độ chỉ ảnh", choices=["bật", "tắt"]),
-        kenh: discord.Option(discord.TextChannel, "Kênh (để trống = kênh hiện tại)", required=False, default=None),
+        bat_tat: discord.Option(str, "Enable or disable image-only mode", choices=["bật", "tắt"]),
+        kenh: discord.Option(discord.TextChannel, "Channel (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         target = kenh or ctx.channel
@@ -326,13 +326,13 @@ class ChannelAdminCog(discord.Cog):
             pass
 
     # ── /move_message ─────────────────────────────────────────────────────────
-    @discord.slash_command(name="move_message", description="[Admin] Chuyển tin nhắn sang kênh khác")
+    @discord.slash_command(name="move_message", description="[Admin] Move a message to another channel")
     @discord.default_permissions(manage_messages=True)
     async def move_message_cmd(
         self,
         ctx: discord.ApplicationContext,
-        message_id: discord.Option(str, "ID của tin nhắn cần chuyển"),
-        kenh_dich: discord.Option(discord.TextChannel, "Kênh đích cần chuyển đến"),
+        message_id: discord.Option(str, "ID of the message to move"),
+        kenh_dich: discord.Option(discord.TextChannel, "Target channel"),
     ):
         await ctx.defer(ephemeral=True)
         try:
@@ -360,12 +360,12 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi khi chuyển tin nhắn.", ephemeral=True)
 
     # ── /clear_reactions ──────────────────────────────────────────────────────
-    @discord.slash_command(name="clear_reactions", description="[Admin] Xóa toàn bộ reaction của một tin nhắn")
+    @discord.slash_command(name="clear_reactions", description="[Admin] Clear all reactions from a message")
     @discord.default_permissions(manage_messages=True)
     async def clear_reactions_cmd(
         self,
         ctx: discord.ApplicationContext,
-        message_id: discord.Option(str, "ID tin nhắn cần xóa reaction"),
+        message_id: discord.Option(str, "ID of the message to clear reactions"),
     ):
         await ctx.defer(ephemeral=True)
         try:
@@ -381,16 +381,16 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi.", ephemeral=True)
 
     # ── /announce ─────────────────────────────────────────────────────────────
-    @discord.slash_command(name="announce", description="[Admin] Gửi thông báo có embed đến kênh")
+    @discord.slash_command(name="announce", description="[Admin] Send an embed announcement to channel")
     @discord.default_permissions(administrator=True)
     async def announce_cmd(
         self,
         ctx: discord.ApplicationContext,
-        noi_dung: discord.Option(str, "Nội dung thông báo (hỗ trợ markdown Discord)"),
-        kenh: discord.Option(discord.TextChannel, "Kênh đích (để trống = kênh hiện tại)", required=False, default=None),
-        tieu_de: discord.Option(str, "Tiêu đề embed (để trống = không có)", required=False, default=""),
-        mention: discord.Option(str, "Mention ai (@here, @everyone, @role)", required=False, default=""),
-        mau: discord.Option(str, "Màu embed hex (VD: #FF0000)", required=False, default="#5865F2"),
+        noi_dung: discord.Option(str, "Announcement content (supports Discord markdown)"),
+        kenh: discord.Option(discord.TextChannel, "Target channel (leave empty = current channel)", required=False, default=None),
+        tieu_de: discord.Option(str, "Embed title (leave empty = none)", required=False, default=""),
+        mention: discord.Option(str, "Who to mention (@here, @everyone, @role)", required=False, default=""),
+        mau: discord.Option(str, "Embed hex color (e.g. #FF0000)", required=False, default="#5865F2"),
     ):
         await ctx.defer(ephemeral=True)
         target = kenh or ctx.channel
@@ -416,12 +416,12 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi khi gửi thông báo.", ephemeral=True)
 
     # ── /pin_message ──────────────────────────────────────────────────────────
-    @discord.slash_command(name="pin_message", description="[Admin] Ghim tin nhắn theo ID")
+    @discord.slash_command(name="pin_message", description="[Admin] Pin a message by ID")
     @discord.default_permissions(manage_messages=True)
     async def pin_message_cmd(
         self,
         ctx: discord.ApplicationContext,
-        message_id: discord.Option(str, "ID tin nhắn cần ghim"),
+        message_id: discord.Option(str, "ID of the message to pin"),
     ):
         await ctx.defer(ephemeral=True)
         try:
@@ -437,12 +437,12 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi.", ephemeral=True)
 
     # ── /unpin_message ────────────────────────────────────────────────────────
-    @discord.slash_command(name="unpin_message", description="[Admin] Bỏ ghim tin nhắn theo ID")
+    @discord.slash_command(name="unpin_message", description="[Admin] Unpin a message by ID")
     @discord.default_permissions(manage_messages=True)
     async def unpin_message_cmd(
         self,
         ctx: discord.ApplicationContext,
-        message_id: discord.Option(str, "ID tin nhắn cần bỏ ghim"),
+        message_id: discord.Option(str, "ID of the message to unpin"),
     ):
         await ctx.defer(ephemeral=True)
         try:
@@ -458,13 +458,13 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond("❌ Lỗi.", ephemeral=True)
 
     # ── /role_add / /role_remove ───────────────────────────────────────────────
-    @discord.slash_command(name="role_add", description="[Admin] Thêm role cho thành viên")
+    @discord.slash_command(name="role_add", description="[Admin] Add a role to a member")
     @discord.default_permissions(manage_roles=True)
     async def role_add_cmd(
         self,
         ctx: discord.ApplicationContext,
-        thanh_vien: discord.Option(discord.Member, "Thành viên"),
-        role: discord.Option(discord.Role, "Role cần thêm"),
+        thanh_vien: discord.Option(discord.Member, "Member"),
+        role: discord.Option(discord.Role, "Role to add"),
     ):
         await ctx.defer(ephemeral=True)
         try:
@@ -475,13 +475,13 @@ class ChannelAdminCog(discord.Cog):
         except Exception as e:
             await ctx.respond(f"❌ Lỗi: {e}", ephemeral=True)
 
-    @discord.slash_command(name="role_remove", description="[Admin] Xóa role của thành viên")
+    @discord.slash_command(name="role_remove", description="[Admin] Remove a role from a member")
     @discord.default_permissions(manage_roles=True)
     async def role_remove_cmd(
         self,
         ctx: discord.ApplicationContext,
-        thanh_vien: discord.Option(discord.Member, "Thành viên"),
-        role: discord.Option(discord.Role, "Role cần xóa"),
+        thanh_vien: discord.Option(discord.Member, "Member"),
+        role: discord.Option(discord.Role, "Role to remove"),
     ):
         await ctx.defer(ephemeral=True)
         try:
@@ -493,13 +493,13 @@ class ChannelAdminCog(discord.Cog):
             await ctx.respond(f"❌ Lỗi: {e}", ephemeral=True)
 
     # ── /nick ─────────────────────────────────────────────────────────────────
-    @discord.slash_command(name="nick", description="[Admin] Đổi nickname thành viên")
+    @discord.slash_command(name="nick", description="[Admin] Change a member's nickname")
     @discord.default_permissions(manage_nicknames=True)
     async def nick_cmd(
         self,
         ctx: discord.ApplicationContext,
-        thanh_vien: discord.Option(discord.Member, "Thành viên"),
-        nickname: discord.Option(str, "Nickname mới (để trống = xóa nickname)", required=False, default=None),
+        thanh_vien: discord.Option(discord.Member, "Member"),
+        nickname: discord.Option(str, "New nickname (leave empty to reset)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         try:
