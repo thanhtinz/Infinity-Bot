@@ -87,6 +87,10 @@ async def init_db():
             all_stmts.append("ALTER TABLE system_config ADD COLUMN shard_count INTEGER")
         if "language" not in sc:
             all_stmts.append("ALTER TABLE system_config ADD COLUMN language VARCHAR DEFAULT 'en'")
+        if "vpn_api_key" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN vpn_api_key VARCHAR")
+        if "vpn_api_provider" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN vpn_api_provider VARCHAR DEFAULT 'proxycheck'")
 
         # embed_templates
         et = cols("embed_templates")
