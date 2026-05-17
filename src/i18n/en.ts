@@ -685,14 +685,6 @@ const en = {
   botConfig_botRoles: "Bot roles",
   botConfig_notifChannels: "Bot will send notifications to these channels.",
   botConfig_orderChannel: "Order channel",
-  botConfig_joinChannel: 'Channel "Join to Create"',
-  botConfig_voiceCategory: "Voice room category",
-  botConfig_voiceCategoryDesc: "Voice rooms will be created in this category.",
-  botConfig_controlPanel: "Control panel channel",
-  botConfig_controlPanelDesc: "Channel containing voice room control buttons.",
-  botConfig_channelFormat: "Channel name format",
-  botConfig_autoCreateDesc: "Automatically creates voice rooms.",
-  botConfig_advancedVoice: "Advanced config for the TempVoice system.",
 
   // ─── Bot Status Extended ───
   botStatus_sysConfig: "System Config",
@@ -716,8 +708,6 @@ const en = {
   botStatus_solid: "Solid",
   botStatus_contentBackup: "Backup content",
 
-  // ─── Welcome Extended ───
-
   // ─── Emoji Manager Extended ───
   emoji_addEmoji: "Add Emoji",
   emoji_addSticker: "Add Sticker",
@@ -738,8 +728,6 @@ const en = {
   users_spending: "Spending",
   users_resetShopLeaderboard: "Reset shop leaderboard",
 
-  // ─── Config Voice Extended ───
-
   // ─── Invite Tracking Extended ───
   invite_totalInvites: "Total invites",
   invite_totalMembers: "Total Members",
@@ -751,8 +739,6 @@ const en = {
   giveaway_totalParticipants: "Total participants",
   giveaway_channel: "Channel",
   giveaway_endNowConfirm: "End this giveaway now?",
-
-  // ─── Ticket Extended ───
 
   // ─── Logging Config ───
   logConfig_title: "Logging Config",
@@ -952,12 +938,6 @@ const en = {
   scheduler_embedEditor: "Embed Editor",
   scheduler_skipDiscord: "Skip Discord send",
 
-  // ─── Ticket Forms Extended ───
-
-  // ─── Ticket Transcripts ───
-
-  // ─── Ticket Feedback ───
-
   // ─── Starboard Extended ───
   starboard_minStars: "Min ⭐ count",
   starboard_selfStarAllowed: "Allow self star",
@@ -1046,14 +1026,6 @@ const en = {
   automod_mute5min: "Mute 5 min",
   automod_kick: "Kick",
 
-  // ─── Ticket Claiming Extended ───
-
-  // ─── Tickets Page Extended ───
-
-  // ─── Ticket Config Extended ───
-
-  // ─── Ticket Panels Extended ───
-
   // ─── Leaderboard Extended ───
   lb_title: "Leaderboard",
   lb_discordCommand: "Leaderboard is also accessible on Discord via the command",
@@ -1069,10 +1041,6 @@ const en = {
   lb_noData: "No data yet",
   lb_totalSpent: "Total spent",
   lb_confirmReset: "Confirm reset",
-
-  // ─── Config Voice Extended ───
-
-  // ─── Voice Panel Buttons ───
 
   // ─── Config Channels Extended ───
   configChannels_channelsPerms: "Channels & Permissions",
@@ -1129,10 +1097,6 @@ const en = {
   shopStats_orders14: "Orders 14 days",
   shopStats_pendingOrders: "pending orders",
   shopStats_products: "Products",
-
-  // ─── Ticket Feedback Extended ───
-
-  // ─── Ticket Transcripts Extended ───
 
   // ─── Landing Page Extended ───
   landing_allInOne: "The all-in-one Discord bot for your server",
