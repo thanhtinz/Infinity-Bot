@@ -26,6 +26,7 @@ import {
   Hash,
 } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -55,11 +56,11 @@ interface ButtonRolePanel {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const BUTTON_STYLES = [
-  { key: "primary", label: "Primary", bg: "#5865F2", text: "#ffffff" },
-  { key: "secondary", label: "Secondary", bg: "#4e5058", text: "#ffffff" },
-  { key: "success", label: "Success", bg: "#57f287", text: "#000000" },
-  { key: "danger", label: "Danger", bg: "#ed4245", text: "#ffffff" },
+const BUTTON_STYLE_KEYS = [
+  { key: "primary", bg: "#5865F2", text: "#ffffff" },
+  { key: "secondary", bg: "#4e5058", text: "#ffffff" },
+  { key: "success", bg: "#57f287", text: "#000000" },
+  { key: "danger", bg: "#ed4245", text: "#ffffff" },
 ] as const;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -74,7 +75,7 @@ function formatDate(s?: string) {
 }
 
 function getButtonStyle(key: string) {
-  return BUTTON_STYLES.find((s) => s.key === key) ?? BUTTON_STYLES[0];
+  return BUTTON_STYLE_KEYS.find((s) => s.key === key) ?? BUTTON_STYLE_KEYS[0];
 }
 
 // ─── Panel Card ──────────────────────────────────────────────────────────────
@@ -88,6 +89,7 @@ function PanelCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useT();
   const isDeployed = !!panel.message_id;
   const btns = panel.buttons ?? [];
 
@@ -108,14 +110,14 @@ function PanelCard({
           {isDeployed ? (
             <Badge className="bg-green-500/15 text-green-600 border border-green-500/30 shrink-0 text-[10px] px-1.5">
               <CheckCircle2 className="h-3 w-3 mr-0.5" />
-              Deployed
+              {t("btnRoles_deployed")}
             </Badge>
           ) : (
             <Badge
               variant="outline"
               className="text-muted-foreground shrink-0 text-[10px] px-1.5"
             >
-              Not deployed
+              {t("btnRoles_notDeployed")}
             </Badge>
           )}
         </div>
@@ -129,10 +131,10 @@ function PanelCard({
             />
             <div className="p-2.5 flex-1 min-w-0 bg-muted/30">
               <p className="font-semibold text-xs leading-tight">
-                {panel.embed_title || "Title"}
+                {panel.embed_title || t("btnRoles_titleFallback")}
               </p>
               <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
-                {panel.embed_description || "Description..."}
+                {panel.embed_description || t("btnRoles_descFallback")}
               </p>
             </div>
           </div>
@@ -149,17 +151,17 @@ function PanelCard({
                 style={{ backgroundColor: s.bg, color: s.text }}
               >
                 {btn.emoji && <span>{btn.emoji}</span>}
-                {btn.label || "Button"}
+                {btn.label || t("btnRoles_buttonFallback")}
               </span>
             );
           })}
           {btns.length === 0 && (
             <span className="text-[11px] text-muted-foreground">
-              0 buttons
+              {t("btnRoles_zeroButtons")}
             </span>
           )}
           <Badge variant="secondary" className="text-[10px] px-1.5 shrink-0">
-            {btns.length} buttons
+            {btns.length} {t("btnRoles_buttonCount")}
           </Badge>
         </div>
 
@@ -171,7 +173,7 @@ function PanelCard({
               {panel.channel_id}
             </code>
           ) : (
-            <span>Not sent</span>
+            <span>{t("btnRoles_notSent")}</span>
           )}
         </div>
 
@@ -195,7 +197,7 @@ function PanelCard({
               onClick={onEdit}
             >
               <Pencil className="h-3.5 w-3.5 mr-1" />
-              Edit
+              {t("edit")}
             </Button>
             <Button
               variant="ghost"
@@ -204,7 +206,7 @@ function PanelCard({
               onClick={onDelete}
             >
               <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Delete
+              {t("delete")}
             </Button>
           </div>
         </div>
@@ -219,6 +221,7 @@ export function ButtonRoles() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const { t } = useT();
 
   // ── State ──
   const [deleteTarget, setDeleteTarget] = useState<ButtonRolePanel | null>(null);
@@ -247,12 +250,12 @@ export function ButtonRoles() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["button-roles"] });
       setDeleteTarget(null);
-      toast({ title: "Deleted panel" });
+      toast({ title: t("btnRoles_deletedPanel") });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Delete error panel",
+        title: t("btnRoles_deleteErrorPanel"),
         description: e.message,
       }),
   });
@@ -266,21 +269,21 @@ export function ButtonRoles() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <MousePointerClick className="w-6 h-6" />
-            Button Roles
+            {t("br_title")}
           </h2>
           <p className="text-muted-foreground mt-1">
-            Create a panel with buttons for members to self-assign roles.
+            {t("btnRoles_desc")}
           </p>
         </div>
         <Button onClick={() => navigate('/button-roles/new')}>
           <Plus className="h-4 w-4 mr-1.5" />
-          Create Panel
+          {t("btnRoles_createPanel")}
         </Button>
       </div>
 
       {/* Loading */}
       {isLoading && (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">{t("loading")}</p>
       )}
 
       {/* Empty state */}
@@ -288,13 +291,13 @@ export function ButtonRoles() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <MousePointerClick className="h-10 w-10 text-muted-foreground/50 mb-3" />
-            <p className="text-sm font-medium">No panels yet</p>
+            <p className="text-sm font-medium">{t("btnRoles_empty")}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Create a button role panel for members to self-assign roles.
+              {t("btnRoles_emptyDesc")}
             </p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate('/button-roles/new')}>
               <Plus className="h-4 w-4 mr-1.5" />
-              Create Panel
+              {t("btnRoles_createPanel")}
             </Button>
           </CardContent>
         </Card>
@@ -321,21 +324,21 @@ export function ButtonRoles() {
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete panel?</DialogTitle>
+            <DialogTitle>{t("btnRoles_deleteConfirm")}</DialogTitle>
             <DialogDescription>
-              Panel <strong>{deleteTarget?.name}</strong> will be permanently deleted.
+              {t("btnRoles_deleteDesc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? t("deleting") : t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

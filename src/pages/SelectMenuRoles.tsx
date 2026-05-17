@@ -26,6 +26,7 @@ import {
   Hash,
 } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -79,6 +80,7 @@ function PanelCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useT();
   const isDeployed = !!panel.message_id;
   const opts = panel.options ?? [];
 
@@ -99,14 +101,14 @@ function PanelCard({
           {isDeployed ? (
             <Badge className="bg-green-500/15 text-green-600 border border-green-500/30 shrink-0 text-[10px] px-1.5">
               <CheckCircle2 className="h-3 w-3 mr-0.5" />
-              Deployed
+              {t("selectMenu_deployed")}
             </Badge>
           ) : (
             <Badge
               variant="outline"
               className="text-muted-foreground shrink-0 text-[10px] px-1.5"
             >
-              Not deployed
+              {t("selectMenu_notDeployed")}
             </Badge>
           )}
         </div>
@@ -120,10 +122,10 @@ function PanelCard({
             />
             <div className="p-2.5 flex-1 min-w-0 bg-muted/30">
               <p className="font-semibold text-xs leading-tight">
-                {panel.embed_title || "Title"}
+                {panel.embed_title || t("selectMenu_titleFallback")}
               </p>
               <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
-                {panel.embed_description || "Description..."}
+                {panel.embed_description || t("selectMenu_descFallback")}
               </p>
             </div>
           </div>
@@ -137,16 +139,16 @@ function PanelCard({
               className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium bg-[#5865F2] text-white"
             >
               {opt.emoji && <span>{opt.emoji}</span>}
-              {opt.label || "Option"}
+              {opt.label || t("selectMenu_optionFallback")}
             </span>
           ))}
           {opts.length === 0 && (
             <span className="text-[11px] text-muted-foreground">
-              0 options
+              {t("selectMenu_zeroOptions")}
             </span>
           )}
           <Badge variant="secondary" className="text-[10px] px-1.5 shrink-0">
-            {opts.length} option(s)
+            {opts.length} {t("selectMenu_optionCount")}
           </Badge>
         </div>
 
@@ -158,7 +160,7 @@ function PanelCard({
               {panel.channel_id}
             </code>
           ) : (
-            <span>Not sent</span>
+            <span>{t("selectMenu_notSent")}</span>
           )}
         </div>
 
@@ -182,7 +184,7 @@ function PanelCard({
               onClick={onEdit}
             >
               <Pencil className="h-3.5 w-3.5 mr-1" />
-              Edit
+              {t("edit")}
             </Button>
             <Button
               variant="ghost"
@@ -191,7 +193,7 @@ function PanelCard({
               onClick={onDelete}
             >
               <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Delete
+              {t("delete")}
             </Button>
           </div>
         </div>
@@ -206,6 +208,7 @@ export function SelectMenuRoles() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const { t } = useT();
 
   // ── State ──
   const [deleteTarget, setDeleteTarget] = useState<SelectRolePanel | null>(null);
@@ -234,12 +237,12 @@ export function SelectMenuRoles() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["select-roles"] });
       setDeleteTarget(null);
-      toast({ title: "Deleted panel" });
+      toast({ title: t("selectMenu_deletedPanel") });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Delete error panel",
+        title: t("selectMenu_deleteErrorPanel"),
         description: e.message,
       }),
   });
@@ -253,21 +256,21 @@ export function SelectMenuRoles() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <ListChecks className="w-6 h-6" />
-            Select Menu Roles
+            {t("smr_title")}
           </h2>
           <p className="text-muted-foreground mt-1">
-            Create dropdown panels for members to select roles from a menu.
+            {t("selectMenu_desc")}
           </p>
         </div>
         <Button onClick={() => navigate('/select-roles/new')}>
           <Plus className="h-4 w-4 mr-1.5" />
-          Create Panel
+          {t("selectMenu_createPanel")}
         </Button>
       </div>
 
       {/* Loading */}
       {isLoading && (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">{t("loading")}</p>
       )}
 
       {/* Empty state */}
@@ -275,13 +278,13 @@ export function SelectMenuRoles() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <ListChecks className="h-10 w-10 text-muted-foreground/50 mb-3" />
-            <p className="text-sm font-medium">No panels yet</p>
+            <p className="text-sm font-medium">{t("selectMenu_empty")}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Create a select menu role panel for members to self-assign roles from a dropdown.
+              {t("selectMenu_emptyDesc")}
             </p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate('/select-roles/new')}>
               <Plus className="h-4 w-4 mr-1.5" />
-              Create Panel
+              {t("selectMenu_createPanel")}
             </Button>
           </CardContent>
         </Card>
@@ -308,21 +311,21 @@ export function SelectMenuRoles() {
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete panel?</DialogTitle>
+            <DialogTitle>{t("selectMenu_deleteConfirm")}</DialogTitle>
             <DialogDescription>
-              Panel <strong>{deleteTarget?.name}</strong> will be permanently deleted.
+              {t("selectMenu_deleteDesc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? t("deleting") : t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

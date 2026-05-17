@@ -157,13 +157,14 @@ function truncate(s: string, len = 50) {
 }
 
 function Countdown({ expiresAt }: { expiresAt: string }) {
+  const { t } = useT();
   const [remaining, setRemaining] = useState("");
 
   useEffect(() => {
     function calc() {
       const diff = new Date(expiresAt).getTime() - Date.now();
       if (diff <= 0) {
-        setRemaining("Expired");
+        setRemaining(t("orders_expired"));
         return;
       }
       const h = Math.floor(diff / 3_600_000);
@@ -502,11 +503,11 @@ export function ModerationManager() {
                 <SelectItem value="ban">{t("ban")}</SelectItem>
                 <SelectItem value="softban">{t("softban")}</SelectItem>
                 <SelectItem value="kick">{t("kick")}</SelectItem>
-                <SelectItem value="mute">Mute</SelectItem>
+                <SelectItem value="mute">{t("mod_mute")}</SelectItem>
                 <SelectItem value="timeout">{t("timeout")}</SelectItem>
                 <SelectItem value="unban">{t("unban")}</SelectItem>
                 <SelectItem value="unmute">{t("unmute")}</SelectItem>
-                <SelectItem value="deafen">Deafen</SelectItem>
+                <SelectItem value="deafen">{t("mod_deafen")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -739,7 +740,7 @@ export function ModerationManager() {
                       </div>
                       <div className="flex flex-col items-end shrink-0 gap-0.5">
                         <span className="text-xs text-muted-foreground">
-                          Expires in
+                          {t("mod_expiresIn")}
                         </span>
                         {c.expires_at ? (
                           <Countdown expiresAt={c.expires_at} />
@@ -764,17 +765,17 @@ export function ModerationManager() {
               {/* ID fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label>Mute Role ID</Label>
+                  <Label>{t("mod_muteRoleId")}</Label>
                   <Input
-                    placeholder="Role ID"
+                    placeholder={t("mod_roleId")}
                     value={configForm.mute_role_id}
                     onChange={(e) => handleConfigInput("mute_role_id", e)}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Mod Log Channel ID</Label>
+                  <Label>{t("mod_modLogChannelId")}</Label>
                   <Input
-                    placeholder="Channel ID"
+                    placeholder={t("mod_channelId")}
                     value={configForm.mod_log_channel_id}
                     onChange={(e) =>
                       handleConfigInput("mod_log_channel_id", e)
@@ -784,24 +785,24 @@ export function ModerationManager() {
               </div>
 
               <div className="space-y-1.5">
-                <Label>Lockdown Channels</Label>
+                <Label>{t("mod_lockdownChannels")}</Label>
                 <Input
-                  placeholder="Comma-separated channel IDs"
+                  placeholder={t("mod_commaSeparatedChannelIds")}
                   value={configForm.lockdown_channels}
                   onChange={(e) =>
                     handleConfigInput("lockdown_channels", e)
                   }
                 />
                 <p className="text-[11px] text-muted-foreground">
-                  Channel IDs separated by commas
+                  {t("mod_channelIdsComma")}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <Label>Ignored Users</Label>
+                  <Label>{t("mod_ignoredUsers")}</Label>
                   <Input
-                    placeholder="Comma-separated user IDs"
+                    placeholder={t("mod_commaSeparatedUserIds")}
                     value={configForm.ignored_users}
                     onChange={(e) =>
                       handleConfigInput("ignored_users", e)
@@ -809,9 +810,9 @@ export function ModerationManager() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Ignored Roles</Label>
+                  <Label>{t("mod_ignoredRolesLabel")}</Label>
                   <Input
-                    placeholder="Comma-separated role IDs"
+                    placeholder={t("mod_commaSeparatedRoleIds")}
                     value={configForm.ignored_roles}
                     onChange={(e) =>
                       handleConfigInput("ignored_roles", e)
@@ -819,9 +820,9 @@ export function ModerationManager() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Ignored Channels</Label>
+                  <Label>{t("mod_ignoredChannelsLabel")}</Label>
                   <Input
-                    placeholder="Comma-separated channel IDs"
+                    placeholder={t("mod_commaSeparatedChannelIds")}
                     value={configForm.ignored_channels}
                     onChange={(e) =>
                       handleConfigInput("ignored_channels", e)
@@ -834,9 +835,9 @@ export function ModerationManager() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>DM on Action</Label>
+                    <Label>{t("mod_dmOnAction")}</Label>
                     <p className="text-[11px] text-muted-foreground">
-                      Send a DM to the user when a moderation action is taken
+                      {t("mod_dmOnActionDesc")}
                     </p>
                   </div>
                   <Switch

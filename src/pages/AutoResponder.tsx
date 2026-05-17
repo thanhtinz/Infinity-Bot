@@ -20,6 +20,7 @@ import {
 import type { AutoResponderRule } from "./auto-responder/arTypes";
 import { RuleCard } from "./auto-responder/RuleCard";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -27,6 +28,7 @@ export function AutoResponder() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const { t } = useT();
 
   // ── State ──
   const [deleteTarget, setDeleteTarget] = useState<AutoResponderRule | null>(null);
@@ -56,12 +58,12 @@ export function AutoResponder() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["auto-responders"] });
       setDeleteTarget(null);
-      toast({ title: "Rule deleted" });
+      toast({ title: t("toast_ruleDeleted") });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Error deleting rule",
+        title: t("ar_errorDeleting"),
         description: e.message,
       }),
   });
@@ -81,7 +83,7 @@ export function AutoResponder() {
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Toggle error",
+        title: t("ar_toggleError"),
         description: e.message,
       }),
   });
@@ -105,21 +107,21 @@ export function AutoResponder() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <MessageCircleReply className="w-6 h-6" />
-            Auto Responder
+            {t("ar_title")}
           </h2>
           <p className="text-muted-foreground mt-1">
-            Automatically respond when messages match conditions
+            {t("ar_desc")}
           </p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4 mr-1.5" />
-          Add Rule
+          {t("ar_addRule")}
         </Button>
       </div>
 
       {/* Loading */}
       {isLoading && (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">{t("loading")}</p>
       )}
 
       {/* Empty state */}
@@ -127,13 +129,13 @@ export function AutoResponder() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <MessageCircleReply className="h-10 w-10 text-muted-foreground/50 mb-3" />
-            <p className="text-sm font-medium">No auto responders yet</p>
+            <p className="text-sm font-medium">{t("ar_empty")}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Add a Rule to auto-respond when messages match conditions.
+              {t("ar_emptyDesc")}
             </p>
             <Button variant="outline" size="sm" className="mt-4" onClick={openCreate}>
               <Plus className="h-4 w-4 mr-1.5" />
-              Add Rule
+              {t("ar_addRule")}
             </Button>
           </CardContent>
         </Card>
@@ -162,14 +164,14 @@ export function AutoResponder() {
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete rule?</DialogTitle>
+            <DialogTitle>{t("ar_deleteConfirm")}</DialogTitle>
             <DialogDescription>
-              Rule <strong>{deleteTarget?.name}</strong> will be permanently deleted.
+              {t("ar_deleteDesc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -178,7 +180,7 @@ export function AutoResponder() {
                 deleteTarget && deleteMutation.mutate(deleteTarget.id)
               }
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? t("deleting") : t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

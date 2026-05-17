@@ -19,6 +19,7 @@ import {
 import type { CustomCommand } from "./custom-commands/ccTypes";
 import { CommandCard } from "./custom-commands/CommandCard";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -26,6 +27,7 @@ export function CustomCommands() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const { t } = useT();
 
   // ── State ──
   const [deleteTarget, setDeleteTarget] = useState<CustomCommand | null>(null);
@@ -54,12 +56,12 @@ export function CustomCommands() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["custom-commands"] });
       setDeleteTarget(null);
-      toast({ title: "Command deleted" });
+      toast({ title: t("toast_commandDeleted") });
     },
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Error deleting command",
+        title: t("cc_errorDeleting"),
         description: e.message,
       }),
   });
@@ -79,7 +81,7 @@ export function CustomCommands() {
     onError: (e: Error) =>
       toast({
         variant: "destructive",
-        title: "Toggle error",
+        title: t("cc_toggleError"),
         description: e.message,
       }),
   });
@@ -103,21 +105,21 @@ export function CustomCommands() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <Terminal className="w-6 h-6" />
-            Custom Commands
+            {t("cc_title")}
           </h2>
           <p className="text-muted-foreground mt-1">
-            Create custom commands from the dashboard
+            {t("cc_desc")}
           </p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4 mr-1.5" />
-          Add Command
+          {t("cc_addCommand")}
         </Button>
       </div>
 
       {/* Loading */}
       {isLoading && (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">{t("loading")}</p>
       )}
 
       {/* Empty state */}
@@ -125,13 +127,13 @@ export function CustomCommands() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Terminal className="h-10 w-10 text-muted-foreground/50 mb-3" />
-            <p className="text-sm font-medium">No commands yet</p>
+            <p className="text-sm font-medium">{t("cc_empty")}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Create custom commands for the bot to respond automatically.
+              {t("cc_emptyDesc")}
             </p>
             <Button variant="outline" size="sm" className="mt-4" onClick={openCreate}>
               <Plus className="h-4 w-4 mr-1.5" />
-              Add Command
+              {t("cc_addCommand")}
             </Button>
           </CardContent>
         </Card>
@@ -160,14 +162,14 @@ export function CustomCommands() {
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete command?</DialogTitle>
+            <DialogTitle>{t("cc_deleteConfirm")}</DialogTitle>
             <DialogDescription>
-              Command <strong>!{deleteTarget?.name}</strong> will be permanently deleted.
+              {t("cc_deleteDesc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -176,7 +178,7 @@ export function CustomCommands() {
                 deleteTarget && deleteMutation.mutate(deleteTarget.id)
               }
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? t("deleting") : t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

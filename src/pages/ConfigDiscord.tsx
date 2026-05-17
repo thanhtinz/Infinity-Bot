@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/i18n";
 import { Bot, KeyRound } from "lucide-react";
 
 const schema = z.object({
@@ -39,12 +40,13 @@ function MaskedField({
   placeholder?: string;
   savedValue?: string | boolean | null;
 }) {
+  const { t } = useT();
   const isConfigured = typeof savedValue === "boolean" ? savedValue : !!savedValue;
   return (
     <div className="space-y-1">
       <Input
         type="password"
-        placeholder={isConfigured ? "••••••••  (configured)" : placeholder}
+        placeholder={isConfigured ? `••••••••  (${t("configDiscord_configured")})` : placeholder}
         value={field.value || ""}
         onChange={(e) => field.onChange(e.target.value)}
         onBlur={field.onBlur}
@@ -53,13 +55,14 @@ function MaskedField({
         autoComplete="new-password"
       />
       {isConfigured && !field.value && (
-        <p className="text-xs text-green-600 dark:text-green-400">✓ Configured — leave blank to keep unchanged</p>
+        <p className="text-xs text-green-600 dark:text-green-400">✓ {t("configDiscord_configured")} — {t("configDiscord_leaveBlank")}</p>
       )}
     </div>
   );
 }
 
 export function ConfigDiscord() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -88,9 +91,9 @@ export function ConfigDiscord() {
     mutationFn: (v: FormValues) => savePartial(v),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["config"] });
-      toast({ title: "Saved", description: "Discord Bot config saved." });
+      toast({ title: t("toast_saved"), description: t("toast_discordBotSaved") });
     },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Save failed." }),
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_saveFailed") }),
   });
 
   const isConfigured = !!config?.has_discord_token;
@@ -103,12 +106,12 @@ export function ConfigDiscord() {
           <Bot className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Discord Bot</h1>
-          <p className="text-sm text-muted-foreground">Token and OAuth to connect the bot with Discord.</p>
+          <h1 className="text-xl font-bold">{t("configDiscord_title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("configDiscord_desc")}</p>
         </div>
         {isConfigured && (
           <Badge className="ml-auto bg-green-500/15 text-green-600 border-green-500/30">
-            ✓ Connected
+            ✓ {t("configDiscord_connected")}
           </Badge>
         )}
       </div>
@@ -119,17 +122,17 @@ export function ConfigDiscord() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <KeyRound className="w-4 h-4" /> Auth info
+                  <KeyRound className="w-4 h-4" /> {t("configDiscord_authInfo")}
                 </CardTitle>
                 <CardDescription>
-                  Get from{" "}
+                  {t("configDiscord_getFrom")}{" "}
                   <a
                     href="https://discord.com/developers/applications"
                     target="_blank"
                     rel="noreferrer"
                     className="underline text-primary"
                   >
-                    Discord Developer Portal
+                    {t("configDiscord_devPortal")}
                   </a>
                 </CardDescription>
               </CardHeader>
@@ -139,12 +142,12 @@ export function ConfigDiscord() {
                   name="discord_token"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Bot Token</FormLabel>
+                      <FormLabel>{t("configDiscord_botToken")}</FormLabel>
                       <FormControl>
                         <MaskedField field={field} placeholder="MTc..." savedValue={config?.has_discord_token} />
                       </FormControl>
                       <FormDescription>
-                        Bot → Token → Reset Token. Never share this token.
+                        {t("configDiscord_tokenDesc")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -157,7 +160,7 @@ export function ConfigDiscord() {
                     name="discord_client_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>OAuth2 Client ID</FormLabel>
+                        <FormLabel>{t("configDiscord_oauth2ClientId")}</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -165,11 +168,11 @@ export function ConfigDiscord() {
                             placeholder={
                               config?.discord_client_id
                                 ? `${String(config.discord_client_id).slice(0, 8)}...`
-                                : "Application ID"
+                                : t("configDiscord_applicationId")
                             }
                           />
                         </FormControl>
-                        <FormDescription>General Information → Application ID</FormDescription>
+                        <FormDescription>{t("configDiscord_generalInfoAppId")}</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -179,15 +182,15 @@ export function ConfigDiscord() {
                     name="discord_client_secret"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>OAuth2 Client Secret</FormLabel>
+                        <FormLabel>{t("configDiscord_oauth2ClientSecret")}</FormLabel>
                         <FormControl>
                           <MaskedField
                             field={field}
-                            placeholder="Client secret..."
+                            placeholder={t("configDiscord_clientSecretPlaceholder")}
                             savedValue={config?.has_discord_client_secret}
                           />
                         </FormControl>
-                        <FormDescription>OAuth2 → Client Secret</FormDescription>
+                        <FormDescription>{t("configDiscord_oauth2ClientSecretDesc")}</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -199,7 +202,7 @@ export function ConfigDiscord() {
                   name="support_server_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Support Server Link</FormLabel>
+                      <FormLabel>{t("configDiscord_supportServerLink")}</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -208,7 +211,7 @@ export function ConfigDiscord() {
                         />
                       </FormControl>
                       <FormDescription>
-                        Link server support hiển thị ngoài landing page. Khác với link mời bot vào server.
+                        {t("configDiscord_supportServerDesc")}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -217,7 +220,7 @@ export function ConfigDiscord() {
 
                 <div className="pt-1">
                   <Button type="submit" disabled={mutation.isPending}>
-                    {mutation.isPending ? "Saving..." : "Save Config"}
+                    {mutation.isPending ? t("saving") : t("save")}
                   </Button>
                 </div>
               </CardContent>

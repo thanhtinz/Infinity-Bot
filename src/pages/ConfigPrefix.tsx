@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/i18n";
 import { useGuild } from "@/contexts/GuildContext";
 
 export function ConfigPrefix() {
+  const { t } = useT();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [cmdPrefix, setCmdPrefix] = useState("!");
@@ -40,14 +42,14 @@ export function ConfigPrefix() {
     }).then(r => { if (!r.ok) throw new Error("Save failed"); return r.json(); }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["config", selectedGuildId] });
-      toast({ title: "Saved", description: `Prefix changed to "${cmdPrefix}"` });
+      toast({ title: t("toast_saved"), description: `${t("configPrefix_changedTo")} "${cmdPrefix}"` });
     },
     onError: () => {
-      toast({ variant: "destructive", title: "Error", description: "Failed to save prefix." });
+      toast({ variant: "destructive", title: t("error"), description: t("toast_prefixFailed") });
     },
   });
 
-  if (isLoading) return <div>Loading config...</div>;
+  if (isLoading) return <div>{t("loading")}</div>;
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -57,21 +59,21 @@ export function ConfigPrefix() {
             <Terminal className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Command Prefix</h1>
-            <p className="text-muted-foreground">Configure a custom prefix for message-based commands.</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t("configPrefix_title")}</h1>
+            <p className="text-muted-foreground">{t("configPrefix_desc")}</p>
           </div>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Command Prefix</CardTitle>
-          <CardDescription>Example: !hug @user, .kiss @user. Slash commands still work normally.</CardDescription>
+          <CardTitle>{t("configPrefix_title")}</CardTitle>
+          <CardDescription>{t("configPrefix_cardDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-end gap-3">
             <div className="space-y-2 flex-1 max-w-[220px]">
-              <label className="text-sm font-medium">Prefix</label>
+              <label className="text-sm font-medium">{t("configPrefix_prefixLabel")}</label>
               <Input
                 value={cmdPrefix}
                 onChange={(e) => setCmdPrefix(e.target.value.slice(0, 5))}
@@ -80,11 +82,11 @@ export function ConfigPrefix() {
               />
             </div>
             <Button onClick={() => prefixMutation.mutate()} disabled={prefixMutation.isPending} size="sm">
-              {prefixMutation.isPending ? "Saving..." : "Save Prefix"}
+              {prefixMutation.isPending ? t("saving") : t("configPrefix_savePrefix")}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            With prefix <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}</code>, users type <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}hug @user</code> to run the prefix command.
+            {t("configPrefix_withPrefix")} <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}</code>, {t("configPrefix_usersType")} <code className="bg-muted px-1 rounded">{cmdPrefix || "!"}hug @user</code> {t("configPrefix_toRun")}
           </p>
         </CardContent>
       </Card>

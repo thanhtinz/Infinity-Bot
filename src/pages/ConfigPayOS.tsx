@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/i18n";
 import { CreditCard, ExternalLink, Zap, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useGuild } from "@/contexts/GuildContext";
@@ -30,12 +31,13 @@ function MaskedField({
   savedValue?: string | boolean | null;
   placeholder?: string;
 }) {
+  const { t } = useT();
   const isConfigured = typeof savedValue === "boolean" ? savedValue : !!savedValue;
   return (
     <div className="space-y-1">
       <Input
         type="password"
-        placeholder={isConfigured ? "••••••••  (configured)" : placeholder}
+        placeholder={isConfigured ? `••••••••  (${t("configPayOS_configured")})` : placeholder}
         value={field.value || ""}
         onChange={(e) => field.onChange(e.target.value)}
         onBlur={field.onBlur}
@@ -44,13 +46,14 @@ function MaskedField({
         autoComplete="new-password"
       />
       {isConfigured && !field.value && (
-        <p className="text-xs text-green-600 dark:text-green-400">✓ Configured</p>
+        <p className="text-xs text-green-600 dark:text-green-400">✓ {t("configPayOS_configured")}</p>
       )}
     </div>
   );
 }
 
 export function ConfigPayOS() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [testing, setTesting] = useState(false);
@@ -88,9 +91,9 @@ export function ConfigPayOS() {
     }).then(r => { if (!r.ok) throw new Error("Save failed"); return r.json(); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["payos_config", selectedGuildId] });
-      toast({ title: "Saved", description: "PayOS config saved." });
+      toast({ title: t("toast_saved"), description: t("toast_payosSaved") });
     },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Save failed." }),
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_saveFailed") }),
   });
 
   const isConfigured = !!config?.has_payos_api_key;
@@ -104,10 +107,10 @@ export function ConfigPayOS() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Unknown error");
-      toast({ title: "Connection successful", description: data.message });
+      toast({ title: t("configPayOS_connectionSuccess"), description: data.message });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Connection error";
-      toast({ variant: "destructive", title: "Test failed", description: msg });
+      const msg = e instanceof Error ? e.message : t("configPayOS_connectionError");
+      toast({ variant: "destructive", title: t("configPayOS_testFailed"), description: msg });
     } finally {
       setTesting(false);
     }
@@ -121,12 +124,12 @@ export function ConfigPayOS() {
           <CreditCard className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">PayOS</h1>
-          <p className="text-sm text-muted-foreground">Payment gateway for generating QR codes for orders.</p>
+          <h1 className="text-xl font-bold">{t("configPayOS_title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("configPayOS_desc")}</p>
         </div>
         {isConfigured && (
           <Badge className="ml-auto bg-green-500/15 text-green-600 border-green-500/30">
-            ✓ Configured
+            ✓ {t("configPayOS_configured")}
           </Badge>
         )}
       </div>
@@ -136,9 +139,9 @@ export function ConfigPayOS() {
           <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))}>
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Info API</CardTitle>
+                <CardTitle className="text-base">{t("configPayOS_infoApi")}</CardTitle>
                 <CardDescription className="flex items-center gap-1">
-                  Get from{" "}
+                  {t("configPayOS_getFrom")}{" "}
                   <a
                     href="https://my.payos.vn"
                     target="_blank"
@@ -155,7 +158,7 @@ export function ConfigPayOS() {
                   name="payos_client_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Client ID</FormLabel>
+                      <FormLabel>{t("configPayOS_clientId")}</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -163,7 +166,7 @@ export function ConfigPayOS() {
                           placeholder={
                             config?.payos_client_id
                               ? `${String(config.payos_client_id).slice(0, 8)}...`
-                              : "Client ID"
+                              : t("configPayOS_clientId")
                           }
                         />
                       </FormControl>
@@ -176,7 +179,7 @@ export function ConfigPayOS() {
                   name="payos_api_key"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>API Key</FormLabel>
+                      <FormLabel>{t("configPayOS_apiKey")}</FormLabel>
                       <FormControl>
                         <MaskedField field={field} savedValue={config?.has_payos_api_key} />
                       </FormControl>
@@ -189,7 +192,7 @@ export function ConfigPayOS() {
                   name="payos_checksum_key"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Checksum Key</FormLabel>
+                      <FormLabel>{t("configPayOS_checksumKey")}</FormLabel>
                       <FormControl>
                         <MaskedField field={field} savedValue={config?.has_payos_checksum_key} />
                       </FormControl>
@@ -200,12 +203,12 @@ export function ConfigPayOS() {
 
                 <div className="pt-1 flex items-center gap-2">
                   <Button type="submit" disabled={mutation.isPending}>
-                    {mutation.isPending ? "Saving..." : "Save Config"}
+                    {mutation.isPending ? t("saving") : t("save")}
                   </Button>
                   {isConfigured && (
                     <Button type="button" variant="outline" disabled={testing} onClick={handleTest}>
                       {testing ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Zap className="mr-1.5 h-3.5 w-3.5" />}
-                      {testing ? "Testing..." : "Test connection"}
+                      {testing ? t("configPayOS_testing") : t("configPayOS_testConnection")}
                     </Button>
                   )}
                 </div>

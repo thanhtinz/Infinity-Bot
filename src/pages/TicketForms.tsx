@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { FileQuestion, Plus, Pencil, Trash2 } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,7 @@ export function TicketForms() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { t } = useT();
 
   const [deleteTarget, setDeleteTarget] = useState<TicketFormType | null>(null);
 
@@ -74,10 +76,10 @@ export function TicketForms() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-forms"] });
-      toast({ title: "Deleted form" });
+      toast({ title: t("toast_formDeleted") });
       setDeleteTarget(null);
     },
-    onError: () => toast({ title: "Delete failed", variant: "destructive" }),
+    onError: () => toast({ title: t("ticketForms_deleteFailed"), variant: "destructive" }),
   });
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -110,14 +112,14 @@ export function TicketForms() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Ticket Forms</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("ticketForms_title")}</h1>
           <p className="text-muted-foreground text-sm">
-            Create form questions users must fill out before opening a ticket
+            {t("ticketForms_desc")}
           </p>
         </div>
         <Button onClick={() => navigate('/ticket-forms/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          New Form
+          {t("ticketForms_newForm")}
         </Button>
       </div>
 
@@ -125,8 +127,8 @@ export function TicketForms() {
       {formList.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <FileQuestion className="h-12 w-12 mb-3 opacity-40" />
-          <p className="text-lg font-medium">No forms yet</p>
-          <p className="text-sm">Create forms to require users to fill in information before opening a ticket</p>
+          <p className="text-lg font-medium">{t("ticketForms_empty")}</p>
+          <p className="text-sm">{t("ticketForms_emptyDesc")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -141,10 +143,10 @@ export function TicketForms() {
                   <div className="space-y-1">
                     <h3 className="font-semibold">{f.name}</h3>
                     <p className="text-xs text-muted-foreground">
-                      Panel: {getPanelName(f.panel_id)}
+                      {t("ticketForms_panel")} {getPanelName(f.panel_id)}
                     </p>
                   </div>
-                  <Badge variant="secondary">{f.questions?.length ?? 0} questions</Badge>
+                  <Badge variant="secondary">{f.questions?.length ?? 0} {t("ticketForms_questions")}</Badge>
                 </div>
                 <div className="flex gap-1.5">
                   <Button
@@ -180,21 +182,21 @@ export function TicketForms() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete form?</DialogTitle>
+            <DialogTitle>{t("ticketForms_deleteConfirm")}</DialogTitle>
             <DialogDescription>
-              Form <strong className="text-foreground">{deleteTarget?.name}</strong> will be permanently deleted.
+              {t("ticketForms_deleteDesc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? t("deleting") : t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

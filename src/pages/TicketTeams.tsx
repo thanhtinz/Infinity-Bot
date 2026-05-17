@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { UserCheck, Plus, Pencil, Trash2 } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -36,6 +37,7 @@ export function TicketTeams() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { t } = useT();
 
   const [deleteTarget, setDeleteTarget] = useState<TicketTeamType | null>(null);
 
@@ -59,10 +61,10 @@ export function TicketTeams() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ticket-teams"] });
-      toast({ title: "Deleted team" });
+      toast({ title: t("toast_teamDeleted") });
       setDeleteTarget(null);
     },
-    onError: () => toast({ title: "Delete failed", variant: "destructive" }),
+    onError: () => toast({ title: t("ticketTeams_deleteFailed"), variant: "destructive" }),
   });
 
   // ─── Render ──────────────────────────────────────────────────────────────
@@ -87,14 +89,14 @@ export function TicketTeams() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Support Teams</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("ticketTeams_title")}</h1>
           <p className="text-muted-foreground text-sm">
-            Assign staff to different support categories
+            {t("ticketTeams_desc")}
           </p>
         </div>
         <Button onClick={() => navigate('/ticket-teams/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          Create Team
+          {t("ticketTeams_createTeam")}
         </Button>
       </div>
 
@@ -102,8 +104,8 @@ export function TicketTeams() {
       {teamList.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <UserCheck className="h-12 w-12 mb-3 opacity-40" />
-          <p className="text-lg font-medium">No teams yet</p>
-          <p className="text-sm">Create teams to organize support staff</p>
+          <p className="text-lg font-medium">{t("ticketTeams_empty")}</p>
+          <p className="text-sm">{t("ticketTeams_emptyDesc")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -129,8 +131,8 @@ export function TicketTeams() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Badge variant="secondary">{t.role_ids?.length ?? 0} roles</Badge>
-                  <Badge variant="outline">{t.panel_ids?.length ?? 0} panels</Badge>
+                  <Badge variant="secondary">{t.role_ids?.length ?? 0} {t("ticketTeams_roles")}</Badge>
+                  <Badge variant="outline">{t.panel_ids?.length ?? 0} {t("ticketTeams_panels")}</Badge>
                 </div>
                 <div className="flex gap-1.5">
                   <Button
@@ -166,21 +168,21 @@ export function TicketTeams() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete team?</DialogTitle>
+            <DialogTitle>{t("ticketTeams_deleteConfirm")}</DialogTitle>
             <DialogDescription>
-              Team <strong className="text-foreground">{deleteTarget?.name}</strong> will be permanently deleted.
+              {t("ticketTeams_deleteDesc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteMutation.isPending ? t("deleting") : t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

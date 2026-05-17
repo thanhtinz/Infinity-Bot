@@ -16,6 +16,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/i18n";
 import {
   Database,
   Download,
@@ -60,6 +61,7 @@ async function restoreBackup(data: unknown): Promise<RestoreResult> {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function BackupRestore() {
+  const { t } = useT();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -84,13 +86,13 @@ export function BackupRestore() {
       setRestoreResult(data);
       setConfirmOpen(false);
       if (data.ok) {
-        toast({ title: "Restore successful" });
+        toast({ title: t("toast_restoreSuccess") });
       } else {
-        toast({ title: "Restore failed", variant: "destructive" });
+        toast({ title: t("toast_restoreFailed"), variant: "destructive" });
       }
     },
     onError: (err: Error) =>
-      toast({ title: "Error", description: err.message, variant: "destructive" }),
+      toast({ title: t("error"), description: err.message, variant: "destructive" }),
   });
 
   // ── Handlers ──
@@ -107,11 +109,11 @@ export function BackupRestore() {
       a.download = `backup_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast({ title: "Backup downloaded" });
+      toast({ title: t("toast_backupDownloaded") });
     } catch (err) {
       toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : "Failed to load backup",
+        title: t("error"),
+        description: err instanceof Error ? err.message : t("backup_loadFailed"),
         variant: "destructive",
       });
     }
@@ -143,8 +145,8 @@ export function BackupRestore() {
         setFilePreview(preview);
       } catch {
         toast({
-          title: "Invalid file",
-          description: "Please select a valid JSON file",
+          title: t("toast_invalidFile"),
+          description: t("backup_selectValidJson"),
           variant: "destructive",
         });
       }
@@ -180,9 +182,9 @@ export function BackupRestore() {
           <Database className="h-5 w-5 text-emerald-500" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Backup & Restore</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("backup_title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Backup and restore server configuration
+            {t("backup_desc")}
           </p>
         </div>
       </div>
@@ -193,16 +195,16 @@ export function BackupRestore() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Download className="h-5 w-5 text-blue-500" />
-              Create Backup
+              {t("backup_createBackup")}
             </CardTitle>
             <CardDescription>
-              Create a full backup of the server configuration as a JSON file.
+              {t("backup_createBackupDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Button onClick={handleBackup} className="w-full">
               <Download className="mr-2 h-4 w-4" />
-              Create Backup
+              {t("backup_createBackup")}
             </Button>
 
             <Separator />
@@ -210,7 +212,7 @@ export function BackupRestore() {
             {/* Preview summary from API */}
             <div className="space-y-2">
               <p className="text-sm font-medium text-muted-foreground">
-                Data that will be backed up:
+                {t("backup_dataWillBeBackedUp")}
               </p>
               {previewQuery.isLoading ? (
                 <div className="flex flex-wrap gap-1.5">
@@ -231,7 +233,7 @@ export function BackupRestore() {
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Could not load preview
+                  {t("backup_couldNotLoadPreview")}
                 </p>
               )}
             </div>
@@ -243,10 +245,10 @@ export function BackupRestore() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Upload className="h-5 w-5 text-orange-500" />
-              Restore
+              {t("backup_restore")}
             </CardTitle>
             <CardDescription>
-              Upload a backup JSON file to restore server config.
+              {t("backup_restoreDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -261,10 +263,10 @@ export function BackupRestore() {
               ) : (
                 <>
                   <span className="text-sm text-muted-foreground">
-                    Upload backup file
+                    {t("backup_uploadFile")}
                   </span>
                   <span className="text-xs text-muted-foreground/60 mt-1">
-                    Only .json files accepted
+                    {t("backup_onlyJson")}
                   </span>
                 </>
               )}
@@ -283,12 +285,12 @@ export function BackupRestore() {
               <div className="rounded-lg border p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <FileJson className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Content backup</span>
+                  <span className="text-sm font-medium">{t("backup_contentBackup")}</span>
                 </div>
                 <Separator />
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium text-muted-foreground">
-                    Records:
+                    {t("backup_records")}:
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {Object.entries(filePreview).map(([key, count]) => (
@@ -307,12 +309,12 @@ export function BackupRestore() {
                 {restoreResult.ok ? (
                   <div className="flex items-center gap-2 text-green-500">
                     <CheckCircle2 className="h-4 w-4" />
-                    <span className="text-sm font-medium">Restore successful</span>
+                    <span className="text-sm font-medium">{t("backup_restoreSuccess")}</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 text-destructive">
                     <XCircle className="h-4 w-4" />
-                    <span className="text-sm font-medium">Restore failed</span>
+                    <span className="text-sm font-medium">{t("backup_restoreFailed")}</span>
                   </div>
                 )}
                 {Object.keys(restoreResult.restored).length > 0 && (
@@ -344,7 +346,7 @@ export function BackupRestore() {
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
                   <p className="text-xs text-destructive">
-                    This will replace the entire current configuration.
+                    {t("backup_willReplaceConfig")}
                   </p>
                 </div>
               </div>
@@ -358,17 +360,17 @@ export function BackupRestore() {
                 onClick={handleRestore}
               >
                 {restoreMutation.isPending ? (
-                  "Restoring..."
+                  t("backup_restoring")
                 ) : (
                   <>
                     <Upload className="mr-2 h-4 w-4" />
-                    Restore
+                    {t("backup_restore")}
                   </>
                 )}
               </Button>
               {backupData != null && (
                 <Button variant="outline" onClick={resetRestore}>
-                  Delete
+                  {t("delete")}
                 </Button>
               )}
             </div>
@@ -382,17 +384,17 @@ export function BackupRestore() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
-              Confirm Restore
+              {t("backup_confirmRestore")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This will replace the entire current configuration. Are you sure?
+              {t("backup_confirmRestoreDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           {/* Show what will be restored inside the dialog */}
           {filePreview && (
             <div className="space-y-2 py-2">
-              <p className="text-sm font-medium">Data to be restored:</p>
+              <p className="text-sm font-medium">{t("backup_dataToBeRestored")}:</p>
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(filePreview).map(([key, count]) => (
                   <Badge key={key} variant="outline" className="text-xs">
@@ -405,14 +407,14 @@ export function BackupRestore() {
 
           <AlertDialogFooter>
             <AlertDialogCancel disabled={restoreMutation.isPending}>
-              Cancel
+              {t("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={restoreMutation.isPending}
               onClick={confirmRestore}
             >
-              {restoreMutation.isPending ? "Restoring..." : "Restore"}
+              {restoreMutation.isPending ? t("backup_restoring") : t("backup_restore")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

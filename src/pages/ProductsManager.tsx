@@ -10,10 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { Product } from "../types";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 export function ProductsManager() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useT();
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
@@ -33,7 +35,7 @@ export function ProductsManager() {
         body: JSON.stringify({ ...p, active: !p.active }),
       }).then((r) => r.json()),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Could not update." }),
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_couldNotUpdate") }),
   });
 
   const deleteMutation = useMutation({
@@ -42,26 +44,26 @@ export function ProductsManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       setDeleteTarget(null);
-      toast({ title: "Deleted product." });
+      toast({ title: t("toast_productDeleted") });
     },
-    onError: () => toast({ variant: "destructive", title: "Delete error product." }),
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_productDeleteFailed") }),
   });
 
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Products</h1>
+        <h1 className="text-xl font-semibold">{t("products_title")}</h1>
         <Button size="sm" onClick={() => navigate('/products/new')}>
-          <Plus className="mr-2 h-4 w-4" /> Add Product
+          <Plus className="mr-2 h-4 w-4" /> {t("products_add")}
         </Button>
       </div>
 
       {/* Product cards grid */}
       {isLoading ? (
-        <p className="text-muted-foreground text-sm">Loading...</p>
+        <p className="text-muted-foreground text-sm">{t("loading")}</p>
       ) : products.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No products yet.</p>
+        <p className="text-muted-foreground text-sm">{t("products_empty")}</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((p) => (
@@ -112,7 +114,7 @@ export function ProductsManager() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground italic">No packages</p>
+                  <p className="text-xs text-muted-foreground italic">{t("products_noPackages")}</p>
                 )}
               </CardContent>
             </Card>
@@ -124,19 +126,19 @@ export function ProductsManager() {
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete product?</DialogTitle>
+            <DialogTitle>{t("products_deleteConfirm")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Products <strong>{deleteTarget?.name}</strong> will be permanently deleted.
+            {t("products_willBeDeleted")} <strong>{deleteTarget?.name}</strong>
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>{t("cancel")}</Button>
             <Button
               variant="destructive"
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               disabled={deleteMutation.isPending}
             >
-              Delete
+              {t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

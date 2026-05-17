@@ -141,7 +141,7 @@ export function EmojiManager() {
     onSuccess: (data) => {
       toast({
         title: t("toast_syncSuccess"),
-        description: `Added ${data.added} new emoji(s) to the management list.`,
+        description: t("emoji_syncAdded") + ` ${data.added} ` + t("emoji_syncAddedEmoji"),
       });
       queryClient.invalidateQueries({ queryKey: ["discord-emojis"] });
       queryClient.invalidateQueries({ queryKey: ["managed-emojis"] });
@@ -155,7 +155,7 @@ export function EmojiManager() {
   const copyUsage = async (usage: string) => {
     try {
       await navigator.clipboard.writeText(usage);
-      toast({ title: t("copied"), description: `\`${usage}\` copied.` });
+      toast({ title: t("copied"), description: t("emoji_copiedUsagePrefix") + ` \`${usage}\` ` + t("emoji_copiedUsageSuffix") });
     } catch {
       toast({ title: t("error"), description: t("toast_couldNotCopy"), variant: "destructive" });
     }
@@ -168,7 +168,7 @@ export function EmojiManager() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("emoji_title")}</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {t("emoji_title")}
+            {t("emoji_desc")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -176,18 +176,18 @@ export function EmojiManager() {
             <>
               <Button variant="outline" onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}>
                 <RefreshCw className={cn("h-4 w-4 mr-2", syncMutation.isPending && "animate-spin")} />
-                Sync
+                {t("emoji_sync")}
               </Button>
               <Button onClick={() => setEmojiUploadOpen(true)}>
                 <SmilePlus className="h-4 w-4 mr-2" />
-                Add Emoji
+                {t("emoji_addEmoji")}
               </Button>
             </>
           )}
           {tab === "sticker" && (
             <Button onClick={() => setStickerUploadOpen(true)}>
               <Sticker className="h-4 w-4 mr-2" />
-              Add Sticker
+              {t("emoji_addSticker")}
             </Button>
           )}
         </div>
@@ -206,7 +206,7 @@ export function EmojiManager() {
           onClick={() => setTab("emoji")}
         >
           <Smile className="h-4 w-4" />
-          Emoji
+          {t("emoji_emojiTab")}
           <Badge variant="secondary" className="text-xs px-1.5 py-0 h-5">
             {totalCount}
           </Badge>
@@ -222,7 +222,7 @@ export function EmojiManager() {
           onClick={() => setTab("sticker")}
         >
           <Sticker className="h-4 w-4" />
-          Sticker
+          {t("emoji_stickers")}
           <Badge variant="secondary" className="text-xs px-1.5 py-0 h-5">
             {stickers.length}
           </Badge>
@@ -235,13 +235,13 @@ export function EmojiManager() {
           {/* Stats */}
           <div className="flex items-center gap-3 flex-wrap">
             <Badge variant="secondary" className="text-sm px-3 py-1">
-              {totalCount} emoji
+              {totalCount} {t("emoji_emojiTab").toLowerCase()}
             </Badge>
             <Badge variant="secondary" className="text-sm px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-0">
-              {animatedCount} animated
+              {animatedCount} {t("emoji_animated").toLowerCase()}
             </Badge>
             <Badge variant="secondary" className="text-sm px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0">
-              {staticCount} static
+              {staticCount} {t("emoji_static").toLowerCase()}
             </Badge>
           </div>
 
@@ -258,13 +258,13 @@ export function EmojiManager() {
           ) : emojis.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <ImageIcon className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-lg font-medium text-muted-foreground">No emojis yet</p>
+              <p className="text-lg font-medium text-muted-foreground">{t("emoji_noEmojisYet")}</p>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
-                Add custom emoji for use in the server
+                {t("emoji_addEmojiDesc")}
               </p>
               <Button variant="outline" onClick={() => setEmojiUploadOpen(true)}>
                 <SmilePlus className="h-4 w-4 mr-2" />
-                Add Emoji
+                {t("emoji_addEmoji")}
               </Button>
             </div>
           ) : (
@@ -312,7 +312,7 @@ export function EmojiManager() {
           {/* Stats */}
           <div className="flex items-center gap-3 flex-wrap">
             <Badge variant="secondary" className="text-sm px-3 py-1">
-              {stickers.length} sticker
+              {stickers.length} {t("emoji_stickers").toLowerCase()}
             </Badge>
           </div>
 
@@ -541,20 +541,20 @@ function EmojiUploadDialog({
             <Label htmlFor="emoji-name">{t("emoji_name")}</Label>
             <Input
               id="emoji-name"
-              placeholder="vd: cool_cat"
+              placeholder={t("emoji_namePlaceholder")}
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={32}
             />
             <p className="text-xs text-muted-foreground">
-              Only letters, numbers, and underscores. 2–32 chars.
+              {t("emoji_nameHint")}
             </p>
             {name.length > 0 && !/^[a-zA-Z0-9_]+$/.test(name) && (
-              <p className="text-xs text-destructive">Name can only contain letters, numbers, and _</p>
+              <p className="text-xs text-destructive">{t("emoji_nameCharsError")}</p>
             )}
           </div>
           <div className="space-y-1.5">
-            <Label>Image</Label>
+            <Label>{t("image")}</Label>
             <Input
               ref={fileInputRef}
               type="file"
@@ -562,10 +562,10 @@ function EmojiUploadDialog({
               onChange={handleFileChange}
             />
             <p className="text-xs text-muted-foreground">
-              PNG, JPEG, GIF, WebP — max 256KB. GIF files become animated emoji.
+              {t("emoji_fileHint")}
             </p>
             {sizeError && (
-              <p className="text-xs text-destructive">File too large. Max size 256KB.</p>
+              <p className="text-xs text-destructive">{t("emoji_fileTooLarge256")}</p>
             )}
             {preview && (
               <div className="flex items-center gap-3 mt-2">
@@ -575,7 +575,7 @@ function EmojiUploadDialog({
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            ⚠️ Discord limits 50 regular and 50 animated emoji per server (increases with Boost)
+            {t("emoji_limitWarning")}
           </p>
         </div>
         <DialogFooter>
@@ -682,12 +682,12 @@ function StickerUploadDialog({
             <Label htmlFor="sticker-name">{t("emoji_stickerName")}</Label>
             <Input
               id="sticker-name"
-              placeholder="vd: happy_dance"
+              placeholder={t("emoji_stickerNamePlaceholder")}
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={30}
             />
-            <p className="text-xs text-muted-foreground">2–30 chars.</p>
+            <p className="text-xs text-muted-foreground">{t("emoji_stickerNameHint")}</p>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="sticker-desc">{t("description")}</Label>
@@ -701,20 +701,20 @@ function StickerUploadDialog({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="sticker-tags">Tags</Label>
+            <Label htmlFor="sticker-tags">{t("tags")}</Label>
             <Input
               id="sticker-tags"
-              placeholder="vd: happy, dance, excited"
+              placeholder={t("emoji_stickerTagsPlaceholder")}
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               maxLength={200}
             />
             <p className="text-xs text-muted-foreground">
-              Keyword suggestions when searching for stickers. Leave empty to use the name.
+              {t("emoji_stickerTagsHint")}
             </p>
           </div>
           <div className="space-y-1.5">
-            <Label>Image</Label>
+            <Label>{t("image")}</Label>
             <Input
               ref={fileInputRef}
               type="file"
@@ -722,10 +722,10 @@ function StickerUploadDialog({
               onChange={handleFileChange}
             />
             <p className="text-xs text-muted-foreground">
-              PNG, APNG, or GIF — 320×320px, max 512KB.
+              {t("emoji_stickerFileHint")}
             </p>
             {sizeError && (
-              <p className="text-xs text-destructive">File too large. Max size 512KB.</p>
+              <p className="text-xs text-destructive">{t("emoji_fileTooLarge512")}</p>
             )}
             {preview && (
               <div className="flex items-center gap-3 mt-2">
@@ -735,7 +735,7 @@ function StickerUploadDialog({
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            ⚠️ Discord limits 5 stickers per server (increases with Boost: 15/30/60)
+            {t("emoji_stickerLimitWarning")}
           </p>
         </div>
         <DialogFooter>

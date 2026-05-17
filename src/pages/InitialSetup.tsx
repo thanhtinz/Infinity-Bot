@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/i18n";
 
 const setupSchema = z.object({
-  discord_client_id: z.string().min(1, "Client ID is required"),
-  discord_client_secret: z.string().min(1, "Client Secret is required"),
-  public_app_url: z.string().url("Must be a valid URL, e.g. https://abc.preview.workshop.ai"),
+  discord_client_id: z.string().min(1, "setup_clientIdRequired"),
+  discord_client_secret: z.string().min(1, "setup_clientSecretRequired"),
+  public_app_url: z.string().url("setup_urlInvalid"),
 });
 
 type SetupValues = z.infer<typeof setupSchema>;
@@ -21,6 +22,7 @@ type SetupValues = z.infer<typeof setupSchema>;
 export function InitialSetup() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useT();
 
   const form = useForm<SetupValues>({
     resolver: zodResolver(setupSchema),
@@ -60,15 +62,15 @@ export function InitialSetup() {
       await queryClient.invalidateQueries({ queryKey: ["setup_status"] });
       await queryClient.invalidateQueries({ queryKey: ["config"] });
       toast({
-        title: "Configuration saved",
-        description: "You can now log in with Discord to access the dashboard.",
+        title: t("setup_configSaved"),
+        description: t("setup_configSavedDesc"),
       });
     },
     onError: () => {
       toast({
         variant: "destructive",
-        title: "Save failed",
-        description: "Please check your Client ID and Client Secret and try again.",
+        title: t("setup_saveFailed"),
+        description: t("setup_saveFailedDesc"),
       });
     },
   });
@@ -82,9 +84,9 @@ export function InitialSetup() {
               <ShieldCheck className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <CardTitle>Initial Setup</CardTitle>
+              <CardTitle>{t("setup_initialSetup")}</CardTitle>
               <CardDescription>
-                Enter your Discord OAuth Client ID and Client Secret to enable dashboard login.
+                {t("setup_initialSetupDesc")}
               </CardDescription>
             </div>
           </div>
@@ -97,7 +99,7 @@ export function InitialSetup() {
                 name="discord_client_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Discord OAuth Client ID</FormLabel>
+                    <FormLabel>{t("setup_oauthClientId")}</FormLabel>
                     <FormControl>
                       <Input {...field} autoComplete="off" />
                     </FormControl>
@@ -110,7 +112,7 @@ export function InitialSetup() {
                 name="discord_client_secret"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Discord OAuth Client Secret</FormLabel>
+                    <FormLabel>{t("setup_oauthClientSecret")}</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} autoComplete="new-password" />
                     </FormControl>
@@ -123,12 +125,12 @@ export function InitialSetup() {
                 name="public_app_url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>URL App (Callback Base URL)</FormLabel>
+                    <FormLabel>{t("botConfig_callbackUrl")}</FormLabel>
                     <FormControl>
                       <Input placeholder="https://abc.preview.workshop.ai" {...field} />
                     </FormControl>
                     <p className="text-xs text-muted-foreground">
-                      This URL must be added to the Discord Developer Portal → OAuth2 → Redirects as:<br />
+                      {t("setup_callbackHint")}<br />
                       <code className="bg-muted px-1 rounded">{field.value ? `${field.value}/api/auth/callback` : "https://your-domain/api/auth/callback"}</code>
                     </p>
                     <FormMessage />
@@ -136,7 +138,7 @@ export function InitialSetup() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={mutation.isPending}>
-                {mutation.isPending ? "Saving..." : "Save and continue"}
+                {mutation.isPending ? t("saving") : t("setup_saveAndContinue")}
               </Button>
             </form>
           </Form>

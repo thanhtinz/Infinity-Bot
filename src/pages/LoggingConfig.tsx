@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/i18n";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect } from "@/components/RoleSelect";
 import { ScrollText, Mic, ShieldCheck, Users, Server, Filter, X } from "lucide-react";
@@ -45,6 +46,7 @@ interface ChannelFieldProps {
 }
 
 function ChannelField({ label, description, icon, value, onChange }: ChannelFieldProps) {
+  const { t } = useT();
   return (
     <div className="space-y-2">
       <Label className="flex items-center gap-2 text-sm font-medium">
@@ -56,7 +58,7 @@ function ChannelField({ label, description, icon, value, onChange }: ChannelFiel
         <ChannelSelect
           value={value}
           onChange={onChange}
-          placeholder="Select channel..."
+          placeholder={t("selectChannel")}
           filter="text"
         />
         {value && (
@@ -65,7 +67,7 @@ function ChannelField({ label, description, icon, value, onChange }: ChannelFiel
             size="icon"
             className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
             onClick={() => onChange("")}
-            aria-label="Delete channel"
+            aria-label={t("delete")}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -76,6 +78,7 @@ function ChannelField({ label, description, icon, value, onChange }: ChannelFiel
 }
 
 export function LoggingConfig() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -116,68 +119,68 @@ export function LoggingConfig() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["logging-config"] });
-      toast({ title: "Saved", description: "Log configuration updated." });
+      toast({ title: t("toast_saved"), description: t("toast_loggingSaved") });
     },
     onError: () => {
-      toast({ title: "Error", description: "Could not save configuration.", variant: "destructive" });
+      toast({ title: t("error"), description: t("toast_saveFailed"), variant: "destructive" });
     },
   });
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return <p className="text-sm text-muted-foreground">{t("loading")}</p>;
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Logging System</h2>
+        <h2 className="text-2xl font-bold tracking-tight">{t("logging_title")}</h2>
         <p className="text-muted-foreground">
-          Configure log channels for each event type.
+          {t("logging_configDesc")}
         </p>
       </div>
 
       {/* Log Channels Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Log Channels</CardTitle>
+          <CardTitle className="text-base">{t("logging_logChannels")}</CardTitle>
           <CardDescription>
-            Select the channel that will receive logs for each event type.
+            {t("logging_logChannelsDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ChannelField
-              label="Message Log"
-              description="Messages deleted/edited"
+              label={t("logging_messageLog")}
+              description={t("logging_messageLogDesc")}
               icon={<ScrollText className="h-4 w-4 text-muted-foreground" />}
               value={messageLog}
               onChange={setMessageLog}
             />
             <ChannelField
-              label="Voice Log"
-              description="Voice join/leave"
+              label={t("logging_voiceLog")}
+              description={t("logging_voiceLogDesc")}
               icon={<Mic className="h-4 w-4 text-muted-foreground" />}
               value={voiceLog}
               onChange={setVoiceLog}
             />
             <ChannelField
-              label="Mod Log"
-              description="Ban/kick/warn"
+              label={t("logging_modLog")}
+              description={t("logging_modLogDesc")}
               icon={<ShieldCheck className="h-4 w-4 text-muted-foreground" />}
               value={modLog}
               onChange={setModLog}
             />
             <ChannelField
-              label="Member Log"
-              description="Join/leave/nick/role"
+              label={t("logging_memberLog")}
+              description={t("logging_memberLogDesc")}
               icon={<Users className="h-4 w-4 text-muted-foreground" />}
               value={memberLog}
               onChange={setMemberLog}
             />
             <ChannelField
-              label="Server Log"
-              description="Channels created/deleted"
+              label={t("logging_serverLog")}
+              description={t("logging_serverLogDesc")}
               icon={<Server className="h-4 w-4 text-muted-foreground" />}
               value={serverLog}
               onChange={setServerLog}
@@ -190,28 +193,28 @@ export function LoggingConfig() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Filter className="w-4 h-4" /> Filters
+            <Filter className="w-4 h-4" /> {t("logging_filters")}
           </CardTitle>
           <CardDescription>
-            Ignore logs for specific roles or channels.
+            {t("logging_filtersDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Ignored Roles</Label>
+            <Label className="text-sm font-medium">{t("logging_ignoredRoles")}</Label>
             <p className="text-xs text-muted-foreground">
-              Skip logging actions from these roles
+              {t("logging_ignoredRolesDesc")}
             </p>
             <MultiRoleSelect
               value={ignoredRoles}
               onChange={setIgnoredRoles}
-              placeholder="Select roles to ignore..."
+              placeholder={t("logging_selectRolesToIgnore")}
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Ignored Channels</Label>
+            <Label className="text-sm font-medium">{t("logging_ignoredChannels")}</Label>
             <p className="text-xs text-muted-foreground">
-              Skip logging events from these channels.
+              {t("logging_ignoredChannelsDesc")}
             </p>
           </div>
         </CardContent>
@@ -219,7 +222,7 @@ export function LoggingConfig() {
 
       {/* Save button */}
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
-        {mutation.isPending ? "Saving..." : "Save Config"}
+        {mutation.isPending ? t("saving") : t("save")}
       </Button>
     </div>
   );
