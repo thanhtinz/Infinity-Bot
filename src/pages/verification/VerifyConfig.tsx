@@ -19,7 +19,7 @@ import type { LucideIcon } from "lucide-react";
 import { useGuild } from "@/contexts/GuildContext";
 import { deleteGuildBot, fetchConfig, fetchGuildBot, updateConfig, updateGuildBot, validateGuildBot } from "./shared";
 import type { GuildBotConfig, VerificationConfig } from "./shared";
-import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
+import { PremiumBadge } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
 
 /* ── Constants ──────────────────────────────────────── */
@@ -37,11 +37,13 @@ const BG_EFFECTS = [
 ];
 
 const CAPTCHA_TYPES = [
-  { value: "none", label: "None" },
-  { value: "button", label: "Button" },
-  { value: "emoji", label: "Emoji" },
-  { value: "math", label: "Math" },
-  { value: "slider", label: "Slider" },
+  { value: "none", label: "None", premium: false },
+  { value: "button", label: "Button", premium: false },
+  { value: "emoji", label: "Emoji", premium: false },
+  { value: "math", label: "Math", premium: false },
+  { value: "slider", label: "Slider", premium: false },
+  { value: "hcaptcha", label: "hCaptcha", premium: true },
+  { value: "turnstile", label: "Cloudflare Turnstile", premium: true },
 ] as const;
 
 const CAPTCHA_DIFFICULTIES = [
@@ -331,7 +333,6 @@ export function VerifyConfig() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold">Customize</h1>
-                <PremiumBadge />
               </div>
               <p className="text-sm text-muted-foreground">Customize your verification page</p>
             </div>
@@ -351,13 +352,6 @@ export function VerifyConfig() {
           </Button>
         </div>
       </div>
-
-      <PremiumGate
-        feature="advanced_captcha"
-        featureLabel="Tùy chỉnh trang xác minh"
-        hasAccess={hasFeature("advanced_captcha")}
-        isLoading={entLoading}
-      >
 
       {/* Verify Link */}
       {verifyUrl && (
@@ -683,14 +677,30 @@ export function VerifyConfig() {
             {configForm.captcha_enabled && (
               <div className="space-y-3 pl-2 border-l-2 border-indigo-500/30 ml-1">
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1.5 block">Captcha Type</Label>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Label className="text-xs text-muted-foreground">Captcha Type</Label>
+                    <PremiumBadge size="sm" />
+                    <span className="text-[10px] text-muted-foreground">(hCaptcha, Turnstile)</span>
+                  </div>
                   <select
                     value={configForm.captcha_type}
-                    onChange={e => update({ captcha_type: e.target.value as VerificationConfig["captcha_type"] })}
+                    onChange={e => {
+                      const val = e.target.value as VerificationConfig["captcha_type"];
+                      const isPremiumType = val === "hcaptcha" || val === "turnstile";
+                      if (isPremiumType && !hasFeature("advanced_captcha")) return;
+                      update({ captcha_type: val });
+                    }}
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   >
                     {CAPTCHA_TYPES.filter(t => t.value !== "none").map(type => (
-                      <option key={type.value} value={type.value} className="bg-[#0a0c10]">{type.label}</option>
+                      <option
+                        key={type.value}
+                        value={type.value}
+                        className="bg-[#0a0c10]"
+                        disabled={type.premium && !hasFeature("advanced_captcha")}
+                      >
+                        {type.label}{type.premium && !hasFeature("advanced_captcha") ? " 🔒" : ""}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -936,7 +946,6 @@ export function VerifyConfig() {
           </div>
         </div>
       </div>
-      </PremiumGate>
     </div>
   );
 }

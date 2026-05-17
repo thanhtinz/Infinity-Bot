@@ -37,7 +37,7 @@ export interface VerificationConfig {
   button_text: string;
   success_message: string;
   captcha_enabled: boolean;
-  captcha_type: "none" | "button" | "emoji" | "math" | "slider";
+  captcha_type: "none" | "button" | "emoji" | "math" | "slider" | "hcaptcha" | "turnstile";
   captcha_difficulty: "easy" | "medium" | "hard";
   min_account_age_days: number;
   block_vpn: boolean;
