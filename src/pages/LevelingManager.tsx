@@ -19,6 +19,7 @@ import { ChannelSelect, MultiChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect, RoleSelect } from "@/components/RoleSelect";
 import { Filter, Gift, Hash, ImagePlus, ListOrdered, Settings, Shield, Sparkles, User, X, Zap, Layers, MousePointer2, Type, Square, CircleUserRound, Wand2, MessageSquareText, Maximize2, ZoomIn, ZoomOut, RotateCcw, ArrowLeft, Save, Copy, Trash2, Eye, EyeOff, Plus, RefreshCw, Upload, Mic, Star, Calendar, BarChart3, MessageCircle } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 interface LevelingConfig {
   enabled: boolean;
@@ -145,6 +146,7 @@ const LAYER_PRESETS: { type: RankLayerType; name: string; desc: string; layer: O
 
 
 function IdListEditor({ value, onChange }: { value: string[]; onChange: (value: string[]) => void }) {
+  const { t } = useT();
   const [draft, setDraft] = useState("");
   const add = () => {
     const ids = draft.split(/[\s,]+/).map((v) => v.trim()).filter(Boolean);
@@ -168,8 +170,8 @@ function IdListEditor({ value, onChange }: { value: string[]; onChange: (value: 
         </div>
       )}
       <div className="flex gap-2">
-        <Input value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }} placeholder="Discord user IDs, comma-separated" />
-        <Button type="button" variant="secondary" onClick={add}>Add</Button>
+        <Input value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }} placeholder="Discord ID" />
+        <Button type="button" variant="secondary" onClick={add}>{t("lv_addReward")}</Button>
       </div>
 
     </div>
@@ -250,6 +252,7 @@ function CanvasLayerPreview({ layer, layout, selected, onPointerDown }: { layer:
 
 
 export function LevelingManager({ section }: { section?: string } = {}) {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [form, setForm] = useState<LevelingConfig | null>(null);
@@ -409,19 +412,19 @@ export function LevelingManager({ section }: { section?: string } = {}) {
         return URL.createObjectURL(blob);
       });
     },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Failed to render preview from bot." }),
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_renderFailed") }),
   });
 
   const saveRankCard = useMutation({
     mutationFn: () => apiFetch("/api/leveling/rank-card/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(rankCard) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-    onSuccess: (data) => { setRankCard(data); setPreviewVersion((v) => v + 1); qc.invalidateQueries({ queryKey: ["leveling_rank_card_config"] }); toast({ title: "Saved", description: "Rank card image updated." }); },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Failed to save rank card." }),
+    onSuccess: (data) => { setRankCard(data); setPreviewVersion((v) => v + 1); qc.invalidateQueries({ queryKey: ["leveling_rank_card_config"] }); toast({ title: t("toast_saved"), description: t("toast_rankCardSaved") }); },
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_rankCardFailed") }),
   });
 
   const saveConfig = useMutation({
     mutationFn: () => apiFetch("/api/leveling/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(form) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_config"] }); toast({ title: "Saved", description: "Leveling configuration saved." }); },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Failed to save config." }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_config"] }); toast({ title: t("toast_saved"), description: t("toast_levelingSaved") }); },
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_configFailed") }),
   });
   const addReward = useMutation({
     mutationFn: () => apiFetch("/api/leveling/rewards", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(reward) }).then(r => r.json()),
@@ -435,11 +438,11 @@ export function LevelingManager({ section }: { section?: string } = {}) {
   const delMulti = useMutation({ mutationFn: (id: number) => apiFetch(`/api/leveling/multipliers/${id}`, { method: "DELETE", credentials: "include" }), onSuccess: () => qc.invalidateQueries({ queryKey: ["leveling_multipliers"] }) });
   const resetLeaderboard = useMutation({
     mutationFn: () => apiFetch("/api/leveling/leaderboard/reset", { method: "POST", credentials: "include" }).then(r => r.json()),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_leaderboard"] }); toast({ title: "Reset", description: "Level leaderboard has been reset." }); },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Reset failed." }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["leveling_leaderboard"] }); toast({ title: t("toast_saved"), description: t("toast_levelReset") }); },
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_resetFailed") }),
   });
 
-  if (!form) return <div>Loading...</div>;
+  if (!form) return <div>{t("loading")}</div>;
 
   const updateLayer = (id: string, patch: Partial<RankCardLayer>) => {
     if (!rankCard) return;
@@ -517,7 +520,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
 
   return <div className="space-y-4 sm:space-y-6">
     <Tabs value={section || "rank-card"} className="space-y-4">
-      {!section && <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 sm:flex sm:flex-wrap sm:justify-start"><TabsTrigger value="rank-card" className="text-xs sm:text-sm">Rank Card</TabsTrigger><TabsTrigger value="config" className="text-xs sm:text-sm">XP Config</TabsTrigger><TabsTrigger value="voice-xp" className="text-xs sm:text-sm"><Mic className="mr-1 h-3.5 w-3.5" />Voice XP</TabsTrigger><TabsTrigger value="filters" className="text-xs sm:text-sm">Filters</TabsTrigger><TabsTrigger value="leaderboard" className="text-xs sm:text-sm">Leaderboard</TabsTrigger><TabsTrigger value="rewards" className="text-xs sm:text-sm">Rewards</TabsTrigger><TabsTrigger value="multipliers" className="text-xs sm:text-sm">Multipliers</TabsTrigger><TabsTrigger value="analytics" className="text-xs sm:text-sm"><BarChart3 className="mr-1 h-3.5 w-3.5" />Analytics</TabsTrigger></TabsList>}
+      {!section && <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 sm:flex sm:flex-wrap sm:justify-start"><TabsTrigger value="rank-card" className="text-xs sm:text-sm">{t("lv_rankCard")}</TabsTrigger><TabsTrigger value="config" className="text-xs sm:text-sm">{t("lv_xpConfig")}</TabsTrigger><TabsTrigger value="voice-xp" className="text-xs sm:text-sm"><Mic className="mr-1 h-3.5 w-3.5" />{t("lv_voiceXp")}</TabsTrigger><TabsTrigger value="filters" className="text-xs sm:text-sm">{t("lv_filters")}</TabsTrigger><TabsTrigger value="leaderboard" className="text-xs sm:text-sm">{t("lv_leaderboard")}</TabsTrigger><TabsTrigger value="rewards" className="text-xs sm:text-sm">{t("lv_rewards")}</TabsTrigger><TabsTrigger value="multipliers" className="text-xs sm:text-sm">{t("lv_multipliers")}</TabsTrigger><TabsTrigger value="analytics" className="text-xs sm:text-sm"><BarChart3 className="mr-1 h-3.5 w-3.5" />{t("lv_analytics")}</TabsTrigger></TabsList>}
 
       <TabsContent value="rank-card" className="space-y-4">
         {rankCard && (
@@ -525,12 +528,12 @@ export function LevelingManager({ section }: { section?: string } = {}) {
             <CardHeader>
               <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-violet-500" /> Rank Card</CardTitle>
-                  <CardDescription>Customize colors, background, and display. Preview updates automatically.</CardDescription>
+                  <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-violet-500" /> {t("lv_rankCard")}</CardTitle>
+                  <CardDescription>{t("lv_canvasDesc")}</CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => saveRankCard.mutate()} disabled={saveRankCard.isPending}><Save className="mr-1.5 h-4 w-4" />{saveRankCard.isPending ? "Saving..." : "Save"}</Button>
-                  <Button size="sm" variant="secondary" onClick={() => { setRankCard({ ...rankCard, layout_config: defaultLayout() }); }}><RotateCcw className="mr-1.5 h-4 w-4" />Reset</Button>
+                  <Button size="sm" variant="outline" onClick={() => saveRankCard.mutate()} disabled={saveRankCard.isPending}><Save className="mr-1.5 h-4 w-4" />{saveRankCard.isPending ? t("saving") : t("save")}</Button>
+                  <Button size="sm" variant="secondary" onClick={() => { setRankCard({ ...rankCard, layout_config: defaultLayout() }); }}><RotateCcw className="mr-1.5 h-4 w-4" />{t("reset")}</Button>
                 </div>
               </div>
             </CardHeader>
@@ -540,27 +543,27 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                 <div className="space-y-5">
                   {/* Colors */}
                   <div className="rounded-2xl border bg-muted/20 p-4">
-                    <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Wand2 className="h-4 w-4 text-violet-500" /> Color</p>
+                    <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Wand2 className="h-4 w-4 text-violet-500" /> {t("lv_colors")}</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="flex items-center gap-3">
                         <input type="color" value={rankCard.accent} onChange={e => setRankCard({ ...rankCard, accent: e.target.value })} className="h-10 w-12 cursor-pointer rounded-lg border bg-transparent p-0.5" />
-                        <div><Label className="text-xs">Primary accent</Label><p className="font-mono text-xs text-muted-foreground">{rankCard.accent}</p></div>
+                        <div><Label className="text-xs">{t("lv_accentColor")}</Label><p className="font-mono text-xs text-muted-foreground">{rankCard.accent}</p></div>
                       </div>
                       <div className="flex items-center gap-3">
                         <input type="color" value={rankCard.secondary_accent} onChange={e => setRankCard({ ...rankCard, secondary_accent: e.target.value })} className="h-10 w-12 cursor-pointer rounded-lg border bg-transparent p-0.5" />
-                        <div><Label className="text-xs">Secondary accent (gradient bar)</Label><p className="font-mono text-xs text-muted-foreground">{rankCard.secondary_accent}</p></div>
+                        <div><Label className="text-xs">{t("lv_secondaryColor")}</Label><p className="font-mono text-xs text-muted-foreground">{rankCard.secondary_accent}</p></div>
                       </div>
                     </div>
                   </div>
 
                   {/* Background Gallery */}
                   <div className="rounded-2xl border bg-muted/20 p-4">
-                    <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><ImagePlus className="h-4 w-4 text-sky-500" /> Background</p>
+                    <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><ImagePlus className="h-4 w-4 text-sky-500" /> {t("lv_uploadBg")}</p>
                     <div className="space-y-3">
                       {/* Upload button */}
                       <button type="button" onClick={() => bgInputRef.current?.click()} disabled={bgUploading}
                         className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/30 py-4 text-sm text-muted-foreground transition hover:border-primary hover:text-foreground disabled:opacity-60">
-                        {bgUploading ? <><RefreshCw className="h-4 w-4 animate-spin" />Uploading...</> : <><Upload className="h-4 w-4" />Upload background image (PNG/JPG, max 10MB)</>}
+                        {bgUploading ? <><RefreshCw className="h-4 w-4 animate-spin" />{t("loading")}...</> : <><Upload className="h-4 w-4" />{t("lv_uploadBg")} (PNG/JPG, max 10MB)</>}
                       </button>
                       <input ref={bgInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={async (e) => {
                         const file = e.target.files?.[0];
@@ -577,7 +580,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                           refetchBgList();
                           setPreviewVersion(v => v + 1);
                         } catch (err: unknown) {
-                          toast({ variant: "destructive", title: "Upload failed", description: err instanceof Error ? err.message : "Upload failed." });
+                          toast({ variant: "destructive", title: t("toast_uploadFailed"), description: err instanceof Error ? err.message : t("toast_uploadFailed") });
                         } finally {
                           setBgUploading(false);
                           e.target.value = "";
@@ -591,7 +594,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                             await apiFetch("/api/leveling/rank-card/background/active", { method: "PUT", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: "" }) });
                             refetchBgList(); setPreviewVersion(v => v + 1);
                           }} className={`group relative aspect-video overflow-hidden rounded-xl border-2 bg-slate-900 transition ${!bgList?.active_slug ? "border-primary ring-2 ring-primary/40" : "border-transparent hover:border-muted-foreground/40"}`}>
-                            <span className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">None</span>
+                            <span className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">{t("lv_none")}</span>
                           </button>
                           {bgList?.backgrounds.map(bg => (
                             <div key={bg.slug} className="group relative">
@@ -602,7 +605,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                                 <img src={bg.url + "?t=" + Date.now()} alt={bg.slug} className="h-full w-full object-cover" />
                               </button>
                               {bgList?.active_slug === bg.slug && (
-                                <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-white">Activeg</span>
+                                <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-white">{t("enabled")}</span>
                               )}
                               <button type="button" onClick={async () => {
                                 await apiFetch(`/api/leveling/rank-card/background/${bg.slug}`, { method: "DELETE", credentials: "include" });
@@ -619,17 +622,17 @@ export function LevelingManager({ section }: { section?: string } = {}) {
 
                   {/* Toggles display */}
                   <div className="rounded-2xl border bg-muted/20 p-4">
-                    <p className="mb-3 text-sm font-semibold">Show components</p>
+                    <p className="mb-3 text-sm font-semibold">{t("lv_showProgressBar")}</p>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {([
-                        ["show_rank", "Rank (#1, #2...)"],
-                        ["show_level", "Level"],
-                        ["show_progress_bar", "Thanh XP"],
-                        ["show_percent", "Percentage XP"],
-                        ["show_total_xp", "Total XP"],
-                        ["show_username", "Username"],
-                        ["show_server", "Name server"],
-                        ["show_avatar_ring", "Avatar ring"],
+                        ["show_rank", t("rank")],
+                        ["show_level", t("level")],
+                        ["show_progress_bar", t("lv_showProgressBar")],
+                        ["show_percent", t("lv_showPercent")],
+                        ["show_total_xp", t("lv_showTotalXp")],
+                        ["show_username", t("member")],
+                        ["show_server", t("lv_showServer")],
+                        ["show_avatar_ring", t("lv_showAvatarRing")],
                       ] as [keyof RankCardConfig, string][]).map(([key, label]) => (
                         <div key={key} className="flex items-center justify-between rounded-xl border px-3 py-2">
                           <Label className="text-xs">{label}</Label>
@@ -641,17 +644,17 @@ export function LevelingManager({ section }: { section?: string } = {}) {
 
                   {/* Labels */}
                   <div className="rounded-2xl border bg-muted/20 p-4">
-                    <p className="mb-3 text-sm font-semibold">Label custom</p>
+                    <p className="mb-3 text-sm font-semibold">{t("lv_rankCard")}</p>
                     <div className="grid gap-3 sm:grid-cols-3">
-                      <div><Label className="text-xs">Label Rank</Label><Input value={rankCard.rank_label} onChange={e => setRankCard({ ...rankCard, rank_label: e.target.value })} placeholder="Rank" /></div>
-                      <div><Label className="text-xs">Label Level</Label><Input value={rankCard.level_label} onChange={e => setRankCard({ ...rankCard, level_label: e.target.value })} placeholder="Level" /></div>
-                      <div><Label className="text-xs">Label XP</Label><Input value={rankCard.xp_label} onChange={e => setRankCard({ ...rankCard, xp_label: e.target.value })} placeholder="XP" /></div>
+                      <div><Label className="text-xs">{t("rank")}</Label><Input value={rankCard.rank_label} onChange={e => setRankCard({ ...rankCard, rank_label: e.target.value })} placeholder={t("rank")} /></div>
+                      <div><Label className="text-xs">{t("level")}</Label><Input value={rankCard.level_label} onChange={e => setRankCard({ ...rankCard, level_label: e.target.value })} placeholder={t("level")} /></div>
+                      <div><Label className="text-xs">XP</Label><Input value={rankCard.xp_label} onChange={e => setRankCard({ ...rankCard, xp_label: e.target.value })} placeholder="XP" /></div>
                     </div>
                   </div>
 
                   {/* Avatar size slider */}
                   <div className="rounded-2xl border bg-muted/20 p-4">
-                    <p className="mb-3 text-sm font-semibold">Size Avatar</p>
+                    <p className="mb-3 text-sm font-semibold">{t("lv_sizeAvatar")}</p>
                     <div className="flex items-center gap-4">
                       <Slider min={60} max={130} step={2} value={[rankCard.avatar_size]} onValueChange={([v]) => setRankCard({ ...rankCard, avatar_size: v })} className="flex-1" />
                       <span className="w-10 text-right text-sm font-mono">{rankCard.avatar_size}px</span>
@@ -660,24 +663,24 @@ export function LevelingManager({ section }: { section?: string } = {}) {
 
                   {/* Gradient Theme */}
                   <div className="rounded-2xl border bg-muted/20 p-4">
-                    <p className="mb-3 text-sm font-semibold">Gradient Theme</p>
-                    <p className="mb-2 text-xs text-muted-foreground">Applied when no custom background is set.</p>
+                    <p className="mb-3 text-sm font-semibold">{t("lv_gradientTheme")}</p>
+                    <p className="mb-2 text-xs text-muted-foreground">{t("lv_gradientDesc")}</p>
                     <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
                       {[
-                        { key: "", label: "None", colors: ["#3A3A45", "#24242B"] },
-                        { key: "sunset", label: "Sunset", colors: ["#FF5E4D", "#FF9A00"] },
-                        { key: "ocean", label: "Ocean", colors: ["#0096C7", "#00458E"] },
-                        { key: "forest", label: "Forest", colors: ["#228B22", "#006400"] },
-                        { key: "neon", label: "Neon", colors: ["#FF00FF", "#00FFFF"] },
-                        { key: "pastel", label: "Pastel", colors: ["#FFB3BA", "#BAE1FF"] },
-                        { key: "midnight", label: "Midnight", colors: ["#191970", "#483D8B"] },
-                        { key: "aurora", label: "Aurora", colors: ["#00D2BE", "#5F2CFF"] },
-                        { key: "fire", label: "Fire", colors: ["#FF4500", "#FFA500"] },
-                      ].map(t => (
-                        <button key={t.key} type="button" onClick={() => setRankCard({ ...rankCard, gradient_theme: t.key })}
-                          className={`relative overflow-hidden rounded-xl border-2 p-2 text-center text-[10px] font-medium transition ${(rankCard as any).gradient_theme === t.key ? "border-primary ring-2 ring-primary/40" : "border-transparent hover:border-muted-foreground/40"}`}
-                          style={{ background: `linear-gradient(135deg, ${t.colors[0]}, ${t.colors[1]})` }}>
-                          <span className="relative text-white drop-shadow">{t.label}</span>
+                        { key: "", label: t("lv_none"), colors: ["#3A3A45", "#24242B"] },
+                        { key: "sunset", label: t("lv_sunset"), colors: ["#FF5E4D", "#FF9A00"] },
+                        { key: "ocean", label: t("lv_ocean"), colors: ["#0096C7", "#00458E"] },
+                        { key: "forest", label: t("lv_forest"), colors: ["#228B22", "#006400"] },
+                        { key: "neon", label: t("lv_neon"), colors: ["#FF00FF", "#00FFFF"] },
+                        { key: "pastel", label: t("lv_pastel"), colors: ["#FFB3BA", "#BAE1FF"] },
+                        { key: "midnight", label: t("lv_midnight"), colors: ["#191970", "#483D8B"] },
+                        { key: "aurora", label: t("lv_aurora"), colors: ["#00D2BE", "#5F2CFF"] },
+                        { key: "fire", label: t("lv_fire"), colors: ["#FF4500", "#FFA500"] },
+                      ].map(th => (
+                        <button key={th.key} type="button" onClick={() => setRankCard({ ...rankCard, gradient_theme: th.key })}
+                          className={`relative overflow-hidden rounded-xl border-2 p-2 text-center text-[10px] font-medium transition ${(rankCard as any).gradient_theme === th.key ? "border-primary ring-2 ring-primary/40" : "border-transparent hover:border-muted-foreground/40"}`}
+                          style={{ background: `linear-gradient(135deg, ${th.colors[0]}, ${th.colors[1]})` }}>
+                          <span className="relative text-white drop-shadow">{th.label}</span>
                         </button>
                       ))}
                     </div>
@@ -685,30 +688,30 @@ export function LevelingManager({ section }: { section?: string } = {}) {
 
                   {/* Avatar Effect & Frame */}
                   <div className="rounded-2xl border bg-muted/20 p-4">
-                    <p className="mb-3 text-sm font-semibold">Avatar Style</p>
+                    <p className="mb-3 text-sm font-semibold">{t("lv_avatarStyle")}</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
-                        <Label className="text-xs">Avatar Effect</Label>
+                        <Label className="text-xs">{t("lv_avatarEffect")}</Label>
                         <Select value={(rankCard as any).avatar_effect || "glow"} onValueChange={v => setRankCard({ ...rankCard, avatar_effect: v } as any)}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="glow">Glow</SelectItem>
-                            <SelectItem value="shadow">Shadow</SelectItem>
-                            <SelectItem value="ring_pulse">Ring Pulse</SelectItem>
-                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="glow">{t("lv_glow")}</SelectItem>
+                            <SelectItem value="shadow">{t("lv_shadow")}</SelectItem>
+                            <SelectItem value="ring_pulse">{t("lv_ringPulse")}</SelectItem>
+                            <SelectItem value="none">{t("lv_none")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div>
-                        <Label className="text-xs">Avatar Frame</Label>
+                        <Label className="text-xs">{t("lv_avatarFrame")}</Label>
                         <Select value={(rankCard as any).frame || "none"} onValueChange={v => setRankCard({ ...rankCard, frame: v } as any)}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            <SelectItem value="gold">Gold</SelectItem>
-                            <SelectItem value="diamond">Diamond</SelectItem>
-                            <SelectItem value="fire">Fire</SelectItem>
-                            <SelectItem value="rainbow">Rainbow</SelectItem>
+                            <SelectItem value="none">{t("lv_none")}</SelectItem>
+                            <SelectItem value="gold">{t("lv_gold")}</SelectItem>
+                            <SelectItem value="diamond">{t("lv_diamond")}</SelectItem>
+                            <SelectItem value="fire">{t("lv_fire")}</SelectItem>
+                            <SelectItem value="rainbow">{t("lv_rainbow")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -720,9 +723,9 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                 <div className="flex flex-col gap-3">
                   <div className="sticky top-4">
                     <div className="mb-2 flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold">Preview (bot render)</p>
+                      <p className="text-sm font-semibold">{t("preview")} (Bot)</p>
                       <div className="flex items-center gap-2">
-                        {isAutoSyncing && <span className="flex items-center gap-1 text-xs text-muted-foreground"><RefreshCw className="h-3 w-3 animate-spin" />Đang sync...</span>}
+                        {isAutoSyncing && <span className="flex items-center gap-1 text-xs text-muted-foreground"><RefreshCw className="h-3 w-3 animate-spin" />{t("lv_rendering")}...</span>}
                         <Button size="sm" variant="ghost" onClick={() => rankCard && triggerAutoSync(rankCard)}><RefreshCw className="h-3.5 w-3.5" /></Button>
                       </div>
                     </div>
@@ -733,7 +736,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                         className="block w-full"
                       />
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground">Preview updates automatically after changes (~0.7s). Click Save to persist to the database.</p>
+                    <p className="mt-2 text-xs text-muted-foreground">{t("lv_canvasDesc")}</p>
                   </div>
                 </div>
               </div>
@@ -743,27 +746,27 @@ export function LevelingManager({ section }: { section?: string } = {}) {
         <div className="hidden">
             {rankCard && <div className="grid gap-3 rounded-2xl border bg-background/70 p-3 sm:rounded-3xl sm:p-4 xl:grid-cols-[1fr_1fr_auto]">
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <div><Label>Primary accent</Label><Input type="color" value={rankCard.accent} onChange={e => setRankCard({...rankCard, accent: e.target.value})} className="h-10" /></div>
-                <div><Label>Secondary accent</Label><Input type="color" value={rankCard.secondary_accent} onChange={e => setRankCard({...rankCard, secondary_accent: e.target.value})} className="h-10" /></div>
-                <div><Label>Background</Label><Select value={rankCard.background} onValueChange={v => setRankCard({...rankCard, background: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="aurora">Aurora</SelectItem><SelectItem value="midnight">Midnight</SelectItem><SelectItem value="sunset">Sunset</SelectItem><SelectItem value="mono">Mono</SelectItem></SelectContent></Select></div>
-                <div><Label>Panel</Label><Select value={rankCard.panel_style} onValueChange={v => setRankCard({...rankCard, panel_style: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="glass">Glass</SelectItem><SelectItem value="solid">Solid</SelectItem></SelectContent></Select></div>
+                <div><Label>{t("lv_accentColor")}</Label><Input type="color" value={rankCard.accent} onChange={e => setRankCard({...rankCard, accent: e.target.value})} className="h-10" /></div>
+                <div><Label>{t("lv_secondaryColor")}</Label><Input type="color" value={rankCard.secondary_accent} onChange={e => setRankCard({...rankCard, secondary_accent: e.target.value})} className="h-10" /></div>
+                <div><Label>{t("lv_uploadBg")}</Label><Select value={rankCard.background} onValueChange={v => setRankCard({...rankCard, background: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="aurora">{t("lv_aurora")}</SelectItem><SelectItem value="midnight">{t("lv_midnight")}</SelectItem><SelectItem value="sunset">{t("lv_sunset")}</SelectItem><SelectItem value="mono">Mono</SelectItem></SelectContent></Select></div>
+                <div><Label>{t("lv_canvasEditor")}</Label><Select value={rankCard.panel_style} onValueChange={v => setRankCard({...rankCard, panel_style: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="glass">Glass</SelectItem><SelectItem value="solid">Solid</SelectItem></SelectContent></Select></div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <div><Label>Sample display name</Label><Input value={rankCard.display_name} onChange={e => setRankCard({...rankCard, display_name: e.target.value})} /></div>
-                <div><Label>Sample server name</Label><Input value={rankCard.server} onChange={e => setRankCard({...rankCard, server: e.target.value})} /></div>
-                <div><Label>Label Rank</Label><Input value={rankCard.rank_label} onChange={e => setRankCard({...rankCard, rank_label: e.target.value})} /></div>
-                <div><Label>Label Level</Label><Input value={rankCard.level_label} onChange={e => setRankCard({...rankCard, level_label: e.target.value})} /></div>
+                <div><Label>{t("lv_showProgressBar")}</Label><Input value={rankCard.display_name} onChange={e => setRankCard({...rankCard, display_name: e.target.value})} /></div>
+                <div><Label>{t("lv_showServer")}</Label><Input value={rankCard.server} onChange={e => setRankCard({...rankCard, server: e.target.value})} /></div>
+                <div><Label>{t("rank")}</Label><Input value={rankCard.rank_label} onChange={e => setRankCard({...rankCard, rank_label: e.target.value})} /></div>
+                <div><Label>{t("level")}</Label><Input value={rankCard.level_label} onChange={e => setRankCard({...rankCard, level_label: e.target.value})} /></div>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end xl:justify-end">
-                <Button className="w-full sm:w-auto" onClick={() => saveRankCard.mutate()} disabled={saveRankCard.isPending}>Save rank image</Button>
-                <Button className="w-full sm:w-auto" variant="secondary" onClick={() => renderServerPreview.mutate()} disabled={renderServerPreview.isPending}><Sparkles className="mr-2 h-4 w-4" />{renderServerPreview.isPending ? "Rendering..." : "Render bot image"}</Button>
-                <Button className="w-full sm:w-auto" variant="outline" onClick={() => rankCard && setRankCard({...rankCard, layout_config: defaultLayout()})}><Wand2 className="mr-2 h-4 w-4" />Reset</Button>
+                <Button className="w-full sm:w-auto" onClick={() => saveRankCard.mutate()} disabled={saveRankCard.isPending}>{t("save")}</Button>
+                <Button className="w-full sm:w-auto" variant="secondary" onClick={() => renderServerPreview.mutate()} disabled={renderServerPreview.isPending}><Sparkles className="mr-2 h-4 w-4" />{renderServerPreview.isPending ? t("lv_rendering") : t("lv_renderBot")}</Button>
+                <Button className="w-full sm:w-auto" variant="outline" onClick={() => rankCard && setRankCard({...rankCard, layout_config: defaultLayout()})}><Wand2 className="mr-2 h-4 w-4" />{t("reset")}</Button>
               </div>
             </div>}
             {rankCard && layout && <div className="grid gap-4 xl:min-h-[560px] xl:grid-cols-[240px_minmax(0,1fr)_300px]">
               <div className="rounded-2xl border bg-background/80 p-3 sm:rounded-3xl">
                 <div className="mb-3 flex items-center justify-between gap-2 px-1">
-                  <div className="flex items-center gap-2"><Layers className="h-4 w-4" /><p className="text-sm font-semibold">Blocks</p></div>
+                  <div className="flex items-center gap-2"><Layers className="h-4 w-4" /><p className="text-sm font-semibold">{t("lv_canvasEditor")}</p></div>
                   <Badge variant="outline">{layout.layers.length}</Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -773,7 +776,7 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                   <Button size="sm" variant="secondary" onClick={() => addLayer("progress")}><Zap className="mr-1 h-3 w-3" />Bar</Button>
                 </div>
                 <div className="mt-4 rounded-2xl border bg-muted/20 p-2">
-                  <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">Add preset block</p>
+                  <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">{t("lv_canvasEditor")}</p>
                   <div className="max-h-44 space-y-1 overflow-y-auto pr-1">
                     {LAYER_PRESETS.map((preset) => (
                       <button key={`${preset.type}-${preset.name}`} type="button" onClick={() => addPresetLayer(preset)} className="group flex w-full items-center justify-between gap-2 rounded-xl px-2 py-2 text-left transition hover:bg-background">
@@ -794,9 +797,9 @@ export function LevelingManager({ section }: { section?: string } = {}) {
               </div>
               <div className="min-w-0 rounded-2xl border bg-background/80 p-3 sm:rounded-3xl sm:p-4">
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
-                  <div><p className="flex items-center gap-2 text-base font-semibold"><MousePointer2 className="h-4 w-4" /> Canvas setup</p><p className="text-sm text-muted-foreground">Drag layers directly on the canvas — no need to squint at a tiny preview.</p></div>
+                  <div><p className="flex items-center gap-2 text-base font-semibold"><MousePointer2 className="h-4 w-4" /> {t("lv_canvasEditor")}</p><p className="text-sm text-muted-foreground">{t("lv_canvasDesc")}</p></div>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-                    <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={() => { window.location.href = "/leveling/rank-card-editor"; }}><Maximize2 className="mr-2 h-4 w-4" />Open fullscreen editor</Button>
+                    <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={() => { window.location.href = "/leveling/rank-card-editor"; }}><Maximize2 className="mr-2 h-4 w-4" />{t("lv_canvasEditor")}</Button>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-[80px_80px_112px_48px_48px]">
                     <Input type="number" value={layout.width} onChange={e => updateLayout({width: Number(e.target.value)})} className="h-9 w-full sm:w-20" />
                     <Input type="number" value={layout.height} onChange={e => updateLayout({height: Number(e.target.value)})} className="h-9 w-full sm:w-20" />
@@ -812,30 +815,30 @@ export function LevelingManager({ section }: { section?: string } = {}) {
                   </div>
                   <div className="rounded-2xl border bg-muted/20 p-3">
                     <div className="mb-3 flex items-center justify-between gap-2">
-                      <div><p className="text-sm font-semibold">Bot render</p><p className="text-xs text-muted-foreground">The actual PNG the bot will send.</p></div>
-                      <Button type="button" size="sm" variant="secondary" onClick={() => renderServerPreview.mutate()} disabled={renderServerPreview.isPending}>{renderServerPreview.isPending ? "Rendering..." : "Render bot"}</Button>
+                      <div><p className="text-sm font-semibold">{t("lv_renderBot")}</p><p className="text-xs text-muted-foreground">{t("lv_canvasDesc")}</p></div>
+                      <Button type="button" size="sm" variant="secondary" onClick={() => renderServerPreview.mutate()} disabled={renderServerPreview.isPending}>{renderServerPreview.isPending ? t("lv_rendering") : t("lv_renderBot")}</Button>
                     </div>
                     <div className="overflow-hidden rounded-xl border bg-slate-950">
                       <img src={serverPreviewUrl || previewUrl} alt="Bot rank card preview" className="block w-full" />
                     </div>
-                    <p className="mt-2 text-[11px] text-muted-foreground">The left canvas is the HTML drag-and-drop editor. This bot render uses the same Python code as the Discord image.</p>
+                    <p className="mt-2 text-[11px] text-muted-foreground">{t("lv_canvasDesc")}</p>
                   </div>
                 </div>
-                <p className="mt-3 text-xs text-muted-foreground">Tip: drag to change X/Y, select a layer then adjust size/color in the Inspector. Click Save rank image to apply this layout.</p>
+                <p className="mt-3 text-xs text-muted-foreground">{t("lv_canvasDesc")}</p>
               </div>
               <div className="rounded-2xl border bg-background/80 p-3 sm:rounded-3xl sm:p-4">
                 <div className="mb-4 flex items-start justify-between gap-3">
-                  <div><p className="text-base font-semibold">Inspector</p><p className="text-sm text-muted-foreground">{selectedLayer ? selectedLayer.name : "Select a block to edit"}</p></div>
+                  <div><p className="text-base font-semibold">{t("lv_canvasEditor")}</p><p className="text-sm text-muted-foreground">{selectedLayer ? selectedLayer.name : t("lv_canvasDesc")}</p></div>
                   {selectedLayer && <div className="flex gap-1"><Button type="button" size="icon" variant="outline" onClick={() => updateSelectedLayer({visible: !selectedLayer.visible})}>{selectedLayer.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}</Button><Button type="button" size="icon" variant="outline" onClick={duplicateSelectedLayer}><Copy className="h-4 w-4" /></Button><Button type="button" size="icon" variant="destructive" onClick={deleteSelectedLayer}><Trash2 className="h-4 w-4" /></Button></div>}
                 </div>
                 <div className="space-y-3">
                   {selectedLayer ? <>
-                    <div><Label>Name block</Label><Input value={selectedLayer.name} onChange={e => updateSelectedLayer({name: e.target.value})} /></div>
+                    <div><Label>{t("name")}</Label><Input value={selectedLayer.name} onChange={e => updateSelectedLayer({name: e.target.value})} /></div>
                     <div className="grid gap-2 sm:grid-cols-2"><div><Label>X</Label><Input type="number" value={selectedLayer.x} onChange={e => updateSelectedLayer({x: Number(e.target.value)})} /></div><div><Label>Y</Label><Input type="number" value={selectedLayer.y} onChange={e => updateSelectedLayer({y: Number(e.target.value)})} /></div><div><Label>W</Label><Input type="number" value={selectedLayer.w} onChange={e => updateSelectedLayer({w: Number(e.target.value)})} /></div><div><Label>H</Label><Input type="number" value={selectedLayer.h} onChange={e => updateSelectedLayer({h: Number(e.target.value)})} /></div><div><Label>Z</Label><Input type="number" value={selectedLayer.z} onChange={e => updateSelectedLayer({z: Number(e.target.value)})} /></div><div><Label>Opacity</Label><Input type="number" min={0} max={100} value={selectedLayer.opacity ?? 100} onChange={e => updateSelectedLayer({opacity: Number(e.target.value)})} /></div></div>
                     <div className="grid gap-2 sm:grid-cols-2"><div><Label>Radius</Label><Input type="number" value={selectedLayer.radius ?? 0} onChange={e => updateSelectedLayer({radius: Number(e.target.value)})} /></div><div><Label>Color</Label><Input type="color" value={selectedLayer.color || selectedLayer.fill || "#ffffff"} onChange={e => updateSelectedLayer(selectedLayer.type === "progress" ? {fill: e.target.value} : {color: e.target.value})} /></div></div>
                     {selectedLayer.type === "text" && <div className="grid gap-2 sm:grid-cols-2"><div><Label>Token</Label><Select value={selectedLayer.token || "display_name"} onValueChange={v => updateSelectedLayer({token: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{["display_name","username","server","level","rank","xp","progress","percent"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></div><div><Label>Font size</Label><Input type="number" value={selectedLayer.font_size || 24} onChange={e => updateSelectedLayer({font_size: Number(e.target.value)})} /></div><div className="flex items-center justify-between rounded-xl border px-3 py-2 sm:col-span-2"><Label>Bold</Label><Switch checked={Boolean(selectedLayer.bold)} onCheckedChange={v => updateSelectedLayer({bold: v})} /></div></div>}
-                    <div className="flex items-center justify-between rounded-xl border px-3 py-2"><Label>Visible</Label><Switch checked={selectedLayer.visible} onCheckedChange={v => updateSelectedLayer({visible: v})} /></div>
-                  </> : <div className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">No blocks yet. Add a preset block from the left panel.</div>}
+                    <div className="flex items-center justify-between rounded-xl border px-3 py-2"><Label>{t("lv_showProgressBar")}</Label><Switch checked={selectedLayer.visible} onCheckedChange={v => updateSelectedLayer({visible: v})} /></div>
+                  </> : <div className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">{t("noData")}</div>}
                 </div>
               </div>
             </div>}
@@ -844,11 +847,11 @@ export function LevelingManager({ section }: { section?: string } = {}) {
               <DialogContent className="fixed inset-0 left-0 top-0 flex h-[100dvh] w-screen max-w-none translate-x-0 translate-y-0 grid-rows-[auto_1fr] overflow-hidden rounded-none border-0 p-0 sm:rounded-none">
                 <DialogHeader className="border-b px-4 py-3 sm:px-6">
                   <div className="flex flex-col gap-3 pr-8 sm:flex-row sm:items-center sm:justify-between">
-                    <div><DialogTitle>Canvas Rank Card</DialogTitle><p className="text-sm text-muted-foreground">Mobile-style canvas: fits the screen, pinch/zoom with buttons, drag background to pan, drag layers to edit.</p></div>
+                    <div><DialogTitle>{t("lv_canvasEditor")}</DialogTitle><p className="text-sm text-muted-foreground">{t("lv_canvasDesc")}</p></div>
                     <div className="flex flex-wrap gap-2">
-                      <Button type="button" size="sm" variant="outline" onClick={() => setCanvasZoom((z) => Math.max(0.25, Number((z - 0.1).toFixed(2))))}><ZoomOut className="mr-1 h-4 w-4" />Zoom out</Button>
-                      <Button type="button" size="sm" variant="outline" onClick={() => setCanvasZoom(0.45)}><RotateCcw className="mr-1 h-4 w-4" />Fit</Button>
-                      <Button type="button" size="sm" variant="outline" onClick={() => setCanvasZoom((z) => Math.min(2.5, Number((z + 0.1).toFixed(2))))}><ZoomIn className="mr-1 h-4 w-4" />Zoom in</Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => setCanvasZoom((z) => Math.max(0.25, Number((z - 0.1).toFixed(2))))}><ZoomOut className="mr-1 h-4 w-4" />{t("lv_canvasEditor")}</Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => setCanvasZoom(0.45)}><RotateCcw className="mr-1 h-4 w-4" />{t("reset")}</Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => setCanvasZoom((z) => Math.min(2.5, Number((z + 0.1).toFixed(2))))}><ZoomIn className="mr-1 h-4 w-4" />{t("lv_canvasEditor")}</Button>
                       <Badge variant="secondary" className="h-9 px-3 text-sm">{Math.round(canvasZoom * 100)}%</Badge>
                     </div>
                   </div>
@@ -872,72 +875,72 @@ export function LevelingManager({ section }: { section?: string } = {}) {
 
       </TabsContent>
 
-      <TabsContent value="config"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Settings className="w-4 h-4" /> Config XP</CardTitle><CardDescription>Adjust XP speed and level-up notifications.</CardDescription></CardHeader><CardContent className="space-y-5">
-        <div className="flex items-center justify-between rounded-2xl border p-4"><div><p className="font-medium">Enable leveling</p><p className="text-sm text-muted-foreground">Gain XP from messages.</p></div><Switch checked={form.enabled} onCheckedChange={v => setForm({...form, enabled: v})} /></div>
-        <div className="grid md:grid-cols-3 gap-4"><div><Label>Min XP</Label><Input type="number" value={form.xp_min} onChange={e => setForm({...form, xp_min: Number(e.target.value)})} /></div><div><Label>Max XP</Label><Input type="number" value={form.xp_max} onChange={e => setForm({...form, xp_max: Number(e.target.value)})} /></div><div><Label>Cooldown (s)</Label><Input type="number" value={form.cooldown_seconds} onChange={e => setForm({...form, cooldown_seconds: Number(e.target.value)})} /></div></div>
-        <div className="grid md:grid-cols-2 gap-4"><div><Label>Level-up mode</Label><Select value={form.level_up_mode} onValueChange={v => setForm({...form, level_up_mode: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="current">Current channel</SelectItem><SelectItem value="fixed">Fixed channel</SelectItem><SelectItem value="dm">DM user</SelectItem><SelectItem value="off">Disable notifications</SelectItem></SelectContent></Select></div><div><Label>Channel level-up</Label><ChannelSelect value={form.level_up_channel_id || ""} onChange={v => setForm({...form, level_up_channel_id: v})} filter="text" /></div></div>
+      <TabsContent value="config"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Settings className="w-4 h-4" /> {t("lv_xpConfig")}</CardTitle><CardDescription>{t("lv_adjustXpDesc")}</CardDescription></CardHeader><CardContent className="space-y-5">
+        <div className="flex items-center justify-between rounded-2xl border p-4"><div><p className="font-medium">{t("enabled")}</p><p className="text-sm text-muted-foreground">{t("lv_adjustXpDesc")}</p></div><Switch checked={form.enabled} onCheckedChange={v => setForm({...form, enabled: v})} /></div>
+        <div className="grid md:grid-cols-3 gap-4"><div><Label>{t("lv_xpMin")}</Label><Input type="number" value={form.xp_min} onChange={e => setForm({...form, xp_min: Number(e.target.value)})} /></div><div><Label>{t("lv_xpMax")}</Label><Input type="number" value={form.xp_max} onChange={e => setForm({...form, xp_max: Number(e.target.value)})} /></div><div><Label>{t("lv_cooldownSeconds")}</Label><Input type="number" value={form.cooldown_seconds} onChange={e => setForm({...form, cooldown_seconds: Number(e.target.value)})} /></div></div>
+        <div className="grid md:grid-cols-2 gap-4"><div><Label>{t("lv_notifyMode")}</Label><Select value={form.level_up_mode} onValueChange={v => setForm({...form, level_up_mode: v})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="current">{t("channel")}</SelectItem><SelectItem value="fixed">{t("lv_levelUpChannel")}</SelectItem><SelectItem value="dm">DM</SelectItem><SelectItem value="off">{t("disabled")}</SelectItem></SelectContent></Select></div><div><Label>{t("lv_levelUpChannel")}</Label><ChannelSelect value={form.level_up_channel_id || ""} onChange={v => setForm({...form, level_up_channel_id: v})} filter="text" /></div></div>
         <div className="rounded-2xl border bg-muted/20 p-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div><p className="flex items-center gap-2 font-medium"><MessageSquareText className="h-4 w-4" /> Level-up notification content</p><p className="text-sm text-muted-foreground">Title, description, color, fallback text, and variables like {'{user.mention}'}, {'{level}'} are in the Embed Builder under the Level Up event.</p></div>
-            <Button className="w-full md:w-auto" type="button" variant="secondary" onClick={() => { window.location.href = "/embeds?event=level_up"; }}>Open Embed Builder</Button>
+            <div><p className="flex items-center gap-2 font-medium"><MessageSquareText className="h-4 w-4" /> {t("lv_notifyMode")}</p><p className="text-sm text-muted-foreground">{t("lv_adjustXpDesc")}</p></div>
+            <Button className="w-full md:w-auto" type="button" variant="secondary" onClick={() => { window.location.href = "/embeds?event=level_up"; }}>{t("embedBuilder_preview")}</Button>
           </div>
         </div>
-        <div className="grid md:grid-cols-3 gap-3"><div className="flex items-center justify-between rounded-2xl border p-3"><Label>XP from slash commands</Label><Switch checked={form.gain_xp_from_commands} onCheckedChange={v => setForm({...form, gain_xp_from_commands: v})} /></div><div className="flex items-center justify-between rounded-2xl border p-3"><Label>Whitelist channel mode</Label><Switch checked={form.use_channel_whitelist} onCheckedChange={v => setForm({...form, use_channel_whitelist: v})} /></div><div className="flex items-center justify-between rounded-2xl border p-3"><Label>Remove old reward roles</Label><Switch checked={form.remove_old_reward_roles} onCheckedChange={v => setForm({...form, remove_old_reward_roles: v})} /></div></div>
-        <Button onClick={() => saveConfig.mutate()} disabled={saveConfig.isPending}>Save config</Button>
+        <div className="grid md:grid-cols-3 gap-3"><div className="flex items-center justify-between rounded-2xl border p-3"><Label>{t("lv_xpFromSlash")}</Label><Switch checked={form.gain_xp_from_commands} onCheckedChange={v => setForm({...form, gain_xp_from_commands: v})} /></div><div className="flex items-center justify-between rounded-2xl border p-3"><Label>{t("automod_whitelistChannelMode")}</Label><Switch checked={form.use_channel_whitelist} onCheckedChange={v => setForm({...form, use_channel_whitelist: v})} /></div><div className="flex items-center justify-between rounded-2xl border p-3"><Label>{t("lv_rewardDm")}</Label><Switch checked={form.remove_old_reward_roles} onCheckedChange={v => setForm({...form, remove_old_reward_roles: v})} /></div></div>
+        <Button onClick={() => saveConfig.mutate()} disabled={saveConfig.isPending}>{saveConfig.isPending ? t("saving") : t("save")}</Button>
       </CardContent></Card></TabsContent>
 
-      <TabsContent value="voice-xp"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Mic className="h-4 w-4" /> Voice XP</CardTitle><CardDescription>Configure XP earned from voice channel activity.</CardDescription></CardHeader><CardContent className="space-y-5">
-        <div className="flex items-center justify-between rounded-2xl border p-4"><div><p className="font-medium">Enable Voice XP</p><p className="text-sm text-muted-foreground">Members earn XP while in voice channels.</p></div><Switch checked={form.voice_xp_enabled ?? true} onCheckedChange={v => setForm({...form, voice_xp_enabled: v})} /></div>
+      <TabsContent value="voice-xp"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Mic className="h-4 w-4" /> {t("lv_voiceXp")}</CardTitle><CardDescription>{t("lv_voiceXpDesc")}</CardDescription></CardHeader><CardContent className="space-y-5">
+        <div className="flex items-center justify-between rounded-2xl border p-4"><div><p className="font-medium">{t("lv_voiceXpEnabled")}</p><p className="text-sm text-muted-foreground">{t("lv_voiceXpDesc")}</p></div><Switch checked={form.voice_xp_enabled ?? true} onCheckedChange={v => setForm({...form, voice_xp_enabled: v})} /></div>
         <div className="grid md:grid-cols-3 gap-4">
-          <div><Label>XP per minute</Label><Input type="number" min={1} max={100} value={form.voice_xp_per_minute ?? 5} onChange={e => setForm({...form, voice_xp_per_minute: Number(e.target.value)})} /></div>
-          <div><Label>AFK timeout (minutes)</Label><Input type="number" min={1} max={60} value={form.voice_afk_timeout ?? 5} onChange={e => setForm({...form, voice_afk_timeout: Number(e.target.value)})} /><p className="mt-1 text-xs text-muted-foreground">Stop XP after being muted+deafened for this long</p></div>
-          <div><Label>Weekly reset day</Label><Select value={String(form.weekly_reset_day ?? 1)} onValueChange={v => setForm({...form, weekly_reset_day: Number(v)})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="0">Monday</SelectItem><SelectItem value="1">Tuesday</SelectItem><SelectItem value="2">Wednesday</SelectItem><SelectItem value="3">Thursday</SelectItem><SelectItem value="4">Friday</SelectItem><SelectItem value="5">Saturday</SelectItem><SelectItem value="6">Sunday</SelectItem></SelectContent></Select></div>
+          <div><Label>{t("lv_xpPerMinute")}</Label><Input type="number" min={1} max={100} value={form.voice_xp_per_minute ?? 5} onChange={e => setForm({...form, voice_xp_per_minute: Number(e.target.value)})} /></div>
+          <div><Label>{t("lv_afkTimeout")}</Label><Input type="number" min={1} max={60} value={form.voice_afk_timeout ?? 5} onChange={e => setForm({...form, voice_afk_timeout: Number(e.target.value)})} /><p className="mt-1 text-xs text-muted-foreground">{t("lv_afkTimeoutDesc")}</p></div>
+          <div><Label>{t("lv_weeklyResetDay")}</Label><Select value={String(form.weekly_reset_day ?? 1)} onValueChange={v => setForm({...form, weekly_reset_day: Number(v)})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="0">{t("day_monday")}</SelectItem><SelectItem value="1">{t("day_tuesday")}</SelectItem><SelectItem value="2">{t("day_wednesday")}</SelectItem><SelectItem value="3">{t("day_thursday")}</SelectItem><SelectItem value="4">{t("day_friday")}</SelectItem><SelectItem value="5">{t("day_saturday")}</SelectItem><SelectItem value="6">{t("day_sunday")}</SelectItem></SelectContent></Select></div>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
-          <div><Label>Stream bonus multiplier</Label><Input type="number" step={0.1} min={1} max={5} value={form.voice_stream_bonus ?? 1.5} onChange={e => setForm({...form, voice_stream_bonus: Number(e.target.value)})} /><p className="mt-1 text-xs text-muted-foreground">XP multiplier when streaming (e.g. 1.5 = 50% bonus)</p></div>
-          <div><Label>Camera bonus multiplier</Label><Input type="number" step={0.1} min={1} max={5} value={form.voice_camera_bonus ?? 1.2} onChange={e => setForm({...form, voice_camera_bonus: Number(e.target.value)})} /><p className="mt-1 text-xs text-muted-foreground">XP multiplier when camera is on</p></div>
+          <div><Label>{t("lv_streamBonus")}</Label><Input type="number" step={0.1} min={1} max={5} value={form.voice_stream_bonus ?? 1.5} onChange={e => setForm({...form, voice_stream_bonus: Number(e.target.value)})} /><p className="mt-1 text-xs text-muted-foreground">{t("lv_streamBonusDesc")}</p></div>
+          <div><Label>{t("lv_cameraBonus")}</Label><Input type="number" step={0.1} min={1} max={5} value={form.voice_camera_bonus ?? 1.2} onChange={e => setForm({...form, voice_camera_bonus: Number(e.target.value)})} /><p className="mt-1 text-xs text-muted-foreground">{t("lv_cameraBonusDesc")}</p></div>
         </div>
-        <div className="flex items-center justify-between rounded-2xl border p-4"><div><p className="font-medium">Solo XP</p><p className="text-sm text-muted-foreground">Allow XP when alone in voice channel (no other humans).</p></div><Switch checked={form.voice_solo_xp ?? false} onCheckedChange={v => setForm({...form, voice_solo_xp: v})} /></div>
+        <div className="flex items-center justify-between rounded-2xl border p-4"><div><p className="font-medium">{t("lv_soloXp")}</p><p className="text-sm text-muted-foreground">{t("lv_voiceXpDesc")}</p></div><Switch checked={form.voice_solo_xp ?? false} onCheckedChange={v => setForm({...form, voice_solo_xp: v})} /></div>
         <div className="rounded-2xl border p-4">
-          <div className="mb-3"><Label className="flex items-center gap-2"><Mic className="h-4 w-4" /> Ignored voice channels</Label><p className="text-sm text-muted-foreground">No voice XP earned in these channels.</p></div>
-          <MultiChannelSelect value={form.voice_ignored_channels || []} onChange={v => setForm({...form, voice_ignored_channels: v})} filter="voice" placeholder="Add ignored voice channel..." />
+          <div className="mb-3"><Label className="flex items-center gap-2"><Mic className="h-4 w-4" /> {t("lv_ignoredVoiceChannels")}</Label><p className="text-sm text-muted-foreground">{t("lv_voiceXpDesc")}</p></div>
+          <MultiChannelSelect value={form.voice_ignored_channels || []} onChange={v => setForm({...form, voice_ignored_channels: v})} filter="voice" placeholder={t("lv_addIgnoredVoiceChannel")} />
         </div>
-        <Button onClick={() => saveConfig.mutate()} disabled={saveConfig.isPending}>Save config</Button>
+        <Button onClick={() => saveConfig.mutate()} disabled={saveConfig.isPending}>{saveConfig.isPending ? t("saving") : t("save")}</Button>
       </CardContent></Card></TabsContent>
 
       <TabsContent value="filters" className="space-y-4">
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><Filter className="h-4 w-4" /> Filters XP</CardTitle><CardDescription>Manage where/who does not earn XP. Whitelist mode only grants XP in selected channels.</CardDescription></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><Filter className="h-4 w-4" /> {t("lv_filters")}</CardTitle><CardDescription>{t("lv_adjustXpDesc")}</CardDescription></CardHeader>
           <CardContent className="space-y-5">
             <div className="rounded-2xl border p-4">
-              <div className="mb-3 flex items-center justify-between gap-3"><div><Label className="flex items-center gap-2"><Hash className="h-4 w-4" /> Ignored channels</Label><p className="text-sm text-muted-foreground">Messages in these channels do not earn XP.</p></div><Badge variant="outline">{form.ignored_channels?.length || 0}</Badge></div>
-              <MultiChannelSelect value={form.ignored_channels || []} onChange={v => setForm({...form, ignored_channels: v})} filter="text" placeholder="Add ignored channel..." />
+              <div className="mb-3 flex items-center justify-between gap-3"><div><Label className="flex items-center gap-2"><Hash className="h-4 w-4" /> {t("lv_ignoredChannels")}</Label><p className="text-sm text-muted-foreground">{t("lv_adjustXpDesc")}</p></div><Badge variant="outline">{form.ignored_channels?.length || 0}</Badge></div>
+              <MultiChannelSelect value={form.ignored_channels || []} onChange={v => setForm({...form, ignored_channels: v})} filter="text" placeholder={t("lv_addIgnoredChannel")} />
             </div>
             <div className="rounded-2xl border p-4">
-              <div className="mb-3 flex items-center justify-between gap-3"><div><Label className="flex items-center gap-2"><Shield className="h-4 w-4" /> Ignored roles</Label><p className="text-sm text-muted-foreground">Members with any of these roles will not earn XP.</p></div><Badge variant="outline">{form.ignored_roles?.length || 0}</Badge></div>
-              <MultiRoleSelect value={form.ignored_roles || []} onChange={v => setForm({...form, ignored_roles: v})} placeholder="Add ignored role..." />
+              <div className="mb-3 flex items-center justify-between gap-3"><div><Label className="flex items-center gap-2"><Shield className="h-4 w-4" /> {t("lv_ignoredRoles")}</Label><p className="text-sm text-muted-foreground">{t("lv_adjustXpDesc")}</p></div><Badge variant="outline">{form.ignored_roles?.length || 0}</Badge></div>
+              <MultiRoleSelect value={form.ignored_roles || []} onChange={v => setForm({...form, ignored_roles: v})} placeholder={t("lv_addIgnoredRole")} />
             </div>
             <div className="rounded-2xl border p-4">
-              <div className="mb-3 flex items-center justify-between gap-3"><div><Label className="flex items-center gap-2"><User className="h-4 w-4" /> Ignored users</Label><p className="text-sm text-muted-foreground">Paste Discord user IDs to exclude users from the XP system.</p></div><Badge variant="outline">{form.ignored_users?.length || 0}</Badge></div>
+              <div className="mb-3 flex items-center justify-between gap-3"><div><Label className="flex items-center gap-2"><User className="h-4 w-4" /> {t("lv_ignoredChannels")}</Label><p className="text-sm text-muted-foreground">{t("lv_adjustXpDesc")}</p></div><Badge variant="outline">{form.ignored_users?.length || 0}</Badge></div>
               <IdListEditor value={form.ignored_users || []} onChange={v => setForm({...form, ignored_users: v})} />
             </div>
             <div className="rounded-2xl border p-4">
-              <div className="mb-3 flex items-center justify-between gap-3"><div><Label>Whitelist channels</Label><p className="text-sm text-muted-foreground">When whitelist mode is on, only these channels earn XP.</p></div><Switch checked={form.use_channel_whitelist} onCheckedChange={v => setForm({...form, use_channel_whitelist: v})} /></div>
-              <MultiChannelSelect value={form.whitelist_channels || []} onChange={v => setForm({...form, whitelist_channels: v})} filter="text" placeholder="Add whitelist channel..." />
+              <div className="mb-3 flex items-center justify-between gap-3"><div><Label>{t("automod_whitelistChannels")}</Label><p className="text-sm text-muted-foreground">{t("lv_adjustXpDesc")}</p></div><Switch checked={form.use_channel_whitelist} onCheckedChange={v => setForm({...form, use_channel_whitelist: v})} /></div>
+              <MultiChannelSelect value={form.whitelist_channels || []} onChange={v => setForm({...form, whitelist_channels: v})} filter="text" placeholder={t("lv_addIgnoredChannel")} />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => saveConfig.mutate()} disabled={saveConfig.isPending}>Save filters</Button>
-              <Button variant="outline" onClick={() => setForm({...form, ignored_channels: [], ignored_roles: [], ignored_users: [], whitelist_channels: []})}>Delete all filters</Button>
+              <Button onClick={() => saveConfig.mutate()} disabled={saveConfig.isPending}>{saveConfig.isPending ? t("saving") : t("save")}</Button>
+              <Button variant="outline" onClick={() => setForm({...form, ignored_channels: [], ignored_roles: [], ignored_users: [], whitelist_channels: []})}>{t("delete")}</Button>
             </div>
           </CardContent>
         </Card>
       </TabsContent>
 
-      <TabsContent value="leaderboard"><Card><CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="flex items-center gap-2"><ListOrdered className="w-4 h-4" /> Leaderboard</CardTitle><AlertDialog><AlertDialogTrigger asChild><Button variant="destructive" size="sm"><RotateCcw className="h-3.5 w-3.5 mr-1.5" />Reset LB</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Reset Level Leaderboard?</AlertDialogTitle><AlertDialogDescription>The leaderboard will only count members active after this point. XP data is preserved.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => resetLeaderboard.mutate()}>Confirm reset</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></div>{leaderboard?.reset_at && <CardDescription>Last reset: {new Date(leaderboard.reset_at).toLocaleString()}</CardDescription>}</CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>Rank</TableHead><TableHead>User</TableHead><TableHead>Level</TableHead><TableHead>XP</TableHead><TableHead><span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />Msgs</span></TableHead><TableHead><span className="flex items-center gap-1"><Mic className="h-3.5 w-3.5" />Voice</span></TableHead><TableHead><span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" />Rep</span></TableHead><TableHead><span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />Weekly</span></TableHead></TableRow></TableHeader><TableBody>{leaderboard?.items?.map(i => <TableRow key={i.discord_id}><TableCell>#{i.rank}</TableCell><TableCell className="font-medium">{i.username || i.discord_id}</TableCell><TableCell>{i.level}</TableCell><TableCell>{i.xp.toLocaleString()}</TableCell><TableCell>{i.message_count}</TableCell><TableCell>{(i.voice_minutes || 0) >= 60 ? `${Math.floor((i.voice_minutes || 0) / 60)}h ${(i.voice_minutes || 0) % 60}m` : `${i.voice_minutes || 0}m`}</TableCell><TableCell>{i.rep_score || 0}</TableCell><TableCell>{(i.weekly_xp || 0).toLocaleString()}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
+      <TabsContent value="leaderboard"><Card><CardHeader><div className="flex items-center justify-between gap-3"><CardTitle className="flex items-center gap-2"><ListOrdered className="w-4 h-4" /> {t("lv_leaderboard")}</CardTitle><AlertDialog><AlertDialogTrigger asChild><Button variant="destructive" size="sm"><RotateCcw className="h-3.5 w-3.5 mr-1.5" />{t("lv_resetLeaderboard")}</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{t("lv_resetLeaderboard")}?</AlertDialogTitle><AlertDialogDescription>{t("lv_confirmResetDesc")}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>{t("cancel")}</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => resetLeaderboard.mutate()}>{t("lv_resetLeaderboard")}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></div>{leaderboard?.reset_at && <CardDescription>{t("lv_leaderboard")}</CardDescription>}</div></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>{t("rank")}</TableHead><TableHead>{t("member")}</TableHead><TableHead>{t("level")}</TableHead><TableHead>XP</TableHead><TableHead><span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />{t("messages")}</span></TableHead><TableHead><span className="flex items-center gap-1"><Mic className="h-3.5 w-3.5" />{t("lv_voiceXpLabel")}</span></TableHead><TableHead><span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" />{t("lv_reputation")}</span></TableHead><TableHead><span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{t("lv_weekly")}</span></TableHead></TableRow></TableHeader><TableBody>{leaderboard?.items?.map(i => <TableRow key={i.discord_id}><TableCell>#{i.rank}</TableCell><TableCell className="font-medium">{i.username || i.discord_id}</TableCell><TableCell>{i.level}</TableCell><TableCell>{i.xp.toLocaleString()}</TableCell><TableCell>{i.message_count}</TableCell><TableCell>{(i.voice_minutes || 0) >= 60 ? `${Math.floor((i.voice_minutes || 0) / 60)}h ${(i.voice_minutes || 0) % 60}m` : `${i.voice_minutes || 0}m`}</TableCell><TableCell>{i.rep_score || 0}</TableCell><TableCell>{(i.weekly_xp || 0).toLocaleString()}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
 
-      <TabsContent value="rewards"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Gift className="w-4 h-4" /> Role Rewards</CardTitle><CardDescription>Auto-assign roles when members reach a level. Enable DM to notify them privately.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="grid md:grid-cols-[120px_1fr_auto_120px] gap-3 items-end"><div><Label>Level</Label><Input type="number" value={reward.level} onChange={e => setReward({...reward, level: Number(e.target.value)})} /></div><div><Label>Role</Label><RoleSelect value={reward.role_id} onChange={v => setReward({...reward, role_id: v})} /></div><div className="flex items-center gap-2 pb-1"><Switch checked={reward.dm_user} onCheckedChange={v => setReward({...reward, dm_user: v})} /><Label className="text-xs whitespace-nowrap">DM user</Label></div><Button onClick={() => addReward.mutate()} disabled={!reward.role_id}>Add</Button></div><Table><TableHeader><TableRow><TableHead>Level</TableHead><TableHead>Role</TableHead><TableHead>DM</TableHead><TableHead></TableHead></TableRow></TableHeader><TableBody>{rewards.map(r => <TableRow key={r.id}><TableCell>{r.level}</TableCell><TableCell>{r.role_name || r.role_id}</TableCell><TableCell>{r.dm_user ? "✓" : "—"}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => delReward.mutate(r.id)}>Delete</Button></TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
+      <TabsContent value="rewards"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Gift className="w-4 h-4" /> {t("lv_rewards")}</CardTitle><CardDescription>{t("lv_canvasDesc")}</CardDescription></CardHeader><CardContent className="space-y-4"><div className="grid md:grid-cols-[120px_1fr_auto_120px] gap-3 items-end"><div><Label>{t("lv_rewardLevel")}</Label><Input type="number" value={reward.level} onChange={e => setReward({...reward, level: Number(e.target.value)})} /></div><div><Label>{t("lv_rewardRole")}</Label><RoleSelect value={reward.role_id} onChange={v => setReward({...reward, role_id: v})} /></div><div className="flex items-center gap-2 pb-1"><Switch checked={reward.dm_user} onCheckedChange={v => setReward({...reward, dm_user: v})} /><Label className="text-xs whitespace-nowrap">{t("lv_rewardDm")}</Label></div><Button onClick={() => addReward.mutate()} disabled={!reward.role_id}>{t("lv_addReward")}</Button></div><Table><TableHeader><TableRow><TableHead>{t("lv_rewardLevel")}</TableHead><TableHead>{t("lv_rewardRole")}</TableHead><TableHead>DM</TableHead><TableHead></TableHead></TableRow></TableHeader><TableBody>{rewards.map(r => <TableRow key={r.id}><TableCell>{r.level}</TableCell><TableCell>{r.role_name || r.role_id}</TableCell><TableCell>{r.dm_user ? "✓" : "—"}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => delReward.mutate(r.id)}>{t("delete")}</Button></TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
 
-      <TabsContent value="multipliers"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Zap className="w-4 h-4" /> Multipliers</CardTitle><CardDescription>Global, channel, or role multiplier applied to earned XP.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="grid md:grid-cols-5 gap-3 items-end"><div><Label>Type</Label><Select value={multi.type} onValueChange={v => setMulti({...multi, type: v, target_id: ""})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="global">Global</SelectItem><SelectItem value="channel">Channel</SelectItem><SelectItem value="role">Role</SelectItem></SelectContent></Select></div><div className="md:col-span-2"><Label>Target</Label>{multi.type === "channel" ? <ChannelSelect value={multi.target_id} onChange={v => setMulti({...multi, target_id: v})} filter="text" /> : multi.type === "role" ? <RoleSelect value={multi.target_id} onChange={v => setMulti({...multi, target_id: v})} /> : <Input disabled value="Server-wide" />}</div><div><Label>Multiplier</Label><Input type="number" step="0.1" value={multi.multiplier} onChange={e => setMulti({...multi, multiplier: Number(e.target.value)})} /></div><Button onClick={() => addMulti.mutate()}>Add</Button></div><Table><TableHeader><TableRow><TableHead>Type</TableHead><TableHead>Target</TableHead><TableHead>Multiplier</TableHead><TableHead></TableHead></TableRow></TableHeader><TableBody>{multipliers.map(m => <TableRow key={m.id}><TableCell>{m.type}</TableCell><TableCell>{m.target_name || m.target_id || "Global"}</TableCell><TableCell>x{m.multiplier}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => delMulti.mutate(m.id)}>Delete</Button></TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
+      <TabsContent value="multipliers"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Zap className="w-4 h-4" /> {t("lv_multipliers")}</CardTitle><CardDescription>{t("lv_canvasDesc")}</CardDescription></CardHeader><CardContent className="space-y-4"><div className="grid md:grid-cols-5 gap-3 items-end"><div><Label>{t("lv_multiplierType")}</Label><Select value={multi.type} onValueChange={v => setMulti({...multi, type: v, target_id: ""})}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="global">{t("lv_globalMultiplier")}</SelectItem><SelectItem value="channel">{t("lv_channelMultiplier")}</SelectItem><SelectItem value="role">{t("lv_roleMultiplier")}</SelectItem></SelectContent></Select></div><div className="md:col-span-2"><Label>{t("lv_rewardRole")}</Label>{multi.type === "channel" ? <ChannelSelect value={multi.target_id} onChange={v => setMulti({...multi, target_id: v})} filter="text" /> : multi.type === "role" ? <RoleSelect value={multi.target_id} onChange={v => setMulti({...multi, target_id: v})} /> : <Input disabled value={t("lv_globalMultiplier")} />}</div><div><Label>{t("lv_multiplierValue")}</Label><Input type="number" step="0.1" value={multi.multiplier} onChange={e => setMulti({...multi, multiplier: Number(e.target.value)})} /></div><Button onClick={() => addMulti.mutate()}>{t("lv_addReward")}</Button></div><Table><TableHeader><TableRow><TableHead>{t("lv_multiplierType")}</TableHead><TableHead>{t("lv_rewardRole")}</TableHead><TableHead>{t("lv_multiplierValue")}</TableHead><TableHead></TableHead></TableRow></TableHeader><TableBody>{multipliers.map(m => <TableRow key={m.id}><TableCell>{m.type}</TableCell><TableCell>{m.target_name || m.target_id || t("lv_globalMultiplier")}</TableCell><TableCell>x{m.multiplier}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => delMulti.mutate(m.id)}>{t("delete")}</Button></TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
 
       <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
     </Tabs>
@@ -957,13 +960,14 @@ interface AnalyticsData {
 }
 
 function AnalyticsTab() {
+  const { t } = useT();
   const { data: analytics, isLoading } = useQuery<AnalyticsData>({
     queryKey: ["leveling_analytics"],
     queryFn: () => apiFetch("/api/leveling/analytics").then(r => r.json()),
   });
 
-  if (isLoading) return <div className="flex items-center justify-center py-12 text-muted-foreground">Loading analytics...</div>;
-  if (!analytics) return <div className="text-center py-12 text-muted-foreground">No data available</div>;
+  if (isLoading) return <div className="flex items-center justify-center py-12 text-muted-foreground">{t("loading")}</div>;
+  if (!analytics) return <div className="text-center py-12 text-muted-foreground">{t("noData")}</div>;
 
   const maxLevelCount = Math.max(1, ...analytics.level_distribution.map(d => d.count));
   const maxHourly = Math.max(1, ...analytics.hourly_activity.map(d => d.count));
@@ -971,22 +975,22 @@ function AnalyticsTab() {
   return <div className="space-y-4">
     {/* Summary Cards */}
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{analytics.total_members.toLocaleString()}</p><p className="text-xs text-muted-foreground">Total Members</p></CardContent></Card>
-      <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{analytics.avg_level}</p><p className="text-xs text-muted-foreground">Avg Level</p></CardContent></Card>
-      <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{analytics.active_today}</p><p className="text-xs text-muted-foreground">Active Today</p></CardContent></Card>
-      <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{analytics.active_week}</p><p className="text-xs text-muted-foreground">Active This Week</p></CardContent></Card>
+      <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{analytics.total_members.toLocaleString()}</p><p className="text-xs text-muted-foreground">{t("lv_totalMembers")}</p></CardContent></Card>
+      <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{analytics.avg_level}</p><p className="text-xs text-muted-foreground">{t("lv_avgLevel")}</p></CardContent></Card>
+      <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{analytics.active_today}</p><p className="text-xs text-muted-foreground">{t("lv_activeToday")}</p></CardContent></Card>
+      <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{analytics.active_week}</p><p className="text-xs text-muted-foreground">{t("lv_activeThisWeek")}</p></CardContent></Card>
     </div>
 
     {/* XP Breakdown */}
     <div className="grid md:grid-cols-3 gap-3">
-      <Card><CardContent className="p-4 text-center"><p className="text-xl font-bold">{analytics.total_xp.toLocaleString()}</p><p className="text-xs text-muted-foreground">Total XP</p></CardContent></Card>
-      <Card><CardContent className="p-4 text-center"><p className="text-xl font-bold text-blue-400">{analytics.total_text_xp.toLocaleString()}</p><p className="text-xs text-muted-foreground flex items-center justify-center gap-1"><MessageCircle className="h-3 w-3" />Text XP</p></CardContent></Card>
-      <Card><CardContent className="p-4 text-center"><p className="text-xl font-bold text-green-400">{analytics.total_voice_xp.toLocaleString()}</p><p className="text-xs text-muted-foreground flex items-center justify-center gap-1"><Mic className="h-3 w-3" />Voice XP</p></CardContent></Card>
+      <Card><CardContent className="p-4 text-center"><p className="text-xl font-bold">{analytics.total_xp.toLocaleString()}</p><p className="text-xs text-muted-foreground">{t("lv_totalXp")}</p></CardContent></Card>
+      <Card><CardContent className="p-4 text-center"><p className="text-xl font-bold text-blue-400">{analytics.total_text_xp.toLocaleString()}</p><p className="text-xs text-muted-foreground flex items-center justify-center gap-1"><MessageCircle className="h-3 w-3" />{t("lv_textXp")}</p></CardContent></Card>
+      <Card><CardContent className="p-4 text-center"><p className="text-xl font-bold text-green-400">{analytics.total_voice_xp.toLocaleString()}</p><p className="text-xs text-muted-foreground flex items-center justify-center gap-1"><Mic className="h-3 w-3" />{t("lv_voiceXpLabel")}</p></CardContent></Card>
     </div>
 
     {/* Level Distribution */}
     <Card>
-      <CardHeader><CardTitle className="text-sm">Level Distribution</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-sm">{t("lv_levelDistribution")}</CardTitle></CardHeader>
       <CardContent>
         <div className="flex items-end gap-1 h-32">
           {analytics.level_distribution.slice(0, 30).map(d => (
@@ -1001,7 +1005,7 @@ function AnalyticsTab() {
 
     {/* Hourly Activity Heatmap */}
     <Card>
-      <CardHeader><CardTitle className="text-sm">Hourly Activity (last 7 days)</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-sm">{t("lv_hourlyActivity")}</CardTitle></CardHeader>
       <CardContent>
         <div className="flex items-end gap-1 h-24">
           {analytics.hourly_activity.map(d => (
@@ -1020,10 +1024,10 @@ function AnalyticsTab() {
 
     {/* Top Members */}
     <Card>
-      <CardHeader><CardTitle className="text-sm">Top Members</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-sm">{t("lv_topMembers")}</CardTitle></CardHeader>
       <CardContent>
         <Table>
-          <TableHeader><TableRow><TableHead>#</TableHead><TableHead>User</TableHead><TableHead>Level</TableHead><TableHead>XP</TableHead><TableHead><span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />Msgs</span></TableHead><TableHead><span className="flex items-center gap-1"><Mic className="h-3.5 w-3.5" />Voice</span></TableHead><TableHead><span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" />Rep</span></TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>#</TableHead><TableHead>{t("member")}</TableHead><TableHead>{t("level")}</TableHead><TableHead>XP</TableHead><TableHead><span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />{t("messages")}</span></TableHead><TableHead><span className="flex items-center gap-1"><Mic className="h-3.5 w-3.5" />{t("lv_voiceXpLabel")}</span></TableHead><TableHead><span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" />{t("lv_reputation")}</span></TableHead></TableRow></TableHeader>
           <TableBody>{analytics.top_members.map((m, i) => (
             <TableRow key={m.discord_id}>
               <TableCell>{i + 1}</TableCell>
@@ -1042,6 +1046,7 @@ function AnalyticsTab() {
 }
 
 export function RankCardEditor() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [rankCard, setRankCard] = useState<RankCardConfig | null>(null);
@@ -1069,8 +1074,8 @@ export function RankCardEditor() {
   };
   const saveRankCard = useMutation({
     mutationFn: () => apiFetch("/api/leveling/rank-card/config", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(rankCard) }).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-    onSuccess: (data) => { setRankCard(data); qc.invalidateQueries({ queryKey: ["leveling_rank_card_config"] }); toast({ title: "Saved", description: "Rank card image updated." }); },
-    onError: () => toast({ variant: "destructive", title: "Error", description: "Failed to save rank card." }),
+    onSuccess: (data) => { setRankCard(data); qc.invalidateQueries({ queryKey: ["leveling_rank_card_config"] }); toast({ title: t("toast_saved"), description: t("toast_rankCardSaved") }); },
+    onError: () => toast({ variant: "destructive", title: t("error"), description: t("toast_rankCardFailed") }),
   });
 
   const startDragLayer = (event: PointerEvent<HTMLDivElement>, layer: RankCardLayer) => { event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId); setSelectedLayerId(layer.id); setDragState({ id: layer.id, pointerId: event.pointerId, startClientX: event.clientX, startClientY: event.clientY, startX: layer.x, startY: layer.y, scale: 1 / zoom }); };
@@ -1080,12 +1085,12 @@ export function RankCardEditor() {
   const movePan = (event: PointerEvent<HTMLDivElement>) => { if (!panState || panState.pointerId !== event.pointerId || !viewportRef.current) return; viewportRef.current.scrollLeft = panState.left - (event.clientX - panState.x); viewportRef.current.scrollTop = panState.top - (event.clientY - panState.y); };
   const endPan = (event: PointerEvent<HTMLDivElement>) => { if (!panState || panState.pointerId !== event.pointerId) return; setPanState(null); };
 
-  if (!rankCard || !layout) return <div className="flex h-screen items-center justify-center">Loading editor...</div>;
+  if (!rankCard || !layout) return <div className="flex h-screen items-center justify-center">{t("loading")}</div>;
 
   return <div className="flex h-[100dvh] flex-col overflow-hidden bg-slate-950 text-white">
     <header className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-slate-950/95 px-3 py-2 backdrop-blur sm:px-4">
-      <div className="flex min-w-0 items-center gap-2"><Button asChild size="sm" variant="ghost" className="text-white hover:bg-white/10 hover:text-white"><Link to="/leveling/rank-card"><ArrowLeft className="h-4 w-4" /></Link></Button><div className="min-w-0"><p className="truncate text-sm font-semibold">Rank Card Studio</p><p className="text-[11px] text-white/50">Canva-style fullscreen editor</p></div></div>
-      <div className="flex items-center gap-1"><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom((z) => Math.max(0.25, Number((z - 0.1).toFixed(2))))}><ZoomOut className="h-4 w-4" /></Button><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom(0.48)}>Fit</Button><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom((z) => Math.min(2.5, Number((z + 0.1).toFixed(2))))}><ZoomIn className="h-4 w-4" /></Button><Button size="sm" onClick={() => saveRankCard.mutate()} disabled={saveRankCard.isPending}><Save className="mr-1 h-4 w-4" />Save</Button></div>
+      <div className="flex min-w-0 items-center gap-2"><Button asChild size="sm" variant="ghost" className="text-white hover:bg-white/10 hover:text-white"><Link to="/leveling/rank-card"><ArrowLeft className="h-4 w-4" /></Link></Button><div className="min-w-0"><p className="truncate text-sm font-semibold">{t("lv_rankCard")}</p><p className="text-[11px] text-white/50">{t("lv_canvasDesc")}</p></div></div>
+      <div className="flex items-center gap-1"><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom((z) => Math.max(0.25, Number((z - 0.1).toFixed(2))))}><ZoomOut className="h-4 w-4" /></Button><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom(0.48)}>{t("reset")}</Button><Button size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setZoom((z) => Math.min(2.5, Number((z + 0.1).toFixed(2))))}><ZoomIn className="h-4 w-4" /></Button><Button size="sm" onClick={() => saveRankCard.mutate()} disabled={saveRankCard.isPending}><Save className="mr-1 h-4 w-4" />{saveRankCard.isPending ? t("saving") : t("save")}</Button></div>
     </header>
     <div className="flex min-h-0 flex-1 flex-col md:flex-row">
       <aside className="order-2 max-h-[28dvh] shrink-0 overflow-y-auto border-t border-white/10 bg-slate-900/95 p-3 md:order-1 md:max-h-none md:w-64 md:border-r md:border-t-0">
@@ -1096,7 +1101,7 @@ export function RankCardEditor() {
         <div className="flex min-h-full min-w-max items-center justify-center p-8 pointer-events-none"><div className="pointer-events-auto"><div className="relative touch-none overflow-hidden rounded-[28px] bg-slate-950 shadow-2xl ring-1 ring-white/10" style={{ width: layout.width * zoom, height: layout.height * zoom, minWidth: layout.width * zoom, background: layout.background.style === "gradient" ? `radial-gradient(circle at 18% 10%, ${layout.background.accent}55, transparent 30%), linear-gradient(135deg, ${layout.background.color}, #020617)` : layout.background.color }} onPointerMove={moveDragLayer} onPointerUp={endDragLayer} onPointerCancel={endDragLayer}><div className="absolute left-0 top-0 origin-top-left" style={{ width: layout.width, height: layout.height, transform: `scale(${zoom})` }}>{[...layout.layers].sort((a,b)=>a.z-b.z).map(layer => <CanvasLayerPreview key={layer.id} layer={layer} layout={layout} selected={selectedLayer?.id === layer.id} onPointerDown={(e) => startDragLayer(e, layer)} />)}</div></div></div></div>
       </main>
       <aside className="order-3 max-h-[32dvh] shrink-0 overflow-y-auto border-t border-white/10 bg-slate-900/95 p-3 md:max-h-none md:w-72 md:border-l md:border-t-0">
-        {selectedLayer && <div className="space-y-3 text-white"><div><Label>Name layer</Label><Input value={selectedLayer.name} onChange={e => updateSelectedLayer({name: e.target.value})} className="bg-white/10 text-white" /></div><div className="grid grid-cols-3 gap-2"><Input type="number" value={selectedLayer.x} onChange={e => updateSelectedLayer({x:Number(e.target.value)})} className="bg-white/10 text-white" /><Input type="number" value={selectedLayer.y} onChange={e => updateSelectedLayer({y:Number(e.target.value)})} className="bg-white/10 text-white" /><Input type="number" value={selectedLayer.z} onChange={e => updateSelectedLayer({z:Number(e.target.value)})} className="bg-white/10 text-white" /><Input type="number" value={selectedLayer.w} onChange={e => updateSelectedLayer({w:Number(e.target.value)})} className="bg-white/10 text-white" /><Input type="number" value={selectedLayer.h} onChange={e => updateSelectedLayer({h:Number(e.target.value)})} className="bg-white/10 text-white" /><Input type="color" value={selectedLayer.color || selectedLayer.fill || "#ffffff"} onChange={e => updateSelectedLayer(selectedLayer.type === "progress" ? {fill:e.target.value} : {color:e.target.value})} className="bg-white/10" /></div><div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2"><Label>Visible</Label><Switch checked={selectedLayer.visible} onCheckedChange={v => updateSelectedLayer({visible:v})} /></div></div>}
+        {selectedLayer && <div className="space-y-3 text-white"><div><Label>{t("name")}</Label><Input value={selectedLayer.name} onChange={e => updateSelectedLayer({name: e.target.value})} className="bg-white/10 text-white" /></div><div className="grid grid-cols-3 gap-2"><Input type="number" value={selectedLayer.x} onChange={e => updateSelectedLayer({x:Number(e.target.value)})} className="bg-white/10 text-white" /><Input type="number" value={selectedLayer.y} onChange={e => updateSelectedLayer({y:Number(e.target.value)})} className="bg-white/10 text-white" /><Input type="number" value={selectedLayer.z} onChange={e => updateSelectedLayer({z:Number(e.target.value)})} className="bg-white/10 text-white" /><Input type="number" value={selectedLayer.w} onChange={e => updateSelectedLayer({w:Number(e.target.value)})} className="bg-white/10 text-white" /><Input type="number" value={selectedLayer.h} onChange={e => updateSelectedLayer({h:Number(e.target.value)})} className="bg-white/10 text-white" /><Input type="color" value={selectedLayer.color || selectedLayer.fill || "#ffffff"} onChange={e => updateSelectedLayer(selectedLayer.type === "progress" ? {fill:e.target.value} : {color:e.target.value})} className="bg-white/10" /></div><div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2"><Label>{t("lv_showProgressBar")}</Label><Switch checked={selectedLayer.visible} onCheckedChange={v => updateSelectedLayer({visible:v})} /></div></div>}
       </aside>
     </div>
   </div>;

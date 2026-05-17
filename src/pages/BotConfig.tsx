@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/i18n";
 import { Switch } from "@/components/ui/switch";
 import { Mic } from "lucide-react";
 
@@ -111,6 +112,7 @@ function DiscordSelect({
 // ─── Main component ──────────────────────────────────────────
 export function BotConfig() {
   const { toast } = useToast();
+  const { t } = useT();
   const queryClient = useQueryClient();
 
   const { data: config, isLoading } = useQuery({
@@ -169,22 +171,22 @@ export function BotConfig() {
   });
 
   // ── Mutations ──
-  const makeToast = (label: string) => ({
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["config"] }); toast({ title: "Saved", description: `${label} config saved.` }); },
-    onError: () => { toast({ variant: "destructive", title: "Error", description: "Save failed." }); },
+  const makeToast = (label: string, savedKey: string) => ({
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["config"] }); toast({ title: t("save"), description: t(savedKey) }); },
+    onError: () => { toast({ variant: "destructive", title: t("error"), description: t("toast_configFailed") }); },
   });
 
-  const discordMutation = useMutation({ mutationFn: (v: DiscordValues) => savePartial(v), ...makeToast("Discord Bot") });
-  const payosMutation = useMutation({ mutationFn: (v: PayosValues) => savePartial(v), ...makeToast("PayOS") });
+  const discordMutation = useMutation({ mutationFn: (v: DiscordValues) => savePartial(v), ...makeToast("Discord Bot", "toast_discordBotSaved") });
+  const payosMutation = useMutation({ mutationFn: (v: PayosValues) => savePartial(v), ...makeToast("PayOS", "toast_payosSaved") });
   const serverMutation = useMutation({
     mutationFn: (v: ServerValues) => savePartial(v),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["config"] });
       queryClient.invalidateQueries({ queryKey: ["discord_channels"] });
       queryClient.invalidateQueries({ queryKey: ["discord_roles"] });
-      toast({ title: "Saved", description: "Permissions & channel config saved." });
+      toast({ title: t("save"), description: t("toast_channelsSaved") });
     },
-    onError: () => { toast({ variant: "destructive", title: "Error", description: "Save failed." }); },
+    onError: () => { toast({ variant: "destructive", title: t("error"), description: t("toast_configFailed") }); },
   });
 
   // ── Temp Voice ──
@@ -220,18 +222,18 @@ export function BotConfig() {
         credentials: "include",
         body: JSON.stringify({ enabled: tvEnabled, join_channel_id: tvJoinChannel, category_id: tvCategory }),
       }).then((r) => { if (!r.ok) throw new Error("Save failed"); return r.json(); }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tempvoice_config"] }); toast({ title: "Saved", description: "TempVoice config saved." }); },
-    onError: () => { toast({ variant: "destructive", title: "Error", description: "Save failed." }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tempvoice_config"] }); toast({ title: t("save"), description: t("toast_tempVoiceSaved") }); },
+    onError: () => { toast({ variant: "destructive", title: t("error"), description: t("toast_configFailed") }); },
   });
 
 
-  if (isLoading) return <div>Loading config...</div>;
+  if (isLoading) return <div>{t("loading")}</div>;
 
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">System Config</h1>
-        <p className="text-muted-foreground">Set up the token and required API keys.</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t("botConfig_discordBot")}</h1>
+        <p className="text-muted-foreground">{t("botConfig_tokenDesc")}</p>
       </div>
 
       {/* ── Card: Discord Bot ── */}
@@ -239,23 +241,23 @@ export function BotConfig() {
         <form onSubmit={discordForm.handleSubmit((v) => discordMutation.mutate(v))}>
           <Card>
             <CardHeader>
-              <CardTitle>Discord Bot</CardTitle>
-              <CardDescription>Token and OAuth to connect Discord.</CardDescription>
+              <CardTitle>{t("botConfig_discordBot")}</CardTitle>
+              <CardDescription>{t("botConfig_tokenDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField control={discordForm.control} name="discord_token" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bot Token</FormLabel>
+                  <FormLabel>{t("botConfig_botToken")}</FormLabel>
                   <FormControl>
                     <MaskedField field={field} placeholder="MTC..." savedValue={config?.has_discord_token} />
                   </FormControl>
-                  <FormDescription>Get from Discord Developer Portal.</FormDescription>
+                  <FormDescription>{t("botConfig_tokenDesc")}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={discordForm.control} name="discord_client_id" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>OAuth Client ID</FormLabel>
+                  <FormLabel>{t("botConfig_clientId")}</FormLabel>
                   <FormControl>
                     <Input {...field} value={field.value || ""}
                       placeholder={config?.discord_client_id ? `${config.discord_client_id.slice(0, 6)}...  (configured)` : ""}
@@ -266,7 +268,7 @@ export function BotConfig() {
               )} />
               <FormField control={discordForm.control} name="discord_client_secret" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>OAuth Client Secret</FormLabel>
+                  <FormLabel>{t("botConfig_clientSecret")}</FormLabel>
                   <FormControl>
                     <MaskedField field={field} savedValue={config?.has_discord_client_secret} />
                   </FormControl>
@@ -274,7 +276,7 @@ export function BotConfig() {
                 </FormItem>
               )} />
               <Button type="submit" disabled={discordMutation.isPending} size="sm">
-                {discordMutation.isPending ? "Saving..." : "Save Discord"}
+                {discordMutation.isPending ? t("saving") : t("botConfig_saveDiscord")}
               </Button>
             </CardContent>
           </Card>
@@ -286,20 +288,20 @@ export function BotConfig() {
         <form onSubmit={payosForm.handleSubmit((v) => payosMutation.mutate(v))}>
           <Card>
             <CardHeader>
-              <CardTitle>PayOS (Payment)</CardTitle>
-              <CardDescription>Payment gateway config for QR code generation.</CardDescription>
+              <CardTitle>{t("botConfig_payos")}</CardTitle>
+              <CardDescription>{t("botConfig_callbackUrl")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField control={payosForm.control} name="payos_client_id" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Client ID</FormLabel>
+                  <FormLabel>{t("botConfig_clientId")}</FormLabel>
                   <FormControl><Input {...field} value={field.value || ""} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={payosForm.control} name="payos_api_key" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>API Key</FormLabel>
+                  <FormLabel>{t("botConfig_supportLink")}</FormLabel>
                   <FormControl>
                     <MaskedField field={field} savedValue={config?.has_payos_api_key} />
                   </FormControl>
@@ -308,7 +310,7 @@ export function BotConfig() {
               )} />
               <FormField control={payosForm.control} name="payos_checksum_key" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Checksum Key</FormLabel>
+                  <FormLabel>{t("botConfig_callbackUrl")}</FormLabel>
                   <FormControl>
                     <MaskedField field={field} savedValue={config?.has_payos_checksum_key} />
                   </FormControl>
@@ -316,7 +318,7 @@ export function BotConfig() {
                 </FormItem>
               )} />
               <Button type="submit" disabled={payosMutation.isPending} size="sm">
-                {payosMutation.isPending ? "Saving..." : "Save PayOS"}
+                {payosMutation.isPending ? t("saving") : t("botConfig_savePayos")}
               </Button>
             </CardContent>
           </Card>
@@ -328,54 +330,54 @@ export function BotConfig() {
         <form onSubmit={serverForm.handleSubmit((v) => serverMutation.mutate(v))}>
           <Card>
             <CardHeader>
-              <CardTitle>Permissions & Channels</CardTitle>
-              <CardDescription>Select server, admin role, and notification channels. Bot Token must be set first.</CardDescription>
+              <CardTitle>{t("botConfig_channelsPerms")}</CardTitle>
+              <CardDescription>{t("botConfig_adminRoleDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField control={serverForm.control} name="guild_id" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Server (Guild)</FormLabel>
+                  <FormLabel>{t("botStatus_servers")}</FormLabel>
                   <FormControl>
                     {guilds.length > 0 ? (
-                      <DiscordSelect value={field.value} onChange={field.onChange} options={guilds} placeholder="Select server..." />
+                      <DiscordSelect value={field.value} onChange={field.onChange} options={guilds} placeholder={t("botConfig_channelsPerms")} />
                     ) : (
                       <Input placeholder="ID server..." {...field} value={field.value || ""} />
                     )}
                   </FormControl>
-                  <FormDescription>Bot must be in this server.</FormDescription>
+                  <FormDescription>{t("botConfig_adminRoleDesc")}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={serverForm.control} name="admin_role_id" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Admin Role</FormLabel>
+                  <FormLabel>{t("botConfig_adminRole")}</FormLabel>
                   <FormControl>
                     {roles.length > 0 ? (
-                      <DiscordSelect value={field.value} onChange={field.onChange} options={roles} placeholder="Select role..." />
+                      <DiscordSelect value={field.value} onChange={field.onChange} options={roles} placeholder={t("botConfig_adminRole")} />
                     ) : (
-                      <Input placeholder={activeGuildId ? "Loading roles..." : "Select a server first"} disabled={!activeGuildId} {...field} value={field.value || ""} />
+                      <Input placeholder={activeGuildId ? t("loading") : t("botConfig_channelsPerms")} disabled={!activeGuildId} {...field} value={field.value || ""} />
                     )}
                   </FormControl>
-                  <FormDescription>Users with this role can log in.</FormDescription>
+                  <FormDescription>{t("botConfig_adminRoleDesc")}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
               <div className="grid gap-4 md:grid-cols-2">
                 {[
-                  { name: "don_hang_channel_id" as const, label: "Channel Orders" },
-                  { name: "feedback_channel_id" as const, label: "Feedback Channel" },
-                  { name: "coupon_channel_id" as const, label: "Coupon Log Channel" },
-                  { name: "bang_gia_channel_id" as const, label: "Price List Channel" },
-                  { name: "welcome_channel_id" as const, label: "Channel Welcome" },
+                  { name: "don_hang_channel_id" as const, label: t("botConfig_orderChannel") },
+                  { name: "feedback_channel_id" as const, label: t("botConfig_notifChannels") },
+                  { name: "coupon_channel_id" as const, label: t("botConfig_notifChannels") },
+                  { name: "bang_gia_channel_id" as const, label: t("botConfig_notifChannels") },
+                  { name: "welcome_channel_id" as const, label: t("botConfig_joinChannel") },
                 ].map(({ name, label }) => (
                   <FormField key={name} control={serverForm.control} name={name} render={({ field }) => (
                     <FormItem>
                       <FormLabel>{label}</FormLabel>
                       <FormControl>
                         {channels.length > 0 ? (
-                          <DiscordSelect value={field.value} onChange={field.onChange} options={channels.map((c) => ({ id: c.id, name: `#${c.name}` }))} placeholder="Select channel..." />
+                          <DiscordSelect value={field.value} onChange={field.onChange} options={channels.map((c) => ({ id: c.id, name: `#${c.name}` }))} placeholder={t("channel")} />
                         ) : (
-                          <Input placeholder={activeGuildId ? "Loading channels..." : "Select a server first"} disabled={!activeGuildId} {...field} value={field.value || ""} />
+                          <Input placeholder={activeGuildId ? t("loading") : t("botConfig_channelsPerms")} disabled={!activeGuildId} {...field} value={field.value || ""} />
                         )}
                       </FormControl>
                       <FormMessage />
@@ -384,7 +386,7 @@ export function BotConfig() {
                 ))}
               </div>
               <Button type="submit" disabled={serverMutation.isPending} size="sm">
-                {serverMutation.isPending ? "Saving..." : "Save Permissions & Channel"}
+                {serverMutation.isPending ? t("saving") : t("botConfig_saveChannels")}
               </Button>
             </CardContent>
           </Card>
@@ -394,37 +396,37 @@ export function BotConfig() {
       {/* ── Card: Temp Voice ── */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Mic className="w-4 h-4" /> Temp Voice</CardTitle>
-          <CardDescription>When a user joins this channel, the bot creates a private voice room.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Mic className="w-4 h-4" /> {t("botConfig_tempVoice")}</CardTitle>
+          <CardDescription>{t("botConfig_autoCreateDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Enable feature</p>
-              <p className="text-sm text-muted-foreground">Automatically creates voice rooms.</p>
+              <p className="font-medium">{t("enabled")}</p>
+              <p className="text-sm text-muted-foreground">{t("botConfig_autoCreateDesc")}</p>
             </div>
             <Switch checked={tvEnabled} onCheckedChange={setTvEnabled} />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Category</label>
+            <label className="text-sm font-medium">{t("botConfig_voiceCategory")}</label>
             {allChannels.filter((c: { id: string; name: string; type: number }) => c.type === 4).length > 0 ? (
-              <DiscordSelect value={tvCategory} onChange={setTvCategory} options={allChannels.filter((c: { id: string; name: string; type: number }) => c.type === 4).map((c: { id: string; name: string; type: number }) => ({ id: c.id, name: c.name }))} placeholder="Select category..." />
+              <DiscordSelect value={tvCategory} onChange={setTvCategory} options={allChannels.filter((c: { id: string; name: string; type: number }) => c.type === 4).map((c: { id: string; name: string; type: number }) => ({ id: c.id, name: c.name }))} placeholder={t("botConfig_voiceCategory")} />
             ) : (
-              <Input placeholder={activeGuildId ? "Loading categories..." : "Select a server first"} disabled={!activeGuildId} value={tvCategory} onChange={(e) => setTvCategory(e.target.value)} />
+              <Input placeholder={activeGuildId ? t("loading") : t("botConfig_channelsPerms")} disabled={!activeGuildId} value={tvCategory} onChange={(e) => setTvCategory(e.target.value)} />
             )}
-            <p className="text-xs text-muted-foreground">Voice rooms will be created in this category.</p>
+            <p className="text-xs text-muted-foreground">{t("botConfig_voiceCategoryDesc")}</p>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Channel "Join to Create"</label>
+            <label className="text-sm font-medium">{t("botConfig_joinChannel")}</label>
             {tvVoiceChannels.length > 0 ? (
-              <DiscordSelect value={tvJoinChannel} onChange={setTvJoinChannel} options={tvVoiceChannels.map((c) => ({ id: c.id, name: c.name }))} placeholder="Select voice channel..." />
+              <DiscordSelect value={tvJoinChannel} onChange={setTvJoinChannel} options={tvVoiceChannels.map((c) => ({ id: c.id, name: c.name }))} placeholder={t("channel")} />
             ) : (
-              <Input placeholder={activeGuildId ? "Loading voice channels..." : "Select a server first"} disabled={!activeGuildId} value={tvJoinChannel} onChange={(e) => setTvJoinChannel(e.target.value)} />
+              <Input placeholder={activeGuildId ? t("loading") : t("botConfig_channelsPerms")} disabled={!activeGuildId} value={tvJoinChannel} onChange={(e) => setTvJoinChannel(e.target.value)} />
             )}
-            <p className="text-xs text-muted-foreground">User joins this channel → bot creates a private room.</p>
+            <p className="text-xs text-muted-foreground">{t("botConfig_controlPanelDesc")}</p>
           </div>
           <Button onClick={() => tvMutation.mutate()} disabled={tvMutation.isPending} size="sm">
-            {tvMutation.isPending ? "Saving..." : "Save TempVoice"}
+            {tvMutation.isPending ? t("saving") : t("botConfig_saveChannels")}
           </Button>
         </CardContent>
       </Card>

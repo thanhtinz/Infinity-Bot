@@ -41,7 +41,7 @@ function GeneralSection() {
   const qc = useQueryClient();
   const { selectedGuildId } = useGuild();
   const { data: config } = useConfig();
-  const { setLang: setI18nLang } = useT();
+  const { t, setLang: setI18nLang } = useT();
 
   const [lang, setLang] = useState<"en" | "vi">("en");
   const [prefix, setPrefix] = useState("!");
@@ -76,9 +76,9 @@ function GeneralSection() {
       });
       setI18nLang(lang); // sync dashboard language immediately
       qc.invalidateQueries({ queryKey: ["config", selectedGuildId] });
-      toast({ title: "Saved", description: "General settings updated." });
+      toast({ title: t("toast_saved"), description: t("toast_generalSaved") });
     } catch {
-      toast({ variant: "destructive", title: "Error", description: "Failed to save." });
+      toast({ variant: "destructive", title: t("error"), description: t("toast_saveFailed") });
     } finally {
       setSaving(false);
     }
@@ -89,10 +89,9 @@ function GeneralSection() {
       {/* Language */}
       <div className="space-y-3">
         <div>
-          <Label className="text-sm font-semibold">Bot Language</Label>
+          <Label className="text-sm font-semibold">{t("settings")}</Label>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Language used for bot notifications, welcome messages, and auto-replies.
-            Change anytime with <code className="bg-muted px-1 rounded">/language</code> in Discord.
+            {t("botConfig_tokenDesc")}
           </p>
         </div>
         <div className="flex gap-3">
@@ -119,9 +118,9 @@ function GeneralSection() {
       {/* Prefix */}
       <div className="space-y-3">
         <div>
-          <Label className="text-sm font-semibold">Command Prefix</Label>
+          <Label className="text-sm font-semibold">{t("botConfig_channelsPerms")}</Label>
           <p className="text-xs text-muted-foreground mt-0.5">
-            For legacy prefix commands. Slash commands are unaffected.
+            {t("botConfig_adminRoleDesc")}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -143,23 +142,23 @@ function GeneralSection() {
       <div className="space-y-3">
         <div>
           <Label className="text-sm font-semibold flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5" /> Admin Roles
+            <Shield className="w-3.5 h-3.5" /> {t("botConfig_adminRole")}
           </Label>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Members with any of these roles can access the dashboard and use admin commands.
+            {t("botConfig_adminRoleDesc")}
           </p>
         </div>
         <MultiRoleSelect
           value={adminRoles}
           onChange={setAdminRoles}
           guildId={selectedGuildId || undefined}
-          placeholder="Select roles..."
+          placeholder={t("role")}
         />
       </div>
 
       <Button onClick={save} disabled={saving} size="sm" className="gap-2">
         <Save className="w-3.5 h-3.5" />
-        {saving ? "Saving..." : "Save General"}
+        {saving ? t("saving") : t("saveGeneral")}
       </Button>
     </div>
   );
@@ -176,8 +175,8 @@ export function BotSettings() {
           <AccordionTrigger className="hover:no-underline py-4">
             <span className="flex items-center gap-2.5 text-sm font-semibold">
               <Settings className="w-4 h-4 text-muted-foreground" />
-              General
-              <span className="text-xs font-normal text-muted-foreground">Language · Prefix · Admin roles</span>
+              {t("settings")}
+              <span className="text-xs font-normal text-muted-foreground">{t("botConfig_channelsPerms")}</span>
             </span>
           </AccordionTrigger>
           <AccordionContent className="pb-5">

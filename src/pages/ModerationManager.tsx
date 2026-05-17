@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useT } from "@/i18n";
 import type { ChangeEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -183,6 +184,7 @@ function Countdown({ expiresAt }: { expiresAt: string }) {
 // ── Component ──────────────────────────────────────────────────────────────
 
 export function ModerationManager() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -280,10 +282,10 @@ export function ModerationManager() {
       qc.invalidateQueries({ queryKey: ["moderation-stats"] });
       qc.invalidateQueries({ queryKey: ["moderation-active"] });
       setDeleteCaseTarget(null);
-      toast({ title: "Case deleted" });
+      toast({ title: t("toast_caseDeleted") });
     },
     onError: () =>
-      toast({ title: "Failed to delete case", variant: "destructive" }),
+      toast({ title: t("toast_caseDeletFailed"), variant: "destructive" }),
   });
 
   const addNoteMutation = useMutation({
@@ -300,10 +302,10 @@ export function ModerationManager() {
       qc.invalidateQueries({ queryKey: ["moderation-stats"] });
       setNewNoteTarget("");
       setNewNoteContent("");
-      toast({ title: "Note added" });
+      toast({ title: t("toast_noteAdded") });
     },
     onError: () =>
-      toast({ title: "Failed to add note", variant: "destructive" }),
+      toast({ title: t("toast_noteAddFailed"), variant: "destructive" }),
   });
 
   const editNoteMutation = useMutation({
@@ -319,10 +321,10 @@ export function ModerationManager() {
       qc.invalidateQueries({ queryKey: ["moderation-notes"] });
       setEditNoteTarget(null);
       setEditNoteContent("");
-      toast({ title: "Note updated" });
+      toast({ title: t("toast_noteUpdated") });
     },
     onError: () =>
-      toast({ title: "Failed to update note", variant: "destructive" }),
+      toast({ title: t("toast_noteUpdateFailed"), variant: "destructive" }),
   });
 
   const deleteNoteMutation = useMutation({
@@ -336,10 +338,10 @@ export function ModerationManager() {
       qc.invalidateQueries({ queryKey: ["moderation-notes"] });
       qc.invalidateQueries({ queryKey: ["moderation-stats"] });
       setDeleteNoteTarget(null);
-      toast({ title: "Note deleted" });
+      toast({ title: t("toast_noteDeleted") });
     },
     onError: () =>
-      toast({ title: "Failed to delete note", variant: "destructive" }),
+      toast({ title: t("toast_noteDeleteFailed"), variant: "destructive" }),
   });
 
   const saveConfigMutation = useMutation({
@@ -353,10 +355,10 @@ export function ModerationManager() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["moderation-config"] });
-      toast({ title: "Configuration saved" });
+      toast({ title: t("toast_saved") });
     },
     onError: () =>
-      toast({ title: "Failed to save config", variant: "destructive" }),
+      toast({ title: t("toast_error"), variant: "destructive" }),
   });
 
   // ── Derived ──
@@ -392,10 +394,10 @@ export function ModerationManager() {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <ShieldAlert className="h-6 w-6 text-orange-500" />
-          Moderation
+          {t("mod_title")}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Manage moderation cases, notes, active actions, and configuration.
+          {t("mod_totalCases")}, {t("mod_notes")}, {t("mod_allActions")}
         </p>
       </div>
 
@@ -407,7 +409,7 @@ export function ModerationManager() {
               <Shield className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total Cases</p>
+              <p className="text-xs text-muted-foreground">{t("mod_totalCases")}</p>
               <p className="text-xl font-bold">
                 {stats?.total_cases ?? "—"}
               </p>
@@ -420,7 +422,7 @@ export function ModerationManager() {
               <Clock className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Active</p>
+              <p className="text-xs text-muted-foreground">{t("mod_allActions")}</p>
               <p className="text-xl font-bold">
                 {stats?.active_moderations ?? "—"}
               </p>
@@ -433,7 +435,7 @@ export function ModerationManager() {
               <FileText className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Notes</p>
+              <p className="text-xs text-muted-foreground">{t("mod_notes")}</p>
               <p className="text-xl font-bold">
                 {stats?.total_notes ?? "—"}
               </p>
@@ -446,7 +448,7 @@ export function ModerationManager() {
               <Gavel className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Top Action</p>
+              <p className="text-xs text-muted-foreground">{t("mod_topAction")}</p>
               <p className="text-xl font-bold">
                 {topAction
                   ? `${topAction[0]} (${topAction[1]})`
@@ -462,19 +464,19 @@ export function ModerationManager() {
         <TabsList>
           <TabsTrigger value="cases" className="gap-1.5">
             <Shield className="h-3.5 w-3.5" />
-            Cases
+            {t("mod_cases")}
           </TabsTrigger>
           <TabsTrigger value="notes" className="gap-1.5">
             <FileText className="h-3.5 w-3.5" />
-            Notes
+            {t("mod_notes")}
           </TabsTrigger>
           <TabsTrigger value="active" className="gap-1.5">
             <Clock className="h-3.5 w-3.5" />
-            Active
+            {t("mod_allActions")}
           </TabsTrigger>
           <TabsTrigger value="settings" className="gap-1.5">
             <Settings className="h-3.5 w-3.5" />
-            Settings
+            {t("mod_action")}
           </TabsTrigger>
         </TabsList>
 
@@ -484,7 +486,7 @@ export function ModerationManager() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by user ID..."
+                placeholder={t("mod_searchCases")}
                 value={caseSearch}
                 onChange={(e) => setCaseSearch(e.target.value)}
                 className="pl-9"
@@ -492,18 +494,18 @@ export function ModerationManager() {
             </div>
             <Select value={caseAction} onValueChange={setCaseAction}>
               <SelectTrigger className="w-full sm:w-44">
-                <SelectValue placeholder="Filter action" />
+                <SelectValue placeholder={t("mod_actionType")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Actions</SelectItem>
-                <SelectItem value="warn">Warn</SelectItem>
-                <SelectItem value="ban">Ban</SelectItem>
-                <SelectItem value="softban">Softban</SelectItem>
-                <SelectItem value="kick">Kick</SelectItem>
+                <SelectItem value="all">{t("all")}</SelectItem>
+                <SelectItem value="warn">{t("warn")}</SelectItem>
+                <SelectItem value="ban">{t("ban")}</SelectItem>
+                <SelectItem value="softban">{t("softban")}</SelectItem>
+                <SelectItem value="kick">{t("kick")}</SelectItem>
                 <SelectItem value="mute">Mute</SelectItem>
-                <SelectItem value="timeout">Timeout</SelectItem>
-                <SelectItem value="unban">Unban</SelectItem>
-                <SelectItem value="unmute">Unmute</SelectItem>
+                <SelectItem value="timeout">{t("timeout")}</SelectItem>
+                <SelectItem value="unban">{t("unban")}</SelectItem>
+                <SelectItem value="unmute">{t("unmute")}</SelectItem>
                 <SelectItem value="deafen">Deafen</SelectItem>
               </SelectContent>
             </Select>
@@ -511,11 +513,11 @@ export function ModerationManager() {
 
           {casesLoading && cases.length === 0 ? (
             <div className="flex items-center justify-center h-40 text-muted-foreground">
-              Loading cases...
+              {t("loading")}
             </div>
           ) : cases.length === 0 ? (
             <div className="flex items-center justify-center h-40 text-muted-foreground">
-              No cases found.
+              {t("noData")}
             </div>
           ) : (
             <div className="space-y-2">
@@ -547,7 +549,7 @@ export function ModerationManager() {
                             {c.target_name || c.target_id}
                           </span>
                           <span className="text-muted-foreground text-xs">
-                            by {c.moderator_name || c.moderator_id}
+                            {t("mod_moderator")} {c.moderator_name || c.moderator_id}
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground truncate">
@@ -590,7 +592,7 @@ export function ModerationManager() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search notes by user ID..."
+              placeholder={t("mod_searchNotes")}
               value={noteSearch}
               onChange={(e) => setNoteSearch(e.target.value)}
               className="pl-9"
@@ -602,16 +604,16 @@ export function ModerationManager() {
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Plus className="h-4 w-4" />
-                Add Note
+                {t("mod_addNote")}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-3">
                 <Input
-                  placeholder="Target user ID"
+                  placeholder={t("target")}
                   value={newNoteTarget}
                   onChange={(e) => setNewNoteTarget(e.target.value)}
                 />
                 <Textarea
-                  placeholder="Note content..."
+                  placeholder={t("mod_noteContent")}
                   value={newNoteContent}
                   onChange={(e) => setNewNoteContent(e.target.value)}
                   rows={2}
@@ -632,7 +634,7 @@ export function ModerationManager() {
                     })
                   }
                 >
-                  {addNoteMutation.isPending ? "Adding..." : "Add Note"}
+                  {addNoteMutation.isPending ? t("saving") : t("mod_addNote")}
                 </Button>
               </div>
             </CardContent>
@@ -641,11 +643,11 @@ export function ModerationManager() {
           {/* Notes list */}
           {notesLoading && notes.length === 0 ? (
             <div className="flex items-center justify-center h-40 text-muted-foreground">
-              Loading notes...
+              {t("loading")}
             </div>
           ) : notes.length === 0 ? (
             <div className="flex items-center justify-center h-40 text-muted-foreground">
-              No notes found.
+              {t("mod_noNotes")}
             </div>
           ) : (
             <div className="space-y-2">
@@ -657,7 +659,7 @@ export function ModerationManager() {
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <span className="font-mono">{n.target_id}</span>
                           <span>•</span>
-                          <span>by {n.author_id}</span>
+                          <span>{t("mod_addedBy")} {n.author_id}</span>
                           <span>•</span>
                           <span>{formatDate(n.created_at)}</span>
                         </div>
@@ -698,11 +700,11 @@ export function ModerationManager() {
         <TabsContent value="active" className="space-y-4">
           {activeLoading && activeCases.length === 0 ? (
             <div className="flex items-center justify-center h-40 text-muted-foreground">
-              Loading active moderations...
+              {t("loading")}
             </div>
           ) : activeCases.length === 0 ? (
             <div className="flex items-center justify-center h-40 text-muted-foreground">
-              No active timed moderations.
+              {t("noData")}
             </div>
           ) : (
             <div className="space-y-2">
@@ -743,7 +745,7 @@ export function ModerationManager() {
                           <Countdown expiresAt={c.expires_at} />
                         ) : (
                           <span className="text-sm text-muted-foreground">
-                            N/A
+                            —
                           </span>
                         )}
                       </div>
@@ -844,9 +846,9 @@ export function ModerationManager() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Show Moderator in DM</Label>
+                    <Label>{t("mod_showModerator")}</Label>
                     <p className="text-[11px] text-muted-foreground">
-                      Include the moderator's name in DM notifications
+                      {t("mod_suppressEmbeds")}
                     </p>
                   </div>
                   <Switch
@@ -858,10 +860,9 @@ export function ModerationManager() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Auto Dehoist</Label>
+                    <Label>{t("mod_autoDehoist")}</Label>
                     <p className="text-[11px] text-muted-foreground">
-                      Automatically rename users with hoisted characters in
-                      their display name
+                      {t("mod_suppressPings")}
                     </p>
                   </div>
                   <Switch
@@ -881,8 +882,8 @@ export function ModerationManager() {
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {saveConfigMutation.isPending
-                    ? "Saving..."
-                    : "Save Configuration"}
+                    ? t("saving")
+                    : t("save")}
                 </Button>
               </div>
             </CardContent>
@@ -897,17 +898,17 @@ export function ModerationManager() {
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete case #{deleteCaseTarget?.case_number}?</DialogTitle>
+            <DialogTitle>{t("mod_deleteCase")} #{deleteCaseTarget?.case_number}?</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            This action cannot be undone. The moderation case will be permanently removed.
+            {t("mod_deleteCaseConfirm")}
           </p>
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setDeleteCaseTarget(null)}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -917,7 +918,7 @@ export function ModerationManager() {
                 deleteCaseMutation.mutate(deleteCaseTarget.id)
               }
             >
-              {deleteCaseMutation.isPending ? "Deleting..." : "Confirm"}
+              {deleteCaseMutation.isPending ? t("saving") : t("confirmDelete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -935,7 +936,7 @@ export function ModerationManager() {
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Note</DialogTitle>
+            <DialogTitle>{t("mod_editNote")}</DialogTitle>
           </DialogHeader>
           <Textarea
             value={editNoteContent}
@@ -950,7 +951,7 @@ export function ModerationManager() {
                 setEditNoteContent("");
               }}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               disabled={
@@ -964,7 +965,7 @@ export function ModerationManager() {
                 })
               }
             >
-              {editNoteMutation.isPending ? "Saving..." : "Save"}
+              {editNoteMutation.isPending ? t("saving") : t("save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -977,17 +978,17 @@ export function ModerationManager() {
       >
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete this note?</DialogTitle>
+            <DialogTitle>{t("mod_deleteCase")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            This action cannot be undone.
+            {t("mod_deleteCaseConfirm")}
           </p>
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setDeleteNoteTarget(null)}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -997,7 +998,7 @@ export function ModerationManager() {
                 deleteNoteMutation.mutate(deleteNoteTarget.id)
               }
             >
-              {deleteNoteMutation.isPending ? "Deleting..." : "Confirm"}
+              {deleteNoteMutation.isPending ? t("saving") : t("confirmDelete")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -16,21 +16,32 @@ import { RefreshCw, Plus, ShoppingCart, User2, Truck, ExternalLink, Copy } from 
 import { cn } from "@/lib/utils";
 import type { Order, Product } from "../types";
 import { apiFetch } from "@/hooks/useApi";
-
-const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  PAID:      { label: "Paid", cls: "bg-green-500/15 text-green-600 border-green-500/30" },
-  PENDING:   { label: "Pending payment", cls: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30" },
-  DELIVERING: { label: "Đang giao",     cls: "bg-blue-500/15 text-blue-600 border-blue-500/30" },
-  DELIVERED:  { label: "Delivered",     cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30" },
-  CANCELLED:  { label: "Cancelled",        cls: "bg-red-500/15 text-red-600 border-red-500/30" },
-  ERROR:      { label: "Error",         cls: "bg-gray-500/15 text-gray-600 border-gray-500/30" },
-};
+import { useT } from "@/i18n";
 
 export function OrdersManager() {
+  const { t } = useT();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string>("ALL");
   const [createOpen, setCreateOpen] = useState(false);
+
+  const STATUS_CLS: Record<string, string> = {
+    PAID: "bg-green-500/15 text-green-600 border-green-500/30",
+    PENDING: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
+    DELIVERING: "bg-blue-500/15 text-blue-600 border-blue-500/30",
+    DELIVERED: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
+    CANCELLED: "bg-red-500/15 text-red-600 border-red-500/30",
+    ERROR: "bg-gray-500/15 text-gray-600 border-gray-500/30",
+  };
+
+  const STATUS_LABEL: Record<string, string> = {
+    PAID: t("orders_paid"),
+    PENDING: t("orders_pending"),
+    DELIVERING: t("orders_delivered"),
+    DELIVERED: t("orders_delivered"),
+    CANCELLED: t("orders_cancelled"),
+    ERROR: t("error"),
+  };
 
   // Create order form
   const [discordUid, setDiscordUid] = useState("");
@@ -65,9 +76,9 @@ export function OrdersManager() {
       }).then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
-      toast({ title: "Status updated." });
+      toast({ title: t("toast_statusUpdated") });
     },
-    onError: () => toast({ variant: "destructive", title: "Update error." }),
+    onError: () => toast({ variant: "destructive", title: t("error") }),
   });
 
   const createMutation = useMutation({
@@ -82,9 +93,9 @@ export function OrdersManager() {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       setCreateOpen(false);
       resetCreateForm();
-      toast({ title: "Order created." });
+      toast({ title: t("toast_orderCreated") });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: t("error"), description: e.message }),
   });
 
   const deliverMutation = useMutation({
@@ -99,9 +110,9 @@ export function OrdersManager() {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       setDeliverTarget(null);
       setDmContent("");
-      toast({ title: "Delivered." });
+      toast({ title: t("toast_deliveredSuccess") });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Delivery error", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: t("toast_deliveryError"), description: e.message }),
   });
 
   const resetCreateForm = () => {
@@ -137,13 +148,13 @@ export function OrdersManager() {
     <div className="p-4 md:p-6 space-y-4 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-xl font-semibold">Orders</h1>
+        <h1 className="text-xl font-semibold">{t("orders_title")}</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
           <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> New Order
+            <Plus className="mr-2 h-4 w-4" /> {t("orders_createOrder")}
           </Button>
         </div>
       </div>
@@ -151,10 +162,10 @@ export function OrdersManager() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Total Orders", value: counts.ALL, cls: "" },
-          { label: "Pending", value: counts.PENDING, cls: "text-yellow-600" },
-          { label: "Paid + Delivered", value: paidAndDelivered, cls: "text-green-600" },
-          { label: "Revenue", value: totalPaid.toLocaleString() + " đ", cls: "text-primary" },
+          { label: t("orders_title"), value: counts.ALL, cls: "" },
+          { label: t("orders_pending"), value: counts.PENDING, cls: "text-yellow-600" },
+          { label: t("orders_paid") + " + " + t("orders_delivered"), value: paidAndDelivered, cls: "text-green-600" },
+          { label: t("orders_amount"), value: totalPaid.toLocaleString() + " đ", cls: "text-primary" },
         ].map(({ label, value, cls }) => (
           <Card key={label}>
             <CardContent className="p-3 text-center">
@@ -175,16 +186,16 @@ export function OrdersManager() {
             onClick={() => setFilter(s)}
             className="text-xs"
           >
-            {s === "ALL" ? "All" : STATUS_CONFIG[s]?.label} ({(counts as Record<string,number>)[s] ?? 0})
+            {s === "ALL" ? t("orders_all") : STATUS_LABEL[s]} ({(counts as Record<string,number>)[s] ?? 0})
           </Button>
         ))}
       </div>
 
       {/* Orders — card list (mobile-friendly) */}
       {isLoading ? (
-        <p className="text-muted-foreground text-sm">Loading...</p>
+        <p className="text-muted-foreground text-sm">{t("loading")}</p>
       ) : filtered.length === 0 ? (
-        <p className="text-muted-foreground text-sm text-center py-8">No orders found.</p>
+        <p className="text-muted-foreground text-sm text-center py-8">{t("orders_empty")}</p>
       ) : (
         <div className="space-y-3">
           {filtered.map((order) => (
@@ -195,8 +206,8 @@ export function OrdersManager() {
                   <div className="space-y-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-mono text-muted-foreground">#{order.id}</span>
-                      <span className={cn("text-xs px-2 py-0.5 rounded border font-medium", STATUS_CONFIG[order.status]?.cls ?? "")}>
-                        {STATUS_CONFIG[order.status]?.label ?? order.status}
+                      <span className={cn("text-xs px-2 py-0.5 rounded border font-medium", STATUS_CLS[order.status] ?? "")}>
+                        {STATUS_LABEL[order.status] ?? order.status}
                       </span>
                     </div>
                     {/* User */}
@@ -232,12 +243,12 @@ export function OrdersManager() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="PENDING">Pending payment</SelectItem>
-                        <SelectItem value="PAID">Paid</SelectItem>
-                        <SelectItem value="DELIVERING">Đang giao</SelectItem>
-                        <SelectItem value="DELIVERED">Delivered</SelectItem>
-                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                        <SelectItem value="ERROR">Error</SelectItem>
+                        <SelectItem value="PENDING">{t("orders_pending")}</SelectItem>
+                        <SelectItem value="PAID">{t("orders_paid")}</SelectItem>
+                        <SelectItem value="DELIVERING">{t("orders_delivered")}</SelectItem>
+                        <SelectItem value="DELIVERED">{t("orders_delivered")}</SelectItem>
+                        <SelectItem value="CANCELLED">{t("orders_cancelled")}</SelectItem>
+                        <SelectItem value="ERROR">{t("error")}</SelectItem>
                       </SelectContent>
                     </Select>
                     {order.status === "PAID" && (
@@ -247,7 +258,7 @@ export function OrdersManager() {
                         className="text-xs h-7"
                         onClick={() => { setDeliverTarget(order); setDmContent(""); }}
                       >
-                        <Truck className="mr-1 h-3.5 w-3.5" /> Deliver
+                        <Truck className="mr-1 h-3.5 w-3.5" /> {t("orders_markDelivered")}
                       </Button>
                     )}
                     {order.status === "PENDING" && order.checkout_url && (
@@ -259,17 +270,17 @@ export function OrdersManager() {
                           asChild
                         >
                           <a href={order.checkout_url} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="mr-1 h-3 w-3" /> Payment
+                            <ExternalLink className="mr-1 h-3 w-3" /> PayOS
                           </a>
                         </Button>
                         <Button
                           size="icon"
                           variant="ghost"
                           className="h-7 w-7 text-muted-foreground"
-                          title="Copy link"
+                          title={t("copy")}
                           onClick={() => {
                             navigator.clipboard.writeText(order.checkout_url!);
-                            toast({ title: "Payment link copied" });
+                            toast({ title: t("toast_paymentLinkCopied") });
                           }}
                         >
                           <Copy className="h-3 w-3" />
@@ -288,7 +299,7 @@ export function OrdersManager() {
       <Dialog open={createOpen} onOpenChange={(o) => { if (!o) { setCreateOpen(false); resetCreateForm(); } }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Create Order</DialogTitle>
+            <DialogTitle>{t("orders_createOrder")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             {/* Discord UID */}
@@ -303,7 +314,7 @@ export function OrdersManager() {
             {/* Products + Toggle Custom */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label>Products <span className="text-destructive">*</span></Label>
+                <Label>{t("orders_items")} <span className="text-destructive">*</span></Label>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-muted-foreground">Custom</span>
                   <Switch checked={isCustom} onCheckedChange={(v) => {
@@ -317,14 +328,14 @@ export function OrdersManager() {
               </div>
               {isCustom ? (
                 <Input
-                  placeholder="Enter product name..."
+                  placeholder={t("orders_selectProduct")}
                   value={customProductName}
                   onChange={(e) => setCustomProductName(e.target.value)}
                 />
               ) : (
                 <Select value={selectedProductId} onValueChange={handleSelectProduct}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select product" />
+                    <SelectValue placeholder={t("orders_selectProduct")} />
                   </SelectTrigger>
                   <SelectContent>
                     {products.filter((p) => p.active).map((p) => (
@@ -340,7 +351,7 @@ export function OrdersManager() {
                 <Label>Package</Label>
                 <Select value={selectedPackage} onValueChange={handleSelectPackage}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select package" />
+                    <SelectValue placeholder={t("orders_selectProduct")} />
                   </SelectTrigger>
                   <SelectContent>
                     {activePackages.map((pk) => (
@@ -354,7 +365,7 @@ export function OrdersManager() {
             )}
             {/* Price */}
             <div className="space-y-1.5">
-              <Label>Total (VND)</Label>
+              <Label>{t("orders_totalVnd")}</Label>
               <Input
                 type="number"
                 value={selectedPrice || ""}
@@ -364,36 +375,36 @@ export function OrdersManager() {
             </div>
             {/* Status */}
             <div className="space-y-1.5">
-              <Label>Status</Label>
+              <Label>{t("status")}</Label>
               <Select value={orderStatus} onValueChange={setOrderStatus}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PENDING">Pending payment</SelectItem>
-                  <SelectItem value="PAID">Paid</SelectItem>
-                  <SelectItem value="DELIVERING">Đang giao</SelectItem>
-                  <SelectItem value="DELIVERED">Delivered</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                  <SelectItem value="ERROR">Error</SelectItem>
+                  <SelectItem value="PENDING">{t("orders_pending")}</SelectItem>
+                  <SelectItem value="PAID">{t("orders_paid")}</SelectItem>
+                  <SelectItem value="DELIVERING">{t("orders_delivered")}</SelectItem>
+                  <SelectItem value="DELIVERED">{t("orders_delivered")}</SelectItem>
+                  <SelectItem value="CANCELLED">{t("orders_cancelled")}</SelectItem>
+                  <SelectItem value="ERROR">{t("error")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {/* Send channel QR PayOS */}
             <div className="space-y-1.5">
-              <Label>QR Payment Channel</Label>
+              <Label>QR PayOS {t("channel")}</Label>
               <ChannelSelect
                 filter="text"
                 value={sendQrChannelId}
                 onChange={(v) => setSendQrChannelId(v === "__clear__" ? "" : v)}
-                placeholder="Skip Discord send"
+                placeholder={t("selectChannel")}
               />
-              <p className="text-xs text-muted-foreground">Bot will send PayOS QR to this channel and wait for payment (15 min)</p>
+              <p className="text-xs text-muted-foreground">Bot will send PayOS QR to this {t("channel").toLowerCase()} and wait for payment (15 min)</p>
             </div>
             <Separator />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setCreateOpen(false); resetCreateForm(); }}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setCreateOpen(false); resetCreateForm(); }}>{t("cancel")}</Button>
             <Button
               disabled={!discordUid.trim() || (isCustom ? !customProductName.trim() : !selectedProductId) || createMutation.isPending}
               onClick={() => createMutation.mutate({
@@ -406,7 +417,7 @@ export function OrdersManager() {
                 send_qr_channel_id: sendQrChannelId || "",
               })}
             >
-              {createMutation.isPending ? "Creating..." : "Create Order"}
+              {createMutation.isPending ? t("saving") : t("orders_createOrder")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -416,13 +427,13 @@ export function OrdersManager() {
       <Dialog open={!!deliverTarget} onOpenChange={(o) => { if (!o) { setDeliverTarget(null); setDmContent(""); } }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Deliver #{deliverTarget?.id}</DialogTitle>
+            <DialogTitle>{t("orders_markDelivered")} #{deliverTarget?.id}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Content DM</Label>
+              <Label>{t("welcome_dmContent")}</Label>
               <Textarea
-                placeholder="DM content to send customer on delivery..."
+                placeholder={t("welcome_dmContent")}
                 value={dmContent}
                 onChange={(e) => setDmContent(e.target.value)}
                 rows={4}
@@ -430,14 +441,14 @@ export function OrdersManager() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setDeliverTarget(null); setDmContent(""); }}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setDeliverTarget(null); setDmContent(""); }}>{t("cancel")}</Button>
             <Button
               disabled={deliverMutation.isPending}
               onClick={() => {
                 if (deliverTarget) deliverMutation.mutate({ id: deliverTarget.id, dm_content: dmContent });
               }}
             >
-              {deliverMutation.isPending ? "Delivering..." : "Confirm Delivery"}
+              {deliverMutation.isPending ? t("saving") : t("confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>

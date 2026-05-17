@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Users, UserCheck, Ban, DollarSign, Search, FileText, ShieldBan } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 interface UserRecord {
   id: number;
@@ -34,30 +35,40 @@ interface UserOrder {
   created_at: string;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  PAID: { label: "Paid", cls: "bg-green-500/15 text-green-600 border-green-500/30" },
-  PENDING: { label: "Pending payment", cls: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30" },
-  DELIVERING: { label: "Đang giao", cls: "bg-blue-500/15 text-blue-600 border-blue-500/30" },
-  DELIVERED: { label: "Delivered", cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30" },
-  CANCELLED: { label: "Cancelled", cls: "bg-red-500/15 text-red-600 border-red-500/30" },
-  ERROR: { label: "Error", cls: "bg-gray-500/15 text-gray-600 border-gray-500/30" },
-};
-
-function formatVND(n: number) {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
-}
-
-function formatDate(s: string) {
-  return new Date(s).toLocaleDateString("vi-VN");
-}
-
 export function UsersManager() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [orderSheetUser, setOrderSheetUser] = useState<UserRecord | null>(null);
   const [banTarget, setBanTarget] = useState<UserRecord | null>(null);
   const [banReason, setBanReason] = useState("");
+
+  const STATUS_CLS: Record<string, string> = {
+    PAID: "bg-green-500/15 text-green-600 border-green-500/30",
+    PENDING: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
+    DELIVERING: "bg-blue-500/15 text-blue-600 border-blue-500/30",
+    DELIVERED: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
+    CANCELLED: "bg-red-500/15 text-red-600 border-red-500/30",
+    ERROR: "bg-gray-500/15 text-gray-600 border-gray-500/30",
+  };
+
+  const STATUS_LABEL: Record<string, string> = {
+    PAID: t("orders_paid"),
+    PENDING: t("orders_pending"),
+    DELIVERING: t("orders_delivered"),
+    DELIVERED: t("orders_delivered"),
+    CANCELLED: t("orders_cancelled"),
+    ERROR: t("error"),
+  };
+
+  function formatVND(n: number) {
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
+  }
+
+  function formatDate(s: string) {
+    return new Date(s).toLocaleDateString("vi-VN");
+  }
 
   const { data: users = [], isLoading } = useQuery<UserRecord[]>({
     queryKey: ["users"],
@@ -82,9 +93,9 @@ export function UsersManager() {
       qc.invalidateQueries({ queryKey: ["users"] });
       setBanTarget(null);
       setBanReason("");
-      toast({ title: "User banned." });
+      toast({ title: t("toast_userBanned") });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: t("error"), description: e.message }),
   });
 
   const unbanMutation = useMutation({
@@ -95,9 +106,9 @@ export function UsersManager() {
       }).then(async (r) => { if (!r.ok) throw new Error(await r.text()); return r.json(); }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["users"] });
-      toast({ title: "User unbanned." });
+      toast({ title: t("toast_userUnbanned") });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "Error", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: t("error"), description: e.message }),
   });
 
   const filtered = users.filter(
@@ -112,14 +123,14 @@ export function UsersManager() {
   const totalRevenue = users.reduce((sum, u) => sum + u.total_spent, 0);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-64 text-muted-foreground">Loading...</div>;
+    return <div className="flex items-center justify-center h-64 text-muted-foreground">{t("loading")}</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Users className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">Users</h2>
+        <h2 className="text-2xl font-bold">{t("users_title")}</h2>
       </div>
 
       {/* ── Stat Cards ── */}
@@ -130,7 +141,7 @@ export function UsersManager() {
               <Users className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total users</p>
+              <p className="text-xs text-muted-foreground">{t("users_totalUsers")}</p>
               <p className="text-xl font-bold">{totalUsers}</p>
             </div>
           </CardContent>
@@ -141,7 +152,7 @@ export function UsersManager() {
               <UserCheck className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Active</p>
+              <p className="text-xs text-muted-foreground">{t("all")}</p>
               <p className="text-xl font-bold">{activeUsers}</p>
             </div>
           </CardContent>
@@ -152,7 +163,7 @@ export function UsersManager() {
               <Ban className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Banned</p>
+              <p className="text-xs text-muted-foreground">{t("users_banned")}</p>
               <p className="text-xl font-bold">{bannedUsers}</p>
             </div>
           </CardContent>
@@ -163,7 +174,7 @@ export function UsersManager() {
               <DollarSign className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total revenue</p>
+              <p className="text-xs text-muted-foreground">{t("users_totalRevenue")}</p>
               <p className="text-xl font-bold">{formatVND(totalRevenue)}</p>
             </div>
           </CardContent>
@@ -174,7 +185,7 @@ export function UsersManager() {
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search username or Discord ID..."
+          placeholder={t("users_searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -187,20 +198,20 @@ export function UsersManager() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Discord ID</TableHead>
-                <TableHead className="text-right">Total spent</TableHead>
-                <TableHead className="text-center">Orders</TableHead>
-                <TableHead>Registered</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("user")}</TableHead>
+                <TableHead>{t("users_discordId")}</TableHead>
+                <TableHead className="text-right">{t("users_spent")}</TableHead>
+                <TableHead className="text-center">{t("users_orders")}</TableHead>
+                <TableHead>{t("date")}</TableHead>
+                <TableHead>{t("status")}</TableHead>
+                <TableHead className="text-right">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    No users found.
+                    {t("users_empty")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -222,9 +233,9 @@ export function UsersManager() {
                     <TableCell className="text-sm">{formatDate(user.created_at)}</TableCell>
                     <TableCell>
                       {user.is_banned ? (
-                        <Badge className="bg-red-500/15 text-red-600 border-red-500/30">Banned</Badge>
+                        <Badge className="bg-red-500/15 text-red-600 border-red-500/30">{t("users_banned")}</Badge>
                       ) : (
-                        <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Active</Badge>
+                        <Badge className="bg-green-500/15 text-green-600 border-green-500/30">{t("all")}</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -234,7 +245,7 @@ export function UsersManager() {
                           variant="ghost"
                           onClick={() => setOrderSheetUser(user)}
                         >
-                          <FileText className="h-3.5 w-3.5 mr-1" /> Orders
+                          <FileText className="h-3.5 w-3.5 mr-1" /> {t("users_orders")}
                         </Button>
                         {user.is_banned ? (
                           <Button
@@ -243,7 +254,7 @@ export function UsersManager() {
                             onClick={() => unbanMutation.mutate(user.id)}
                             disabled={unbanMutation.isPending}
                           >
-                            Unban
+                            {t("users_unban")}
                           </Button>
                         ) : (
                           <Button
@@ -251,7 +262,7 @@ export function UsersManager() {
                             variant="destructive"
                             onClick={() => { setBanTarget(user); setBanReason(""); }}
                           >
-                            <ShieldBan className="h-3.5 w-3.5 mr-1" /> Ban
+                            <ShieldBan className="h-3.5 w-3.5 mr-1" /> {t("users_ban")}
                           </Button>
                         )}
                       </div>
@@ -268,21 +279,21 @@ export function UsersManager() {
       <Dialog open={!!orderSheetUser} onOpenChange={(o) => { if (!o) setOrderSheetUser(null); }}>
         <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Orders of {orderSheetUser?.username}</DialogTitle>
+            <DialogTitle>{t("users_orders")} — {orderSheetUser?.username}</DialogTitle>
           </DialogHeader>
           <Separator className="my-4" />
           {userOrders.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No orders yet.</p>
+            <p className="text-sm text-muted-foreground text-center py-8">{t("orders_empty")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Products</TableHead>
+                  <TableHead>{t("orders_items")}</TableHead>
                   <TableHead>Package</TableHead>
                   <TableHead className="text-center">SL</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">{t("total")}</TableHead>
+                  <TableHead>{t("status")}</TableHead>
+                  <TableHead>{t("date")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -293,8 +304,8 @@ export function UsersManager() {
                     <TableCell className="text-center">{order.quantity}</TableCell>
                     <TableCell className="text-right">{formatVND(order.total_price)}</TableCell>
                     <TableCell>
-                      <Badge className={cn("text-[10px]", STATUS_CONFIG[order.status]?.cls || "bg-gray-500/15 text-gray-600")}>
-                        {STATUS_CONFIG[order.status]?.label || order.status}
+                      <Badge className={cn("text-[10px]", STATUS_CLS[order.status] || "bg-gray-500/15 text-gray-600")}>
+                        {STATUS_LABEL[order.status] || order.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs">{formatDate(order.created_at)}</TableCell>
@@ -310,13 +321,13 @@ export function UsersManager() {
       <Dialog open={!!banTarget} onOpenChange={(o) => { if (!o) { setBanTarget(null); setBanReason(""); } }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Ban user {banTarget?.username}?</DialogTitle>
+            <DialogTitle>{t("users_ban")} {banTarget?.username}?</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Reason ban</Label>
+              <Label>{t("users_ban")}</Label>
               <Textarea
-                placeholder="Enter ban reason..."
+                placeholder={t("users_ban")}
                 value={banReason}
                 onChange={(e) => setBanReason(e.target.value)}
                 rows={3}
@@ -324,13 +335,13 @@ export function UsersManager() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setBanTarget(null); setBanReason(""); }}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setBanTarget(null); setBanReason(""); }}>{t("cancel")}</Button>
             <Button
               variant="destructive"
               disabled={banMutation.isPending || !banReason.trim()}
               onClick={() => banTarget && banMutation.mutate({ id: banTarget.id, reason: banReason })}
             >
-              {banMutation.isPending ? "Đang ban..." : "Ban"}
+              {banMutation.isPending ? t("saving") : t("users_ban")}
             </Button>
           </DialogFooter>
         </DialogContent>

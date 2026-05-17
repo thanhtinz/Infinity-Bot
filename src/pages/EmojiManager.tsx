@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SmilePlus, Copy, Trash2, Upload, ImageIcon, RefreshCw, Sticker, Smile } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -52,6 +53,7 @@ type Tab = "emoji" | "sticker";
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export function EmojiManager() {
+  const { t } = useT();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>("emoji");
@@ -97,13 +99,13 @@ export function EmojiManager() {
       if (!res.ok) throw new Error("Delete failed");
     },
     onSuccess: () => {
-      toast({ title: "Deleted", description: "Emoji deleted successfully." });
+      toast({ title: t("toast_emojiDeleted"), description: t("success") });
       queryClient.invalidateQueries({ queryKey: ["discord-emojis"] });
       queryClient.invalidateQueries({ queryKey: ["managed-emojis"] });
       setDeleteTarget(null);
     },
     onError: () => {
-      toast({ title: "Error", description: "Could not delete emoji.", variant: "destructive" });
+      toast({ title: t("error"), description: t("toast_emojiDeleteFailed"), variant: "destructive" });
     },
   });
 
@@ -117,12 +119,12 @@ export function EmojiManager() {
       if (!res.ok) throw new Error("Delete failed");
     },
     onSuccess: () => {
-      toast({ title: "Deleted", description: "Sticker deleted successfully." });
+      toast({ title: t("toast_stickerDeleted"), description: t("success") });
       queryClient.invalidateQueries({ queryKey: ["discord-stickers"] });
       setStickerDeleteTarget(null);
     },
     onError: () => {
-      toast({ title: "Error", description: "Could not delete sticker.", variant: "destructive" });
+      toast({ title: t("error"), description: t("toast_stickerDeleteFailed"), variant: "destructive" });
     },
   });
 
@@ -138,14 +140,14 @@ export function EmojiManager() {
     },
     onSuccess: (data) => {
       toast({
-        title: "Sync successful",
+        title: t("toast_syncSuccess"),
         description: `Added ${data.added} new emoji(s) to the management list.`,
       });
       queryClient.invalidateQueries({ queryKey: ["discord-emojis"] });
       queryClient.invalidateQueries({ queryKey: ["managed-emojis"] });
     },
     onError: () => {
-      toast({ title: "Error", description: "Could not sync emoji.", variant: "destructive" });
+      toast({ title: t("error"), description: t("toast_emojiSyncFailed"), variant: "destructive" });
     },
   });
 
@@ -153,9 +155,9 @@ export function EmojiManager() {
   const copyUsage = async (usage: string) => {
     try {
       await navigator.clipboard.writeText(usage);
-      toast({ title: "Copied", description: `\`${usage}\` copied.` });
+      toast({ title: t("copied"), description: `\`${usage}\` copied.` });
     } catch {
-      toast({ title: "Error", description: "Could not copy.", variant: "destructive" });
+      toast({ title: t("error"), description: t("toast_couldNotCopy"), variant: "destructive" });
     }
   };
 
@@ -164,9 +166,9 @@ export function EmojiManager() {
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Emoji & Sticker</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("emoji_title")}</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Manage custom emoji and stickers for your Discord server
+            {t("emoji_title")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -284,7 +286,7 @@ export function EmojiManager() {
                       size="icon" variant="ghost"
                       className="h-8 w-8 text-white hover:text-white hover:bg-white/20"
                       onClick={() => copyUsage(emoji.usage)}
-                      title="Copy"
+                      title={t("copy")}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -292,7 +294,7 @@ export function EmojiManager() {
                       size="icon" variant="ghost"
                       className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-white/20"
                       onClick={() => setDeleteTarget(emoji)}
-                      title="Delete"
+                      title={t("delete")}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -327,13 +329,13 @@ export function EmojiManager() {
           ) : stickers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Sticker className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-lg font-medium text-muted-foreground">No stickers yet</p>
+              <p className="text-lg font-medium text-muted-foreground">{t("emoji_empty")}</p>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
-                Add sticker custom cho server (PNG, APNG, GIF — 320×320px)
+                {t("emoji_uploadSticker")} (PNG, APNG, GIF — 320×320px)
               </p>
               <Button variant="outline" onClick={() => setStickerUploadOpen(true)}>
                 <Sticker className="h-4 w-4 mr-2" />
-                Add Sticker
+                {t("emoji_addSticker")}
               </Button>
             </div>
           ) : (
@@ -361,7 +363,7 @@ export function EmojiManager() {
                       size="icon" variant="ghost"
                       className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-white/20"
                       onClick={() => setStickerDeleteTarget(sticker)}
-                      title="Delete"
+                      title={t("delete")}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -396,18 +398,18 @@ export function EmojiManager() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete emoji?</AlertDialogTitle>
+            <AlertDialogTitle>{t("emoji_deleteConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Emoji <code className="font-mono">:{deleteTarget?.name}:</code> will be permanently deleted from the server.
+              Emoji <code className="font-mono">:{deleteTarget?.name}:</code>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -417,18 +419,18 @@ export function EmojiManager() {
       <AlertDialog open={!!stickerDeleteTarget} onOpenChange={(open) => !open && setStickerDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete sticker?</AlertDialogTitle>
+            <AlertDialogTitle>{t("emoji_stickerDeleteConfirm")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Sticker <strong>{stickerDeleteTarget?.name}</strong> will be permanently deleted from the server.
+              Sticker <strong>{stickerDeleteTarget?.name}</strong>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => stickerDeleteTarget && deleteStickerMutation.mutate(stickerDeleteTarget.id)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -449,6 +451,7 @@ function EmojiUploadDialog({
   onSuccess: () => void;
 }) {
   const { toast } = useToast();
+  const { t } = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
@@ -497,13 +500,13 @@ function EmojiUploadDialog({
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Success", description: "Emoji added to the server." });
+      toast({ title: t("success"), description: t("toast_emojiAdded") });
       onSuccess();
       resetForm();
       onOpenChange(false);
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: err.message || "Could not upload emoji.", variant: "destructive" });
+      toast({ title: t("error"), description: err.message || t("toast_emojiDeleteFailed"), variant: "destructive" });
     },
   });
 
@@ -531,11 +534,11 @@ function EmojiUploadDialog({
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Emoji</DialogTitle>
+          <DialogTitle>{t("emoji_addEmoji")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="emoji-name">Name Emoji</Label>
+            <Label htmlFor="emoji-name">{t("emoji_name")}</Label>
             <Input
               id="emoji-name"
               placeholder="vd: cool_cat"
@@ -577,8 +580,8 @@ function EmojiUploadDialog({
         </div>
         <DialogFooter>
           <Button onClick={() => uploadMutation.mutate()} disabled={!canSubmit || uploadMutation.isPending}>
-            {uploadMutation.isPending ? "Uploading..." : (
-              <><Upload className="h-4 w-4 mr-2" />Upload</>
+            {uploadMutation.isPending ? t("saving") : (
+              <><Upload className="h-4 w-4 mr-2" />{t("emoji_upload")}</>
             )}
           </Button>
         </DialogFooter>
@@ -599,6 +602,7 @@ function StickerUploadDialog({
   onSuccess: () => void;
 }) {
   const { toast } = useToast();
+  const { t } = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
@@ -635,13 +639,13 @@ function StickerUploadDialog({
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "Success", description: "Sticker added to the server." });
+      toast({ title: t("success"), description: t("toast_stickerAdded") });
       onSuccess();
       resetForm();
       onOpenChange(false);
     },
     onError: (err: Error) => {
-      toast({ title: "Error", description: err.message || "Could not upload sticker.", variant: "destructive" });
+      toast({ title: t("error"), description: err.message || t("toast_stickerDeleteFailed"), variant: "destructive" });
     },
   });
 
@@ -671,11 +675,11 @@ function StickerUploadDialog({
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetForm(); onOpenChange(v); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Sticker</DialogTitle>
+          <DialogTitle>{t("emoji_addSticker")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="sticker-name">Name Sticker</Label>
+            <Label htmlFor="sticker-name">{t("emoji_stickerName")}</Label>
             <Input
               id="sticker-name"
               placeholder="vd: happy_dance"
@@ -686,10 +690,10 @@ function StickerUploadDialog({
             <p className="text-xs text-muted-foreground">2–30 chars.</p>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="sticker-desc">Description</Label>
+            <Label htmlFor="sticker-desc">{t("description")}</Label>
             <Textarea
               id="sticker-desc"
-              placeholder="Sticker description (optional)"
+              placeholder={t("emoji_stickerDesc")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               maxLength={100}
@@ -736,8 +740,8 @@ function StickerUploadDialog({
         </div>
         <DialogFooter>
           <Button onClick={() => uploadMutation.mutate()} disabled={!canSubmit || uploadMutation.isPending}>
-            {uploadMutation.isPending ? "Uploading..." : (
-              <><Upload className="h-4 w-4 mr-2" />Upload</>
+            {uploadMutation.isPending ? t("saving") : (
+              <><Upload className="h-4 w-4 mr-2" />{t("emoji_upload")}</>
             )}
           </Button>
         </DialogFooter>

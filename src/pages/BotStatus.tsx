@@ -27,6 +27,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import type { SystemConfig } from "../types";
@@ -65,6 +66,7 @@ function latencyColor(ms: number): string {
 export function BotStatus() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { t } = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: botInfo, isLoading: infoLoading } = useQuery<BotInfo>({
@@ -86,14 +88,14 @@ export function BotStatus() {
 
   const handleMutationResponse = async (res: Response, label: string) => {
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Unknown error" }));
+      const err = await res.json().catch(() => ({ detail: t("error") }));
       toast({
         variant: "destructive",
-        title: `${label} failed`,
+        title: `${label} ${t("error").toLowerCase()}`,
         description: err.detail || String(err),
       });
     } else {
-      toast({ title: label, description: "Success." });
+      toast({ title: label, description: t("success") });
       queryClient.invalidateQueries({ queryKey: ["bot_info"] });
       queryClient.invalidateQueries({ queryKey: ["config"] });
     }
@@ -102,22 +104,22 @@ export function BotStatus() {
   const startMutation = useMutation({
     mutationFn: () =>
       fetch("/api/bot/start", { method: "POST", credentials: "include" }),
-    onSuccess: (res) => handleMutationResponse(res, "Start Bot"),
-    onError: () => toast({ variant: "destructive", title: "Connection error" }),
+    onSuccess: (res) => handleMutationResponse(res, t("botStatus_start")),
+    onError: () => toast({ variant: "destructive", title: t("toast_connectionError") }),
   });
 
   const stopMutation = useMutation({
     mutationFn: () =>
       fetch("/api/bot/stop", { method: "POST", credentials: "include" }),
-    onSuccess: (res) => handleMutationResponse(res, "Disable Bot"),
-    onError: () => toast({ variant: "destructive", title: "Connection error" }),
+    onSuccess: (res) => handleMutationResponse(res, t("botStatus_stop")),
+    onError: () => toast({ variant: "destructive", title: t("toast_connectionError") }),
   });
 
   const restartMutation = useMutation({
     mutationFn: () =>
       fetch("/api/bot/restart", { method: "POST", credentials: "include" }),
-    onSuccess: (res) => handleMutationResponse(res, "Restart"),
-    onError: () => toast({ variant: "destructive", title: "Connection error" }),
+    onSuccess: (res) => handleMutationResponse(res, t("botStatus_restart")),
+    onError: () => toast({ variant: "destructive", title: t("toast_connectionError") }),
   });
 
   const profileMutation = useMutation({
@@ -128,8 +130,8 @@ export function BotStatus() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       }),
-    onSuccess: (res) => handleMutationResponse(res, "Update profile"),
-    onError: () => toast({ variant: "destructive", title: "Connection error" }),
+    onSuccess: (res) => handleMutationResponse(res, t("toast_statusUpdated")),
+    onError: () => toast({ variant: "destructive", title: t("toast_connectionError") }),
   });
 
   const presenceMutation = useMutation({
@@ -145,8 +147,8 @@ export function BotStatus() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       }),
-    onSuccess: (res) => handleMutationResponse(res, "Update status"),
-    onError: () => toast({ variant: "destructive", title: "Connection error" }),
+    onSuccess: (res) => handleMutationResponse(res, t("toast_statusUpdated")),
+    onError: () => toast({ variant: "destructive", title: t("toast_connectionError") }),
   });
 
   const invisibleMutation = useMutation({
@@ -159,7 +161,7 @@ export function BotStatus() {
       }),
     onSuccess: async (res, invisible) => {
       if (res.ok) {
-        toast({ title: invisible ? "Invisible mode enabled" : "Invisible mode disabled" });
+        toast({ title: invisible ? t("enabled") : t("disabled") });
         queryClient.invalidateQueries({ queryKey: ["config"] });
         // Apply immediately if bot is running
         if (isRunning) {
@@ -176,7 +178,7 @@ export function BotStatus() {
         }
       }
     },
-    onError: () => toast({ variant: "destructive", title: "Connection error" }),
+    onError: () => toast({ variant: "destructive", title: t("toast_connectionError") }),
   });
 
   // Profile form state
@@ -201,7 +203,7 @@ export function BotStatus() {
     if (profileUsername.trim()) body.username = profileUsername.trim();
     if (avatarBase64) body.avatar_base64 = avatarBase64;
     if (Object.keys(body).length === 0) {
-      toast({ description: "No changes." });
+      toast({ description: t("toast_saveFailed") });
       return;
     }
     profileMutation.mutate(body);
@@ -236,13 +238,13 @@ export function BotStatus() {
   const copyBotId = () => {
     if (botInfo?.bot_id) {
       navigator.clipboard.writeText(botInfo.bot_id);
-      toast({ title: "Bot ID copied" });
+      toast({ title: t("toast_botIdCopied") });
     }
   };
 
   return (
     <div className="space-y-6 max-w-4xl w-full">
-      <h1 className="text-xl font-semibold">Status Bot</h1>
+      <h1 className="text-xl font-semibold">{t("botStatus_title")}</h1>
 
       {/* ── Row 1: Bot Identity Card ── */}
       <Card>
@@ -295,7 +297,7 @@ export function BotStatus() {
                         className={cn("text-xs", isRunning ? "bg-green-600 text-white" : "bg-muted text-muted-foreground")}
                       >
                         <span className={cn("inline-block h-1.5 w-1.5 rounded-full mr-1", isRunning ? "bg-white" : "bg-destructive")} />
-                        {isRunning ? "Online" : "Offline"}
+                        {isRunning ? t("botStatus_online") : t("botStatus_offline")}
                       </Badge>
                     </div>
                   </>
@@ -311,7 +313,7 @@ export function BotStatus() {
                 disabled={isRunning || startMutation.isPending}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                <Play className="mr-1 h-3.5 w-3.5" /> Enable Bot
+                <Play className="mr-1 h-3.5 w-3.5" /> {t("botStatus_start")}
               </Button>
               <Button
                 size="sm"
@@ -319,7 +321,7 @@ export function BotStatus() {
                 disabled={!isRunning || stopMutation.isPending}
                 variant="destructive"
               >
-                <Square className="mr-1 h-3.5 w-3.5" /> Disable Bot
+                <Square className="mr-1 h-3.5 w-3.5" /> {t("botStatus_stop")}
               </Button>
               <Button
                 size="sm"
@@ -332,12 +334,12 @@ export function BotStatus() {
                     restartMutation.isPending ? "animate-spin" : ""
                   }`}
                 />{" "}
-                Restart
+                {t("botStatus_restart")}
               </Button>
               {inviteUrl && (
                 <Button size="sm" variant="secondary" asChild>
                   <a href={inviteUrl} target="_blank" rel="noopener noreferrer">
-                    <UserPlus className="mr-1 h-3.5 w-3.5" /> Invite Bot
+                    <UserPlus className="mr-1 h-3.5 w-3.5" /> {t("botStatus_start")}
                   </a>
                 </Button>
               )}
@@ -355,7 +357,7 @@ export function BotStatus() {
               <Wifi className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Latency</p>
+              <p className="text-xs text-muted-foreground">{t("botStatus_latency")}</p>
               {infoLoading ? (
                 <Skeleton className="h-6 w-16 mt-1" />
               ) : (
@@ -378,14 +380,14 @@ export function BotStatus() {
               <Globe className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Servers</p>
+              <p className="text-xs text-muted-foreground">{t("botStatus_servers")}</p>
               {infoLoading ? (
                 <Skeleton className="h-6 w-12 mt-1" />
               ) : (
                 <p className="text-xl font-bold">
                   {botInfo?.guild_count ?? 0}{" "}
                   <span className="text-xs font-normal text-muted-foreground">
-                    servers
+                    {t("botStatus_servers").toLowerCase()}
                   </span>
                 </p>
               )}
@@ -400,14 +402,14 @@ export function BotStatus() {
               <Users className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Members</p>
+              <p className="text-xs text-muted-foreground">{t("botStatus_users")}</p>
               {infoLoading ? (
                 <Skeleton className="h-6 w-16 mt-1" />
               ) : (
                 <p className="text-xl font-bold">
                   {botInfo?.member_count?.toLocaleString("vi-VN") ?? 0}{" "}
                   <span className="text-xs font-normal text-muted-foreground">
-                    total
+                    {t("botStatus_users").toLowerCase()}
                   </span>
                 </p>
               )}
@@ -422,7 +424,7 @@ export function BotStatus() {
               <Timer className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Uptime</p>
+              <p className="text-xs text-muted-foreground">{t("botStatus_uptime")}</p>
               {infoLoading ? (
                 <Skeleton className="h-6 w-28 mt-1" />
               ) : (
@@ -443,12 +445,12 @@ export function BotStatus() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">
-              Edit Bot
+              {t("botStatus_sysConfig")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="bot-username">Username</Label>
+              <Label htmlFor="bot-username">{t("botStatus_activityName")}</Label>
               <Input
                 id="bot-username"
                 placeholder={botInfo?.username ?? "Name bot"}
@@ -458,18 +460,18 @@ export function BotStatus() {
             </div>
 
             <div className="space-y-2">
-              <Label>Avatar</Label>
+              <Label>{t("botStatus_activityType")}</Label>
               <div className="flex items-center gap-3">
                 {avatarPreview ? (
                   <img
                     src={avatarPreview}
-                    alt="Preview"
+                    alt={t("botStatus_activityName")}
                     className="h-16 w-16 rounded-full object-cover border"
                   />
                 ) : botInfo?.avatar_url ? (
                   <img
                     src={botInfo.avatar_url}
-                    alt="Current avatar"
+                    alt={t("botStatus_activityName")}
                     className="h-16 w-16 rounded-full object-cover border"
                   />
                 ) : (
@@ -490,7 +492,7 @@ export function BotStatus() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Discord limits renames to 2/hour
+              {t("botStatus_advancedVoice")}
             </p>
 
             <Button
@@ -498,7 +500,7 @@ export function BotStatus() {
               onClick={handleProfileSubmit}
               disabled={profileMutation.isPending}
             >
-              Save changes
+              {t("botStatus_save")}
             </Button>
           </CardContent>
         </Card>
@@ -507,12 +509,12 @@ export function BotStatus() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">
-              Status &amp; Active
+              {t("botStatus_statusType")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Status</Label>
+              <Label>{t("botStatus_statusType")}</Label>
               <Select
                 value={presenceStatus}
                 onValueChange={(v) =>
@@ -526,7 +528,7 @@ export function BotStatus() {
                   <SelectItem value="online">
                     <span className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-green-500 inline-block" />
-                      Online
+                      {t("botStatus_online")}
                     </span>
                   </SelectItem>
                   <SelectItem value="idle">
@@ -538,13 +540,13 @@ export function BotStatus() {
                   <SelectItem value="dnd">
                     <span className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
-                      Do Not Disturb
+                      DND
                     </span>
                   </SelectItem>
                   <SelectItem value="invisible">
                     <span className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-gray-400 inline-block" />
-                      Hidden
+                      {t("botStatus_offline")}
                     </span>
                   </SelectItem>
                 </SelectContent>
@@ -552,7 +554,7 @@ export function BotStatus() {
             </div>
 
             <div className="space-y-2">
-              <Label>Activity type</Label>
+              <Label>{t("botStatus_activityType")}</Label>
               <Select
                 value={activityType}
                 onValueChange={(v) =>
@@ -563,17 +565,17 @@ export function BotStatus() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="playing">Playing</SelectItem>
-                  <SelectItem value="watching">Watching</SelectItem>
-                  <SelectItem value="listening">Listening to</SelectItem>
-                  <SelectItem value="competing">Competing</SelectItem>
-                  <SelectItem value="streaming">Streaming</SelectItem>
+                  <SelectItem value="playing">{t("botStatus_playing")}</SelectItem>
+                  <SelectItem value="watching">{t("botStatus_watching")}</SelectItem>
+                  <SelectItem value="listening">{t("botStatus_listening")}</SelectItem>
+                  <SelectItem value="competing">{t("botStatus_competing")}</SelectItem>
+                  <SelectItem value="streaming">{t("botStatus_streaming")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="activity-name">Activity name</Label>
+              <Label htmlFor="activity-name">{t("botStatus_activityName")}</Label>
               <Input
                 id="activity-name"
                 placeholder="Minecraft"
@@ -584,7 +586,7 @@ export function BotStatus() {
 
             {activityType === "streaming" && (
               <div className="space-y-2">
-                <Label htmlFor="stream-url">Stream URL</Label>
+                <Label htmlFor="stream-url">{t("botStatus_streamUrl")}</Label>
                 <Input
                   id="stream-url"
                   placeholder="https://twitch.tv/..."
@@ -599,7 +601,7 @@ export function BotStatus() {
               onClick={handlePresenceSubmit}
               disabled={presenceMutation.isPending}
             >
-              Update
+              {t("botStatus_save")}
             </Button>
           </CardContent>
         </Card>
@@ -613,9 +615,9 @@ export function BotStatus() {
               <EyeOff className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-sm font-medium">Hide bot status</p>
+              <p className="text-sm font-medium">{t("botStatus_offline")}</p>
               <p className="text-xs text-muted-foreground">
-                Bot appears offline to everyone on Discord. Only you see the real status via this dashboard.
+                {t("botStatus_shardDistribution")}
               </p>
             </div>
           </div>

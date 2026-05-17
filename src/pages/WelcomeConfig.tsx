@@ -12,6 +12,7 @@ import { ChannelSelect } from "@/components/ChannelSelect";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { HandMetal, LogOut, MessageSquare, UserCog, Plus, Trash2 } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -220,6 +221,7 @@ function EmbedEditor({
   form: EmbedFormState;
   onChange: (updater: (prev: EmbedFormState) => EmbedFormState) => void;
 }) {
+  const { t } = useT();
   const addField = () => {
     if (form.fields.length >= 10) return;
     onChange((prev) => ({
@@ -252,7 +254,7 @@ function EmbedEditor({
     <div className="space-y-4">
       {/* Color picker */}
       <div className="space-y-2">
-        <Label>Embed color</Label>
+        <Label>{t("welcome_embedColor")}</Label>
         <div className="flex items-center gap-2">
           <div
             className="w-8 h-8 rounded border shrink-0"
@@ -271,7 +273,7 @@ function EmbedEditor({
 
       {/* Title */}
       <div className="space-y-2">
-        <Label>Title</Label>
+        <Label>{t("welcome_titleEmbed")}</Label>
         <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
           <Input
             className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -279,7 +281,7 @@ function EmbedEditor({
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange((prev) => ({ ...prev, title: e.target.value }))
             }
-            placeholder="Title embed"
+            placeholder={t("welcome_titleEmbed")}
           />
           <EmojiPicker onSelect={(em) => onChange((prev) => ({ ...prev, title: prev.title + em }))} />
         </div>
@@ -287,14 +289,14 @@ function EmbedEditor({
 
       {/* Description */}
       <div className="space-y-2">
-        <Label>Description</Label>
+        <Label>{t("welcome_descEmbed")}</Label>
         <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
           <Textarea
             value={form.description}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
               onChange((prev) => ({ ...prev, description: e.target.value }))
             }
-            placeholder="Content embed..."
+            placeholder={t("welcome_contentText")}
             rows={3}
             className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
@@ -307,7 +309,7 @@ function EmbedEditor({
 
       {/* Footer */}
       <div className="space-y-2">
-        <Label>Footer</Label>
+        <Label>{t("welcome_footerEmbed")}</Label>
         <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
           <Input
             className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -315,7 +317,7 @@ function EmbedEditor({
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               onChange((prev) => ({ ...prev, footer: e.target.value }))
             }
-            placeholder="Footer text..."
+            placeholder={t("welcome_footerEmbed")}
           />
           <EmojiPicker onSelect={(em) => onChange((prev) => ({ ...prev, footer: prev.footer + em }))} />
         </div>
@@ -324,7 +326,7 @@ function EmbedEditor({
       {/* Fields */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label>Fields</Label>
+          <Label>{t("welcome_fields")}</Label>
           <Button
             type="button"
             variant="outline"
@@ -332,11 +334,11 @@ function EmbedEditor({
             onClick={addField}
             disabled={form.fields.length >= 10}
           >
-            <Plus className="w-3 h-3 mr-1" /> Add field
+            <Plus className="w-3 h-3 mr-1" /> {t("welcome_addField")}
           </Button>
         </div>
         {form.fields.length === 0 && (
-          <p className="text-xs text-muted-foreground">No fields yet.</p>
+          <p className="text-xs text-muted-foreground">{t("welcome_noFields")}</p>
         )}
         <div className="space-y-3">
           {form.fields.map((field, idx) => (
@@ -364,7 +366,7 @@ function EmbedEditor({
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     updateField(idx, "name", e.target.value)
                   }
-                  placeholder="Name field"
+                  placeholder={t("welcome_fieldName")}
                   className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <EmojiPicker onSelect={(em) => updateField(idx, "name", field.name + em)} />
@@ -375,7 +377,7 @@ function EmbedEditor({
                   onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
                     updateField(idx, "value", e.target.value)
                   }
-                  placeholder="Value field"
+                  placeholder={t("welcome_fieldValue")}
                   rows={2}
                   className="text-sm flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
@@ -388,7 +390,7 @@ function EmbedEditor({
                     updateField(idx, "inline", val)
                   }
                 />
-                <Label className="text-xs">Inline</Label>
+                <Label className="text-xs">{t("welcome_inline")}</Label>
               </div>
             </div>
           ))}
@@ -397,7 +399,7 @@ function EmbedEditor({
 
       {/* Preview */}
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Preview</Label>
+        <Label className="text-xs text-muted-foreground">{t("welcome_preview")}</Label>
         <DiscordEmbedPreview form={form} />
       </div>
     </div>
@@ -407,6 +409,7 @@ function EmbedEditor({
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export function WelcomeConfig() {
+  const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -531,17 +534,17 @@ export function WelcomeConfig() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["welcome_config"] });
       qc.invalidateQueries({ queryKey: ["embeds"] });
-      toast({ title: "Saved" });
+      toast({ title: t("toast_saved") });
     },
     onError: () => {
-      toast({ variant: "destructive", title: "Error", description: "Save failed." });
+      toast({ variant: "destructive", title: t("error"), description: t("toast_saveFailed") });
     },
   });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-muted-foreground">Loading...</p>
+        <p className="text-muted-foreground">{t("loading")}</p>
       </div>
     );
   }
@@ -554,9 +557,9 @@ export function WelcomeConfig() {
           <HandMetal className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Welcome & Goodbye</h1>
+          <h1 className="text-xl font-bold">{t("welcome_title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Configure welcome messages for new members and goodbye messages when they leave.
+            {t("welcome_title")}
           </p>
         </div>
       </div>
@@ -565,35 +568,35 @@ export function WelcomeConfig() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <MessageSquare className="w-4 h-4" /> Welcome
+            <MessageSquare className="w-4 h-4" /> {t("welcome_enable")}
           </CardTitle>
           <CardDescription>
-            Send a welcome message when new members join the server.
+            {t("welcome_enable")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Enable welcome</p>
-              <p className="text-sm text-muted-foreground">Enable the welcome message.</p>
+              <p className="font-medium">{t("welcome_enable")}</p>
+              <p className="text-sm text-muted-foreground">{t("welcome_enable")}</p>
             </div>
             <Switch checked={welcomeEnabled} onCheckedChange={setWelcomeEnabled} />
           </div>
 
           <div className="space-y-2">
-            <Label>Welcome channel</Label>
+            <Label>{t("welcome_channel")}</Label>
             <ChannelSelect
               value={welcomeChannelId}
               onChange={setWelcomeChannelId}
               filter="text"
-              placeholder="Select channel..."
+              placeholder={t("selectChannel")}
             />
           </div>
 
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Embed mode</p>
-              <p className="text-sm text-muted-foreground">Display the message as an embed.</p>
+              <p className="font-medium">{t("welcome_useEmbed")}</p>
+              <p className="text-sm text-muted-foreground">{t("welcome_useEmbed")}</p>
             </div>
             <Switch checked={welcomeEmbedEnabled} onCheckedChange={setWelcomeEmbedEnabled} />
           </div>
@@ -602,7 +605,7 @@ export function WelcomeConfig() {
             <EmbedEditor form={welcomeEmbedForm} onChange={setWelcomeEmbedForm} />
           ) : (
             <div className="space-y-2">
-              <Label>Welcome message</Label>
+              <Label>{t("welcome_message")}</Label>
               <Textarea
                 value={welcomeMessage}
                 onChange={(e) => setWelcomeMessage(e.target.value)}
@@ -621,23 +624,23 @@ export function WelcomeConfig() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <MessageSquare className="w-4 h-4" /> Welcome DM
+            <MessageSquare className="w-4 h-4" /> {t("welcome_dmContent")}
           </CardTitle>
           <CardDescription>
-            Send a direct message (DM) to new members.
+            {t("welcome_enableDm")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Enable welcome DM</p>
-              <p className="text-sm text-muted-foreground">Send a private message to new members.</p>
+              <p className="font-medium">{t("welcome_enableDm")}</p>
+              <p className="text-sm text-muted-foreground">{t("welcome_enableDm")}</p>
             </div>
             <Switch checked={welcomeDmEnabled} onCheckedChange={setWelcomeDmEnabled} />
           </div>
 
           <div className="space-y-2">
-            <Label>Messages DM</Label>
+            <Label>{t("welcome_dmContent")}</Label>
             <Textarea
               value={welcomeDmMessage}
               onChange={(e) => setWelcomeDmMessage(e.target.value)}
@@ -655,35 +658,35 @@ export function WelcomeConfig() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <LogOut className="w-4 h-4" /> Goodbye
+            <LogOut className="w-4 h-4" /> {t("welcome_goodbye")}
           </CardTitle>
           <CardDescription>
-            Send a goodbye message when members leave the server.
+            {t("welcome_goodbye")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Enable goodbye</p>
-              <p className="text-sm text-muted-foreground">Enable the goodbye message.</p>
+              <p className="font-medium">{t("welcome_goodbye")}</p>
+              <p className="text-sm text-muted-foreground">{t("welcome_goodbye")}</p>
             </div>
             <Switch checked={goodbyeEnabled} onCheckedChange={setGoodbyeEnabled} />
           </div>
 
           <div className="space-y-2">
-            <Label>Goodbye channel</Label>
+            <Label>{t("welcome_goodbyeChannel")}</Label>
             <ChannelSelect
               value={goodbyeChannelId}
               onChange={setGoodbyeChannelId}
               filter="text"
-              placeholder="Select channel..."
+              placeholder={t("selectChannel")}
             />
           </div>
 
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div>
-              <p className="font-medium">Embed mode</p>
-              <p className="text-sm text-muted-foreground">Display the message as an embed.</p>
+              <p className="font-medium">{t("welcome_useEmbed")}</p>
+              <p className="text-sm text-muted-foreground">{t("welcome_useEmbed")}</p>
             </div>
             <Switch checked={goodbyeEmbedEnabled} onCheckedChange={setGoodbyeEmbedEnabled} />
           </div>
@@ -692,7 +695,7 @@ export function WelcomeConfig() {
             <EmbedEditor form={goodbyeEmbedForm} onChange={setGoodbyeEmbedForm} />
           ) : (
             <div className="space-y-2">
-              <Label>Goodbye message</Label>
+              <Label>{t("welcome_goodbyeMessage")}</Label>
               <Textarea
                 value={goodbyeMessage}
                 onChange={(e) => setGoodbyeMessage(e.target.value)}
@@ -711,18 +714,18 @@ export function WelcomeConfig() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <UserCog className="w-4 h-4" /> Auto-nickname
+            <UserCog className="w-4 h-4" /> {t("welcome_autoRole")}
           </CardTitle>
           <CardDescription>
-            Automatically set a nickname for members when they join the server.
+            {t("welcome_autoRole")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          <Label>Nickname template</Label>
+          <Label>{t("welcome_autoRole")}</Label>
           <Input
             value={autoNicknameTemplate}
             onChange={(e) => setAutoNicknameTemplate(e.target.value)}
-            placeholder="Leave blank to disable"
+            placeholder={t("welcome_autoRole")}
           />
           <p className="text-xs text-muted-foreground">
             Available: {"{username}"}, {"{server}"}, {"{discriminator}"}
@@ -736,7 +739,7 @@ export function WelcomeConfig() {
         disabled={saveMutation.isPending}
         className="w-full"
       >
-        {saveMutation.isPending ? "Saving..." : "Save Config"}
+        {saveMutation.isPending ? t("saving") : t("save")}
       </Button>
     </div>
   );
