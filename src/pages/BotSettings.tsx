@@ -167,6 +167,7 @@ function GeneralSection() {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export function BotSettings() {
+  const { t } = useT();
   return (
     <div className="space-y-4 max-w-3xl">
       <Accordion type="multiple" defaultValue={["general"]} className="space-y-2">
