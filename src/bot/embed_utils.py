@@ -664,6 +664,55 @@ DEFAULTS: dict[str, dict] = {
             {"name": "📊 Tổng", "value": "{total}", "inline": True},
         ],
     },
+    # ── Server Alerts ──
+    "alert_mass_ban": {
+        "title": "🚨 Mass Ban Detected",
+        "description": "Multiple bans detected in a short period.",
+        "color": "#ED4245",
+        "fields": [
+            {"name": "Actor", "value": "{actor}", "inline": True},
+            {"name": "Events", "value": "{event_count} in {window_minutes}m", "inline": True},
+            {"name": "Severity", "value": "{severity}", "inline": True},
+        ],
+    },
+    "alert_mass_kick": {
+        "title": "🚨 Mass Kick Detected",
+        "description": "Multiple kicks detected in a short period.",
+        "color": "#ED4245",
+        "fields": [
+            {"name": "Actor", "value": "{actor}", "inline": True},
+            {"name": "Events", "value": "{event_count} in {window_minutes}m", "inline": True},
+            {"name": "Severity", "value": "{severity}", "inline": True},
+        ],
+    },
+    "alert_channel_delete": {
+        "title": "⚠️ Channel Deletion Storm",
+        "description": "Multiple channels deleted in a short period.",
+        "color": "#FEE75C",
+        "fields": [
+            {"name": "Actor", "value": "{actor}", "inline": True},
+            {"name": "Events", "value": "{event_count} in {window_minutes}m", "inline": True},
+        ],
+    },
+    "alert_role_delete": {
+        "title": "⚠️ Role Deletion Storm",
+        "description": "Multiple roles deleted in a short period.",
+        "color": "#FEE75C",
+        "fields": [
+            {"name": "Actor", "value": "{actor}", "inline": True},
+            {"name": "Events", "value": "{event_count} in {window_minutes}m", "inline": True},
+        ],
+    },
+    "alert_nuke_detect": {
+        "title": "🔴 NUKE ATTEMPT DETECTED",
+        "description": "Destructive actions detected from a single actor. Immediate attention required!",
+        "color": "#ED4245",
+        "fields": [
+            {"name": "Suspected Actor", "value": "{actor}", "inline": True},
+            {"name": "Actions", "value": "{event_count} in {window_minutes}m", "inline": True},
+            {"name": "Severity", "value": "CRITICAL", "inline": True},
+        ],
+    },
 }
 
 

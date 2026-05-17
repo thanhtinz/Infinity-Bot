@@ -160,6 +160,12 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "restore_completed",      label: "Khôi phục hoàn tất",      labelEn: "Restore Completed",      icon: CheckCircle,  desc: "Khi khôi phục server hoàn tất" },
   { key: "member_pull_started",    label: "Đang kéo thành viên",     labelEn: "Member Pull Started",    icon: Users,        desc: "Khi bắt đầu kéo thành viên về server" },
   { key: "member_pull_completed",  label: "Kéo thành viên hoàn tất", labelEn: "Member Pull Completed",  icon: UserPlus,     desc: "Khi kéo thành viên về server hoàn tất" },
+  // ── Cảnh báo Server ──
+  { key: "alert_mass_ban",        label: "Cảnh báo Mass Ban",       labelEn: "Mass Ban Alert",         icon: AlertTriangle, desc: "Khi phát hiện nhiều ban liên tục" },
+  { key: "alert_mass_kick",       label: "Cảnh báo Mass Kick",      labelEn: "Mass Kick Alert",        icon: AlertTriangle, desc: "Khi phát hiện nhiều kick liên tục" },
+  { key: "alert_channel_delete",  label: "Cảnh báo xóa kênh",      labelEn: "Channel Delete Alert",   icon: Trash2,        desc: "Khi phát hiện xóa nhiều kênh liên tục" },
+  { key: "alert_role_delete",     label: "Cảnh báo xóa role",       labelEn: "Role Delete Alert",      icon: Trash2,        desc: "Khi phát hiện xóa nhiều role liên tục" },
+  { key: "alert_nuke_detect",     label: "Phát hiện Nuke",          labelEn: "Nuke Detected",          icon: Zap,           desc: "Khi phát hiện hành vi phá server (nuke)" },
 ];
 
 // ─── Event groups ────────────────────────────────────────────────────────────
@@ -174,6 +180,7 @@ export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] 
   { label: "Tương tác — Có mục tiêu", labelEn: "Interactions — Targeted", keys: ["interact_airkiss", "interact_angrystare", "interact_bite", "interact_brofist", "interact_cuddle", "interact_handhold", "interact_hug", "interact_kiss", "interact_lick", "interact_nom", "interact_nuzzle", "interact_pat", "interact_pinch", "interact_poke", "interact_punch", "interact_slap", "interact_smack", "interact_tickle", "interact_wave", "interact_wink", "interact_stare", "interact_peek"] },
   { label: "Tương tác — Biểu cảm", labelEn: "Interactions — Expressions", keys: ["interact_bleh", "interact_blush", "interact_celebrate", "interact_cheers", "interact_clap", "interact_confused", "interact_cool", "interact_cry", "interact_dance", "interact_drool", "interact_evillaugh", "interact_facepalm", "interact_happy", "interact_headbang", "interact_huh", "interact_laugh", "interact_love", "interact_mad", "interact_nervous", "interact_no", "interact_nosebleed", "interact_nyah", "interact_pout", "interact_roll", "interact_run", "interact_sad", "interact_scared", "interact_shout", "interact_shrug", "interact_shy", "interact_sigh", "interact_sip", "interact_sleep", "interact_slowclap", "interact_smile", "interact_smug", "interact_sneeze", "interact_sorry", "interact_stop", "interact_surprised", "interact_sweat", "interact_thumbsup", "interact_tired", "interact_woah", "interact_yawn", "interact_yay", "interact_yes"] },
   { label: "Bảo mật & Khôi phục", labelEn: "Security & Recovery", keys: ["verification_log", "verification_denied", "backup_completed", "restore_started", "restore_completed", "member_pull_started", "member_pull_completed"] },
+  { label: "Cảnh báo Server", labelEn: "Server Alerts", keys: ["alert_mass_ban", "alert_mass_kick", "alert_channel_delete", "alert_role_delete", "alert_nuke_detect"] },
 ];
 
 // ─── Variables reference ─────────────────────────────────────────────────────
