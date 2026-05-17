@@ -2157,4 +2157,3 @@ const vi = {
 } as const;
 
 export default vi;
-export type TranslationKey = keyof typeof vi;

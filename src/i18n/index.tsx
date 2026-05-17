@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from "react";
-import type { TranslationKey } from "./vi";
+import type { TranslationKey } from "./en";
 import en from "./en";
 
 interface I18nCtx {

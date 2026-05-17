@@ -1,6 +1,4 @@
-import type { TranslationKey } from "./vi";
-
-const en: Record<TranslationKey, string> = {
+const en = {
   // Common
   loading: "Loading...",
   save: "Save",
@@ -2266,6 +2264,7 @@ const en: Record<TranslationKey, string> = {
   nav_verification: "Verification",
   nav_serverBackup: "Server Backup",
   nav_securityConfig: "Security Config",
-};
+} as const;
 
 export default en;
+export type TranslationKey = keyof typeof en;
