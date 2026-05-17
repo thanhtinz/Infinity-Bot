@@ -46,7 +46,7 @@ def get_or_create_config(session, guild_id: str) -> LevelingConfig:
     return cfg
 
 
-def rank_card_settings(cfg: LevelingConfig | None, member_xp: MemberXP | None = None) -> dict:
+def rank_card_settings(cfg: LevelingConfig | None, member_xp: MemberXP | None = None, session=None) -> dict:
     import os
     settings = {
         "accent": "#7C8CFF",
@@ -82,21 +82,40 @@ def rank_card_settings(cfg: LevelingConfig | None, member_xp: MemberXP | None = 
         guild_id = cfg.guild_id
         bg_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "static", "uploads")
 
+        # Helper: try to load bg from DB, save to temp file for PIL
+        def _resolve_bg(slug: str) -> str | None:
+            """Check local file first, then DB. Returns file path or None."""
+            local = os.path.join(bg_dir, f"{slug}.png")
+            if os.path.exists(local):
+                return local
+            # Check DB
+            from src.models.models import UploadedFile
+            from sqlalchemy import select as _sel
+            uf = session.execute(_sel(UploadedFile).where(UploadedFile.id == slug)).scalars().first()
+            if uf and uf.data:
+                import tempfile
+                os.makedirs(bg_dir, exist_ok=True)
+                # Cache to local filesystem for this container lifetime
+                with open(local, "wb") as _f:
+                    _f.write(uf.data)
+                return local
+            return None
+
         # Per-user background takes priority
         user_slug = member_xp.rank_card_bg if member_xp and member_xp.rank_card_bg else None
         if user_slug:
-            user_bg = os.path.join(bg_dir, f"{user_slug}.png")
-            if os.path.exists(user_bg):
+            user_bg = _resolve_bg(user_slug)
+            if user_bg:
                 settings["custom_bg_path"] = user_bg
                 return settings
 
         # Server active background
         active_slug = saved.get("active_bg_slug")
         if active_slug:
-            candidate = os.path.join(bg_dir, f"{active_slug}.png")
+            candidate = _resolve_bg(active_slug)
         else:
-            candidate = os.path.join(bg_dir, f"rank_bg_{guild_id}.png")
-        if candidate and os.path.exists(candidate):
+            candidate = _resolve_bg(f"rank_bg_{guild_id}")
+        if candidate:
             settings["custom_bg_path"] = candidate
     return settings
 
@@ -311,7 +330,7 @@ class LevelingCog(discord.Cog):
                 voice_minutes=row.voice_minutes or 0,
                 voice_xp=row.voice_xp or 0,
                 rep_score=row.rep_score or 0,
-                **rank_card_settings(get_or_create_config(session, str(ctx.guild.id)), row),
+                **rank_card_settings(get_or_create_config(session, str(ctx.guild.id)), row, session=session),
             )
             file = discord.File(card, filename="rank-card.png")
             await ctx.defer()
@@ -323,24 +342,28 @@ class LevelingCog(discord.Cog):
     async def background(self, ctx):
         """Show available backgrounds and let user pick one."""
         import os
+        from src.models.models import UploadedFile
         session = get_session()
         try:
             cfg = get_or_create_config(session, str(ctx.guild.id))
             bg_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "static", "uploads")
             guild_id = str(ctx.guild.id)
 
-            # Collect available backgrounds
+            # Collect available backgrounds (DB + local)
             items = []
             idx = 1
             while True:
                 slug = f"rank_bg_{guild_id}_{idx}"
-                if not os.path.exists(os.path.join(bg_dir, f"{slug}.png")):
+                in_db = session.execute(select(UploadedFile).where(UploadedFile.id == slug)).scalars().first()
+                in_fs = os.path.exists(os.path.join(bg_dir, f"{slug}.png"))
+                if not in_db and not in_fs:
                     break
                 items.append(slug)
                 idx += 1
             # Legacy single bg
             legacy = f"rank_bg_{guild_id}"
-            if os.path.exists(os.path.join(bg_dir, f"{legacy}.png")):
+            legacy_db = session.execute(select(UploadedFile).where(UploadedFile.id == legacy)).scalars().first()
+            if legacy_db or os.path.exists(os.path.join(bg_dir, f"{legacy}.png")):
                 items.insert(0, legacy)
 
             if not items:
@@ -384,55 +407,72 @@ class LevelingCog(discord.Cog):
         import os
         from PIL import Image as PILImage
         from io import BytesIO
+        from src.models.models import UploadedFile
         guild_id = str(ctx.guild.id)
         bg_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "static", "uploads")
 
-        items = []
-        idx = 1
-        while True:
-            slug = f"rank_bg_{guild_id}_{idx}"
-            path = os.path.join(bg_dir, f"{slug}.png")
-            if not os.path.exists(path):
-                break
-            items.append((f"#{idx}", path))
-            idx += 1
-        legacy_path = os.path.join(bg_dir, f"rank_bg_{guild_id}.png")
-        if os.path.exists(legacy_path):
-            items.insert(0, ("#0", legacy_path))
+        session = get_session()
+        try:
+            def _resolve_path(slug):
+                local = os.path.join(bg_dir, f"{slug}.png")
+                if os.path.exists(local):
+                    return local
+                uf = session.execute(select(UploadedFile).where(UploadedFile.id == slug)).scalars().first()
+                if uf and uf.data:
+                    os.makedirs(bg_dir, exist_ok=True)
+                    with open(local, "wb") as _f:
+                        _f.write(uf.data)
+                    return local
+                return None
 
-        if not items:
-            await ctx.respond("❌ Server chưa có background nào. Admin hãy upload trên dashboard.", ephemeral=True)
-            return
+            items = []
+            idx = 1
+            while True:
+                slug = f"rank_bg_{guild_id}_{idx}"
+                path = _resolve_path(slug)
+                if not path:
+                    break
+                items.append((f"#{idx}", path))
+                idx += 1
+            legacy_path = _resolve_path(f"rank_bg_{guild_id}")
+            if legacy_path:
+                items.insert(0, ("#0", legacy_path))
 
-        # Build collage: 3 per row, thumbnail 320x80
-        TW, TH = 320, 80
-        cols = min(3, len(items))
-        rows_count = math.ceil(len(items) / cols)
-        collage = PILImage.new("RGBA", (cols * TW, rows_count * TH), (30, 30, 38, 255))
-        from PIL import ImageDraw as PIDraw, ImageFont as PIFont
-        cd = PIDraw.Draw(collage)
-        for i, (label, path) in enumerate(items):
-            cx = (i % cols) * TW
-            cy = (i // cols) * TH
-            try:
-                thumb = PILImage.open(path).convert("RGBA").resize((TW, TH), PILImage.Resampling.LANCZOS)
-                collage.paste(thumb, (cx, cy))
-            except Exception:
-                pass
-            cd.rectangle((cx, cy, cx + TW - 1, cy + TH - 1), outline=(255, 255, 255, 60), width=1)
-            cd.text((cx + 6, cy + 6), label, fill=(255, 255, 255, 220))
+            if not items:
+                await ctx.respond("❌ Server chưa có background nào. Admin hãy upload trên dashboard.", ephemeral=True)
+                return
 
-        buf = BytesIO()
-        collage.save(buf, format="PNG")
-        buf.seek(0)
-        file = discord.File(buf, filename="backgrounds.png")
-        embed = discord.Embed(
-            title="🖼️ Danh sách Background",
-            description=f"**{len(items)}** background có sẵn. Dùng `/level background` để chọn của bạn.",
-            color=0x7C8CFF,
-        )
-        embed.set_image(url="attachment://backgrounds.png")
-        await ctx.respond(embed=embed, file=file)
+            # Build collage: 3 per row, thumbnail 320x80
+            TW, TH = 320, 80
+            cols = min(3, len(items))
+            rows_count = math.ceil(len(items) / cols)
+            collage = PILImage.new("RGBA", (cols * TW, rows_count * TH), (30, 30, 38, 255))
+            from PIL import ImageDraw as PIDraw, ImageFont as PIFont
+            cd = PIDraw.Draw(collage)
+            for i, (label, path) in enumerate(items):
+                cx = (i % cols) * TW
+                cy = (i // cols) * TH
+                try:
+                    thumb = PILImage.open(path).convert("RGBA").resize((TW, TH), PILImage.Resampling.LANCZOS)
+                    collage.paste(thumb, (cx, cy))
+                except Exception:
+                    pass
+                cd.rectangle((cx, cy, cx + TW - 1, cy + TH - 1), outline=(255, 255, 255, 60), width=1)
+                cd.text((cx + 6, cy + 6), label, fill=(255, 255, 255, 220))
+
+            buf = BytesIO()
+            collage.save(buf, format="PNG")
+            buf.seek(0)
+            file = discord.File(buf, filename="backgrounds.png")
+            embed = discord.Embed(
+                title="🖼️ Danh sách Background",
+                description=f"**{len(items)}** background có sẵn. Dùng `/level background` để chọn của bạn.",
+                color=0x7C8CFF,
+            )
+            embed.set_image(url="attachment://backgrounds.png")
+            await ctx.respond(embed=embed, file=file)
+        finally:
+            session.close()
 
     @level.command(name="leaderboard", description="Xem bảng xếp hạng level")
     async def leaderboard(self, ctx, page: discord.Option(int, "Trang", min_value=1, required=False) = 1,

@@ -95,17 +95,33 @@ def _rank_card_settings(cfg: LevelingConfig | None) -> dict:
     # Resolve custom_bg_path — prefer active_bg_slug, fallback to legacy single file
     guild_id = cfg.guild_id if cfg else "0"
     active_slug = (cfg.rank_card_config or {}).get("active_bg_slug") if cfg else None
-    if active_slug:
-        candidate = os.path.join(RANK_CARD_BG_DIR, f"{active_slug}.png")
-    else:
-        candidate = os.path.join(RANK_CARD_BG_DIR, f"rank_bg_{guild_id}.png")
-    if candidate and os.path.exists(candidate):
-        slug_name = active_slug or f"rank_bg_{guild_id}"
-        base["custom_bg_path"] = candidate
-        base["custom_bg_url"] = f"/static/uploads/{slug_name}.png"
-    else:
-        base["custom_bg_path"] = None
-        base["custom_bg_url"] = None
+    slug_name = active_slug or f"rank_bg_{guild_id}"
+
+    # Check DB first, then local filesystem
+    from src.models.models import UploadedFile
+    from src.database.config import SessionLocal
+    _db = SessionLocal()
+    try:
+        uf = _db.execute(select(UploadedFile).where(UploadedFile.id == slug_name)).scalars().first()
+        if uf and uf.data:
+            # Cache to local for PIL rendering
+            os.makedirs(RANK_CARD_BG_DIR, exist_ok=True)
+            local_path = os.path.join(RANK_CARD_BG_DIR, f"{slug_name}.png")
+            if not os.path.exists(local_path):
+                with open(local_path, "wb") as _f:
+                    _f.write(uf.data)
+            base["custom_bg_path"] = local_path
+            base["custom_bg_url"] = f"/api/files/{slug_name}"
+        else:
+            candidate = os.path.join(RANK_CARD_BG_DIR, f"{slug_name}.png")
+            if os.path.exists(candidate):
+                base["custom_bg_path"] = candidate
+                base["custom_bg_url"] = f"/static/uploads/{slug_name}.png"
+            else:
+                base["custom_bg_path"] = None
+                base["custom_bg_url"] = None
+    finally:
+        _db.close()
     return base
 
 
@@ -255,47 +271,73 @@ def update_rank_card_config(body: RankCardConfigIn, db: Session = Depends(get_db
 
 @router.post("/leveling/rank-card/background")
 async def upload_rank_card_background(file: UploadFile = File(...), db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
-    """Upload a custom background image — stores as next available slot."""
+    """Upload a custom background image — stores in DB."""
     allowed = {"image/png", "image/jpeg", "image/webp", "image/gif"}
     if file.content_type not in allowed:
         raise HTTPException(400, "File phải là ảnh PNG, JPEG, WebP hoặc GIF.")
-    os.makedirs(RANK_CARD_BG_DIR, exist_ok=True)
-    # Find next available index
-    idx = 1
-    while os.path.exists(os.path.join(RANK_CARD_BG_DIR, f"rank_bg_{guild_id}_{idx}.png")):
-        idx += 1
-    bg_path = os.path.join(RANK_CARD_BG_DIR, f"rank_bg_{guild_id}_{idx}.png")
     content = await file.read()
     if len(content) > 10 * 1024 * 1024:
         raise HTTPException(400, "File quá lớn (tối đa 10MB).")
+    # Convert to PNG via PIL for consistency
     try:
         from PIL import Image as PILImage
         from io import BytesIO as PILBytesIO
         img = PILImage.open(PILBytesIO(content)).convert("RGBA")
-        img.save(bg_path, format="PNG")
+        buf = PILBytesIO()
+        img.save(buf, format="PNG")
+        png_bytes = buf.getvalue()
     except Exception:
         raise HTTPException(400, "Không thể xử lý file ảnh.")
+    # Find next available index
+    from src.models.models import UploadedFile
+    idx = 1
+    while True:
+        slug = f"rank_bg_{guild_id}_{idx}"
+        existing = db.execute(select(UploadedFile).where(UploadedFile.id == slug)).scalars().first()
+        if not existing:
+            break
+        idx += 1
     slug = f"rank_bg_{guild_id}_{idx}"
-    return {"ok": True, "slug": slug, "url": f"/static/uploads/{slug}.png", "index": idx}
+    uf = UploadedFile(
+        id=slug,
+        filename=f"{slug}.png",
+        content_type="image/png",
+        data=png_bytes,
+        size=len(png_bytes),
+        guild_id=guild_id,
+    )
+    db.add(uf)
+    db.commit()
+    return {"ok": True, "slug": slug, "url": f"/api/files/{slug}", "index": idx}
 
 
 @router.get("/leveling/rank-card/backgrounds")
 def list_rank_card_backgrounds(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """List all uploaded backgrounds for this guild."""
-    os.makedirs(RANK_CARD_BG_DIR, exist_ok=True)
+    from src.models.models import UploadedFile
     items = []
+    # Check DB-stored backgrounds
     idx = 1
     while True:
         slug = f"rank_bg_{guild_id}_{idx}"
-        path = os.path.join(RANK_CARD_BG_DIR, f"{slug}.png")
-        if not os.path.exists(path):
-            break
-        items.append({"slug": slug, "url": f"/static/uploads/{slug}.png", "index": idx})
+        exists = db.execute(select(UploadedFile).where(UploadedFile.id == slug)).scalars().first()
+        if not exists:
+            # Also check legacy local filesystem (backward compat)
+            path = os.path.join(RANK_CARD_BG_DIR, f"{slug}.png")
+            if not os.path.exists(path):
+                break
+            items.append({"slug": slug, "url": f"/static/uploads/{slug}.png", "index": idx})
+        else:
+            items.append({"slug": slug, "url": f"/api/files/{slug}", "index": idx})
         idx += 1
-    # Also include legacy single-bg if exists
-    legacy = os.path.join(RANK_CARD_BG_DIR, f"rank_bg_{guild_id}.png")
-    if os.path.exists(legacy):
-        items.insert(0, {"slug": f"rank_bg_{guild_id}", "url": f"/static/uploads/rank_bg_{guild_id}.png", "index": 0})
+    # Legacy single-bg
+    legacy_slug = f"rank_bg_{guild_id}"
+    legacy_db = db.execute(select(UploadedFile).where(UploadedFile.id == legacy_slug)).scalars().first()
+    legacy_path = os.path.join(RANK_CARD_BG_DIR, f"{legacy_slug}.png")
+    if legacy_db:
+        items.insert(0, {"slug": legacy_slug, "url": f"/api/files/{legacy_slug}", "index": 0})
+    elif os.path.exists(legacy_path):
+        items.insert(0, {"slug": legacy_slug, "url": f"/static/uploads/{legacy_slug}.png", "index": 0})
     cfg = _get_or_create_config(db, guild_id)
     active_slug = (cfg.rank_card_config or {}).get("active_bg_slug")
     return {"backgrounds": items, "active_slug": active_slug}
@@ -304,9 +346,14 @@ def list_rank_card_backgrounds(db: Session = Depends(get_db), guild_id: str = De
 @router.delete("/leveling/rank-card/background/{slug}")
 def delete_rank_card_background(slug: str, db: Session = Depends(get_db), guild_id: str = Depends(get_guild_id)):
     """Remove a specific background by slug."""
-    # Safety: slug must belong to this guild
     if not slug.startswith(f"rank_bg_{guild_id}"):
         raise HTTPException(403, "Không có quyền xóa file này.")
+    # Delete from DB
+    from src.models.models import UploadedFile
+    uf = db.execute(select(UploadedFile).where(UploadedFile.id == slug)).scalars().first()
+    if uf:
+        db.delete(uf)
+    # Also delete from filesystem (legacy)
     path = os.path.join(RANK_CARD_BG_DIR, f"{slug}.png")
     if os.path.exists(path):
         os.remove(path)
@@ -316,7 +363,7 @@ def delete_rank_card_background(slug: str, db: Session = Depends(get_db), guild_
     if saved.get("active_bg_slug") == slug:
         saved.pop("active_bg_slug", None)
         cfg.rank_card_config = saved
-        db.commit()
+    db.commit()
     return {"ok": True}
 
 

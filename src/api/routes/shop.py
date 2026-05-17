@@ -51,15 +51,23 @@ def get_products(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
 
 
 @router.post("/products/upload-image")
-async def upload_product_image(file: UploadFile = File(...)):
-    upload_dir = "static/uploads"
-    os.makedirs(upload_dir, exist_ok=True)
+async def upload_product_image(file: UploadFile = File(...), db=Depends(get_db)):
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(400, "File quá lớn (tối đa 10MB).")
     ext = os.path.splitext(file.filename or "img.jpg")[1] or ".jpg"
-    filename = f"{uuid.uuid4().hex}{ext}"
-    dest = os.path.join(upload_dir, filename)
-    with open(dest, "wb") as f:
-        shutil.copyfileobj(file.file, f)
-    return {"url": f"/static/uploads/{filename}"}
+    file_id = uuid.uuid4().hex
+    from src.models.models import UploadedFile
+    uf = UploadedFile(
+        id=file_id,
+        filename=f"{file_id}{ext}",
+        content_type=file.content_type or "image/jpeg",
+        data=content,
+        size=len(content),
+    )
+    db.add(uf)
+    db.commit()
+    return {"url": f"/api/files/{file_id}"}
 
 
 @router.post("/products", response_model=ProductResponse)

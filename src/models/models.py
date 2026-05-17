@@ -1,7 +1,19 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Date, ForeignKey, Text, JSON, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Date, ForeignKey, Text, JSON, LargeBinary, UniqueConstraint
 from sqlalchemy.orm import relationship
 import datetime
 from src.database.config import Base
+
+
+class UploadedFile(Base):
+    """Store uploaded images in DB (survives ephemeral deploys like Railway)."""
+    __tablename__ = "uploaded_files"
+    id = Column(String, primary_key=True)          # UUID hex
+    filename = Column(String, nullable=False)       # original filename
+    content_type = Column(String, nullable=False)   # e.g. image/png
+    data = Column(LargeBinary, nullable=False)      # raw file bytes
+    size = Column(Integer, nullable=False)           # bytes
+    guild_id = Column(String, nullable=True, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class SystemConfig(Base):
     __tablename__ = "system_config"
