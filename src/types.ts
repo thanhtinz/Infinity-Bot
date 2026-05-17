@@ -40,7 +40,6 @@ export interface Product {
   name: string;
   description?: string;
   note?: string;
-  image_url?: string;
   emoji?: string;
   packages: ProductPackage[];
   active: boolean;

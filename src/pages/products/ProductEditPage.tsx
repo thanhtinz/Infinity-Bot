@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import { ImageIcon, PackagePlus, X, ArrowLeft } from "lucide-react";
+import { PackagePlus, X, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import type { Product, ProductPackage } from "../../types";
@@ -20,7 +20,6 @@ const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   note: z.string().optional(),
-  image_url: z.string().optional(),
   emoji: z.string().optional(),
   active: z.boolean(),
 });
@@ -36,8 +35,6 @@ export function ProductEditPage() {
   const isNew = !id;
 
   const [packages, setPackages] = useState<ProductPackage[]>([emptyPackage()]);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["products"],
@@ -50,10 +47,8 @@ export function ProductEditPage() {
 
   const form = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
-    defaultValues: { name: "", description: "", note: "", image_url: "", emoji: "", active: true },
+    defaultValues: { name: "", description: "", note: "", emoji: "", active: true },
   });
-
-  const imageUrl = form.watch("image_url");
 
   useEffect(() => {
     if (item) {
@@ -61,35 +56,12 @@ export function ProductEditPage() {
         name: item.name,
         description: item.description || "",
         note: item.note || "",
-        image_url: item.image_url || "",
         emoji: item.emoji || "",
         active: item.active,
       });
       setPackages(item.packages?.length ? item.packages.map((pkg) => ({ ...pkg })) : [emptyPackage()]);
     }
   }, [item?.id]);
-
-  // ── Upload image ──────────────────────────────────────────────
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await apiFetch("/api/products/upload-image", {
-        method: "POST",
-        credentials: "include",
-        body: fd,
-      });
-      const data = await res.json();
-      form.setValue("image_url", data.url);
-    } catch {
-      toast({ variant: "destructive", title: "Upload failed" });
-    } finally {
-      setUploading(false);
-    }
-  };
 
   // ── Package helpers ─────────────────────────────────────────
   const updatePkg = (i: number, field: keyof ProductPackage, value: string | number | boolean) => {
@@ -217,50 +189,6 @@ export function ProductEditPage() {
                 <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
                   <FormControl><Textarea {...field} rows={3} placeholder="e.g. Delivery instructions, download links, activation info..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
                   <EmojiPicker onSelect={(em) => field.onChange((field.value || "") + em)} />
-                </div>
-                <FormMessage />
-              </FormItem>
-            )} />
-
-            {/* Ảnh */}
-            <FormField control={form.control} name="image_url" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Product image</FormLabel>
-                <div className="flex gap-2 items-start">
-                  <div
-                    className="w-24 h-20 rounded border bg-muted flex items-center justify-center cursor-pointer overflow-hidden shrink-0"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    {imageUrl ? (
-                      <img src={imageUrl} alt="preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <ImageIcon className="w-6 h-6 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-1.5">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      disabled={uploading}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {uploading ? "Uploading..." : "Choose image"}
-                    </Button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                    />
-                    <Input
-                      {...field}
-                      placeholder="or enter Image URL"
-                      className="text-xs h-8"
-                    />
-                  </div>
                 </div>
                 <FormMessage />
               </FormItem>

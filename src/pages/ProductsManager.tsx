@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { Product } from "../types";
@@ -68,17 +68,12 @@ export function ProductsManager() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((p) => (
             <Card key={p.id} className={cn("overflow-hidden", !p.active && "opacity-60")}>
-              {/* Ảnh */}
-              <div className="aspect-video bg-muted flex items-center justify-center overflow-hidden">
-                {p.image_url ? (
-                  <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
-                ) : (
-                  <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                )}
-              </div>
               <CardHeader className="pb-2 pt-3 px-4">
                 <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-sm font-semibold leading-tight">{p.name}</CardTitle>
+                  <div className="flex items-center gap-2">
+                    {p.emoji && <span className="text-xl">{p.emoji}</span>}
+                    <CardTitle className="text-sm font-semibold leading-tight">{p.name}</CardTitle>
+                  </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <Switch
                       checked={p.active}
