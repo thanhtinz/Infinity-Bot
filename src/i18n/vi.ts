@@ -1064,10 +1064,6 @@ const vi = {
   automod_antiMassMention: "Chống tag hàng loạt",
   automod_capsFilter: "Lọc chữ hoa",
   automod_linkFilter: "Lọc link",
-  automod_maxMessages: "Số tin nhắn tối đa",
-  automod_interval: "Khoảng thời gian (giây)",
-  automod_minLength: "Độ dài tối thiểu",
-  automod_maxMentions: "Số tag tối đa",
   automod_whitelistDomains: "Whitelist (mỗi dòng một domain)",
   automod_badWordsListLabel: "Danh sách từ cấm (mỗi dòng một từ)",
   automod_whitelistChannels: "Kênh whitelist",
@@ -1191,7 +1187,6 @@ const vi = {
   ar_multiTypeHint: "Có thể chọn nhiều kiểu. Text và Embed không thể bật cùng lúc.",
   ar_availableVars: "Biến có sẵn",
   ar_varInsertHint: "Nhấn biến để chèn. Nhấn vào ô văn bản trước để đặt điểm chèn.",
-  ar_responseContent: "Nội dung phản hồi...",
   ar_titleEmbed: "Tiêu đề Embed",
   ar_titleEmbedPlaceholder: "Tiêu đề embed",
   ar_description: "Mô tả",
@@ -1215,7 +1210,6 @@ const vi = {
   ar_content: "Nội dung",
   ar_inline: "Inline",
   ar_reactionEmojis: "Emoji phản hồi",
-  ar_add: "Thêm",
   ar_selectEmojiHint: "Chọn emoji để react tin nhắn gốc",
   ar_untitled: "Chưa đặt tên",
   ar_channel: "kênh",
@@ -1270,7 +1264,6 @@ const vi = {
   // ─── Starboard Extended ───
   starboard_minStars: "Số ⭐ tối thiểu",
   starboard_selfStarAllowed: "Cho phép tự star",
-  starboard_nsfwAllowed: "Cho phép NSFW",
 
   // ─── Sticky Extended ───
   sticky_contentPlaceholder: "Nội dung sticky message...",
@@ -1355,7 +1348,6 @@ const vi = {
   automod_warn: "Cảnh báo",
   automod_mute5min: "Mute 5 phút",
   automod_kick: "Kick",
-  automod_badWordsListLabel: "Danh sách từ cấm (mỗi dòng 1 từ)",
 
   // ─── Ticket Claiming Extended ───
   ticketClaiming_title: "Claim & Phân công",
@@ -1449,7 +1441,6 @@ const vi = {
   configVoice_joinToCreateDesc: "Người dùng vào kênh này → bot tạo phòng voice riêng.",
   configVoice_voiceChannelDefaults: "Mặc định kênh Voice",
   configVoice_voiceChannelDefaultsDesc: "Thiết lập giá trị mặc định cho phòng voice mới tạo.",
-  configVoice_userLimit: "Giới hạn người dùng",
   configVoice_noUserLimit: "0 = Không giới hạn.",
   configVoice_bitrate: "Bitrate",
   configVoice_channelNameFormat: "Định dạng tên kênh",
@@ -1732,11 +1723,9 @@ const vi = {
   cc_dmResponseDesc: "Gửi phản hồi qua DM thay vì kênh",
   cc_disablePings: "Tắt @everyone, @here và tag role",
   cc_disablePingsDesc: "Tắt tất cả tag trong phản hồi",
-  cc_allowedRoles: "Role cho phép",
   cc_allowedRolesPlaceholder: "Role cho phép (để trống = tất cả)...",
   cc_ignoredRoles: "Role bỏ qua",
   cc_ignoredRolesPlaceholder: "Role bị chặn...",
-  cc_allowedChannels: "Kênh cho phép",
   cc_allowedChannelsPlaceholder: "Kênh cho phép (để trống = tất cả)...",
   cc_ignoredChannels: "Kênh bỏ qua",
   cc_ignoredChannelsPlaceholder: "Kênh bị chặn...",
