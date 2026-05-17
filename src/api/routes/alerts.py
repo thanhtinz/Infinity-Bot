@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
-from src.api.dependencies import get_guild_id
+from src.api.deps import get_guild_id
 from src.models.models import ServerAlert, AlertHistory
 
 router = APIRouter(prefix="/api/alerts", tags=["alerts"])

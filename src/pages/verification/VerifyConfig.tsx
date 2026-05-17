@@ -226,40 +226,38 @@ export function VerifyConfig() {
   const configQuery = useQuery({
     queryKey: ["verification-config"],
     queryFn: fetchConfig,
-  const [guildBotForm, setGuildBotForm] = useState({
-    client_id: "",
-    bot_token: "",
-    client_secret: "",
   });
 
+  const guildBotQuery = useQuery({
+    queryKey: ["verification-guild-bot", selectedGuildId],
+    queryFn: fetchGuildBot,
+    enabled: !!selectedGuildId,
   });
 
   useEffect(() => {
     if (configQuery.data && !configForm) {
-
-  const guildBotQuery = useQuery({
-    queryKey: ["verification-guild-bot", selectedGuildId],
-    queryFn: fetchGuildBot,
-    enabled: !!selectedGuildId,
-  });
-
-  const guildBotQuery = useQuery({
-    queryKey: ["verification-guild-bot", selectedGuildId],
-    queryFn: fetchGuildBot,
-    enabled: !!selectedGuildId,
+      setConfigForm(configQuery.data);
+    }
+  }, [configQuery.data, configForm]);
 
   useEffect(() => {
     if (guildBotQuery.data) {
       setGuildBotForm({
+        client_id: guildBotQuery.data.client_id || "",
+        bot_token: "",
+        client_secret: "",
+      });
+    }
+  }, [guildBotQuery.data]);
 
   const guildBotSaveMutation = useMutation({
-    mutationFn: updateGuildBot,
+    mutationFn: () => updateGuildBot(guildBotForm),
     onSuccess: () => {
       toast({ title: "Custom bot saved" });
       qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
       setGuildBotForm((prev) => ({ ...prev, bot_token: "", client_secret: "" }));
     },
-    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
   const guildBotValidateMutation = useMutation({
@@ -268,7 +266,7 @@ export function VerifyConfig() {
       toast({ title: "Custom bot validated" });
       qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
     },
-    onError: (err: Error) => toast({ title: "Validation failed", description: err.message, variant: "destructive" }),
+    onError: (err) => toast({ title: "Validation failed", description: err.message, variant: "destructive" }),
   });
 
   const guildBotDeleteMutation = useMutation({
@@ -278,60 +276,8 @@ export function VerifyConfig() {
       qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
       setGuildBotForm({ client_id: "", bot_token: "", client_secret: "" });
     },
-    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-  });
-
-        client_id: guildBotQuery.data.client_id || "",
-        bot_token: "",
-        client_secret: "",
-      });
-    }
-  }, [guildBotQuery.data]);
-
-  });
-
-  const guildBotSaveMutation = useMutation({
-    mutationFn: () => updateGuildBot(guildBotForm),
-    onSuccess: () => {
-      toast({ title: "Guild bot saved" });
-      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
-      setGuildBotForm((prev) => ({ ...prev, bot_token: "", client_secret: "" }));
-    },
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
-
-  const guildBotValidateMutation = useMutation({
-    mutationFn: validateGuildBot,
-    onSuccess: () => {
-      toast({ title: "Guild bot validated" });
-      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
-    },
-    onError: (err) => toast({ title: "Validation failed", description: err.message, variant: "destructive" }),
-  });
-
-  const guildBotDeleteMutation = useMutation({
-    mutationFn: deleteGuildBot,
-    onSuccess: () => {
-      toast({ title: "Guild bot removed" });
-      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
-      setGuildBotForm({ client_id: "", bot_token: "", client_secret: "" });
-    },
-    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-  });
-
-  useEffect(() => {
-    if (guildBotQuery.data) {
-      setGuildBotForm({
-        client_id: guildBotQuery.data.client_id || "",
-        bot_token: "",
-        client_secret: "",
-      });
-    }
-  }, [guildBotQuery.data]);
-
-      setConfigForm(configQuery.data);
-    }
-  }, [configQuery.data, configForm]);
 
   const configMutation = useMutation({
     mutationFn: updateConfig,

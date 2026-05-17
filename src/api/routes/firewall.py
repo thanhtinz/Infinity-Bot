@@ -5,7 +5,7 @@ from sqlalchemy import select, func, and_
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
-from src.api.dependencies import get_guild_id
+from src.api.deps import get_guild_id
 from src.models.models import FirewallRule, FirewallLog
 
 router = APIRouter(prefix="/api/firewall", tags=["firewall"])
