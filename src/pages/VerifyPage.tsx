@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { apiFetch } from "@/hooks/useApi";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   CheckCircle2,
   XCircle,
@@ -11,8 +13,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-// ── Types ──────────────────────────────────────────────────────────────────
-
 interface VerifyConfig {
   page_title: string;
   page_description: string;
@@ -21,10 +21,12 @@ interface VerifyConfig {
   page_background_url: string;
   button_text: string;
   success_message: string;
+  captcha_enabled?: boolean;
+  captcha_type?: "none" | "button" | "emoji" | "math" | "slider";
+  captcha_difficulty?: "easy" | "medium" | "hard";
   server_name?: string;
   server_icon?: string;
   page_footer_text?: string;
-  // Advanced
   banner_url?: string;
   cursor_url?: string;
   font_family?: string;
@@ -45,6 +47,17 @@ interface VerifyConfig {
   custom_css?: string;
 }
 
+interface CaptchaChallenge {
+  type: "none" | "button" | "emoji" | "math" | "slider";
+  token?: string;
+  message?: string;
+  target?: string | number;
+  options?: string[];
+  question?: string;
+  answer_hash?: string;
+  tolerance?: number;
+}
+
 const SOCIAL_ICONS: Record<string, { icon: LucideIcon; color: string }> = {
   twitter: { icon: Twitter, color: "#1DA1F2" },
   github: { icon: Github, color: "#8b949e" },
@@ -57,15 +70,27 @@ const SOCIAL_ICONS: Record<string, { icon: LucideIcon; color: string }> = {
   website: { icon: Globe, color: "#6366f1" },
 };
 
-// ── API ────────────────────────────────────────────────────────────────────
-
 async function fetchVerifyConfig(guildId: string): Promise<VerifyConfig> {
   const res = await apiFetch(`/api/verify/${guildId}/config`);
   if (!res.ok) throw new Error("Failed to load verification config");
   return res.json();
 }
 
-// ── Background Effects ─────────────────────────────────────────────────────
+async function generateCaptcha(guildId: string): Promise<CaptchaChallenge> {
+  const res = await apiFetch(`/api/verify/${guildId}/captcha/generate`, { method: "POST" });
+  if (!res.ok) throw new Error("Failed to generate captcha");
+  return res.json();
+}
+
+async function validateCaptcha(guildId: string, body: Record<string, unknown>): Promise<{ valid: boolean; token?: string; error?: string }> {
+  const res = await apiFetch(`/api/verify/${guildId}/captcha/validate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error("Failed to validate captcha");
+  return res.json();
+}
 
 function ShootingStars() {
   return (
@@ -113,8 +138,6 @@ function FloatingParticles() {
   );
 }
 
-// ── Typewriter Hook ────────────────────────────────────────────────────────
-
 function useTypewriter(text: string, enabled: boolean, speed = 50) {
   const [displayed, setDisplayed] = useState(enabled ? "" : text);
   useEffect(() => {
@@ -130,8 +153,6 @@ function useTypewriter(text: string, enabled: boolean, speed = 50) {
   }, [text, enabled, speed]);
   return displayed;
 }
-
-// ── Tilt Effect Hook ───────────────────────────────────────────────────────
 
 function useTilt(enabled: boolean) {
   const ref = useRef<HTMLDivElement>(null);
@@ -152,8 +173,6 @@ function useTilt(enabled: boolean) {
   return ref;
 }
 
-// ── Component ──────────────────────────────────────────────────────────────
-
 export function VerifyPage() {
   const { guildId } = useParams<{ guildId: string }>();
   const [searchParams] = useSearchParams();
@@ -162,11 +181,16 @@ export function VerifyPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fingerprint, setFingerprint] = useState("");
+  const [captcha, setCaptcha] = useState<CaptchaChallenge | null>(null);
+  const [captchaLoading, setCaptchaLoading] = useState(false);
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [mathAnswer, setMathAnswer] = useState("");
+  const [sliderValue, setSliderValue] = useState(50);
 
   const isSuccess = searchParams.get("success") === "true";
   const urlError = searchParams.get("error");
 
-  // Generate browser fingerprint for alt detection
   useEffect(() => {
     try {
       const canvas = document.createElement("canvas");
@@ -182,7 +206,6 @@ export function VerifyPage() {
         ctx.fillText("InfinityBot fp", 4, 17);
       }
       const dataUrl = canvas.toDataURL();
-      // Simple hash
       let hash = 0;
       for (let i = 0; i < dataUrl.length; i++) {
         const chr = dataUrl.charCodeAt(i);
@@ -196,7 +219,7 @@ export function VerifyPage() {
         fpHash |= 0;
       }
       setFingerprint(Math.abs(fpHash).toString(36));
-    } catch { /* ignore */ }
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -206,6 +229,42 @@ export function VerifyPage() {
       .catch(() => setError("Unable to load verification page."))
       .finally(() => setLoading(false));
   }, [guildId]);
+
+  useEffect(() => {
+    if (!guildId || !config || !config.captcha_enabled || config.captcha_type === "none") {
+      setCaptcha(null);
+      setCaptchaToken("");
+      return;
+    }
+    setCaptchaLoading(true);
+    setCaptchaError(null);
+    generateCaptcha(guildId)
+      .then((data) => {
+        setCaptcha(data);
+        if (data.type === "none" && data.token) setCaptchaToken(data.token);
+      })
+      .catch(() => setCaptchaError("Unable to load captcha."))
+      .finally(() => setCaptchaLoading(false));
+  }, [guildId, config]);
+
+  async function solveCaptcha(body: Record<string, unknown>) {
+    if (!guildId) return;
+    setCaptchaLoading(true);
+    setCaptchaError(null);
+    try {
+      const result = await validateCaptcha(guildId, body);
+      if (result.valid && result.token) {
+        setCaptchaToken(result.token);
+      } else {
+        setCaptchaToken("");
+        setCaptchaError(result.error || "Captcha failed.");
+      }
+    } catch {
+      setCaptchaError("Captcha validation failed.");
+    } finally {
+      setCaptchaLoading(false);
+    }
+  }
 
   const bgColor = config?.bg_color || "#0b0d14";
   const textColor = config?.text_color || "#ffffff";
@@ -227,7 +286,11 @@ export function VerifyPage() {
     ? Object.entries(config.socials).filter(([, v]) => v).map(([k, v]) => ({ key: k, url: v, ...SOCIAL_ICONS[k] }))
     : [];
 
-  // ── Loading ──
+  const verifyParams = new URLSearchParams();
+  if (fingerprint) verifyParams.set("fp", fingerprint);
+  if (captchaToken) verifyParams.set("captcha_token", captchaToken);
+  const verifyHref = `/api/verify/${guildId}/start${verifyParams.toString() ? `?${verifyParams.toString()}` : ""}`;
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: bgColor }}>
@@ -239,7 +302,6 @@ export function VerifyPage() {
     );
   }
 
-  // ── Error (no config) ──
   if (error && !config) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0b0d14] p-4">
@@ -254,7 +316,6 @@ export function VerifyPage() {
     );
   }
 
-  // ── Success ──
   if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: bgColor, fontFamily }}>
@@ -274,7 +335,6 @@ export function VerifyPage() {
     );
   }
 
-  // ── Error from OAuth ──
   if (urlError) {
     const errorMsg =
       urlError === "blacklisted" ? "Your account has been blacklisted."
@@ -303,7 +363,6 @@ export function VerifyPage() {
     );
   }
 
-  // ── Main Verify Page ──
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
@@ -316,7 +375,6 @@ export function VerifyPage() {
       {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />}
       {bgImage && <div className="absolute inset-0 bg-black/50" />}
 
-      {/* Background effects */}
       {bgEffect === "stars" && <ShootingStars />}
       {bgEffect === "particles" && <FloatingParticles />}
       {bgEffect === "gradient" && (
@@ -326,7 +384,6 @@ export function VerifyPage() {
         }} />
       )}
 
-      {/* Custom CSS */}
       {config?.custom_css && <style>{config.custom_css}</style>}
 
       <div
@@ -334,14 +391,12 @@ export function VerifyPage() {
         className="relative w-full max-w-md rounded-2xl backdrop-blur-xl border p-8 text-center shadow-2xl transition-transform duration-200"
         style={{ backgroundColor: `${cardBg}e6`, borderColor: cardBorder }}
       >
-        {/* Banner */}
         {config?.banner_url && (
           <div className="w-full h-24 rounded-xl overflow-hidden mb-5 -mt-2">
             <img src={config.banner_url} alt="" className="w-full h-full object-cover" />
           </div>
         )}
 
-        {/* Logo */}
         <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl overflow-hidden border-2 shadow-lg"
           style={{ borderColor: `${textColor}15` }}>
           {config?.page_logo_url || config?.server_icon ? (
@@ -353,14 +408,12 @@ export function VerifyPage() {
           )}
         </div>
 
-        {/* Server name */}
         {config?.server_name && (
           <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: `${textColor}40` }}>
             {config.server_name}
           </p>
         )}
 
-        {/* Title */}
         <h1
           className={`text-2xl font-bold mb-2 ${config?.glow_effect ? "drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]" : ""}`}
           style={{ color: textColor }}
@@ -371,20 +424,128 @@ export function VerifyPage() {
           )}
         </h1>
 
-        {/* Bio */}
         {config?.bio_description && (
           <p className="text-sm mb-2" style={{ color: `${textColor}60` }}>{config.bio_description}</p>
         )}
 
-        {/* Description */}
-        <p className="text-sm mb-8 leading-relaxed" style={{ color: `${textColor}50` }}>
+        <p className="text-sm mb-6 leading-relaxed" style={{ color: `${textColor}50` }}>
           {config?.page_description || "Please verify your Discord account to gain access to the server."}
         </p>
 
-        {/* Verify button */}
+        {config?.captcha_enabled && config.captcha_type !== "none" && (
+          <div className="mb-5 rounded-xl border border-white/10 bg-white/[0.04] p-4 text-left">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-medium" style={{ color: textColor }}>Human check</p>
+              {captchaToken ? <span className="text-xs text-emerald-400">Completed</span> : <span className="text-xs" style={{ color: `${textColor}50` }}>{config.captcha_type}</span>}
+            </div>
+
+            {captchaLoading && (
+              <div className="flex items-center gap-2 text-sm" style={{ color: `${textColor}60` }}>
+                <Loader2 className="h-4 w-4 animate-spin" /> Loading captcha...
+              </div>
+            )}
+
+            {!captchaLoading && captchaError && (
+              <div className="space-y-3">
+                <p className="text-sm text-red-300">{captchaError}</p>
+                <button
+                  onClick={() => guildId && generateCaptcha(guildId).then(setCaptcha).catch(() => setCaptchaError("Unable to reload captcha."))}
+                  className="rounded-lg px-3 py-2 text-xs font-medium text-white"
+                  style={{ backgroundColor: btnColor }}
+                >
+                  Reload captcha
+                </button>
+              </div>
+            )}
+
+            {!captchaLoading && !captchaError && captcha && !captchaToken && (
+              <div className="space-y-3">
+                {captcha.type === "button" && (
+                  <button
+                    onClick={() => solveCaptcha({})}
+                    className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-white"
+                    style={{ backgroundColor: btnColor, border: `1px solid ${btnBorder}` }}
+                  >
+                    {captcha.message || "Click to verify you are human"}
+                  </button>
+                )}
+
+                {captcha.type === "emoji" && (
+                  <>
+                    <p className="text-sm" style={{ color: `${textColor}70` }}>{captcha.message}</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {captcha.options?.map((emoji) => (
+                        <button
+                          key={emoji}
+                          onClick={() => solveCaptcha({ selected: emoji, target: captcha.target })}
+                          className="rounded-xl border border-white/10 bg-white/5 px-3 py-4 text-2xl hover:bg-white/10"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {captcha.type === "math" && (
+                  <>
+                    <p className="text-sm" style={{ color: `${textColor}70` }}>{captcha.question}</p>
+                    <div className="flex gap-2">
+                      <input
+                        value={mathAnswer}
+                        onChange={(e) => setMathAnswer(e.target.value)}
+                        placeholder="Answer"
+                        className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none"
+                      />
+                      <button
+                        onClick={() => solveCaptcha({ answer: mathAnswer, answer_hash: captcha.answer_hash })}
+                        className="rounded-lg px-4 py-2 text-sm font-medium text-white"
+                        style={{ backgroundColor: btnColor }}
+                      >
+                        Submit
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {captcha.type === "slider" && (
+                  <>
+                    <p className="text-sm" style={{ color: `${textColor}70` }}>Drag to {captcha.target}%</p>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={sliderValue}
+                      onChange={(e) => setSliderValue(parseInt(e.target.value))}
+                      className="w-full"
+                    />
+                    <div className="flex items-center justify-between text-xs" style={{ color: `${textColor}50` }}>
+                      <span>Current: {sliderValue}%</span>
+                      <span>Tolerance: ±{captcha.tolerance}%</span>
+                    </div>
+                    <button
+                      onClick={() => solveCaptcha({ value: sliderValue, target: captcha.target, tolerance: captcha.tolerance })}
+                      className="w-full rounded-lg px-4 py-2 text-sm font-medium text-white"
+                      style={{ backgroundColor: btnColor }}
+                    >
+                      Confirm position
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
+            {captchaToken && (
+              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
+                Captcha completed. You can continue with Discord verification.
+              </div>
+            )}
+          </div>
+        )}
+
         <a
-          href={`/api/verify/${guildId}/start${fingerprint ? `?fp=${fingerprint}` : ""}`}
-          className="inline-flex items-center justify-center gap-2 w-full rounded-xl px-6 py-3.5 text-base font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98] shadow-lg"
+          href={verifyHref}
+          className={`inline-flex items-center justify-center gap-2 w-full rounded-xl px-6 py-3.5 text-base font-semibold text-white transition-all hover:brightness-110 active:scale-[0.98] shadow-lg ${config?.captcha_enabled && config.captcha_type !== "none" && !captchaToken ? "pointer-events-none opacity-50" : ""}`}
           style={{
             backgroundColor: btnColor,
             borderColor: btnBorder,
@@ -397,7 +558,6 @@ export function VerifyPage() {
           {config?.button_text || "Verify with Discord"}
         </a>
 
-        {/* Socials */}
         {activeSocials.length > 0 && (
           <div className="flex justify-center gap-3 mt-5">
             {activeSocials.map(s => {
@@ -413,7 +573,6 @@ export function VerifyPage() {
           </div>
         )}
 
-        {/* Terms */}
         {config?.terms_url && (
           <p className="mt-4 text-xs" style={{ color: `${textColor}30` }}>
             By verifying you agree to the{" "}
@@ -423,7 +582,6 @@ export function VerifyPage() {
           </p>
         )}
 
-        {/* Footer */}
         <p className="mt-6 text-xs" style={{ color: `${textColor}25` }}>
           {config?.page_footer_text || "Powered by Infinity Bot"}
         </p>
@@ -436,7 +594,6 @@ export function VerifyPage() {
         }
       `}</style>
 
-      {/* Background Music */}
       {config?.music_url && <MusicPlayer url={config.music_url} color={btnColor} />}
     </div>
   );

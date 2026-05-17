@@ -72,6 +72,7 @@ const ShopChannels = lazy(() => import("./pages/ShopChannels").then(m => ({ defa
 const ShopStats = lazy(() => import("./pages/ShopStats").then(m => ({ default: m.ShopStats })));
 const SpendingMilestones = lazy(() => import("./pages/SpendingMilestones"));
 const StaffPermissions = lazy(() => import("./pages/StaffPermissions").then(m => ({ default: m.StaffPermissions })));
+const GuildBotConfig = lazy(() => import("./pages/GuildBotConfig").then(m => ({ default: m.GuildBotConfig })));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -183,6 +184,7 @@ const navGroups: NavGroup[] = [
     label: "nav_botSettings",
     items: [
       { to: "/bot-settings", icon: Settings, label: "nav_botSettings" },
+      { to: "/guild-bot", icon: Bot, label: "Custom Bot" },
       { to: "/config/payments", icon: CreditCard, label: "Payments", feature: "shop" },
       { to: "/staff-permissions", icon: Shield, label: "Staff Permissions" },
     ],
@@ -623,6 +625,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/config/channels" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/config/voice" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/bot-settings" element={<BotSettings />} />
+        <Route path="/guild-bot" element={<GuildBotConfig />} />
         <Route path="/config/discord" element={<OwnerRoute><ConfigDiscord /></OwnerRoute>} />
         <Route path="/config/payments" element={<PaymentConfig />} />
         {/* Shop */}

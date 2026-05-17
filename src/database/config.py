@@ -176,6 +176,8 @@ async def init_db():
             "custom_domain": "ALTER TABLE verification_configs ADD COLUMN custom_domain VARCHAR",
             "music_url": "ALTER TABLE verification_configs ADD COLUMN music_url VARCHAR",
             "pull_cooldown_hours": "ALTER TABLE verification_configs ADD COLUMN pull_cooldown_hours INTEGER DEFAULT 10",
+            "captcha_type": "ALTER TABLE verification_configs ADD COLUMN captcha_type VARCHAR DEFAULT 'none'",
+            "captcha_difficulty": "ALTER TABLE verification_configs ADD COLUMN captcha_difficulty VARCHAR DEFAULT 'medium'",
         }.items():
             if col not in vc:
                 all_stmts.append(stmt)

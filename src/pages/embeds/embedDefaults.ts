@@ -127,6 +127,39 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
+  san_pham: {
+    vi: {
+      title: "🛍️ {product.name}",
+      description: "{product.description}",
+      color: "#5865F2",
+      author: "",
+      author_icon_url: "",
+      footer: "Sản phẩm đang mở bán",
+      thumbnail_url: "{product.image_url}",
+      image_url: "",
+      fields: [
+        { name: "💰 Giá", value: "{product.price} VNĐ", inline: true },
+        { name: "📦 Tồn kho", value: "{product.stock}", inline: true },
+      ],
+      enabled: true,
+    },
+    en: {
+      title: "🛍️ {product.name}",
+      description: "{product.description}",
+      color: "#5865F2",
+      author: "",
+      author_icon_url: "",
+      footer: "Product currently on sale",
+      thumbnail_url: "{product.image_url}",
+      image_url: "",
+      fields: [
+        { name: "💰 Price", value: "{product.price} VNĐ", inline: true },
+        { name: "📦 Stock", value: "{product.stock}", inline: true },
+      ],
+      enabled: true,
+    },
+  },
+
   san_pham_detail: {
     vi: {
       title: "📦 {product.name}",

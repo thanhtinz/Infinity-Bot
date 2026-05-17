@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from src.database.config import get_db
 from src.api.deps import get_guild_id
-from src.models.models import VerificationConfig, VerifiedMember
+from src.models.models import VerificationConfig, VerifiedMember, GuildBot
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -91,6 +91,9 @@ def get_config(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_
         "custom_domain": getattr(cfg, "custom_domain", "") or "",
         "music_url": getattr(cfg, "music_url", "") or "",
         "pull_cooldown_hours": getattr(cfg, "pull_cooldown_hours", 10),
+        # Captcha
+        "captcha_type": getattr(cfg, "captcha_type", "none") or "none",
+        "captcha_difficulty": getattr(cfg, "captcha_difficulty", "medium") or "medium",
     }
 
 
@@ -116,6 +119,7 @@ def update_config(body: dict, guild_id: str = Depends(get_guild_id), db: Session
         "vpn_api_key", "vpn_api_provider",
         "custom_domain",
         "music_url", "pull_cooldown_hours",
+        "captcha_type", "captcha_difficulty",
     ]
     for field in allowed:
         if field in body:
@@ -353,3 +357,114 @@ def transfer_members(body: dict, guild_id: str = Depends(get_guild_id), db: Sess
 
     db.commit()
     return {"ok": True, "transferred": transferred, "skipped": skipped}
+
+
+# ── Guild Bot (Multi-bot) ──
+
+@router.get("/verification/guild-bot")
+def get_guild_bot(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
+    """Get the custom bot config for this guild."""
+    bot = db.execute(
+        select(GuildBot).where(GuildBot.guild_id == guild_id)
+    ).scalars().first()
+    if not bot:
+        return {
+            "configured": False,
+            "client_id": "",
+            "bot_name": "",
+            "bot_avatar_url": "",
+            "status": "inactive",
+            "error_message": "",
+            "has_token": False,
+            "has_secret": False,
+        }
+    return {
+        "configured": True,
+        "client_id": bot.client_id or "",
+        "bot_name": bot.bot_name or "",
+        "bot_avatar_url": bot.bot_avatar_url or "",
+        "status": bot.status or "inactive",
+        "error_message": bot.error_message or "",
+        "has_token": bool(bot.bot_token),
+        "has_secret": bool(bot.client_secret),
+        "last_validated_at": bot.last_validated_at.isoformat() if bot.last_validated_at else None,
+    }
+
+
+@router.put("/verification/guild-bot")
+def update_guild_bot(body: dict, guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
+    """Create or update the custom bot for this guild."""
+    bot = db.execute(
+        select(GuildBot).where(GuildBot.guild_id == guild_id)
+    ).scalars().first()
+    if not bot:
+        bot = GuildBot(guild_id=guild_id)
+        db.add(bot)
+
+    if "client_id" in body:
+        bot.client_id = body["client_id"] or None
+    if "bot_token" in body and body["bot_token"]:
+        bot.bot_token = body["bot_token"]
+    if "client_secret" in body and body["client_secret"]:
+        bot.client_secret = body["client_secret"]
+    if "bot_name" in body:
+        bot.bot_name = body["bot_name"] or None
+    if "bot_avatar_url" in body:
+        bot.bot_avatar_url = body["bot_avatar_url"] or None
+
+    bot.updated_at = datetime.utcnow()
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/verification/guild-bot/validate")
+def validate_guild_bot(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
+    """Validate the guild bot token by calling Discord API."""
+    import httpx
+
+    bot = db.execute(
+        select(GuildBot).where(GuildBot.guild_id == guild_id)
+    ).scalars().first()
+    if not bot or not bot.bot_token:
+        raise HTTPException(400, "No bot token configured")
+
+    try:
+        r = httpx.get(
+            "https://discord.com/api/v10/users/@me",
+            headers={"Authorization": f"Bot {bot.bot_token}"},
+            timeout=10,
+        )
+        if r.status_code == 200:
+            data = r.json()
+            bot.bot_name = data.get("username", bot.bot_name)
+            avatar = data.get("avatar")
+            if avatar:
+                bot.bot_avatar_url = f"https://cdn.discordapp.com/avatars/{data['id']}/{avatar}.png"
+            bot.client_id = data.get("id", bot.client_id)
+            bot.status = "active"
+            bot.error_message = None
+            bot.last_validated_at = datetime.utcnow()
+            db.commit()
+            return {"ok": True, "bot_name": bot.bot_name, "bot_avatar_url": bot.bot_avatar_url}
+        else:
+            bot.status = "error"
+            bot.error_message = f"Discord API returned {r.status_code}"
+            db.commit()
+            raise HTTPException(400, f"Invalid token: {r.status_code}")
+    except httpx.RequestError as e:
+        bot.status = "error"
+        bot.error_message = str(e)
+        db.commit()
+        raise HTTPException(500, f"Connection error: {e}")
+
+
+@router.delete("/verification/guild-bot")
+def delete_guild_bot(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
+    """Remove the custom bot for this guild (revert to main bot)."""
+    bot = db.execute(
+        select(GuildBot).where(GuildBot.guild_id == guild_id)
+    ).scalars().first()
+    if bot:
+        db.delete(bot)
+        db.commit()
+    return {"ok": True}

@@ -57,6 +57,7 @@ const en = {
   reason: "Reason",
   message: "Message",
   messages: "Messages",
+  dmContent: "DM Content",
   member: "Member",
   members: "Members",
   settings: "Settings",
@@ -685,6 +686,7 @@ const en = {
   botConfig_botRoles: "Bot roles",
   botConfig_notifChannels: "Bot will send notifications to these channels.",
   botConfig_orderChannel: "Order channel",
+  botConfig_welcomeChannel: "Welcome channel",
 
   // ─── Bot Status Extended ───
   botStatus_sysConfig: "System Config",
@@ -1056,6 +1058,7 @@ const en = {
   configChannels_feedbackChannel: "Feedback Channel",
   configChannels_couponLogChannel: "Coupon Log Channel",
   configChannels_priceListChannel: "Price List Channel",
+  configChannels_channelWelcome: "Channel Welcome",
   configChannels_selectChannel: "Select channel...",
   configChannels_loadingChannels: "Loading channels...",
   configChannels_saveConfig: "Save Config",
@@ -1282,10 +1285,6 @@ const en = {
 
   // ─── Landing Page Extended ───
 
-  // ─── Ticket Feedback Extended ───
-
-  // ─── Ticket Transcripts Extended ───
-
   shopStats_ordersLabel: "Orders",
 
   // Custom Commands sub-components
@@ -1366,10 +1365,6 @@ const en = {
   cc_variables: "Variables",
   cc_viewAll: "View all",
   cc_variablesHint: "Use variables like {user}, {server} in the content to display dynamic information.",
-
-  // Ticket Panels sub-components
-
-  // Ticket detail
 
   // Embed editor (scheduled-messages)
   scheduler_configEmbed: "🎨 Config Embed",
@@ -1507,12 +1502,6 @@ const en = {
   backup_loadFailed: "Failed to load backup",
   backup_selectValidJson: "Please select a valid JSON file",
 
-  // ─── Leveling Layer Names ───
-
-  // ─── Leveling Layer Descriptions ───
-
-  // ─── Leveling Properties ───
-
   // ─── Emoji Manager Extended ───
   emoji_static: "Static",
   emoji_noEmojisYet: "No emojis yet",
@@ -1541,10 +1530,6 @@ const en = {
   products_noPackages: "No packages",
   products_deleteConfirm: "Delete product?",
   products_willBeDeleted: "Product",
-
-  // ─── Ticket Teams Page ───
-
-  // ─── Ticket Forms Page ───
 
   // ─── Select Menu Roles Page ───
   selectMenu_deployed: "Deployed",

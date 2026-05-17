@@ -690,6 +690,8 @@ class VerificationConfig(Base):
     success_message = Column(Text, default="You have been verified!")
     # Security
     captcha_enabled = Column(Boolean, default=False)
+    captcha_type = Column(String, default="none")  # none | button | emoji | math | slider
+    captcha_difficulty = Column(String, default="medium")  # easy | medium | hard
     min_account_age_days = Column(Integer, default=0)
     block_vpn = Column(Boolean, default=False)
     kick_on_deauth = Column(Boolean, default=False)
@@ -749,6 +751,26 @@ class VerificationConfig(Base):
     music_url = Column(String, nullable=True)  # Background audio URL for verify page
     # ── Pull Cooldown ──
     pull_cooldown_hours = Column(Integer, default=10)  # Cooldown between pulls (0 = no cooldown)
+    # ── Captcha ──
+    captcha_type = Column(String, default="none")  # none | button | emoji | math | slider
+    captcha_difficulty = Column(String, default="medium")  # easy | medium | hard
+
+
+class GuildBot(Base):
+    """Per-guild custom bot — allows each guild to use their own bot token for verification."""
+    __tablename__ = "guild_bots"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, unique=True, index=True)
+    bot_token = Column(String, nullable=True)
+    client_id = Column(String, nullable=True)
+    client_secret = Column(String, nullable=True)
+    bot_name = Column(String, nullable=True)
+    bot_avatar_url = Column(String, nullable=True)
+    status = Column(String, default="inactive")  # inactive | active | error
+    error_message = Column(String, nullable=True)
+    last_validated_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 
 class StaffPermission(Base):

@@ -37,6 +37,8 @@ export interface VerificationConfig {
   button_text: string;
   success_message: string;
   captcha_enabled: boolean;
+  captcha_type: "none" | "button" | "emoji" | "math" | "slider";
+  captcha_difficulty: "easy" | "medium" | "hard";
   min_account_age_days: number;
   block_vpn: boolean;
   kick_on_deauth: boolean;
@@ -207,6 +209,74 @@ export async function updateConfig(data: VerificationConfig): Promise<Verificati
 export async function fetchStats(): Promise<VerificationStats> {
   const res = await apiFetch("/api/verification/stats");
   if (!res.ok) throw new Error("Failed to load stats");
+
+export async function fetchGuildBot(): Promise<GuildBotConfig> {
+  const res = await apiFetch("/api/verification/guild-bot");
+  if (!res.ok) throw new Error("Failed to load guild bot config");
+  return res.json();
+}
+
+export async function updateGuildBot(data: {
+  client_id?: string;
+  bot_token?: string;
+  client_secret?: string;
+  bot_name?: string;
+  bot_avatar_url?: string;
+}): Promise<{ ok: boolean }> {
+  const res = await apiFetch("/api/verification/guild-bot", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to save guild bot config");
+  return res.json();
+}
+
+export async function validateGuildBot(): Promise<{ ok: boolean; bot_name?: string; bot_avatar_url?: string }> {
+  const res = await apiFetch("/api/verification/guild-bot/validate", {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error("Failed to validate guild bot");
+  return res.json();
+}
+
+export async function deleteGuildBot(): Promise<{ ok: boolean }> {
+  const res = await apiFetch("/api/verification/guild-bot", {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to delete guild bot");
+  return res.json();
+}
+
+
+export async function fetchGuildBot(): Promise<GuildBotConfig> {
+  const res = await apiFetch("/api/verification/guild-bot");
+  if (!res.ok) throw new Error("Failed to load guild bot config");
+  return res.json();
+}
+
+export async function updateGuildBot(data: { client_id?: string; bot_token?: string; client_secret?: string; bot_name?: string; bot_avatar_url?: string }): Promise<{ ok: boolean }> {
+  const res = await apiFetch("/api/verification/guild-bot", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to save guild bot config");
+  return res.json();
+}
+
+export async function validateGuildBot(): Promise<{ ok: boolean; bot_name?: string; bot_avatar_url?: string }> {
+  const res = await apiFetch("/api/verification/guild-bot/validate", { method: "POST" });
+  if (!res.ok) throw new Error("Failed to validate guild bot token");
+  return res.json();
+}
+
+export async function deleteGuildBot(): Promise<{ ok: boolean }> {
+  const res = await apiFetch("/api/verification/guild-bot", { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete guild bot config");
+  return res.json();
+}
+
   return res.json();
 }
 

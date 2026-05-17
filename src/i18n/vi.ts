@@ -57,6 +57,7 @@ const vi = {
   reason: "Lý do",
   message: "Tin nhắn",
   messages: "Tin nhắn",
+  dmContent: "Nội dung DM",
   member: "Thành viên",
   members: "Thành viên",
   settings: "Cài đặt",
@@ -188,7 +189,6 @@ const vi = {
   users_ban: "Khóa",
   users_unban: "Mở khóa",
   users_adjustBalance: "Điều chỉnh số dư",
-  // Tickets
   // Giveaway
   giveaway_title: "Giveaway",
   giveaway_add: "Tạo Giveaway",
@@ -213,8 +213,6 @@ const vi = {
   warnings_delete: "Xóa cảnh cáo này?",
   warnings_deleteDesc: "Hành động này không thể hoàn tác.",
   warnings_by: "Bởi",
-  // Welcome
-  // Leveling
   // Auto Mod
   automod_title: "Tự động kiểm duyệt",
   automod_antiSpam: "Chống spam",
@@ -325,7 +323,6 @@ const vi = {
   botSettings_saveGeneral: "Lưu cài đặt chung",
   botSettings_saveChannels: "Lưu kênh",
   botSettings_saveLogging: "Lưu nhật ký",
-  // Temp Voice
   // Login / Setup
   login_title: "Đăng nhập",
   login_subtitle: "Đăng nhập bằng Discord để quản lý bot của bạn",
@@ -403,7 +400,6 @@ const vi = {
   payos_checksumKey: "Checksum Key",
   payos_save: "Lưu cấu hình PayOS",
   payos_enabled: "Bật thanh toán PayOS",
-  // Ticket Config
   // Embed Builder
   embedBuilder_title: "Tiêu đề",
   embedBuilder_description: "Mô tả",
@@ -665,8 +661,6 @@ const vi = {
   mod_suppressPings: "Tắt tất cả ping trong phản hồi",
   mod_silentCommand: "Lệnh ẩn",
 
-  // ─── Leveling Extended ───
-
   // ─── Moderation Extended ───
   mod_autoDehoist: "Tự động bỏ ký tự đặc biệt",
   mod_action: "Hành động",
@@ -692,14 +686,7 @@ const vi = {
   botConfig_botRoles: "Role bot",
   botConfig_notifChannels: "Bot sẽ gửi thông báo đến các kênh này.",
   botConfig_orderChannel: "Kênh đơn hàng",
-  botConfig_joinChannel: "Kênh join-to-create",
-  botConfig_voiceCategory: "Danh mục phòng thoại",
-  botConfig_voiceCategoryDesc: "Phòng thoại sẽ được tạo trong danh mục này.",
-  botConfig_controlPanel: "Kênh panel điều khiển",
-  botConfig_controlPanelDesc: "Kênh chứa nút điều khiển phòng thoại.",
-  botConfig_channelFormat: "Định dạng tên kênh",
-  botConfig_autoCreateDesc: "Tự động tạo phòng thoại.",
-  botConfig_advancedVoice: "Cấu hình nâng cao cho hệ thống TempVoice.",
+  botConfig_welcomeChannel: "Kênh Welcome",
 
   // ─── Bot Status Extended ───
   botStatus_sysConfig: "System Config",
@@ -723,8 +710,6 @@ const vi = {
   botStatus_solid: "Đặc",
   botStatus_contentBackup: "Nội dung sao lưu",
 
-  // ─── Welcome Extended ───
-
   // ─── Emoji Manager Extended ───
   emoji_addEmoji: "Thêm Emoji",
   emoji_addSticker: "Thêm Sticker",
@@ -745,8 +730,6 @@ const vi = {
   users_spending: "Chi tiêu",
   users_resetShopLeaderboard: "Đặt lại BXH mua sắm",
 
-  // ─── Config Voice Extended ───
-
   // ─── Invite Tracking Extended ───
   invite_totalInvites: "Tổng invite",
   invite_totalMembers: "Tổng thành viên",
@@ -758,8 +741,6 @@ const vi = {
   giveaway_totalParticipants: "Tổng người tham gia",
   giveaway_channel: "Kênh",
   giveaway_endNowConfirm: "Kết thúc giveaway này ngay?",
-
-  // ─── Ticket Extended ───
 
   // ─── Logging Config ───
   logConfig_title: "Cấu hình Log",
@@ -959,12 +940,6 @@ const vi = {
   scheduler_embedEditor: "Chỉnh sửa Embed",
   scheduler_skipDiscord: "Bỏ qua gửi Discord",
 
-  // ─── Ticket Forms Extended ───
-
-  // ─── Ticket Transcripts ───
-
-  // ─── Ticket Feedback ───
-
   // ─── Starboard Extended ───
   starboard_minStars: "Số ⭐ tối thiểu",
   starboard_selfStarAllowed: "Cho phép tự star",
@@ -1053,14 +1028,6 @@ const vi = {
   automod_mute5min: "Mute 5 phút",
   automod_kick: "Kick",
 
-  // ─── Ticket Claiming Extended ───
-
-  // ─── Tickets Page Extended ───
-
-  // ─── Ticket Config Extended ───
-
-  // ─── Ticket Panels Extended ───
-
   // ─── Leaderboard Extended ───
   lb_title: "Bảng xếp hạng",
   lb_discordCommand: "Bảng xếp hạng cũng có thể truy cập trên Discord qua lệnh",
@@ -1077,10 +1044,6 @@ const vi = {
   lb_totalSpent: "Tổng chi tiêu",
   lb_confirmReset: "Xác nhận reset",
 
-  // ─── Config Voice Extended ───
-
-  // ─── Voice Panel Buttons ───
-
   // ─── Config Channels Extended ───
   configChannels_channelsPerms: "Kênh & Quyền",
   configChannels_channelsPermsDesc: "Chọn server, role admin và kênh thông báo.",
@@ -1095,6 +1058,7 @@ const vi = {
   configChannels_feedbackChannel: "Kênh Feedback",
   configChannels_couponLogChannel: "Kênh Log Coupon",
   configChannels_priceListChannel: "Kênh Bảng giá",
+  configChannels_channelWelcome: "Kênh Welcome",
   configChannels_selectChannel: "Chọn kênh...",
   configChannels_loadingChannels: "Đang tải kênh...",
   configChannels_saveConfig: "Lưu cấu hình",
@@ -1183,9 +1147,6 @@ const vi = {
   selectGuild_selectDiscord: "Chọn server Discord để quản lý",
   selectGuild_selectServer: "Chọn server",
 
-  // ─── Ticket Feedback Extended ───
-
-  // ─── Ticket Transcripts Extended ───
   pricing_comingSoon: "Sắp ra mắt — hãy chờ đón!",
   pricing_currentlyFree: "Hiện tại hoàn toàn miễn phí",
   pricing_pricing: "Bảng giá",
@@ -1288,10 +1249,6 @@ const vi = {
   cc_variables: "Biến",
   cc_viewAll: "Xem tất cả",
   cc_variablesHint: "Sử dụng biến như {user}, {server} trong nội dung để hiển thị thông tin động.",
-
-  // Ticket Panels sub-components
-
-  // Ticket detail
 
   // Embed editor (scheduled-messages)
   scheduler_configEmbed: "🎨 Cấu hình Embed",
@@ -1434,12 +1391,6 @@ const vi = {
   backup_loadFailed: "Không thể tải bản sao lưu",
   backup_selectValidJson: "Vui lòng chọn file JSON hợp lệ",
 
-  // ─── Leveling Layer Names ───
-
-  // ─── Leveling Layer Descriptions ───
-
-  // ─── Leveling Properties ───
-
   // ─── Emoji Manager Extended ───
   emoji_static: "Tĩnh",
   emoji_noEmojisYet: "Chưa có emoji",
@@ -1468,10 +1419,6 @@ const vi = {
   products_noPackages: "Chưa có gói",
   products_deleteConfirm: "Xóa sản phẩm?",
   products_willBeDeleted: "Sản phẩm",
-
-  // ─── Ticket Teams Page ───
-
-  // ─── Ticket Forms Page ───
 
   // ─── Select Menu Roles Page ───
   selectMenu_deployed: "Đã triển khai",

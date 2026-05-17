@@ -25,6 +25,7 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "don_hang_het_han",  label: "Đơn hàng hết hạn",      labelEn: "Expired Order",       icon: Timer,        desc: "Khi đơn quá 15 phút chưa thanh toán" },
   { key: "ghi_chu_don_hang",  label: "Ghi chú đơn hàng",      labelEn: "Order Note",          icon: ShoppingCart, desc: "Khi admin thêm ghi chú vào đơn hàng" },
   { key: "bang_gia",          label: "Bảng giá sản phẩm",     labelEn: "Price List",          icon: ShoppingCart, desc: "Embed tổng quan khi dùng /bang_gia hoặc /san_pham" },
+  { key: "san_pham",          label: "Sản phẩm",              labelEn: "Product",             icon: ShoppingCart, desc: "Embed sản phẩm đơn lẻ khi dùng /san_pham" },
   { key: "san_pham_detail",   label: "Chi tiết sản phẩm",      labelEn: "Product Detail",      icon: ShoppingCart, desc: "Embed chi tiết gói giá khi chọn sản phẩm (/san_pham)" },
   { key: "bxh_chi_tieu",      label: "BXH Chi tiêu",           labelEn: "Spending Leaderboard", icon: Trophy,       desc: "Embed bảng xếp hạng chi tiêu" },
   { key: "bxh_don_hang",      label: "BXH Đơn hàng",           labelEn: "Order Leaderboard",   icon: Trophy,       desc: "Embed bảng xếp hạng đơn hàng" },
@@ -174,7 +175,7 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
 // ─── Event groups ────────────────────────────────────────────────────────────
 
 export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] = [
-  { label: "Đơn hàng",    labelEn: "Orders",         keys: ["don_hang_moi", "qr_thanh_toan", "qr_thanh_toan_payos", "qr_thanh_toan_paypal", "qr_thanh_toan_crypto", "qr_thanh_toan_manual", "don_hang_het_han", "ghi_chu_don_hang", "bang_gia", "san_pham_detail", "bxh_chi_tieu", "bxh_don_hang", "feedback", "thanh_toan", "giao_hang", "don_hang_chi_tiet", "coupon", "ban_shop", "unban_shop"] },
+  { label: "Đơn hàng",    labelEn: "Orders",         keys: ["don_hang_moi", "qr_thanh_toan", "qr_thanh_toan_payos", "qr_thanh_toan_paypal", "qr_thanh_toan_crypto", "qr_thanh_toan_manual", "don_hang_het_han", "ghi_chu_don_hang", "bang_gia", "san_pham", "san_pham_detail", "bxh_chi_tieu", "bxh_don_hang", "feedback", "thanh_toan", "giao_hang", "don_hang_chi_tiet", "coupon", "ban_shop", "unban_shop"] },
   { label: "Cộng đồng",   labelEn: "Community",      keys: ["giveaway", "ket_qua_giveaway", "reaction_role_panel", "starboard_post", "giveaway_banned", "invite_join", "invite_leaderboard"] },
   { label: "Kiểm duyệt", labelEn: "Moderation",      keys: ["canh_bao", "kick", "ban", "unban", "softban", "mute", "deafen", "rolepersist", "temprole", "lockdown_start", "lockdown_end", "automod_warn", "automod_mute", "automod_kick", "automod_delete", "timeout"] },
   { label: "Tiện ích",    labelEn: "Utilities",       keys: ["afk_set", "afk_return", "sticky_message"] },

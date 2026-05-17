@@ -13,11 +13,12 @@ import {
   Image, Paintbrush, Palette, Sparkles, Type, Share2,
   Lock, Code2, KeyRound, XCircle, Plus,
   Twitter, Github, Send, Tv, Youtube, Instagram, Globe, ShoppingCart,
+  Bot, ShieldCheck, TriangleAlert, Trash2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useGuild } from "@/contexts/GuildContext";
-import { fetchConfig, updateConfig } from "./shared";
-import type { VerificationConfig } from "./shared";
+import { deleteGuildBot, fetchConfig, fetchGuildBot, updateConfig, updateGuildBot, validateGuildBot } from "./shared";
+import type { GuildBotConfig, VerificationConfig } from "./shared";
 
 /* ── Constants ──────────────────────────────────────── */
 const FONTS = [
@@ -32,6 +33,20 @@ const BG_EFFECTS = [
   { value: "gradient", label: "Animated Gradient" },
   { value: "rain", label: "Digital Rain" },
 ];
+
+const CAPTCHA_TYPES = [
+  { value: "none", label: "None" },
+  { value: "button", label: "Button" },
+  { value: "emoji", label: "Emoji" },
+  { value: "math", label: "Math" },
+  { value: "slider", label: "Slider" },
+] as const;
+
+const CAPTCHA_DIFFICULTIES = [
+  { value: "easy", label: "Easy" },
+  { value: "medium", label: "Medium" },
+  { value: "hard", label: "Hard" },
+] as const;
 
 const SOCIALS: { key: string; label: string; icon: LucideIcon; placeholder: string; color: string }[] = [
   { key: "twitter", label: "Twitter", icon: Twitter, placeholder: "https://twitter.com/username", color: "#1DA1F2" },
@@ -206,14 +221,114 @@ export function VerifyConfig() {
   const { selectedGuildId } = useGuild();
   const [copied, setCopied] = useState(false);
   const [configForm, setConfigForm] = useState<VerificationConfig | null>(null);
+  const [guildBotForm, setGuildBotForm] = useState({ client_id: "", bot_token: "", client_secret: "" });
 
   const configQuery = useQuery({
     queryKey: ["verification-config"],
     queryFn: fetchConfig,
+  const [guildBotForm, setGuildBotForm] = useState({
+    client_id: "",
+    bot_token: "",
+    client_secret: "",
+  });
+
   });
 
   useEffect(() => {
     if (configQuery.data && !configForm) {
+
+  const guildBotQuery = useQuery({
+    queryKey: ["verification-guild-bot", selectedGuildId],
+    queryFn: fetchGuildBot,
+    enabled: !!selectedGuildId,
+  });
+
+  const guildBotQuery = useQuery({
+    queryKey: ["verification-guild-bot", selectedGuildId],
+    queryFn: fetchGuildBot,
+    enabled: !!selectedGuildId,
+
+  useEffect(() => {
+    if (guildBotQuery.data) {
+      setGuildBotForm({
+
+  const guildBotSaveMutation = useMutation({
+    mutationFn: updateGuildBot,
+    onSuccess: () => {
+      toast({ title: "Custom bot saved" });
+      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
+      setGuildBotForm((prev) => ({ ...prev, bot_token: "", client_secret: "" }));
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const guildBotValidateMutation = useMutation({
+    mutationFn: validateGuildBot,
+    onSuccess: () => {
+      toast({ title: "Custom bot validated" });
+      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
+    },
+    onError: (err: Error) => toast({ title: "Validation failed", description: err.message, variant: "destructive" }),
+  });
+
+  const guildBotDeleteMutation = useMutation({
+    mutationFn: deleteGuildBot,
+    onSuccess: () => {
+      toast({ title: "Reverted to main bot" });
+      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
+      setGuildBotForm({ client_id: "", bot_token: "", client_secret: "" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+        client_id: guildBotQuery.data.client_id || "",
+        bot_token: "",
+        client_secret: "",
+      });
+    }
+  }, [guildBotQuery.data]);
+
+  });
+
+  const guildBotSaveMutation = useMutation({
+    mutationFn: () => updateGuildBot(guildBotForm),
+    onSuccess: () => {
+      toast({ title: "Guild bot saved" });
+      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
+      setGuildBotForm((prev) => ({ ...prev, bot_token: "", client_secret: "" }));
+    },
+    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const guildBotValidateMutation = useMutation({
+    mutationFn: validateGuildBot,
+    onSuccess: () => {
+      toast({ title: "Guild bot validated" });
+      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
+    },
+    onError: (err) => toast({ title: "Validation failed", description: err.message, variant: "destructive" }),
+  });
+
+  const guildBotDeleteMutation = useMutation({
+    mutationFn: deleteGuildBot,
+    onSuccess: () => {
+      toast({ title: "Guild bot removed" });
+      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
+      setGuildBotForm({ client_id: "", bot_token: "", client_secret: "" });
+    },
+    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  useEffect(() => {
+    if (guildBotQuery.data) {
+      setGuildBotForm({
+        client_id: guildBotQuery.data.client_id || "",
+        bot_token: "",
+        client_secret: "",
+      });
+    }
+  }, [guildBotQuery.data]);
+
       setConfigForm(configQuery.data);
     }
   }, [configQuery.data, configForm]);
@@ -488,11 +603,161 @@ export function VerifyConfig() {
             })}
           </Section>
 
+          {/* Multi-bot */}
+          <Section title="Custom Bot" icon={Bot}>
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium">Per-guild Discord bot</p>
+                  <p className="text-xs text-muted-foreground">Use a dedicated bot token and OAuth app for this guild's verification flow.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {guildBotQuery.data?.status === "active" && <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[10px] text-emerald-400"><ShieldCheck className="h-3 w-3" />Active</span>}
+                  {guildBotQuery.data?.status === "error" && <span className="inline-flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/10 px-2 py-1 text-[10px] text-red-400"><TriangleAlert className="h-3 w-3" />Error</span>}
+                  {(!guildBotQuery.data || guildBotQuery.data.status === "inactive") && <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-muted-foreground">Main bot</span>}
+                </div>
+              </div>
+
+              {guildBotQuery.data?.bot_name && (
+                <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-[#0a0c10] px-3 py-2">
+                  {guildBotQuery.data.bot_avatar_url ? (
+                    <img src={guildBotQuery.data.bot_avatar_url} alt="Bot avatar" className="h-10 w-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500/10 border border-indigo-500/20">
+                      <Bot className="h-5 w-5 text-indigo-400" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium">{guildBotQuery.data.bot_name}</p>
+                    <p className="text-xs text-muted-foreground">Client ID: {guildBotQuery.data.client_id || "—"}</p>
+                  </div>
+                </div>
+              )}
+
+              {guildBotQuery.data?.error_message && (
+                <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                  {guildBotQuery.data.error_message}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Client ID</Label>
+                  <Input value={guildBotForm.client_id} onChange={e => setGuildBotForm(prev => ({ ...prev, client_id: e.target.value }))} placeholder="Discord application client ID" />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Bot Token</Label>
+                  <Input type="password" value={guildBotForm.bot_token} onChange={e => setGuildBotForm(prev => ({ ...prev, bot_token: e.target.value }))} placeholder={guildBotQuery.data?.has_token ? "Saved — enter new token to replace" : "Discord bot token"} />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Client Secret</Label>
+                  <Input type="password" value={guildBotForm.client_secret} onChange={e => setGuildBotForm(prev => ({ ...prev, client_secret: e.target.value }))} placeholder={guildBotQuery.data?.has_secret ? "Saved — enter new secret to replace" : "Discord OAuth client secret"} />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => guildBotSaveMutation.mutate(guildBotForm)}
+                  disabled={guildBotSaveMutation.isPending}
+                >
+                  {guildBotSaveMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Save className="mr-1.5 h-4 w-4" />}
+                  Save bot
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => guildBotValidateMutation.mutate()}
+                  disabled={guildBotValidateMutation.isPending || !guildBotQuery.data?.configured}
+                >
+                  {guildBotValidateMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-1.5 h-4 w-4" />}
+                  Validate
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-red-500/20 text-red-300 hover:bg-red-500/10 hover:text-red-200"
+                  onClick={() => guildBotDeleteMutation.mutate()}
+                  disabled={guildBotDeleteMutation.isPending || !guildBotQuery.data?.configured}
+                >
+                  {guildBotDeleteMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Trash2 className="mr-1.5 h-4 w-4" />}
+                  Revert to main bot
+                </Button>
+              </div>
+            </div>
+          </Section>
+
           {/* Security */}
           <Section title="Security" icon={Lock}>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Account Requirements</p>
             <div>
               <div className="flex items-center justify-between mb-1">
+
+          <Section title="Guild Bot" icon={Bot}>
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium">Per-guild custom bot</p>
+                  <p className="text-xs text-muted-foreground">This guild can use its own Discord bot for verification OAuth instead of the main bot.</p>
+                </div>
+                <div className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] border ${guildBotQuery.data?.status === "active" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400" : guildBotQuery.data?.status === "error" ? "border-red-500/30 bg-red-500/10 text-red-400" : "border-white/10 bg-white/5 text-muted-foreground"}`}>
+                  {guildBotQuery.data?.status === "active" ? <ShieldCheck className="w-3.5 h-3.5" /> : guildBotQuery.data?.status === "error" ? <TriangleAlert className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+                  {guildBotQuery.data?.status || "inactive"}
+                </div>
+              </div>
+
+              {guildBotQuery.data?.bot_name && (
+                <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-black/20 p-3">
+                  {guildBotQuery.data.bot_avatar_url ? (
+                    <img src={guildBotQuery.data.bot_avatar_url} alt="Bot avatar" className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+                      <Bot className="w-5 h-5 text-indigo-400" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium">{guildBotQuery.data.bot_name}</p>
+                    <p className="text-xs text-muted-foreground">{guildBotQuery.data.last_validated_at ? `Validated ${new Date(guildBotQuery.data.last_validated_at).toLocaleString()}` : "Not validated yet"}</p>
+                  </div>
+                </div>
+              )}
+
+              {guildBotQuery.data?.error_message && (
+                <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                  {guildBotQuery.data.error_message}
+                </div>
+              )}
+
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Client ID</Label>
+                <Input value={guildBotForm.client_id} onChange={e => setGuildBotForm(prev => ({ ...prev, client_id: e.target.value }))} placeholder="Discord application client ID" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Bot Token</Label>
+                <Input type="password" value={guildBotForm.bot_token} onChange={e => setGuildBotForm(prev => ({ ...prev, bot_token: e.target.value }))} placeholder={guildBotQuery.data?.has_token ? "Saved — enter new token to replace" : "Discord bot token"} />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Client Secret</Label>
+                <Input type="password" value={guildBotForm.client_secret} onChange={e => setGuildBotForm(prev => ({ ...prev, client_secret: e.target.value }))} placeholder={guildBotQuery.data?.has_secret ? "Saved — enter new secret to replace" : "Discord OAuth client secret"} />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" size="sm" onClick={() => guildBotSaveMutation.mutate()} disabled={guildBotSaveMutation.isPending}>
+                  {guildBotSaveMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
+                  Save Guild Bot
+                </Button>
+                <Button type="button" size="sm" variant="outline" onClick={() => guildBotValidateMutation.mutate()} disabled={guildBotValidateMutation.isPending || !guildBotQuery.data?.has_token}>
+                  {guildBotValidateMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-1.5" />}
+                  Validate Token
+                </Button>
+                <Button type="button" size="sm" variant="ghost" className="text-red-400 hover:text-red-300" onClick={() => guildBotDeleteMutation.mutate()} disabled={guildBotDeleteMutation.isPending || !guildBotQuery.data?.configured}>
+                  {guildBotDeleteMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Trash2 className="w-4 h-4 mr-1.5" />}
+                  Remove Custom Bot
+                </Button>
+              </div>
+            </div>
+          </Section>
+
                 <Label className="text-sm font-medium">Minimum account age</Label>
                 <div className="flex items-center gap-1.5">
                   <Input type="number" min={0} max={365} value={configForm.min_account_age_days}
@@ -518,8 +783,36 @@ export function VerifyConfig() {
                 <p className="text-sm font-medium">Require CAPTCHA to verify</p>
                 <p className="text-xs text-muted-foreground">Members must complete a captcha</p>
               </div>
-              <Switch checked={configForm.captcha_enabled} onCheckedChange={v => update({ captcha_enabled: v })} />
+              <Switch checked={configForm.captcha_enabled} onCheckedChange={v => update({ captcha_enabled: v, captcha_type: v ? (configForm.captcha_type === "none" ? "button" : configForm.captcha_type) : "none" })} />
             </div>
+            {configForm.captcha_enabled && (
+              <div className="space-y-3 pl-2 border-l-2 border-indigo-500/30 ml-1">
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Captcha Type</Label>
+                  <select
+                    value={configForm.captcha_type}
+                    onChange={e => update({ captcha_type: e.target.value as VerificationConfig["captcha_type"] })}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    {CAPTCHA_TYPES.filter(t => t.value !== "none").map(type => (
+                      <option key={type.value} value={type.value} className="bg-[#0a0c10]">{type.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Captcha Difficulty</Label>
+                  <select
+                    value={configForm.captcha_difficulty}
+                    onChange={e => update({ captcha_difficulty: e.target.value as VerificationConfig["captcha_difficulty"] })}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    {CAPTCHA_DIFFICULTIES.map(level => (
+                      <option key={level.value} value={level.value} className="bg-[#0a0c10]">{level.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Close page when complete</p>

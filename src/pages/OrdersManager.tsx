@@ -431,9 +431,9 @@ export function OrdersManager() {
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>{t("welcome_dmContent")}</Label>
+              <Label>{t("dmContent")}</Label>
               <Textarea
-                placeholder={t("welcome_dmContent")}
+                placeholder={t("dmContent")}
                 value={dmContent}
                 onChange={(e) => setDmContent(e.target.value)}
                 rows={4}

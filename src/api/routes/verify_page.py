@@ -4,6 +4,9 @@ These routes are PUBLIC (no dashboard auth required).
 Flow: /verify/{guild_id} → Discord OAuth2 → callback → save member → assign role.
 """
 import logging
+import hashlib
+import secrets
+import time
 import httpx
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
@@ -13,15 +16,50 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
-from src.models.models import SystemConfig, VerificationConfig, VerifiedMember, FirewallRule, FirewallLog
+from src.models.models import SystemConfig, VerificationConfig, VerifiedMember, FirewallRule, FirewallLog, GuildBot
 from src.api.auth import get_public_base_url
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+# ── In-memory captcha token store (short-lived, max 10 min) ──
+_captcha_tokens: dict[str, float] = {}  # token → expiry timestamp
+_CAPTCHA_TTL = 600  # 10 minutes
 
-def _get_oauth_config(db: Session):
-    """Get Discord OAuth2 config from SystemConfig."""
+
+def _issue_captcha_token() -> str:
+    """Issue a one-time captcha token valid for 10 minutes."""
+    # Cleanup expired
+    now = time.time()
+    expired = [k for k, v in _captcha_tokens.items() if v < now]
+    for k in expired:
+        _captcha_tokens.pop(k, None)
+    token = secrets.token_urlsafe(32)
+    _captcha_tokens[token] = now + _CAPTCHA_TTL
+    return token
+
+
+def _validate_captcha_token(token: str) -> bool:
+    """Validate and consume a captcha token (one-time use)."""
+    expiry = _captcha_tokens.pop(token, None)
+    if expiry is None:
+        return False
+    return time.time() < expiry
+
+
+def _get_oauth_config(db: Session, guild_id: str = None):
+    """Get Discord OAuth2 config — guild-specific bot first, fallback to main bot."""
+    # Try guild-specific bot
+    if guild_id:
+        gbot = db.execute(
+            select(GuildBot).where(GuildBot.guild_id == guild_id, GuildBot.status == "active")
+        ).scalars().first()
+        if gbot and gbot.client_id and gbot.client_secret and gbot.bot_token:
+            cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
+            public_url = cfg.public_app_url if cfg else None
+            return gbot.client_id, gbot.client_secret, gbot.bot_token, public_url
+
+    # Fallback to main bot
     cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
     if not cfg:
         return None, None, None, None
@@ -68,6 +106,8 @@ def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):
         "button_text": cfg.button_text,
         "success_message": getattr(cfg, "success_message", "") or "",
         "captcha_enabled": cfg.captcha_enabled,
+        "captcha_type": getattr(cfg, "captcha_type", "none") or "none",
+        "captcha_difficulty": getattr(cfg, "captcha_difficulty", "medium") or "medium",
         "page_footer_text": getattr(cfg, "page_footer_text", "") or "",
         "server_name": guild_name,
         "server_icon": guild_icon,
@@ -93,16 +133,137 @@ def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):
     }
 
 
-# ── Start OAuth2 flow ──
-@router.get("/api/verify/{guild_id}/start")
-def start_verification(guild_id: str, request: Request, fp: str = "", db: Session = Depends(get_db)):
+# ── Captcha challenge generation & validation ──
+import random
+
+@router.post("/api/verify/{guild_id}/captcha/generate")
+def generate_captcha(guild_id: str, db: Session = Depends(get_db)):
+    """Generate a captcha challenge based on guild config."""
     cfg = db.execute(
         select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
     ).scalars().first()
     if not cfg or not cfg.enabled:
         raise HTTPException(404, "Verification not enabled")
 
-    client_id, client_secret, _, public_app_url = _get_oauth_config(db)
+    captcha_type = getattr(cfg, "captcha_type", "none") or "none"
+    difficulty = getattr(cfg, "captcha_difficulty", "medium") or "medium"
+
+    if captcha_type == "none":
+        # No captcha — issue token immediately
+        return {"type": "none", "token": _issue_captcha_token()}
+
+    if captcha_type == "button":
+        # Simple button click (easiest)
+        return {"type": "button", "message": "Click the button to verify you are human"}
+
+    if captcha_type == "emoji":
+        # Pick N emojis, ask user to select the correct one
+        all_emojis = ["🍎", "🍊", "🍋", "🍇", "🍓", "🍒", "🍑", "🥭", "🍍", "🥥",
+                      "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯",
+                      "⭐", "🌙", "☀️", "🌈", "❄️", "🔥", "💧", "⚡", "🌸", "🍀"]
+        target = random.choice(all_emojis)
+        count = {"easy": 4, "medium": 6, "hard": 9}[difficulty]
+        options = random.sample([e for e in all_emojis if e != target], count - 1) + [target]
+        random.shuffle(options)
+        # Store answer hash in challenge_id
+        answer_hash = hashlib.sha256(f"{guild_id}:{target}:{time.time()//60}".encode()).hexdigest()[:16]
+        return {
+            "type": "emoji",
+            "message": f"Select the {target} emoji",
+            "target": target,
+            "options": options,
+            "challenge_id": answer_hash,
+        }
+
+    if captcha_type == "math":
+        # Math problem
+        if difficulty == "easy":
+            a, b = random.randint(1, 10), random.randint(1, 10)
+            op = random.choice(["+", "-"])
+        elif difficulty == "hard":
+            a, b = random.randint(10, 99), random.randint(10, 99)
+            op = random.choice(["+", "-", "×"])
+        else:  # medium
+            a, b = random.randint(1, 50), random.randint(1, 50)
+            op = random.choice(["+", "-", "×"])
+        answer = a + b if op == "+" else (a - b if op == "-" else a * b)
+        return {
+            "type": "math",
+            "question": f"{a} {op} {b} = ?",
+            "answer_hash": hashlib.sha256(str(answer).encode()).hexdigest()[:16],
+        }
+
+    if captcha_type == "slider":
+        # Slider verification — user must drag to a target position
+        target = random.randint(60, 90)  # percentage
+        return {
+            "type": "slider",
+            "target": target,
+            "tolerance": {"easy": 10, "medium": 5, "hard": 3}[difficulty],
+        }
+
+    return {"type": "none", "token": _issue_captcha_token()}
+
+
+@router.post("/api/verify/{guild_id}/captcha/validate")
+def validate_captcha(guild_id: str, body: dict, db: Session = Depends(get_db)):
+    """Validate captcha answer and return a one-time token."""
+    cfg = db.execute(
+        select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
+    ).scalars().first()
+    if not cfg or not cfg.enabled:
+        raise HTTPException(404, "Verification not enabled")
+
+    captcha_type = getattr(cfg, "captcha_type", "none") or "none"
+
+    if captcha_type == "none":
+        return {"valid": True, "token": _issue_captcha_token()}
+
+    if captcha_type == "button":
+        # Button click — just issue token
+        return {"valid": True, "token": _issue_captcha_token()}
+
+    if captcha_type == "emoji":
+        selected = body.get("selected")
+        target = body.get("target")
+        if selected == target:
+            return {"valid": True, "token": _issue_captcha_token()}
+        return {"valid": False, "error": "Wrong emoji selected"}
+
+    if captcha_type == "math":
+        answer = str(body.get("answer", "")).strip()
+        answer_hash = body.get("answer_hash", "")
+        if hashlib.sha256(answer.encode()).hexdigest()[:16] == answer_hash:
+            return {"valid": True, "token": _issue_captcha_token()}
+        return {"valid": False, "error": "Wrong answer"}
+
+    if captcha_type == "slider":
+        value = body.get("value", 0)
+        target = body.get("target", 75)
+        tolerance = body.get("tolerance", 5)
+        if abs(value - target) <= tolerance:
+            return {"valid": True, "token": _issue_captcha_token()}
+        return {"valid": False, "error": "Try again"}
+
+    return {"valid": True, "token": _issue_captcha_token()}
+
+
+# ── Start OAuth2 flow ──
+@router.get("/api/verify/{guild_id}/start")
+def start_verification(guild_id: str, request: Request, fp: str = "", captcha_token: str = "", db: Session = Depends(get_db)):
+    cfg = db.execute(
+        select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
+    ).scalars().first()
+    if not cfg or not cfg.enabled:
+        raise HTTPException(404, "Verification not enabled")
+
+    # Validate captcha token if captcha is enabled
+    captcha_type = getattr(cfg, "captcha_type", "none") or "none"
+    if captcha_type != "none":
+        if not captcha_token or not _validate_captcha_token(captcha_token):
+            raise HTTPException(403, "Captcha required")
+
+    client_id, client_secret, _, public_app_url = _get_oauth_config(db, guild_id)
     if not client_id or not client_secret:
         raise HTTPException(500, "Discord OAuth not configured")
 
@@ -144,7 +305,7 @@ async def verify_callback(
     if not cfg or not cfg.enabled:
         raise HTTPException(404, "Verification not enabled")
 
-    client_id, client_secret, bot_token, public_app_url = _get_oauth_config(db)
+    client_id, client_secret, bot_token, public_app_url = _get_oauth_config(db, guild_id)
     if not client_id or not client_secret:
         raise HTTPException(500, "Discord OAuth not configured")
 

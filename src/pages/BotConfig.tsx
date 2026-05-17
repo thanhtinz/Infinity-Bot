@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
-import { Switch } from "@/components/ui/switch";
-import { Mic } from "lucide-react";
 
 // ─── Schemas ────────────────────────────────────────────────
 const discordSchema = z.object({
@@ -189,44 +187,6 @@ export function BotConfig() {
     onError: () => { toast({ variant: "destructive", title: t("error"), description: t("toast_configFailed") }); },
   });
 
-  // ── Temp Voice ──
-  const [tvEnabled, setTvEnabled] = useState(false);
-  const [tvJoinChannel, setTvJoinChannel] = useState("");
-  const [tvCategory, setTvCategory] = useState("");
-
-  const { data: tvConfig } = useQuery({
-    queryKey: ["tempvoice_config"],
-    queryFn: () => fetch("/api/tempvoice/config", { credentials: "include" }).then((r) => r.json()),
-    staleTime: 60_000,
-  });
-  useEffect(() => {
-    if (tvConfig) {
-      setTvEnabled(tvConfig.enabled ?? false);
-      setTvJoinChannel(tvConfig.join_channel_id || "");
-      setTvCategory(tvConfig.category_id || "");
-    }
-  }, [tvConfig]);
-
-  const { data: allChannels = [] } = useQuery<{ id: string; name: string; type: number }[]>({
-    queryKey: ["discord_channels_all", activeGuildId],
-    queryFn: () => fetch(`/api/discord/channels/all?guild_id=${activeGuildId}`, { credentials: "include" }).then((r) => r.ok ? r.json() : []),
-    enabled: !!config?.has_discord_token && !!activeGuildId,
-  });
-  const tvVoiceChannels = allChannels.filter((c) => c.type === 2);
-
-  const tvMutation = useMutation({
-    mutationFn: () =>
-      fetch("/api/tempvoice/config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ enabled: tvEnabled, join_channel_id: tvJoinChannel, category_id: tvCategory }),
-      }).then((r) => { if (!r.ok) throw new Error("Save failed"); return r.json(); }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["tempvoice_config"] }); toast({ title: t("save"), description: t("toast_tempVoiceSaved") }); },
-    onError: () => { toast({ variant: "destructive", title: t("error"), description: t("toast_configFailed") }); },
-  });
-
-
   if (isLoading) return <div>{t("loading")}</div>;
 
   return (
@@ -368,7 +328,7 @@ export function BotConfig() {
                   { name: "feedback_channel_id" as const, label: t("botConfig_notifChannels") },
                   { name: "coupon_channel_id" as const, label: t("botConfig_notifChannels") },
                   { name: "bang_gia_channel_id" as const, label: t("botConfig_notifChannels") },
-                  { name: "welcome_channel_id" as const, label: t("botConfig_joinChannel") },
+                  { name: "welcome_channel_id" as const, label: t("botConfig_welcomeChannel") },
                 ].map(({ name, label }) => (
                   <FormField key={name} control={serverForm.control} name={name} render={({ field }) => (
                     <FormItem>
@@ -392,44 +352,6 @@ export function BotConfig() {
           </Card>
         </form>
       </Form>
-
-      {/* ── Card: Temp Voice ── */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Mic className="w-4 h-4" /> {t("botConfig_tempVoice")}</CardTitle>
-          <CardDescription>{t("botConfig_autoCreateDesc")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">{t("enabled")}</p>
-              <p className="text-sm text-muted-foreground">{t("botConfig_autoCreateDesc")}</p>
-            </div>
-            <Switch checked={tvEnabled} onCheckedChange={setTvEnabled} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{t("botConfig_voiceCategory")}</label>
-            {allChannels.filter((c: { id: string; name: string; type: number }) => c.type === 4).length > 0 ? (
-              <DiscordSelect value={tvCategory} onChange={setTvCategory} options={allChannels.filter((c: { id: string; name: string; type: number }) => c.type === 4).map((c: { id: string; name: string; type: number }) => ({ id: c.id, name: c.name }))} placeholder={t("botConfig_voiceCategory")} />
-            ) : (
-              <Input placeholder={activeGuildId ? t("loading") : t("botConfig_channelsPerms")} disabled={!activeGuildId} value={tvCategory} onChange={(e) => setTvCategory(e.target.value)} />
-            )}
-            <p className="text-xs text-muted-foreground">{t("botConfig_voiceCategoryDesc")}</p>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{t("botConfig_joinChannel")}</label>
-            {tvVoiceChannels.length > 0 ? (
-              <DiscordSelect value={tvJoinChannel} onChange={setTvJoinChannel} options={tvVoiceChannels.map((c) => ({ id: c.id, name: c.name }))} placeholder={t("channel")} />
-            ) : (
-              <Input placeholder={activeGuildId ? t("loading") : t("botConfig_channelsPerms")} disabled={!activeGuildId} value={tvJoinChannel} onChange={(e) => setTvJoinChannel(e.target.value)} />
-            )}
-            <p className="text-xs text-muted-foreground">{t("botConfig_controlPanelDesc")}</p>
-          </div>
-          <Button onClick={() => tvMutation.mutate()} disabled={tvMutation.isPending} size="sm">
-            {tvMutation.isPending ? t("saving") : t("botConfig_saveChannels")}
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 }
