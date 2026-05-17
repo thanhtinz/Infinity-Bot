@@ -1096,6 +1096,10 @@ class VerificationConfig(Base):
     vpn_api_provider = Column(String, default="proxycheck")  # proxycheck | ipqualityscore
     # ── Custom Domain ──
     custom_domain = Column(String, nullable=True)  # e.g. "verify.myserver.com"
+    # ── Music ──
+    music_url = Column(String, nullable=True)  # Background audio URL for verify page
+    # ── Pull Cooldown ──
+    pull_cooldown_hours = Column(Integer, default=10)  # Cooldown between pulls (0 = no cooldown)
 
 
 class StaffPermission(Base):

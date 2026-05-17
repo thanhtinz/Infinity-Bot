@@ -273,6 +273,8 @@ async def init_db():
             "bio_description": "ALTER TABLE verification_configs ADD COLUMN bio_description TEXT",
             "socials": "ALTER TABLE verification_configs ADD COLUMN socials JSON DEFAULT '{}'",
             "custom_domain": "ALTER TABLE verification_configs ADD COLUMN custom_domain VARCHAR",
+            "music_url": "ALTER TABLE verification_configs ADD COLUMN music_url VARCHAR",
+            "pull_cooldown_hours": "ALTER TABLE verification_configs ADD COLUMN pull_cooldown_hours INTEGER DEFAULT 10",
         }.items():
             if col not in vc:
                 all_stmts.append(stmt)

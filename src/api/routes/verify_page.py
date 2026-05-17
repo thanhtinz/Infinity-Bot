@@ -87,6 +87,7 @@ def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):
         "tilt_effect": getattr(cfg, "tilt_effect", False),
         "bio_description": getattr(cfg, "bio_description", "") or "",
         "socials": getattr(cfg, "socials", {}) or {},
+        "music_url": getattr(cfg, "music_url", "") or "",
         "terms_url": getattr(cfg, "terms_url", "") or "",
         "custom_css": getattr(cfg, "custom_css", "") or "",
     }

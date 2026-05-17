@@ -1,13 +1,13 @@
 """Member Pull routes — start/stop pulling, progress, history."""
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
 from src.api.deps import get_guild_id
-from src.models.models import MemberPull
+from src.models.models import MemberPull, VerificationConfig
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -29,6 +29,24 @@ def start_pull(
     ).scalars().first()
     if active:
         raise HTTPException(400, "A pull is already in progress")
+
+    # Check cooldown
+    vcfg = db.execute(
+        select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
+    ).scalars().first()
+    cooldown_hours = getattr(vcfg, "pull_cooldown_hours", 10) if vcfg else 10
+    if cooldown_hours and cooldown_hours > 0:
+        last_pull = db.execute(
+            select(MemberPull).where(
+                MemberPull.guild_id == guild_id,
+                MemberPull.status == "completed",
+            ).order_by(MemberPull.id.desc()).limit(1)
+        ).scalars().first()
+        if last_pull and last_pull.completed_at:
+            cooldown_end = last_pull.completed_at + timedelta(hours=cooldown_hours)
+            if datetime.utcnow() < cooldown_end:
+                remaining = (cooldown_end - datetime.utcnow()).total_seconds() / 3600
+                raise HTTPException(400, f"Pull cooldown active. Try again in {remaining:.1f} hours.")
 
     opts = body or {}
     pull = MemberPull(

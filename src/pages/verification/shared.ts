@@ -82,6 +82,8 @@ export interface VerificationConfig {
   vpn_api_key: string;
   vpn_api_provider: string;
   custom_domain: string;
+  music_url: string;
+  pull_cooldown_hours: number;
 }
 
 export interface VerificationStats {

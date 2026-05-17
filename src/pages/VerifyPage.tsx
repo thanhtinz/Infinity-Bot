@@ -40,6 +40,7 @@ interface VerifyConfig {
   tilt_effect?: boolean;
   bio_description?: string;
   socials?: Record<string, string>;
+  music_url?: string;
   terms_url?: string;
   custom_css?: string;
 }
@@ -434,6 +435,44 @@ export function VerifyPage() {
           50% { opacity: 0.6; transform: rotate(2deg); }
         }
       `}</style>
+
+      {/* Background Music */}
+      {config?.music_url && <MusicPlayer url={config.music_url} color={btnColor} />}
     </div>
+  );
+}
+
+function MusicPlayer({ url, color }: { url: string; color: string }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [muted, setMuted] = useState(true);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = 0.3;
+    audio.muted = true;
+    audio.play().catch(() => {});
+  }, [url]);
+
+  function toggle() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.muted = !audio.muted;
+    setMuted(audio.muted);
+    if (!audio.muted) audio.play().catch(() => {});
+  }
+
+  return (
+    <>
+      <audio ref={audioRef} src={url} loop />
+      <button
+        onClick={toggle}
+        className="fixed bottom-4 right-4 z-50 w-10 h-10 rounded-full flex items-center justify-center text-white text-lg shadow-lg transition-all hover:scale-110 active:scale-95"
+        style={{ backgroundColor: color }}
+        title={muted ? "Unmute" : "Mute"}
+      >
+        {muted ? "🔇" : "🔊"}
+      </button>
+    </>
   );
 }

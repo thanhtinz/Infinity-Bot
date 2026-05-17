@@ -331,6 +331,12 @@ export function VerifyConfig() {
                 <Input value={configForm.cursor_url} onChange={e => update({ cursor_url: e.target.value })}
                   placeholder="Cursor image URL" className="text-xs" />
               </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Background Music</Label>
+                <Input value={configForm.music_url || ""} onChange={e => update({ music_url: e.target.value })}
+                  placeholder="Audio URL (mp3, ogg, wav)" className="text-xs" />
+                <p className="text-[10px] text-muted-foreground mt-1">Auto-plays muted, user can unmute. Leave empty to disable.</p>
+              </div>
             </div>
           </Section>
 
@@ -693,6 +699,13 @@ export function VerifyConfig() {
               <Input value={configForm.custom_domain || ""} onChange={e => update({ custom_domain: e.target.value })}
                 placeholder="verify.yourdomain.com" />
               <p className="text-xs text-muted-foreground mt-1">Point a CNAME to your app URL. Members verify at https://your-domain.com/verify/{"{guild_id}"}</p>
+            </div>
+            <Separator className="opacity-10" />
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Pull Cooldown (hours)</Label>
+              <Input type="number" min={0} max={720} value={configForm.pull_cooldown_hours ?? 10}
+                onChange={e => update({ pull_cooldown_hours: parseInt(e.target.value) || 0 })} />
+              <p className="text-xs text-muted-foreground mt-1">0 = no cooldown. Prevents spamming member pulls.</p>
             </div>
             <Separator className="opacity-10" />
             <div>
