@@ -4,7 +4,8 @@ import datetime
 import logging
 from sqlalchemy import select
 from src.database.config import SessionLocal
-from src.models.models import Warning
+import asyncio
+from src.models.models import Warning, FirewallRule
 from src.bot.embed_utils import build_embed
 
 logger = logging.getLogger(__name__)
@@ -196,3 +197,221 @@ class ModerationCog(discord.Cog):
             await ctx.respond(embed=embed, ephemeral=True)
         finally:
             session.close()
+
+    # ── Massrole ──────────────────────────────────────────────
+
+    @discord.slash_command(name="massrole", description="[Admin] Add a role to all members")
+    @discord.default_permissions(manage_roles=True)
+    async def massrole_cmd(
+        self,
+        ctx: discord.ApplicationContext,
+        role: discord.Option(discord.Role, "Role to add"),
+    ):
+        if role >= ctx.guild.me.top_role:
+            return await ctx.respond("❌ That role is higher than or equal to the bot's top role.", ephemeral=True)
+        if role >= ctx.author.top_role and ctx.author != ctx.guild.owner:
+            return await ctx.respond("❌ That role is higher than or equal to your top role.", ephemeral=True)
+
+        members = [m for m in ctx.guild.members if role not in m.roles and not m.bot]
+        if not members:
+            return await ctx.respond(f"✅ All members already have **{role.name}**.", ephemeral=True)
+
+        # Confirmation
+        confirm_embed = discord.Embed(
+            title="⚠️ Confirm Massrole",
+            description=f"This will add **{role.name}** to **{len(members)}** members.\nReact ✅ to confirm or ❌ to cancel.",
+            color=discord.Color.orange(),
+        )
+        msg = await ctx.respond(embed=confirm_embed)
+        msg = await msg.original_response()
+        await msg.add_reaction("✅")
+        await msg.add_reaction("❌")
+
+        def check(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in ("✅", "❌") and reaction.message.id == msg.id
+
+        try:
+            reaction, _ = await self.bot.wait_for("reaction_add", timeout=30, check=check)
+        except asyncio.TimeoutError:
+            return await msg.edit(embed=discord.Embed(title="⏰ Timed out", color=discord.Color.greyple()))
+
+        if str(reaction.emoji) == "❌":
+            return await msg.edit(embed=discord.Embed(title="❌ Cancelled", color=discord.Color.red()))
+
+        await msg.edit(embed=discord.Embed(
+            title="⏳ Processing...",
+            description=f"Adding **{role.name}** to {len(members)} members...",
+            color=discord.Color.blue(),
+        ))
+
+        success, failed = 0, 0
+        for m in members:
+            try:
+                await m.add_roles(role, reason=f"Massrole by {ctx.author}")
+                success += 1
+            except Exception:
+                failed += 1
+            if success % 10 == 0:
+                await asyncio.sleep(1)  # rate limit
+
+        result = discord.Embed(
+            title="✅ Massrole Complete",
+            description=f"**{role.name}** added to **{success}** members." + (f"\n⚠️ Failed: {failed}" if failed else ""),
+            color=discord.Color.green(),
+        )
+        await msg.edit(embed=result)
+
+    # ── Unrole ────────────────────────────────────────────────
+
+    @discord.slash_command(name="unrole", description="[Admin] Remove a role from all members")
+    @discord.default_permissions(manage_roles=True)
+    async def unrole_cmd(
+        self,
+        ctx: discord.ApplicationContext,
+        role: discord.Option(discord.Role, "Role to remove"),
+    ):
+        if role >= ctx.guild.me.top_role:
+            return await ctx.respond("❌ That role is higher than or equal to the bot's top role.", ephemeral=True)
+        if role >= ctx.author.top_role and ctx.author != ctx.guild.owner:
+            return await ctx.respond("❌ That role is higher than or equal to your top role.", ephemeral=True)
+
+        members = [m for m in ctx.guild.members if role in m.roles and not m.bot]
+        if not members:
+            return await ctx.respond(f"✅ No members have **{role.name}**.", ephemeral=True)
+
+        confirm_embed = discord.Embed(
+            title="⚠️ Confirm Unrole",
+            description=f"This will remove **{role.name}** from **{len(members)}** members.\nReact ✅ to confirm or ❌ to cancel.",
+            color=discord.Color.orange(),
+        )
+        msg = await ctx.respond(embed=confirm_embed)
+        msg = await msg.original_response()
+        await msg.add_reaction("✅")
+        await msg.add_reaction("❌")
+
+        def check(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in ("✅", "❌") and reaction.message.id == msg.id
+
+        try:
+            reaction, _ = await self.bot.wait_for("reaction_add", timeout=30, check=check)
+        except asyncio.TimeoutError:
+            return await msg.edit(embed=discord.Embed(title="⏰ Timed out", color=discord.Color.greyple()))
+
+        if str(reaction.emoji) == "❌":
+            return await msg.edit(embed=discord.Embed(title="❌ Cancelled", color=discord.Color.red()))
+
+        await msg.edit(embed=discord.Embed(
+            title="⏳ Processing...",
+            description=f"Removing **{role.name}** from {len(members)} members...",
+            color=discord.Color.blue(),
+        ))
+
+        success, failed = 0, 0
+        for m in members:
+            try:
+                await m.remove_roles(role, reason=f"Unrole by {ctx.author}")
+                success += 1
+            except Exception:
+                failed += 1
+            if success % 10 == 0:
+                await asyncio.sleep(1)
+
+        result = discord.Embed(
+            title="✅ Unrole Complete",
+            description=f"**{role.name}** removed from **{success}** members." + (f"\n⚠️ Failed: {failed}" if failed else ""),
+            color=discord.Color.green(),
+        )
+        await msg.edit(embed=result)
+
+    # ── Deluser ───────────────────────────────────────────────
+
+    @discord.slash_command(name="deluser", description="[Admin] Kick + purge messages + blacklist a user")
+    @discord.default_permissions(ban_members=True)
+    async def deluser_cmd(
+        self,
+        ctx: discord.ApplicationContext,
+        user: discord.Option(discord.Member, "Member to remove"),
+        reason: discord.Option(str, "Reason", required=False, default="No reason"),
+        purge_days: discord.Option(int, "Purge messages (days, 0-7)", required=False, default=1, min_value=0, max_value=7),
+    ):
+        if user == ctx.author:
+            return await ctx.respond("❌ You cannot deluser yourself.", ephemeral=True)
+        if user == ctx.guild.me:
+            return await ctx.respond("❌ You cannot deluser the bot.", ephemeral=True)
+        if user.top_role >= ctx.guild.me.top_role:
+            return await ctx.respond("❌ That user's role is too high for the bot to action.", ephemeral=True)
+
+        confirm_embed = discord.Embed(
+            title="⚠️ Confirm Deluser",
+            description=(
+                f"**Target:** {user.mention} (`{user.id}`)\n"
+                f"**Actions:** Kick + purge {purge_days}d messages + blacklist\n"
+                f"**Reason:** {reason}\n\n"
+                "React ✅ to confirm or ❌ to cancel."
+            ),
+            color=discord.Color.red(),
+        )
+        msg = await ctx.respond(embed=confirm_embed)
+        msg = await msg.original_response()
+        await msg.add_reaction("✅")
+        await msg.add_reaction("❌")
+
+        def check(reaction, u):
+            return u == ctx.author and str(reaction.emoji) in ("✅", "❌") and reaction.message.id == msg.id
+
+        try:
+            reaction, _ = await self.bot.wait_for("reaction_add", timeout=30, check=check)
+        except asyncio.TimeoutError:
+            return await msg.edit(embed=discord.Embed(title="⏰ Timed out", color=discord.Color.greyple()))
+
+        if str(reaction.emoji) == "❌":
+            return await msg.edit(embed=discord.Embed(title="❌ Cancelled", color=discord.Color.red()))
+
+        actions_done = []
+
+        # 1) Purge messages
+        if purge_days > 0:
+            cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=purge_days)
+            purged = 0
+            for channel in ctx.guild.text_channels:
+                try:
+                    deleted = await channel.purge(limit=100, check=lambda m: m.author.id == user.id, after=cutoff)
+                    purged += len(deleted)
+                except Exception:
+                    pass
+            actions_done.append(f"Purged **{purged}** messages")
+
+        # 2) Kick
+        try:
+            await user.kick(reason=f"Deluser by {ctx.author}: {reason}")
+            actions_done.append("Kicked")
+        except discord.Forbidden:
+            actions_done.append("⚠️ Kick failed (no permission)")
+
+        # 3) Blacklist via FirewallRule
+        session = get_session()
+        try:
+            rule = FirewallRule(
+                guild_id=str(ctx.guild.id),
+                rule_type="block",
+                target_type="user_id",
+                target_value=str(user.id),
+                reason=f"Deluser: {reason}",
+                created_by=str(ctx.author.id),
+            )
+            session.add(rule)
+            session.commit()
+            actions_done.append("Blacklisted")
+        except Exception as e:
+            logger.error(f"Deluser blacklist error: {e}")
+            actions_done.append("⚠️ Blacklist failed")
+        finally:
+            session.close()
+
+        result = discord.Embed(
+            title="✅ Deluser Complete",
+            description=f"**User:** {user} (`{user.id}`)\n**Reason:** {reason}\n\n" + "\n".join(f"• {a}" for a in actions_done),
+            color=discord.Color.dark_red(),
+        )
+        result.set_footer(text=f"By {ctx.author}")
+        await msg.edit(embed=result)
