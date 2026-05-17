@@ -30,6 +30,9 @@ class SystemConfig(Base):
     shard_count = Column(Integer, nullable=True)  # None = auto
     shop_leaderboard_reset_at = Column(DateTime, nullable=True)
     language = Column(String, default="en")
+    # ── Security / VPN detection API config ──
+    vpn_api_key = Column(String, nullable=True)
+    vpn_api_provider = Column(String, default="proxycheck")  # proxycheck | ipqualityscore
 
 class User(Base):
     __tablename__ = "users"
@@ -891,3 +894,108 @@ class AutoResponder(Base):
     enabled = Column(Boolean, default=True)
     priority = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+# ═══════════════════════════════════════════════════════════════
+# Security & Recovery (VaultCord-style)
+# ═══════════════════════════════════════════════════════════════
+
+class ServerBackup(Base):
+    """Full server snapshot: Discord structure + bot config + verified members."""
+    __tablename__ = "server_backups"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, index=True)
+    backup_type = Column(String, default="manual")       # manual | scheduled | auto
+    status = Column(String, default="in_progress")        # in_progress | completed | failed
+    data = Column(JSON)  # { discord: {...}, bot_config: {...}, verified_members: [...] }
+    channel_count = Column(Integer, default=0)
+    role_count = Column(Integer, default=0)
+    member_count = Column(Integer, default=0)
+    config_count = Column(Integer, default=0)
+    message_count = Column(Integer, default=0)
+    size_bytes = Column(Integer, default=0)
+    error = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    expires_at = Column(DateTime, nullable=True)
+
+
+class BackupSchedule(Base):
+    """Auto-backup schedule per guild."""
+    __tablename__ = "backup_schedules"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, unique=True, index=True)
+    enabled = Column(Boolean, default=False)
+    interval_hours = Column(Integer, default=24)
+    max_backups = Column(Integer, default=5)
+    include_messages = Column(Boolean, default=True)
+    message_limit = Column(Integer, default=100)
+    include_bot_config = Column(Boolean, default=True)
+    include_verified_members = Column(Boolean, default=True)
+    last_backup_at = Column(DateTime, nullable=True)
+    next_backup_at = Column(DateTime, nullable=True)
+
+
+class VerifiedMember(Base):
+    """Members verified via OAuth2 — used for pull/restore after nuke."""
+    __tablename__ = "verified_members"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, index=True)
+    discord_id = Column(String, index=True)
+    username = Column(String, nullable=True)
+    discriminator = Column(String, nullable=True)
+    avatar = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    ip_address = Column(String, nullable=True)
+    roles = Column(JSON, default=list)
+    access_token = Column(String, nullable=True)
+    refresh_token = Column(String, nullable=True)
+    token_expires_at = Column(DateTime, nullable=True)
+    verified_at = Column(DateTime, default=datetime.datetime.utcnow)
+    last_seen = Column(DateTime, nullable=True)
+    is_blacklisted = Column(Boolean, default=False)
+    risk_score = Column(Integer, default=0)
+    metadata_ = Column("metadata", JSON, default=dict)  # connected accounts, etc.
+    __table_args__ = (UniqueConstraint("guild_id", "discord_id"),)
+
+
+class MemberPull(Base):
+    """Track member pull (rejoin) operations."""
+    __tablename__ = "member_pulls"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, index=True)
+    status = Column(String, default="pending")  # pending | in_progress | completed | failed
+    total_members = Column(Integer, default=0)
+    pulled_members = Column(Integer, default=0)
+    failed_members = Column(Integer, default=0)
+    restore_roles = Column(Boolean, default=True)
+    join_delay_seconds = Column(Integer, default=1)
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    error = Column(Text, nullable=True)
+    log = Column(JSON, default=list)
+
+
+class VerificationConfig(Base):
+    """Per-guild verification page configuration."""
+    __tablename__ = "verification_configs"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, unique=True, index=True)
+    enabled = Column(Boolean, default=False)
+    verified_role_id = Column(String, nullable=True)
+    unverified_role_id = Column(String, nullable=True)
+    verify_channel_id = Column(String, nullable=True)
+    log_channel_id = Column(String, nullable=True)
+    # Branding
+    page_title = Column(String, default="Verify")
+    page_description = Column(Text, nullable=True)
+    page_color = Column(String, default="#5865F2")
+    page_logo_url = Column(String, nullable=True)
+    page_background_url = Column(String, nullable=True)
+    button_text = Column(String, default="Verify with Discord")
+    success_message = Column(Text, default="You have been verified!")
+    # Security
+    captcha_enabled = Column(Boolean, default=False)
+    min_account_age_days = Column(Integer, default=0)
+    block_vpn = Column(Boolean, default=False)
+    kick_on_deauth = Column(Boolean, default=False)
+    close_page_after_verify = Column(Boolean, default=True)

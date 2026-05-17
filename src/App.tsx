@@ -62,6 +62,10 @@ const SelectMenuRoleEditPage = lazy(() => import("./pages/select-roles/SelectMen
 const AutoResponder = lazy(() => import("./pages/AutoResponder").then(m => ({ default: m.AutoResponder })));
 const AutoResponderEditPage = lazy(() => import("./pages/auto-responder/AutoResponderEditPage").then(m => ({ default: m.AutoResponderEditPage })));
 const BackupRestore = lazy(() => import("./pages/BackupRestore").then(m => ({ default: m.BackupRestore })));
+const ServerBackup = lazy(() => import("./pages/ServerBackup").then(m => ({ default: m.ServerBackup })));
+const VerificationManager = lazy(() => import("./pages/VerificationManager").then(m => ({ default: m.VerificationManager })));
+const SecurityConfig = lazy(() => import("./pages/SecurityConfig").then(m => ({ default: m.SecurityConfig })));
+const VerifyPage = lazy(() => import("./pages/VerifyPage").then(m => ({ default: m.VerifyPage })));
 const SelectGuildPage = lazy(() => import("./pages/SelectGuildPage").then(m => ({ default: m.SelectGuildPage })));
 const Features = lazy(() => import("./pages/Features"));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
@@ -198,6 +202,16 @@ const navGroups: NavGroup[] = [
       { to: "/automod", icon: Shield, label: "nav_automod" },
       { to: "/logging", icon: ScrollText, label: "nav_loggingConfig" },
       { to: "/logs", icon: Activity, label: "nav_logging" },
+    ],
+  },
+  {
+    key: "security",
+    icon: ShieldAlert,
+    label: "nav_security",
+    items: [
+      { to: "/verification", icon: UserCheck2, label: "nav_verification" },
+      { to: "/server-backup", icon: Database, label: "nav_serverBackup" },
+      { to: "/security-config", icon: Shield, label: "nav_securityConfig" },
     ],
   },
   {
@@ -537,7 +551,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (isError) return <Navigate to="/login" replace />;
 
   // Một số route owner không cần guild
-  const guildFreeRoutes = ["/bot-status", "/backup", "/config/discord"];
+  const guildFreeRoutes = ["/bot-status", "/backup", "/config/discord", "/server-backup", "/security-config"];
   if (!selectedGuildId && !guildFreeRoutes.includes(location.pathname)) {
     return <Navigate to="/select-guild" replace />;
   }
@@ -614,6 +628,7 @@ function SetupGate() {
         <Route path="/pricing" element={<PublicPricingPage />} />
         <Route path="/status" element={<PublicStatusPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/verify/:guildId" element={<VerifyPage />} />
         {/* ── Dashboard (cần auth) ── */}
         <Route path="/dashboard" element={<ProtectedAppRoutes root />} />
         <Route path="/*" element={<ProtectedAppRoutes />} />
@@ -729,6 +744,9 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/scheduled-messages/new" element={<ScheduledMessagesEditPage />} />
         <Route path="/scheduled-messages/:id/edit" element={<ScheduledMessagesEditPage />} />
         <Route path="/backup" element={<OwnerRoute><BackupRestore /></OwnerRoute>} />
+        <Route path="/server-backup" element={<OwnerRoute><ServerBackup /></OwnerRoute>} />
+        <Route path="/verification" element={<VerificationManager />} />
+        <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
         {/* TempVoice */}
         <Route path="/voice" element={<Navigate to="/voice/analytics" replace />} />
         <Route path="/voice/setup" element={<TempVoiceSetup />} />

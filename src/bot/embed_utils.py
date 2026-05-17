@@ -735,6 +735,66 @@ DEFAULTS: dict[str, dict] = {
             {"name": "🔓 Kênh được mở", "value": "{count}", "inline": True},
         ],
     },
+    # ── Security & Recovery ───────────────────────────────────────────────────
+    "verification_log": {
+        "title": "✅ Xác minh thành công",
+        "description": "{user.mention} đã xác minh thành công.",
+        "color": "#57F287",
+        "fields": [
+            {"name": "👤 Người dùng", "value": "{user.tag}", "inline": True},
+            {"name": "📧 Email", "value": "{email}", "inline": True},
+            {"name": "🌐 IP", "value": "{ip}", "inline": True},
+            {"name": "⚠️ Risk Score", "value": "{risk_score}", "inline": True},
+        ],
+    },
+    "verification_denied": {
+        "title": "❌ Xác minh bị từ chối",
+        "description": "Một người dùng đã bị từ chối xác minh.",
+        "color": "#ED4245",
+        "fields": [
+            {"name": "👤 Người dùng", "value": "{user.tag}", "inline": True},
+            {"name": "📝 Lý do", "value": "{reason}", "inline": False},
+        ],
+    },
+    "backup_completed": {
+        "title": "✅ Sao lưu hoàn tất",
+        "description": "Server backup đã hoàn tất thành công.",
+        "color": "#57F287",
+        "fields": [
+            {"name": "📋 Loại", "value": "{backup_type}", "inline": True},
+            {"name": "📁 Channels", "value": "{channel_count}", "inline": True},
+            {"name": "🎭 Roles", "value": "{role_count}", "inline": True},
+            {"name": "👥 Members", "value": "{member_count}", "inline": True},
+        ],
+    },
+    "restore_started": {
+        "title": "🔄 Đang khôi phục...",
+        "description": "Đang khôi phục server từ bản sao lưu.",
+        "color": "#FEE75C",
+        "fields": [],
+    },
+    "restore_completed": {
+        "title": "✅ Khôi phục hoàn tất",
+        "description": "Server đã được khôi phục thành công.",
+        "color": "#57F287",
+        "fields": [],
+    },
+    "member_pull_started": {
+        "title": "🔄 Đang kéo thành viên...",
+        "description": "Đang kéo **{total_members}** thành viên về server.",
+        "color": "#5865F2",
+        "fields": [],
+    },
+    "member_pull_completed": {
+        "title": "✅ Kéo thành viên hoàn tất",
+        "description": "Đã kéo thành viên về server thành công.",
+        "color": "#57F287",
+        "fields": [
+            {"name": "✅ Thành công", "value": "{pulled}", "inline": True},
+            {"name": "❌ Thất bại", "value": "{failed}", "inline": True},
+            {"name": "📊 Tổng", "value": "{total}", "inline": True},
+        ],
+    },
 }
 
 

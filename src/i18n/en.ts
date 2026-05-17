@@ -2260,6 +2260,12 @@ const en: Record<TranslationKey, string> = {
   ar_toggleError: "Toggle error",
   ar_deleteConfirm: "Delete rule?",
   ar_deleteDesc: "will be permanently deleted.",
+
+  // ── Security & Recovery ──
+  nav_security: "Security & Recovery",
+  nav_verification: "Verification",
+  nav_serverBackup: "Server Backup",
+  nav_securityConfig: "Security Config",
 };
 
 export default en;

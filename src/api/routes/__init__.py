@@ -22,6 +22,10 @@ from src.api.routes.leveling import router as leveling_router
 from src.api.routes.public import router as public_router
 from src.api.routes.tempvoice import router as tempvoice_router
 from src.api.routes.moderation import router as moderation_router
+from src.api.routes.server_backup import router as server_backup_router
+from src.api.routes.verification import router as verification_router
+from src.api.routes.member_pull import router as member_pull_router
+from src.api.routes.verify_page import router as verify_page_router
 
 router = APIRouter()
 
@@ -46,3 +50,7 @@ router.include_router(leveling_router, tags=["leveling"])
 router.include_router(public_router, tags=["public"])
 router.include_router(tempvoice_router, tags=["tempvoice"])
 router.include_router(moderation_router, tags=["moderation"])
+router.include_router(server_backup_router, tags=["server-backup"])
+router.include_router(verification_router, tags=["verification"])
+router.include_router(member_pull_router, tags=["member-pull"])
+router.include_router(verify_page_router, tags=["verify-page"])

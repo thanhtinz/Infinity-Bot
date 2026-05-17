@@ -2148,6 +2148,12 @@ const vi = {
   ar_toggleError: "Lỗi chuyển trạng thái",
   ar_deleteConfirm: "Xóa rule?",
   ar_deleteDesc: "Rule sẽ bị xóa vĩnh viễn.",
+
+  // ── Security & Recovery ──
+  nav_security: "Bảo mật & Khôi phục",
+  nav_verification: "Xác minh",
+  nav_serverBackup: "Sao lưu Server",
+  nav_securityConfig: "Cấu hình bảo mật",
 } as const;
 
 export default vi;
