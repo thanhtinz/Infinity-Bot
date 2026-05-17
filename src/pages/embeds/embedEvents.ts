@@ -18,6 +18,10 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   // ── Đơn hàng ──
   { key: "don_hang_moi",      label: "Đơn hàng mới",           labelEn: "New Order",           icon: ShoppingCart, desc: "Khi admin tạo đơn /tao_don" },
   { key: "qr_thanh_toan",     label: "QR Thanh toán",          labelEn: "Payment QR",          icon: QrCode,       desc: "Gửi ảnh QR PayOS cho khách" },
+  { key: "qr_thanh_toan_payos",  label: "QR Thanh toán — PayOS",   labelEn: "Payment — PayOS",    icon: QrCode, desc: "PayOS-specific payment embed" },
+  { key: "qr_thanh_toan_paypal", label: "QR Thanh toán — PayPal",  labelEn: "Payment — PayPal",   icon: QrCode, desc: "PayPal-specific payment embed" },
+  { key: "qr_thanh_toan_crypto", label: "QR Thanh toán — Crypto",  labelEn: "Payment — Crypto",   icon: QrCode, desc: "Crypto-specific payment embed" },
+  { key: "qr_thanh_toan_manual", label: "QR Thanh toán — Manual",  labelEn: "Payment — Manual",   icon: QrCode, desc: "Manual bank transfer payment embed" },
   { key: "don_hang_het_han",  label: "Đơn hàng hết hạn",      labelEn: "Expired Order",       icon: Timer,        desc: "Khi đơn quá 15 phút chưa thanh toán" },
   { key: "ghi_chu_don_hang",  label: "Ghi chú đơn hàng",      labelEn: "Order Note",          icon: ShoppingCart, desc: "Khi admin thêm ghi chú vào đơn hàng" },
   { key: "bang_gia",          label: "Bảng giá sản phẩm",     labelEn: "Price List",          icon: ShoppingCart, desc: "Embed tổng quan khi dùng /bang_gia hoặc /san_pham" },
@@ -161,7 +165,7 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
 // ─── Event groups ────────────────────────────────────────────────────────────
 
 export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] = [
-  { label: "Đơn hàng",    labelEn: "Orders",         keys: ["don_hang_moi", "qr_thanh_toan", "don_hang_het_han", "ghi_chu_don_hang", "bang_gia", "san_pham_detail", "bxh_chi_tieu", "bxh_don_hang", "feedback", "thanh_toan", "giao_hang", "don_hang_chi_tiet", "coupon", "ban_shop", "unban_shop"] },
+  { label: "Đơn hàng",    labelEn: "Orders",         keys: ["don_hang_moi", "qr_thanh_toan", "qr_thanh_toan_payos", "qr_thanh_toan_paypal", "qr_thanh_toan_crypto", "qr_thanh_toan_manual", "don_hang_het_han", "ghi_chu_don_hang", "bang_gia", "san_pham_detail", "bxh_chi_tieu", "bxh_don_hang", "feedback", "thanh_toan", "giao_hang", "don_hang_chi_tiet", "coupon", "ban_shop", "unban_shop"] },
   { label: "Cộng đồng",   labelEn: "Community",      keys: ["giveaway", "ket_qua_giveaway", "reaction_role_panel", "starboard_post", "giveaway_banned", "invite_join", "invite_leaderboard"] },
   { label: "Kiểm duyệt", labelEn: "Moderation",      keys: ["canh_bao", "kick", "ban", "unban", "softban", "mute", "deafen", "rolepersist", "temprole", "lockdown_start", "lockdown_end", "automod_warn", "automod_mute", "automod_kick", "automod_delete", "timeout"] },
   { label: "Tiện ích",    labelEn: "Utilities",       keys: ["afk_set", "afk_return", "sticky_message"] },
@@ -194,6 +198,10 @@ export const VARIABLES: { token: string; desc: string; descEn: string }[] = [
   { token: "{product.image_url}", desc: "Ảnh sản phẩm",                     descEn: "Product image URL" },
   { token: "{qr_url}",            desc: "URL ảnh QR thanh toán",            descEn: "Payment QR image URL" },
   { token: "{transfer_content}",  desc: "Nội dung chuyển khoản",            descEn: "Bank transfer content" },
+  { token: "{bank_name}",         desc: "Tên ngân hàng (manual payment)",   descEn: "Bank name (manual payment)" },
+  { token: "{account_holder}",    desc: "Chủ tài khoản (manual payment)",   descEn: "Account holder (manual payment)" },
+  { token: "{account_number}",    desc: "Số tài khoản (manual payment)",    descEn: "Account number (manual payment)" },
+  { token: "{instructions}",      desc: "Hướng dẫn thanh toán (manual)",    descEn: "Payment instructions (manual)" },
   { token: "{coupon.code}",       desc: "Mã coupon",                        descEn: "Coupon code" },
   { token: "{coupon.discount}",   desc: "Giá trị giảm giá",                 descEn: "Discount value" },
   { token: "{coupon.type}",       desc: "Loại giảm giá (% hoặc số tiền)",   descEn: "Discount type (% or amount)" },

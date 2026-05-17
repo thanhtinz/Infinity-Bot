@@ -1,18 +1,21 @@
 # src/bot/cogs/admin_shop.py
-# /tao_don nâng cấp: coupon button+Modal, timeout 15 phút, update embed
+# /createorder: multi-payment, coupon button+Modal, timeout 15 min, update embed
 
 import discord
-import asyncio
-import datetime
 import logging
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
 from src.database.config import SessionLocal
 from src.models.models import SystemConfig, User, Product, Order, Coupon
-from payos import PayOS
-from payos.type import ItemData, PaymentData
+from src.services.payments import get_provider
 
 logger = logging.getLogger(__name__)
+
+
+def fmt_price(amount: float, symbol: str, currency: str) -> str:
+    """Format price with currency symbol. VND uses trailing ₫, others use leading symbol."""
+    if currency == "VND":
+        return f"{amount:,.0f}₫"
+    return f"{symbol}{amount:,.2f}"
 
 
 def get_session():
@@ -28,14 +31,16 @@ def _apply_coupon(price: float, coupon: Coupon) -> float:
 
 
 class CouponModal(discord.ui.Modal):
-    def __init__(self, order_id: int, original_price: float, view_ref: "OrderPayView"):
-        super().__init__(title="Nhập mã Coupon")
+    def __init__(self, order_id: int, original_price: float, view_ref: "OrderPayView", currency: str = "VND", currency_symbol: str = "₫"):
+        super().__init__(title="Enter Coupon Code")
         self.order_id = order_id
         self.original_price = original_price
         self.view_ref = view_ref
+        self.currency = currency
+        self.currency_symbol = currency_symbol
         self.code_input = discord.ui.InputText(
-            label="Mã coupon",
-            placeholder="VD: SUMMER30",
+            label="Coupon code",
+            placeholder="e.g. SUMMER30",
             style=discord.InputTextStyle.short,
             max_length=50,
         )
@@ -45,51 +50,56 @@ class CouponModal(discord.ui.Modal):
         code = self.code_input.value.strip().upper()
         session = get_session()
         try:
-            config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+            config = session.execute(select(SystemConfig).where(SystemConfig.guild_id == str(interaction.guild_id))).scalars().first()
+            if not config:
+                config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+
+            currency = getattr(config, "currency", "VND") or "VND"
+            currency_symbol = getattr(config, "currency_symbol", "₫") or "₫"
+            payment_methods = getattr(config, "payment_methods", None) or ["payos"]
+
             coupon = session.execute(
                 select(Coupon).where(Coupon.code == code)
             ).scalars().first()
 
             if not coupon:
-                await interaction.response.send_message("❌ Mã coupon không tồn tại.", ephemeral=True)
+                await interaction.response.send_message("❌ Coupon not found.", ephemeral=True)
                 return
             if coupon.used_count >= coupon.max_uses:
-                await interaction.response.send_message("❌ Mã coupon đã hết lượt sử dụng.", ephemeral=True)
+                await interaction.response.send_message("❌ Coupon has been used up.", ephemeral=True)
                 return
 
             new_price = _apply_coupon(self.original_price, coupon)
 
-            # Tạo PayOS link mới với giá đã giảm
+            # Create new checkout with discounted price via payment service
             order = session.execute(select(Order).where(Order.id == self.order_id)).scalars().first()
             if not order:
-                await interaction.response.send_message("❌ Đơn hàng không còn tồn tại.", ephemeral=True)
+                await interaction.response.send_message("❌ Order no longer exists.", ephemeral=True)
                 return
 
-            payos = PayOS(
-                client_id=config.payos_client_id,
-                api_key=config.payos_api_key,
-                checksum_key=config.payos_checksum_key,
-            )
+            method = order.payment_method or payment_methods[0]
+            provider = get_provider(method)
             domain = config.public_app_url or "http://localhost:3034"
             if not domain.startswith("http"):
                 domain = f"https://{domain}"
 
-            new_order_code = int(f"{order.id}{int(datetime.datetime.utcnow().timestamp()) % 10000}")
-            item = ItemData(name=f"Don #{order.id} (coupon)", quantity=1, price=int(new_price))
-            payment_data = PaymentData(
-                orderCode=new_order_code,
-                amount=int(new_price),
-                description=f"Don #{order.id} giam gia",
-                items=[item],
-                cancelUrl=f"{domain}/cancel",
-                returnUrl=f"{domain}/success",
+            result = await provider.create_checkout(
+                amount=new_price,
+                currency=currency,
+                order_id=order.id,
+                description=f"Order #{order.id} (coupon)",
+                return_url=f"{domain}/success",
+                cancel_url=f"{domain}/cancel",
+                config=config,
             )
-            payos_res = await asyncio.to_thread(payos.createPaymentLink, payment_data)
-            checkout_url = payos_res.checkoutUrl
+
+            checkout_url = result.checkout_url or ""
 
             # Update order
             order.total_price = new_price
-            order.payos_order_code = str(new_order_code)
+            order.payos_order_code = result.order_code or result.payment_id or str(order.id)
+            order.checkout_url = checkout_url
+            order.payment_id = result.payment_id
             coupon.used_count += 1
             session.commit()
 
@@ -100,45 +110,52 @@ class CouponModal(discord.ui.Modal):
                 original_price=self.original_price,
                 new_price=new_price,
                 checkout_url=checkout_url,
+                currency=currency,
+                currency_symbol=currency_symbol,
             )
         except Exception as e:
             logger.error(f"CouponModal error: {e}")
-            await interaction.response.send_message("❌ Lỗi khi áp dụng coupon.", ephemeral=True)
+            await interaction.response.send_message("❌ Error applying coupon.", ephemeral=True)
         finally:
             session.close()
 
 
 class OrderPayView(discord.ui.View):
-    """View kèm nút Nhập Coupon và Hủy đơn — gắn vào embed đơn hàng."""
-    def __init__(self, order_id: int, price: float, checkout_url: str, admin_id: int):
-        super().__init__(timeout=900)  # 15 phút
+    """View with Coupon button and Cancel order — attached to order embed."""
+    def __init__(self, order_id: int, price: float, checkout_url: str, admin_id: int, currency: str = "VND", currency_symbol: str = "₫"):
+        super().__init__(timeout=900)  # 15 minutes
         self.order_id = order_id
         self.price = price
         self.checkout_url = checkout_url
         self.admin_id = admin_id
+        self.currency = currency
+        self.currency_symbol = currency_symbol
         self.message: discord.Message | None = None
 
-        # Nút mở link thanh toán
-        pay_btn = discord.ui.Button(
-            label="💳 Thanh toán ngay",
-            style=discord.ButtonStyle.link,
-            url=checkout_url,
-        )
-        self.add_item(pay_btn)
+        # Pay button (link) — only if checkout_url exists
+        if checkout_url:
+            pay_btn = discord.ui.Button(
+                label="💳 Pay Now",
+                style=discord.ButtonStyle.link,
+                url=checkout_url,
+            )
+            self.add_item(pay_btn)
 
-    @discord.ui.button(label="🎫 Nhập Coupon", style=discord.ButtonStyle.secondary, custom_id="coupon_btn")
+    @discord.ui.button(label="🎫 Enter Coupon", style=discord.ButtonStyle.secondary, custom_id="coupon_btn")
     async def coupon_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
         modal = CouponModal(
             order_id=self.order_id,
             original_price=self.price,
             view_ref=self,
+            currency=self.currency,
+            currency_symbol=self.currency_symbol,
         )
         await interaction.response.send_modal(modal)
 
-    @discord.ui.button(label="❌ Hủy đơn", style=discord.ButtonStyle.danger, custom_id="cancel_btn")
+    @discord.ui.button(label="❌ Cancel Order", style=discord.ButtonStyle.danger, custom_id="cancel_btn")
     async def cancel_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
         if interaction.user.id != self.admin_id and not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message("❌ Chỉ Admin mới có thể hủy đơn.", ephemeral=True)
+            await interaction.response.send_message("❌ Only admins can cancel orders.", ephemeral=True)
             return
         session = get_session()
         try:
@@ -153,15 +170,19 @@ class OrderPayView(discord.ui.View):
                 embed = build_embed("don_hang_het_han", session2, vars={
                     "order.id": str(self.order_id),
                     "user": interaction.user.name,
-                    "product.name": "Đã hủy bởi admin",
+                    "product.name": "Cancelled by admin",
                 })
             finally:
                 session2.close()
             if self.message:
                 await self.message.edit(embed=embed, view=None)
-            await interaction.response.send_message("Đã hủy đơn hàng.", ephemeral=True)
+            await interaction.response.send_message("Order cancelled.", ephemeral=True)
         finally:
             session.close()
+
+    async def _cancel_callback(self, interaction: discord.Interaction):
+        """Callback for dynamically created cancel button in update_embed_with_coupon."""
+        await self.cancel_btn(discord.ui.Button(), interaction)
 
     async def update_embed_with_coupon(
         self,
@@ -170,36 +191,39 @@ class OrderPayView(discord.ui.View):
         original_price: float,
         new_price: float,
         checkout_url: str,
+        currency: str = "VND",
+        currency_symbol: str = "₫",
     ):
-        """Cập nhật URL nút thanh toán và embed sau khi áp coupon."""
+        """Update payment button URL and embed after applying coupon."""
         self.checkout_url = checkout_url
         self.price = new_price
 
-        # Rebuild view: giữ lại cancel button + timeout, cập nhật link
+        # Rebuild view: keep cancel button + timeout, update link
         self.clear_items()
-        self.add_item(discord.ui.Button(
-            label="💳 Thanh toán ngay",
-            style=discord.ButtonStyle.link,
-            url=checkout_url,
-        ))
+        if checkout_url:
+            self.add_item(discord.ui.Button(
+                label="💳 Pay Now",
+                style=discord.ButtonStyle.link,
+                url=checkout_url,
+            ))
         self.add_item(discord.ui.Button(
             label=f"✅ Coupon: {coupon_code}",
             style=discord.ButtonStyle.success,
             disabled=True,
         ))
-        cancel_btn = discord.ui.Button(label="❌ Hủy đơn", style=discord.ButtonStyle.danger, custom_id=f"cancel_{self.order_id}")
-        cancel_btn.callback = self.cancel_callback
+        cancel_btn = discord.ui.Button(label="❌ Cancel Order", style=discord.ButtonStyle.danger, custom_id=f"cancel_{self.order_id}")
+        cancel_btn.callback = self._cancel_callback
         self.add_item(cancel_btn)
 
         if self.message:
             try:
                 old_embed = self.message.embeds[0]
-                # Thêm field coupon
+                # Add coupon field
                 new_embed = old_embed.copy()
                 new_embed.color = discord.Color.orange()
                 new_embed.add_field(
-                    name="🎫 Coupon áp dụng",
-                    value=f"`{coupon_code}` — {original_price:,.0f}đ → **{new_price:,.0f}đ**",
+                    name="🎫 Coupon Applied",
+                    value=f"`{coupon_code}` — {fmt_price(original_price, currency_symbol, currency)} → **{fmt_price(new_price, currency_symbol, currency)}**",
                     inline=False,
                 )
                 await self.message.edit(embed=new_embed, view=self)
@@ -207,16 +231,16 @@ class OrderPayView(discord.ui.View):
                 logger.error(f"update_embed_with_coupon error: {e}")
 
         await interaction.response.send_message(
-            f"✅ Đã áp dụng coupon **{coupon_code}**! Giá mới: **{new_price:,.0f}đ**",
+            f"✅ Coupon **{coupon_code}** applied! New price: **{fmt_price(new_price, currency_symbol, currency)}**",
             ephemeral=True,
         )
 
     async def on_timeout(self):
-        """Sau 15 phút không thanh toán → hủy đơn + xóa embed."""
+        """After 15 minutes without payment → cancel order + update embed."""
         session = get_session()
         try:
             order = session.execute(select(Order).where(Order.id == self.order_id)).scalars().first()
-            if order and order.status == "PENDING":
+            if order and order.status in ("PENDING", "PENDING_MANUAL"):
                 order.status = "CANCELLED"
                 session.commit()
         finally:
@@ -245,9 +269,9 @@ class BangGiaSelect(discord.ui.Select):
         options = []
         for p in products[:25]:
             opt = discord.SelectOption(
-                label=(p.name or f"Sản phẩm #{p.id}")[:100],
+                label=(p.name or f"Product #{p.id}")[:100],
                 value=str(p.id),
-                description=(p.description[:100] if p.description else "Xem chi tiết gói"),
+                description=(p.description[:100] if p.description else "View package details"),
             )
             # Parse emoji — supports Unicode, custom <:name:id>, or :name:id
             if p.emoji:
@@ -266,13 +290,13 @@ class BangGiaSelect(discord.ui.Select):
                     opt.emoji = raw  # Unicode emoji
             options.append(opt)
         super().__init__(
-            placeholder="🔍 Chọn sản phẩm để xem chi tiết...",
+            placeholder="🔍 Select a product to view details...",
             options=options or [discord.SelectOption(label="No products available", value="_")],
             min_values=1,
             max_values=1,
             custom_id="bang_gia_select_persistent",
         )
-        # Lưu plain data (không giữ SQLAlchemy objects vì session đã đóng)
+        # Store plain data (no SQLAlchemy objects since session is closed)
         self.product_ids = [str(p.id) for p in products[:25]]
 
     async def callback(self, interaction: discord.Interaction):
@@ -288,11 +312,18 @@ class BangGiaSelect(discord.ui.Select):
             ).scalars().first()
 
             if not product:
-                await interaction.response.send_message("❌ Không tìm thấy sản phẩm.", ephemeral=True)
+                await interaction.response.send_message("❌ Product not found.", ephemeral=True)
                 return
 
             pkgs = [pk for pk in (product.packages or []) if pk.get("active", True)]
             img = resolve_image_url(product.image_url, session)
+
+            # Get currency config
+            config = session.execute(select(SystemConfig).where(SystemConfig.guild_id == str(interaction.guild_id))).scalars().first()
+            if not config:
+                config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+            currency = getattr(config, "currency", "VND") or "VND"
+            currency_symbol = getattr(config, "currency_symbol", "₫") or "₫"
 
             # Try per-product embed first, fall back to generic san_pham_detail
             product_event = f"product_{product.id}"
@@ -307,21 +338,21 @@ class BangGiaSelect(discord.ui.Select):
 
             first_pkg = pkgs[0] if pkgs else {}
             embed = build_embed(product_event, session, vars={
-                "product.name": product.name or f"Sản phẩm #{product.id}",
-                "product.description": product.description or "Không có mô tả.",
+                "product.name": product.name or f"Product #{product.id}",
+                "product.description": product.description or "No description.",
                 "product.image_url": img or "",
                 "package.name": first_pkg.get("name", ""),
-                "package.price": f"{first_pkg.get('price', 0):,.0f}" if first_pkg else "",
-                "package.description": first_pkg.get("description", "") if first_pkg else "Liên hệ admin để biết giá.",
+                "package.price": fmt_price(first_pkg.get('price', 0), currency_symbol, currency) if first_pkg else "",
+                "package.description": first_pkg.get("description", "") if first_pkg else "Contact admin for pricing.",
             })
 
             if pkgs and not db_has_fields:
                 for pk in pkgs:
                     price = pk.get("price", 0)
-                    val = f"💰 **{price:,.0f}đ**"
+                    val = f"💰 **{fmt_price(price, currency_symbol, currency)}**"
                     if pk.get("description"):
                         val += f"\n{pk['description']}"
-                    embed.add_field(name=f"🔹 {pk.get('name', 'Gói')}", value=val, inline=False)
+                    embed.add_field(name=f"🔹 {pk.get('name', 'Package')}", value=val, inline=False)
 
             if img and not embed.image:
                 embed.set_image(url=img)
@@ -331,7 +362,7 @@ class BangGiaSelect(discord.ui.Select):
             await interaction.response.send_message(embed=embed, ephemeral=True)
         except Exception as e:
             logger.error(f"BangGiaSelect callback error: {e}")
-            await interaction.response.send_message("❌ Lỗi hệ thống.", ephemeral=True)
+            await interaction.response.send_message("❌ System error.", ephemeral=True)
         finally:
             session.close()
 
@@ -342,7 +373,7 @@ class BangGiaView(discord.ui.View):
         if products is not None:
             self.add_item(BangGiaSelect(products))
         else:
-            # Persistent re-register: load products từ DB
+            # Persistent re-register: load products from DB
             session = SessionLocal()
             try:
                 prods = session.execute(
@@ -382,24 +413,38 @@ class AdminShopCog(discord.Cog):
         product_id: discord.Option(int, "Product ID (see /product)"),
         package_name: discord.Option(str, "Package name (leave empty = first package)", required=False, default=""),
         quantity: discord.Option(int, "Quantity", required=False, default=1, min_value=1, max_value=99),
-        channel: discord.Option(discord.TextChannel, "QR channel (leave empty = current channel)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Payment channel (leave empty = current channel)", required=False, default=None),
+        payment_method: discord.Option(str, "Payment method", required=False, choices=["payos", "paypal", "crypto", "manual"], default=None),
     ):
         await ctx.defer()
         session = get_session()
         try:
-            config = session.execute(select(SystemConfig).limit(1)).scalars().first()
-            if not config or not all([config.payos_client_id, config.payos_api_key, config.payos_checksum_key]):
-                await ctx.respond("⚠️ Chưa cấu hình PayOS trên Dashboard!", ephemeral=True)
+            config = session.execute(select(SystemConfig).where(SystemConfig.guild_id == str(ctx.guild_id))).scalars().first()
+            if not config:
+                config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+
+            currency = getattr(config, "currency", "VND") or "VND"
+            currency_symbol = getattr(config, "currency_symbol", "₫") or "₫"
+            payment_methods = getattr(config, "payment_methods", None) or ["payos"]
+
+            if not payment_methods:
+                await ctx.respond("⚠️ No payment method configured! Set up in Dashboard > Payments.", ephemeral=True)
+                return
+
+            # Validate payment method
+            method = payment_method or payment_methods[0]
+            if method not in payment_methods:
+                await ctx.respond(f"⚠️ Payment method **{method}** is not enabled. Enabled: {', '.join(payment_methods)}", ephemeral=True)
                 return
 
             product = session.execute(
                 select(Product).where(Product.id == product_id)
             ).scalars().first()
             if not product:
-                await ctx.respond(f"❌ Không tìm thấy sản phẩm ID #{product_id}.", ephemeral=True)
+                await ctx.respond(f"❌ Product ID #{product_id} not found.", ephemeral=True)
                 return
 
-            # Tính giá từ gói
+            # Calculate price from package
             pkgs = product.packages or []
             price_per_unit = 0.0
             matched_pkg_name = package_name or ""
@@ -410,7 +455,7 @@ class AdminShopCog(discord.Cog):
                     matched = next((pk for pk in active_pkgs if pk["name"].lower() == package_name.lower()), None)
                     if not matched:
                         names = ", ".join(f'`{pk["name"]}`' for pk in active_pkgs)
-                        await ctx.respond(f"❌ Gói **{package_name}** không tồn tại.\nCác gói: {names}", ephemeral=True)
+                        await ctx.respond(f"❌ Package **{package_name}** not found.\nPackages: {names}", ephemeral=True)
                         return
                     price_per_unit = float(matched["price"])
                     matched_pkg_name = matched["name"]
@@ -422,10 +467,10 @@ class AdminShopCog(discord.Cog):
 
             total = price_per_unit * quantity
             if total <= 0:
-                await ctx.respond("❌ Giá sản phẩm không hợp lệ.", ephemeral=True)
+                await ctx.respond("❌ Invalid product price.", ephemeral=True)
                 return
 
-            # Tìm/tạo user DB
+            # Find or create user in DB
             db_user = session.execute(
                 select(User).where(User.discord_id == str(user.id))
             ).scalars().first()
@@ -441,41 +486,48 @@ class AdminShopCog(discord.Cog):
                 total_price=total,
                 package_name=matched_pkg_name or None,
                 status="PENDING",
+                payment_method=method,
+                currency=currency,
+                guild_id=str(ctx.guild_id),
             )
             session.add(order)
             session.commit()
 
-            # Tạo PayOS link
+            # Create checkout via payment service
+            provider = get_provider(method)
             domain = config.public_app_url or "http://localhost:3034"
             if not domain.startswith("http"):
                 domain = f"https://{domain}"
 
-            payos = PayOS(
-                client_id=config.payos_client_id,
-                api_key=config.payos_api_key,
-                checksum_key=config.payos_checksum_key,
-            )
-            product_display = (product.name or f"Sản phẩm #{product.id}") + (f" ({matched_pkg_name})" if matched_pkg_name else "")
+            product_display = (product.name or f"Product #{product.id}") + (f" ({matched_pkg_name})" if matched_pkg_name else "")
             if quantity > 1:
                 product_display += f" x{quantity}"
 
-            item = ItemData(name=product_display[:40], quantity=1, price=int(total))
-            payment_data = PaymentData(
-                orderCode=order.id,
-                amount=int(total),
-                description=f"Don #{order.id}",
-                items=[item],
-                cancelUrl=f"{domain}/cancel",
-                returnUrl=f"{domain}/success",
+            result = await provider.create_checkout(
+                amount=total,
+                currency=currency,
+                order_id=order.id,
+                description=f"Order #{order.id}",
+                return_url=f"{domain}/success",
+                cancel_url=f"{domain}/cancel",
+                config=config,
             )
-            payos_res = await asyncio.to_thread(payos.createPaymentLink, payment_data)
-            checkout_url = payos_res.checkoutUrl
-            order.payos_order_code = str(order.id)
+
+            checkout_url = result.checkout_url or ""
             order.checkout_url = checkout_url
+            order.payos_order_code = result.order_code or result.payment_id or str(order.id)
+            order.payment_method = method
+            order.currency = currency
+            order.payment_id = result.payment_id
+
+            # Handle manual payment specifics
+            if method == "manual" and result.raw:
+                order.status = "PENDING_MANUAL"
+
             session.commit()
 
-            # Build embed từ template (hoặc default)
-            from src.bot.embed_utils import build_embed
+            # Build embed from template (or default)
+            from src.bot.embed_utils import build_embed, resolve_image_url
             order_vars = {
                 "order.id": order.id,
                 "user.mention": user.mention,
@@ -483,56 +535,80 @@ class AdminShopCog(discord.Cog):
                 "user.id": user.id,
                 "product.name": product_display,
                 "package": matched_pkg_name,
-                "order.total": f"{total:,.0f}",
+                "order.total": fmt_price(total, currency_symbol, currency),
             }
 
-            # 1) Gửi thông báo đơn hàng → don_hang_channel (nếu có)
+            # Manual payment: add bank info to vars
+            if method == "manual" and result.raw:
+                order_vars["bank_name"] = result.raw.get("bank_name", "")
+                order_vars["account_holder"] = result.raw.get("account_holder", "")
+                order_vars["account_number"] = result.raw.get("account_number", "")
+                order_vars["instructions"] = result.raw.get("instructions", "")
+
+            # 1) Send order notification → don_hang_channel (if configured)
             if config.don_hang_channel_id:
                 don_hang_ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
                 if don_hang_ch:
                     order_embed = build_embed("don_hang_moi", session, vars=order_vars)
                     await don_hang_ch.send(
-                        content=f"{user.mention} Bạn có đơn hàng mới!",
+                        content=f"{user.mention} You have a new order!",
                         embed=order_embed,
                     )
 
-            # 2) Gửi mã QR thanh toán → kênh chỉ định hoặc kênh hiện tại
-            qr_embed = build_embed("qr_thanh_toan", session, vars={
+            # 2) Send payment embed → specified channel or current channel
+            # Try per-payment-type embed first, fall back to generic qr_thanh_toan
+            embed_event = f"qr_thanh_toan_{method}"
+            from src.models.models import EmbedTemplate
+            specific_tmpl = session.execute(
+                select(EmbedTemplate).where(EmbedTemplate.event_type == embed_event)
+            ).scalars().first()
+            if not specific_tmpl:
+                embed_event = "qr_thanh_toan"
+
+            qr_embed = build_embed(embed_event, session, vars={
                 **order_vars,
-                "qr_url": checkout_url,
-                "transfer_content": f"Don {order.id}",
+                "qr_url": checkout_url or "",
+                "transfer_content": f"Order {order.id}",
             })
+
+            # Manual payment: set QR image if available
+            if method == "manual" and result.raw and result.raw.get("qr_image_id"):
+                qr_img = resolve_image_url(result.raw["qr_image_id"], session)
+                if qr_img:
+                    qr_embed.set_image(url=qr_img)
 
             view = OrderPayView(
                 order_id=order.id,
                 price=total,
                 checkout_url=checkout_url,
                 admin_id=ctx.author.id,
+                currency=currency,
+                currency_symbol=currency_symbol,
             )
 
             qr_channel = channel or ctx.channel
             msg = await qr_channel.send(
-                content=f"{user.mention} Thanh toán đơn hàng #{order.id}",
+                content=f"{user.mention} Payment for order #{order.id}",
                 embed=qr_embed,
                 view=view,
             )
             view.message = msg
 
-            # Lưu message info
+            # Save message info
             order.discord_message_id = str(msg.id)
             order.discord_channel_id = str(msg.channel.id)
             session.commit()
 
-            parts = [f"✅ Đã tạo đơn #{order.id}."]
+            parts = [f"✅ Order #{order.id} created."]
             if config.don_hang_channel_id:
-                parts.append(f"📦 Thông báo đơn → <#{config.don_hang_channel_id}>")
+                parts.append(f"📦 Order notification → <#{config.don_hang_channel_id}>")
             if qr_channel != ctx.channel:
-                parts.append(f"💳 QR → {qr_channel.mention}")
+                parts.append(f"💳 Payment → {qr_channel.mention}")
             await ctx.respond(" ".join(parts), ephemeral=True)
 
         except Exception as e:
             logger.error(f"tao_don_cmd error: {e}")
-            await ctx.respond("❌ Lỗi hệ thống khi tạo đơn.", ephemeral=True)
+            await ctx.respond("❌ System error creating order.", ephemeral=True)
         finally:
             session.close()
 
@@ -564,11 +640,18 @@ class AdminShopCog(discord.Cog):
             )
 
             if not product:
-                await ctx.respond(f"❌ Không tìm thấy sản phẩm **{ten}**.", ephemeral=True)
+                await ctx.respond(f"❌ Product **{ten}** not found.", ephemeral=True)
                 return
 
             pkgs = [pk for pk in (product.packages or []) if pk.get("active", True)]
             img = resolve_image_url(product.image_url, session)
+
+            # Get currency config
+            config = session.execute(select(SystemConfig).where(SystemConfig.guild_id == str(ctx.guild_id))).scalars().first()
+            if not config:
+                config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+            currency = getattr(config, "currency", "VND") or "VND"
+            currency_symbol = getattr(config, "currency_symbol", "₫") or "₫"
 
             # Try per-product embed first, fall back to generic san_pham_detail
             product_event = f"product_{product.id}"
@@ -583,21 +666,21 @@ class AdminShopCog(discord.Cog):
 
             first_pkg = pkgs[0] if pkgs else {}
             embed = build_embed(product_event, session, vars={
-                "product.name": product.name or f"Sản phẩm #{product.id}",
-                "product.description": product.description or "Không có mô tả.",
+                "product.name": product.name or f"Product #{product.id}",
+                "product.description": product.description or "No description.",
                 "product.image_url": img or "",
                 "package.name": first_pkg.get("name", ""),
-                "package.price": f"{first_pkg.get('price', 0):,.0f}" if first_pkg else "",
-                "package.description": first_pkg.get("description", "") if first_pkg else "Liên hệ admin để biết giá.",
+                "package.price": fmt_price(first_pkg.get('price', 0), currency_symbol, currency) if first_pkg else "",
+                "package.description": first_pkg.get("description", "") if first_pkg else "Contact admin for pricing.",
             })
 
             if pkgs and not db_has_fields:
                 for pk in pkgs:
                     price = pk.get("price", 0)
-                    val = f"💰 **{price:,.0f}đ**"
+                    val = f"💰 **{fmt_price(price, currency_symbol, currency)}**"
                     if pk.get("description"):
                         val += f"\n{pk['description']}"
-                    embed.add_field(name=f"🔹 {pk.get('name', 'Gói')}", value=val, inline=False)
+                    embed.add_field(name=f"🔹 {pk.get('name', 'Package')}", value=val, inline=False)
 
             if img and not embed.image:
                 embed.set_image(url=img)
@@ -607,7 +690,7 @@ class AdminShopCog(discord.Cog):
             await ctx.respond(embed=embed, ephemeral=True)
         except Exception as e:
             logger.error(f"san_pham_cmd error: {e}")
-            await ctx.respond("❌ Lỗi hệ thống.", ephemeral=True)
+            await ctx.respond("❌ System error.", ephemeral=True)
         finally:
             session.close()
 
@@ -625,19 +708,21 @@ class AdminShopCog(discord.Cog):
             ).scalars().all()
 
             if not products:
-                await ctx.respond("⚠️ Chưa có sản phẩm nào đang bán.", ephemeral=True)
+                await ctx.respond("⚠️ No products available yet.", ephemeral=True)
                 return
 
             from src.bot.embed_utils import build_embed
             embed = build_embed("bang_gia", session)
             if not embed.footer:
-                embed.set_footer(text="Bấm vào tên sản phẩm bên dưới để xem chi tiết gói")
+                embed.set_footer(text="Click a product name below to view package details")
 
             view = BangGiaView(products)
             target = channel or ctx.channel
 
-            # Thử edit message cũ nếu có
-            config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+            # Try to edit old message if exists
+            config = session.execute(select(SystemConfig).where(SystemConfig.guild_id == str(ctx.guild_id))).scalars().first()
+            if not config:
+                config = session.execute(select(SystemConfig).limit(1)).scalars().first()
             old_msg_id = config.bang_gia_message_id if config else None
             old_channel_id = config.bang_gia_channel_id if config else None
             edited = False
@@ -649,7 +734,7 @@ class AdminShopCog(discord.Cog):
                         old_msg = await old_ch.fetch_message(int(old_msg_id))
                         await old_msg.edit(embed=embed, view=view)
                         edited = True
-                        # Cập nhật channel nếu đổi kênh
+                        # Update channel if changed
                         if str(target.id) != old_channel_id:
                             await old_msg.delete()
                             edited = False
@@ -658,20 +743,20 @@ class AdminShopCog(discord.Cog):
 
             if not edited:
                 msg = await target.send(embed=embed, view=view)
-                # Lưu message_id + channel_id vào DB
+                # Save message_id + channel_id to DB
                 if config:
                     config.bang_gia_channel_id = str(target.id)
                     config.bang_gia_message_id = str(msg.id)
                     session.commit()
 
             if edited:
-                await ctx.respond(f"✅ Đã cập nhật bảng giá.", ephemeral=True)
+                await ctx.respond("✅ Price list updated.", ephemeral=True)
             else:
-                await ctx.respond(f"✅ Đã gửi bảng giá vào {target.mention}", ephemeral=True)
+                await ctx.respond(f"✅ Price list sent to {target.mention}", ephemeral=True)
 
         except Exception as e:
             logger.error(f"bang_gia_cmd error: {e}")
-            await ctx.respond("❌ Lỗi hệ thống.", ephemeral=True)
+            await ctx.respond("❌ System error.", ephemeral=True)
         finally:
             session.close()
 
@@ -683,17 +768,31 @@ class AdminShopCog(discord.Cog):
         ctx: discord.ApplicationContext,
         user: discord.Option(discord.Member, "Select a member"),
         san_pham: discord.Option(str, "Custom product name"),
-        gia: discord.Option(int, "Price (VND)", min_value=1000),
+        gia: discord.Option(int, "Price", min_value=1000),
         ghi_chu: discord.Option(str, "Note / additional description (optional)", required=False, default=""),
         so_luong: discord.Option(int, "Quantity", required=False, default=1, min_value=1, max_value=99),
-        channel: discord.Option(discord.TextChannel, "QR channel (leave empty = current channel)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Payment channel (leave empty = current channel)", required=False, default=None),
+        payment_method: discord.Option(str, "Payment method", required=False, choices=["payos", "paypal", "crypto", "manual"], default=None),
     ):
         await ctx.defer()
         session = get_session()
         try:
-            config = session.execute(select(SystemConfig).limit(1)).scalars().first()
-            if not config or not all([config.payos_client_id, config.payos_api_key, config.payos_checksum_key]):
-                await ctx.respond("⚠️ Chưa cấu hình PayOS trên Dashboard!", ephemeral=True)
+            config = session.execute(select(SystemConfig).where(SystemConfig.guild_id == str(ctx.guild_id))).scalars().first()
+            if not config:
+                config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+
+            currency = getattr(config, "currency", "VND") or "VND"
+            currency_symbol = getattr(config, "currency_symbol", "₫") or "₫"
+            payment_methods = getattr(config, "payment_methods", None) or ["payos"]
+
+            if not payment_methods:
+                await ctx.respond("⚠️ No payment method configured! Set up in Dashboard > Payments.", ephemeral=True)
+                return
+
+            # Validate payment method
+            method = payment_method or payment_methods[0]
+            if method not in payment_methods:
+                await ctx.respond(f"⚠️ Payment method **{method}** is not enabled. Enabled: {', '.join(payment_methods)}", ephemeral=True)
                 return
 
             total = float(gia) * so_luong
@@ -713,39 +812,48 @@ class AdminShopCog(discord.Cog):
                 total_price=total,
                 package_name=san_pham,
                 status="PENDING",
+                payment_method=method,
+                currency=currency,
+                guild_id=str(ctx.guild_id),
             )
             session.add(order)
             session.commit()
 
+            # Create checkout via payment service
+            provider = get_provider(method)
             domain = config.public_app_url or "http://localhost:3034"
             if not domain.startswith("http"):
                 domain = f"https://{domain}"
 
-            payos = PayOS(
-                client_id=config.payos_client_id,
-                api_key=config.payos_api_key,
-                checksum_key=config.payos_checksum_key,
-            )
             product_display = san_pham[:40]
             if so_luong > 1:
                 product_display += f" x{so_luong}"
 
-            item = ItemData(name=product_display, quantity=1, price=int(total))
-            payment_data = PaymentData(
-                orderCode=order.id,
-                amount=int(total),
-                description=f"Don #{order.id}",
-                items=[item],
-                cancelUrl=f"{domain}/cancel",
-                returnUrl=f"{domain}/success",
+            result = await provider.create_checkout(
+                amount=total,
+                currency=currency,
+                order_id=order.id,
+                description=f"Order #{order.id}",
+                return_url=f"{domain}/success",
+                cancel_url=f"{domain}/cancel",
+                config=config,
             )
-            payos_res = await asyncio.to_thread(payos.createPaymentLink, payment_data)
-            checkout_url = payos_res.checkoutUrl
-            order.payos_order_code = str(order.id)
+
+            checkout_url = result.checkout_url or ""
             order.checkout_url = checkout_url
+            order.payos_order_code = result.order_code or result.payment_id or str(order.id)
+            order.payment_method = method
+            order.currency = currency
+            order.payment_id = result.payment_id
+
+            # Handle manual payment specifics
+            if method == "manual" and result.raw:
+                order.status = "PENDING_MANUAL"
+
             session.commit()
 
-            from src.bot.embed_utils import build_embed
+            from src.bot.embed_utils import build_embed, resolve_image_url
+            from src.models.models import EmbedTemplate
             order_vars = {
                 "order.id": order.id,
                 "user.mention": user.mention,
@@ -753,36 +861,59 @@ class AdminShopCog(discord.Cog):
                 "user.id": user.id,
                 "product.name": product_display,
                 "package": san_pham,
-                "order.total": f"{total:,.0f}",
+                "order.total": fmt_price(total, currency_symbol, currency),
             }
+
+            # Manual payment: add bank info to vars
+            if method == "manual" and result.raw:
+                order_vars["bank_name"] = result.raw.get("bank_name", "")
+                order_vars["account_holder"] = result.raw.get("account_holder", "")
+                order_vars["account_number"] = result.raw.get("account_number", "")
+                order_vars["instructions"] = result.raw.get("instructions", "")
 
             if config.don_hang_channel_id:
                 don_hang_ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
                 if don_hang_ch:
                     order_embed = build_embed("don_hang_moi", session, vars=order_vars)
                     if ghi_chu:
-                        order_embed.add_field(name="Ghi chú", value=ghi_chu, inline=False)
+                        order_embed.add_field(name="Note", value=ghi_chu, inline=False)
                     await don_hang_ch.send(
-                        content=f"{user.mention} Bạn có đơn hàng mới!",
+                        content=f"{user.mention} You have a new order!",
                         embed=order_embed,
                     )
 
-            qr_embed = build_embed("qr_thanh_toan", session, vars={
+            # Try per-payment-type embed first, fall back to generic qr_thanh_toan
+            embed_event = f"qr_thanh_toan_{method}"
+            specific_tmpl = session.execute(
+                select(EmbedTemplate).where(EmbedTemplate.event_type == embed_event)
+            ).scalars().first()
+            if not specific_tmpl:
+                embed_event = "qr_thanh_toan"
+
+            qr_embed = build_embed(embed_event, session, vars={
                 **order_vars,
-                "qr_url": checkout_url,
-                "transfer_content": f"Don {order.id}",
+                "qr_url": checkout_url or "",
+                "transfer_content": f"Order {order.id}",
             })
+
+            # Manual payment: set QR image if available
+            if method == "manual" and result.raw and result.raw.get("qr_image_id"):
+                qr_img = resolve_image_url(result.raw["qr_image_id"], session)
+                if qr_img:
+                    qr_embed.set_image(url=qr_img)
 
             view = OrderPayView(
                 order_id=order.id,
                 price=total,
                 checkout_url=checkout_url,
                 admin_id=ctx.author.id,
+                currency=currency,
+                currency_symbol=currency_symbol,
             )
 
             qr_channel = channel or ctx.channel
             msg = await qr_channel.send(
-                content=f"{user.mention} Thanh toán đơn hàng #{order.id}",
+                content=f"{user.mention} Payment for order #{order.id}",
                 embed=qr_embed,
                 view=view,
             )
@@ -792,16 +923,16 @@ class AdminShopCog(discord.Cog):
             order.discord_channel_id = str(msg.channel.id)
             session.commit()
 
-            parts = [f"✅ Đã tạo đơn custom #{order.id}."]
+            parts = [f"✅ Custom order #{order.id} created."]
             if config.don_hang_channel_id:
-                parts.append(f"📦 Thông báo đơn → <#{config.don_hang_channel_id}>")
+                parts.append(f"📦 Order notification → <#{config.don_hang_channel_id}>")
             if qr_channel != ctx.channel:
-                parts.append(f"💳 QR → {qr_channel.mention}")
+                parts.append(f"💳 Payment → {qr_channel.mention}")
             await ctx.respond(" ".join(parts), ephemeral=True)
 
         except Exception as e:
             logger.error(f"tao_don_custom error: {e}")
-            await ctx.respond("❌ Lỗi hệ thống khi tạo đơn.", ephemeral=True)
+            await ctx.respond("❌ System error creating order.", ephemeral=True)
         finally:
             session.close()
 

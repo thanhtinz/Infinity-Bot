@@ -179,6 +179,34 @@ DEFAULTS: dict[str, dict] = {
             {"name": "📝 Nội dung CK", "value": "{transfer_content}", "inline": True},
         ],
     },
+    # ── Per-payment embed events ──────────────────────────────────────────────
+    "qr_thanh_toan_payos": {
+        "title": "💳 Payment — PayOS",
+        "description": "Order **#{order.id}**\nAmount: **{order.total}**\n\n[Click to pay]({qr_url})",
+        "color": "#5865F2",
+        "fields": [
+            {"name": "Transfer Content", "value": "{transfer_content}", "inline": True},
+            {"name": "Expires", "value": "15 minutes", "inline": True},
+        ],
+    },
+    "qr_thanh_toan_paypal": {
+        "title": "💳 Payment — PayPal",
+        "description": "Order **#{order.id}**\nAmount: **{order.total}**\n\n[Pay with PayPal]({qr_url})",
+        "color": "#0070BA",
+        "fields": [],
+    },
+    "qr_thanh_toan_crypto": {
+        "title": "💳 Payment — Crypto",
+        "description": "Order **#{order.id}**\nAmount: **{order.total}**\n\n[Pay with Crypto]({qr_url})",
+        "color": "#F7931A",
+        "fields": [],
+    },
+    "qr_thanh_toan_manual": {
+        "title": "💳 Manual Payment",
+        "description": "Order **#{order.id}**\nAmount: **{order.total}**\n\n**Bank:** {bank_name}\n**Account:** {account_holder}\n**Number:** {account_number}\n**Transfer content:** {transfer_content}\n\n{instructions}",
+        "color": "#10B981",
+        "fields": [],
+    },
     # ── Order details ─────────────────────────────────────────────────────────
     "don_hang_chi_tiet": {
         "title": "📋 Chi tiết đơn hàng #{order.id}",
