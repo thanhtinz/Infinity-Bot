@@ -7,6 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
+import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import {
   Bot, Save, Loader2, Trash2, CheckCircle2, XCircle, AlertCircle, Eye, EyeOff,
 } from "lucide-react";
@@ -53,6 +55,7 @@ async function deleteGuildBot() {
 export function GuildBotConfig() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { hasFeature, isLoading: entLoading } = useEntitlements();
 
   const { data, isLoading } = useQuery({ queryKey: ["guild-bot"], queryFn: fetchGuildBot });
 
@@ -112,7 +115,10 @@ export function GuildBotConfig() {
         <h1 className="text-xl font-semibold flex items-center gap-2">
           <Bot className="h-5 w-5 text-indigo-400" />
           Custom Bot
+          <PremiumBadge />
         </h1>
+      </div>
+      <PremiumGate feature="custom_bot" featureLabel="Custom Bot" hasAccess={hasFeature("custom_bot")} isLoading={entLoading}>
         <p className="text-sm text-muted-foreground mt-1">
           Use your own Discord bot for this guild instead of the main bot. The verification flow will use this bot's OAuth credentials.
         </p>
@@ -251,6 +257,7 @@ export function GuildBotConfig() {
           </Button>
         )}
       </div>
+      </PremiumGate>
     </div>
   );
 }

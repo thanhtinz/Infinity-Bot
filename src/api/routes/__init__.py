@@ -27,6 +27,7 @@ from src.api.routes.staff_permissions import router as staff_permissions_router
 from src.api.routes.firewall import router as firewall_router
 from src.api.routes.alerts import router as alerts_router
 from src.api.routes.guild_bot import router as guild_bot_router
+from src.api.routes.premium import router as premium_router
 
 router = APIRouter()
 
@@ -56,3 +57,4 @@ router.include_router(staff_permissions_router, tags=["staff-permissions"])
 router.include_router(firewall_router, tags=["firewall"])
 router.include_router(alerts_router, tags=["alerts"])
 router.include_router(guild_bot_router, tags=["guild-bot"])
+router.include_router(premium_router, tags=["premium"])

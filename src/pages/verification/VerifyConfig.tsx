@@ -19,6 +19,8 @@ import type { LucideIcon } from "lucide-react";
 import { useGuild } from "@/contexts/GuildContext";
 import { deleteGuildBot, fetchConfig, fetchGuildBot, updateConfig, updateGuildBot, validateGuildBot } from "./shared";
 import type { GuildBotConfig, VerificationConfig } from "./shared";
+import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
+import { useEntitlements } from "@/hooks/useEntitlements";
 
 /* ── Constants ──────────────────────────────────────── */
 const FONTS = [
@@ -222,6 +224,7 @@ export function VerifyConfig() {
   const [copied, setCopied] = useState(false);
   const [configForm, setConfigForm] = useState<VerificationConfig | null>(null);
   const [guildBotForm, setGuildBotForm] = useState({ client_id: "", bot_token: "", client_secret: "" });
+  const { hasFeature, isLoading: entLoading } = useEntitlements();
 
   const configQuery = useQuery({
     queryKey: ["verification-config"],
@@ -324,9 +327,14 @@ export function VerifyConfig() {
           <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
             <Settings2 className="w-5 h-5 text-indigo-400" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">Customize</h1>
-            <p className="text-sm text-muted-foreground">Customize your verification page</p>
+          <div className="flex items-center gap-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold">Customize</h1>
+                <PremiumBadge />
+              </div>
+              <p className="text-sm text-muted-foreground">Customize your verification page</p>
+            </div>
           </div>
         </div>
         <div className="flex gap-2">
@@ -343,6 +351,13 @@ export function VerifyConfig() {
           </Button>
         </div>
       </div>
+
+      <PremiumGate
+        feature="advanced_captcha"
+        featureLabel="Tùy chỉnh trang xác minh"
+        hasAccess={hasFeature("advanced_captcha")}
+        isLoading={entLoading}
+      >
 
       {/* Verify Link */}
       {verifyUrl && (
@@ -921,6 +936,7 @@ export function VerifyConfig() {
           </div>
         </div>
       </div>
+      </PremiumGate>
     </div>
   );
 }

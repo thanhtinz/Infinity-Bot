@@ -62,6 +62,10 @@ class SystemConfig(Base):
     manual_account_holder = Column(String, nullable=True)
     manual_account_number = Column(String, nullable=True)
     manual_instructions = Column(Text, nullable=True)
+    # ── Premium / Billing config ──
+    premium_payment_instructions = Column(Text, nullable=True)      # shown to buyers on renewal page
+    premium_default_renewal_days = Column(Integer, default=7)       # reminder window for all subs
+    premium_renewal_channel_id = Column(String, nullable=True)      # channel for bot renewal reminders
 
 class User(Base):
     __tablename__ = "users"
@@ -847,3 +851,70 @@ class AlertHistory(Base):
     details = Column(JSON, nullable=True)
     severity = Column(String, default="warning")     # info | warning | critical
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+# ── Premium / Billing ─────────────────────────────────────────────────────
+
+class PremiumPlan(Base):
+    """Owner-defined subscription tiers (Basic, Pro, Enterprise, etc.)."""
+    __tablename__ = "premium_plans"
+    id = Column(Integer, primary_key=True)
+    code = Column(String, unique=True, nullable=False)          # machine key: "pro", "enterprise"
+    name = Column(String, nullable=False)                       # display name
+    description = Column(Text, nullable=True)
+    price = Column(Float, default=0.0)
+    currency = Column(String, default="VND")
+    interval = Column(String, default="monthly")                # monthly | quarterly | yearly | lifetime
+    active = Column(Boolean, default=True)
+    is_public = Column(Boolean, default=True)                   # show on pricing page
+    sort_order = Column(Integer, default=0)
+    badge_text = Column(String, nullable=True)                  # "Popular", "Best Value"
+    color = Column(String, default="#6366f1")                   # accent color for UI
+    features = Column(JSON, default=dict)                       # {"custom_bot": true, "backup_retention": 30, ...}
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+
+class GuildSubscription(Base):
+    """Active / historical subscription for a guild."""
+    __tablename__ = "guild_subscriptions"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, index=True, nullable=False)
+    plan_id = Column(Integer, ForeignKey("premium_plans.id"), nullable=False)
+    status = Column(String, default="active")                   # trial | active | past_due | expired | cancelled | manual_review
+    started_at = Column(DateTime, default=datetime.datetime.utcnow)
+    current_period_start = Column(DateTime, default=datetime.datetime.utcnow)
+    current_period_end = Column(DateTime, nullable=True)
+    cancel_at_period_end = Column(Boolean, default=False)
+    auto_renew = Column(Boolean, default=True)
+    renewal_reminder_days = Column(Integer, default=7)          # days before expiry to send reminder
+    last_reminder_at = Column(DateTime, nullable=True)
+    payment_provider = Column(String, default="manual")         # payos | paypal | crypto | manual
+    external_subscription_id = Column(String, nullable=True)
+    external_customer_id = Column(String, nullable=True)
+    notes = Column(Text, nullable=True)
+    created_by = Column(String, nullable=True)                  # discord user id of admin who activated
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    plan = relationship("PremiumPlan", foreign_keys=[plan_id])
+
+
+class SubscriptionPayment(Base):
+    """Individual payment records tied to a guild subscription."""
+    __tablename__ = "subscription_payments"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, index=True, nullable=False)
+    subscription_id = Column(Integer, ForeignKey("guild_subscriptions.id"), nullable=True)
+    plan_id = Column(Integer, ForeignKey("premium_plans.id"), nullable=True)
+    amount = Column(Float, nullable=False)
+    currency = Column(String, default="VND")
+    payment_method = Column(String, default="manual")           # payos | paypal | crypto | manual
+    status = Column(String, default="pending")                  # pending | paid | failed | refunded
+    provider_payment_id = Column(String, nullable=True)         # external ID from payment provider
+    period_start = Column(DateTime, nullable=True)
+    period_end = Column(DateTime, nullable=True)
+    notes = Column(Text, nullable=True)
+    paid_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    subscription = relationship("GuildSubscription", foreign_keys=[subscription_id])
+    plan = relationship("PremiumPlan", foreign_keys=[plan_id])

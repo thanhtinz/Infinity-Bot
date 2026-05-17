@@ -19,10 +19,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Clock, Calendar, Loader2, Save } from "lucide-react";
 import type { BackupSchedule as BackupScheduleType } from "./shared";
 import { fetchSchedule, updateSchedule, formatDate } from "./shared";
+import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
+import { useEntitlements } from "@/hooks/useEntitlements";
 
 export function BackupSchedule() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { hasFeature, isLoading: entLoading } = useEntitlements();
 
   const [scheduleForm, setScheduleForm] = useState<BackupScheduleType | null>(null);
 
@@ -56,10 +59,18 @@ export function BackupSchedule() {
       <div className="flex items-center gap-2">
         <Clock className="h-5 w-5 text-primary" />
         <h2 className="text-2xl font-bold tracking-tight">Backup Schedule</h2>
+        <PremiumBadge />
       </div>
       <p className="text-muted-foreground text-sm -mt-4">
         Configure automatic backup schedules to keep your server data safe.
       </p>
+
+      <PremiumGate
+        feature="scheduled_backup"
+        featureLabel="Sao lưu tự động"
+        hasAccess={hasFeature("scheduled_backup")}
+        isLoading={entLoading}
+      >
 
       {scheduleQuery.isLoading || !scheduleForm ? (
         <div className="space-y-3">
@@ -253,6 +264,7 @@ export function BackupSchedule() {
           </CardContent>
         </Card>
       )}
+      </PremiumGate>
     </div>
   );
 }

@@ -1,8 +1,13 @@
 """Shared FastAPI dependencies."""
+import os
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
+import jwt
+
 from src.database.config import get_db
+
+JWT_SECRET = os.environ.get("JWT_SECRET_KEY") or os.environ.get("GEMINI_WORKSHOP_API_KEY", "fallback-secret-jwt-2025")
 
 
 def get_guild_id(request: Request) -> str:
@@ -11,3 +16,29 @@ def get_guild_id(request: Request) -> str:
     if not guild_id:
         raise HTTPException(status_code=400, detail="Missing X-Guild-ID header")
     return guild_id
+
+
+def _decode_session(request: Request) -> dict:
+    """Decode dashboard_session cookie → payload dict.  Raises 401 on missing/invalid."""
+    token = request.cookies.get("dashboard_session")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not logged in")
+    try:
+        return jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Session expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid session")
+
+
+def require_auth(request: Request) -> dict:
+    """Dependency: any logged-in user.  Returns JWT payload."""
+    return _decode_session(request)
+
+
+def require_owner(request: Request) -> dict:
+    """Dependency: must be bot owner (is_owner=True in JWT).  Returns JWT payload."""
+    payload = _decode_session(request)
+    if not payload.get("is_owner"):
+        raise HTTPException(status_code=403, detail="Owner access required")
+    return payload

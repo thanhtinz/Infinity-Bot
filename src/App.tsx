@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserCheck2, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply, Gavel, FileText, Bell, Flame } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserCheck2, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply, Gavel, FileText, Bell, Flame, Crown, Gem } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
@@ -73,6 +73,10 @@ const ShopStats = lazy(() => import("./pages/ShopStats").then(m => ({ default: m
 const SpendingMilestones = lazy(() => import("./pages/SpendingMilestones"));
 const StaffPermissions = lazy(() => import("./pages/StaffPermissions").then(m => ({ default: m.StaffPermissions })));
 const GuildBotConfig = lazy(() => import("./pages/GuildBotConfig").then(m => ({ default: m.GuildBotConfig })));
+const PremiumPaymentConfig = lazy(() => import("./pages/PremiumPaymentConfig").then(m => ({ default: m.PremiumPaymentConfig })));
+const PremiumPlans = lazy(() => import("./pages/PremiumPlans").then(m => ({ default: m.PremiumPlans })));
+const PremiumManagement = lazy(() => import("./pages/PremiumManagement").then(m => ({ default: m.PremiumManagement })));
+const MyPlan = lazy(() => import("./pages/MyPlan").then(m => ({ default: m.MyPlan })));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -186,6 +190,7 @@ const navGroups: NavGroup[] = [
       { to: "/bot-settings", icon: Settings, label: "nav_botSettings" },
       { to: "/guild-bot", icon: Bot, label: "Custom Bot" },
       { to: "/config/payments", icon: CreditCard, label: "Payments", feature: "shop" },
+      { to: "/my-plan", icon: Crown, label: "Gói Server" },
       { to: "/staff-permissions", icon: Shield, label: "Staff Permissions" },
     ],
   },
@@ -200,6 +205,9 @@ const navGroups: NavGroup[] = [
       { to: "/backup/list", icon: Database, label: "Sao lưu" },
       { to: "/backup/schedule", icon: Clock, label: "Lịch sao lưu" },
       { to: "/backup/history", icon: ScrollText, label: "Lịch sử sao lưu" },
+      { to: "/premium/config", icon: CreditCard, label: "Premium Payments" },
+      { to: "/premium/plans", icon: Gem, label: "Premium Plans" },
+      { to: "/premium/management", icon: Crown, label: "Premium Management" },
     ],
   },
 ];
@@ -506,7 +514,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (isError) return <Navigate to="/login" replace />;
 
   // Một số route owner không cần guild
-  const guildFreeRoutes = ["/bot-status", "/backup", "/backup/list", "/backup/schedule", "/backup/history", "/config/discord", "/security-config"];
+  const guildFreeRoutes = ["/bot-status", "/backup", "/backup/list", "/backup/schedule", "/backup/history", "/config/discord", "/security-config", "/premium/config", "/premium/plans", "/premium/management"];
   if (!selectedGuildId && !guildFreeRoutes.includes(location.pathname)) {
     return <Navigate to="/select-guild" replace />;
   }
@@ -697,6 +705,11 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/scheduled-messages/:id/edit" element={<ScheduledMessagesEditPage />} />
         <Route path="/embeds" element={<EmbedsManager />} />
         <Route path="/emojis" element={<EmojiManager />} />
+        {/* Premium */}
+        <Route path="/my-plan" element={<MyPlan />} />
+        <Route path="/premium/config" element={<OwnerRoute><PremiumPaymentConfig /></OwnerRoute>} />
+        <Route path="/premium/plans" element={<OwnerRoute><PremiumPlans /></OwnerRoute>} />
+        <Route path="/premium/management" element={<OwnerRoute><PremiumManagement /></OwnerRoute>} />
         {/* Owner */}
       </Routes>
       </Suspense>
