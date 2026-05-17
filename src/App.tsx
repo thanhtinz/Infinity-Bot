@@ -596,20 +596,20 @@ function SetupGate() {
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
   });
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return <div className="h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  if (isError) {
+  if (isError || !data) {
     return (
       <div className="h-screen flex flex-col items-center justify-center gap-3 text-center px-4">
-        <p className="text-destructive font-medium">Không thể kết nối server</p>
-        <p className="text-sm text-muted-foreground">Server đang khởi động hoặc gặp lỗi. Thử lại sau vài giây.</p>
+        <p className="text-destructive font-medium">Cannot connect to server</p>
+        <p className="text-sm text-muted-foreground">Server is starting or encountered an error. Try again in a few seconds.</p>
         <button
           onClick={() => window.location.reload()}
           className="mt-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90"
         >
-          Tải lại
+          Reload
         </button>
       </div>
     );
