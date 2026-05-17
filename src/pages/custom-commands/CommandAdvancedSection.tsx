@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, Wrench } from "lucide-react";
 import type { CommandForm } from "./ccTypes";
+import { useT } from "@/i18n";
 
 interface CommandAdvancedSectionProps {
   form: CommandForm;
@@ -16,13 +17,14 @@ interface CommandAdvancedSectionProps {
 }
 
 export function CommandAdvancedSection({ form, onFormChange, open, onOpenChange }: CommandAdvancedSectionProps) {
+  const { t } = useT();
   return (
     <Collapsible open={open} onOpenChange={onOpenChange}>
       <CollapsibleTrigger asChild>
         <button type="button" className="flex items-center justify-between w-full">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
             <Wrench className="h-3.5 w-3.5" />
-            Advanced Options (optional)
+            {t("cc_advancedOptionsOptional")}
           </p>
           {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
         </button>
@@ -31,7 +33,7 @@ export function CommandAdvancedSection({ form, onFormChange, open, onOpenChange 
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
-              Cooldown (seconds)
+              {t("cc_cooldownSeconds")}
             </Label>
             <Input
               type="number"
@@ -42,7 +44,7 @@ export function CommandAdvancedSection({ form, onFormChange, open, onOpenChange 
             />
           </div>
           <div className="space-y-2">
-            <Label>Delete After (seconds)</Label>
+            <Label>{t("cc_deleteAfter")}</Label>
             <Input
               type="number"
               min={0}
@@ -50,10 +52,10 @@ export function CommandAdvancedSection({ form, onFormChange, open, onOpenChange 
               onChange={(e) => onFormChange((p) => ({ ...p, delete_after: Math.max(0, parseInt(e.target.value) || 0) }))}
               placeholder="10"
             />
-            <p className="text-[11px] text-muted-foreground">0 = no auto delete</p>
+            <p className="text-[11px] text-muted-foreground">{t("cc_noAutoDelete")}</p>
           </div>
           <div className="space-y-2">
-            <Label>Required Arguments</Label>
+            <Label>{t("cc_requiredArguments")}</Label>
             <Input
               type="number"
               min={0}
@@ -61,7 +63,7 @@ export function CommandAdvancedSection({ form, onFormChange, open, onOpenChange 
               onChange={(e) => onFormChange((p) => ({ ...p, required_args: Math.max(0, parseInt(e.target.value) || 0) }))}
               placeholder="1"
             />
-            <p className="text-[11px] text-muted-foreground">Min $N count</p>
+            <p className="text-[11px] text-muted-foreground">{t("cc_minArgCount")}</p>
           </div>
         </div>
       </CollapsibleContent>

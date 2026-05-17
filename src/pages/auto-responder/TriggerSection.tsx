@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 import type { AutoResponderRule, RuleForm } from "./arTypes";
 import { TRIGGER_TYPE_CONFIG } from "./arConstants";
@@ -13,28 +14,29 @@ interface TriggerSectionProps {
 }
 
 export function TriggerSection({ form, setForm }: TriggerSectionProps) {
+  const { t } = useT();
   return (
     <div className="space-y-4">
       <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
         <Zap className="h-3.5 w-3.5" />
-        Trigger condition
+        {t("ar_triggerCondition")}
       </p>
 
       {/* Name */}
       <div className="space-y-2">
-        <Label>Name rule</Label>
+        <Label>{t("ar_nameRule")}</Label>
         <Input
           value={form.name}
           onChange={(e) =>
             setForm((p) => ({ ...p, name: e.target.value }))
           }
-          placeholder="e.g. Auto greeting"
+          placeholder={t("ar_namePlaceholder")}
         />
       </div>
 
       {/* Trigger type */}
       <div className="space-y-2">
-        <Label>Condition type</Label>
+        <Label>{t("ar_conditionType")}</Label>
         <div className="flex flex-wrap gap-2">
           {(Object.keys(TRIGGER_TYPE_CONFIG) as AutoResponderRule["trigger_type"][]).map((type) => {
             const cfg = TRIGGER_TYPE_CONFIG[type];
@@ -63,7 +65,7 @@ export function TriggerSection({ form, setForm }: TriggerSectionProps) {
 
       {/* Trigger text */}
       <div className="space-y-2">
-        <Label>Condition content</Label>
+        <Label>{t("ar_conditionContent")}</Label>
         <Input
           value={form.trigger_text}
           onChange={(e) =>
@@ -71,12 +73,12 @@ export function TriggerSection({ form, setForm }: TriggerSectionProps) {
           }
           placeholder={
             form.trigger_type === "regex"
-              ? "VD: ^hello\\s+world$"
+              ? t("ar_placeholderRegex")
               : form.trigger_type === "wildcard"
-                ? "VD: hello*world"
+                ? t("ar_placeholderWildcard")
                 : form.trigger_type === "exact"
-                  ? "e.g. hello"
-                  : "e.g. hi"
+                  ? t("ar_placeholderExact")
+                  : t("ar_placeholderContains")
           }
         />
         <p className="text-[11px] text-muted-foreground">
@@ -87,9 +89,9 @@ export function TriggerSection({ form, setForm }: TriggerSectionProps) {
       {/* Ignore case */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>Case-insensitive</Label>
+          <Label>{t("ar_caseInsensitive")}</Label>
           <p className="text-[11px] text-muted-foreground">
-            Ignore letter case
+            {t("ar_ignoreCaseHint")}
           </p>
         </div>
         <Switch

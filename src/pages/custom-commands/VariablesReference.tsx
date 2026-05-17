@@ -8,8 +8,10 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Variable, Copy, Check, ChevronDown, ChevronRight } from "lucide-react";
 import { VARIABLE_GROUPS } from "./ccConstants";
+import { useT } from "@/i18n";
 
 export function VariablesReference() {
+  const { t } = useT();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
@@ -34,13 +36,13 @@ export function VariablesReference() {
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
           <Variable className="h-3.5 w-3.5" />
-          Variables
+          {t("cc_variables")}
         </p>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
               <Variable className="h-3 w-3" />
-              View all
+              {t("cc_viewAll")}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80 p-0" align="end">
@@ -83,7 +85,7 @@ export function VariablesReference() {
         </Popover>
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Use variables like <code className="text-primary">{"{user}"}</code>, <code className="text-primary">{"{server}"}</code> in the content to display dynamic information.
+        {t("cc_variablesHint")}
       </p>
       {/* Quick inline expandable groups */}
       <div className="space-y-1">

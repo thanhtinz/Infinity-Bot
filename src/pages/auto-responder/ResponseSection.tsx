@@ -17,6 +17,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 import type { AutoResponderRule, EmbedField, RuleForm } from "./arTypes";
 import { PRESET_COLORS, VARIABLE_GROUPS } from "./arConstants";
@@ -54,21 +55,22 @@ export function ResponseSection({
   removeEmoji,
   insertVariable,
 }: ResponseSectionProps) {
+  const { t } = useT();
   return (
     <div className="space-y-4">
       <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
         <Layout className="h-3.5 w-3.5" />
-        Response
+        {t("ar_response")}
       </p>
 
       {/* Response type toggles */}
       <div className="space-y-2">
-        <Label>Response type</Label>
+        <Label>{t("ar_responseType")}</Label>
         <div className="flex flex-wrap gap-3">
           {([
-            { key: "text" as const, label: "Text", icon: Type },
-            { key: "embed" as const, label: "Embed", icon: Layout },
-            { key: "react" as const, label: "Reaction", icon: Smile },
+            { key: "text" as const, label: t("ar_textType"), icon: Type },
+            { key: "embed" as const, label: t("ar_embedType"), icon: Layout },
+            { key: "react" as const, label: t("ar_reactType"), icon: Smile },
           ] as const).map(({ key, label, icon: Icon }) => {
             const active =
               key === "text" ? hasText :
@@ -111,7 +113,7 @@ export function ResponseSection({
           })}
         </div>
         <p className="text-[11px] text-muted-foreground">
-          Multiple types can be selected. Text and Embed cannot be active at the same time.
+          {t("ar_multiTypeHint")}
         </p>
       </div>
 
@@ -124,7 +126,7 @@ export function ResponseSection({
         >
           <span className="flex items-center gap-2">
             <Variable className="h-4 w-4 text-indigo-500" />
-            Available variables
+            {t("ar_availableVariables")}
           </span>
           {varsOpen ? (
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -135,7 +137,7 @@ export function ResponseSection({
         {varsOpen && (
           <div className="px-3 pb-3 space-y-3">
             <p className="text-[11px] text-muted-foreground">
-              Click a variable to insert it. Click the text field first to set the insertion point.
+              {t("ar_clickVariableHint")}
             </p>
             {VARIABLE_GROUPS.map((group) => {
               const Icon = group.icon;
@@ -168,14 +170,14 @@ export function ResponseSection({
       {/* Text response */}
       {hasText && (
         <div className="space-y-2">
-          <Label>Response content</Label>
+          <Label>{t("ar_responseContent")}</Label>
           <Textarea
             value={form.response_text}
             onChange={(e) =>
               setForm((p) => ({ ...p, response_text: e.target.value }))
             }
             onFocus={() => setFocusedInput("text")}
-            placeholder="Content the bot will send when a message matches..."
+            placeholder={t("ar_matchContent")}
             rows={5}
           />
         </div>
@@ -185,7 +187,7 @@ export function ResponseSection({
       {hasEmbed && (
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Title Embed</Label>
+            <Label>{t("ar_titleEmbed")}</Label>
             <Input
               value={form.response_embed.title}
               onChange={(e) =>
@@ -197,12 +199,12 @@ export function ResponseSection({
                   },
                 }))
               }
-              placeholder="Title embed"
+              placeholder={t("ar_titleEmbedPlaceholder")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>{t("description")}</Label>
             <Textarea
               value={form.response_embed.description}
               onChange={(e) =>
@@ -215,13 +217,13 @@ export function ResponseSection({
                 }))
               }
               onFocus={() => setFocusedInput("embed_desc")}
-              placeholder="Content embed"
+              placeholder={t("ar_contentEmbed")}
               rows={4}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Color</Label>
+            <Label>{t("color")}</Label>
             <div className="flex items-center gap-2">
               <div className="flex gap-1.5">
                 {PRESET_COLORS.map((c) => (
@@ -265,11 +267,11 @@ export function ResponseSection({
 
           {/* Embed extras */}
           <div className="space-y-3">
-            <p className="text-sm font-medium">Additional options</p>
+            <p className="text-sm font-medium">{t("ar_additionalOptions")}</p>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">Author</Label>
+                <Label className="text-xs">{t("ar_author")}</Label>
                 <Input
                   value={form.response_embed.author_name}
                   onChange={(e) =>
@@ -281,12 +283,12 @@ export function ResponseSection({
                       },
                     }))
                   }
-                  placeholder="Author name"
+                  placeholder={t("ar_authorName")}
                   className="h-8 text-sm"
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Author Icon URL</Label>
+                <Label className="text-xs">{t("ar_authorIconUrl")}</Label>
                 <Input
                   value={form.response_embed.author_icon_url}
                   onChange={(e) =>
@@ -306,7 +308,7 @@ export function ResponseSection({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">Footer</Label>
+                <Label className="text-xs">{t("ar_footer")}</Label>
                 <Input
                   value={form.response_embed.footer}
                   onChange={(e) =>
@@ -318,7 +320,7 @@ export function ResponseSection({
                       },
                     }))
                   }
-                  placeholder="Footer"
+                  placeholder={t("ar_footer")}
                   className="h-8 text-sm"
                 />
               </div>
@@ -327,7 +329,7 @@ export function ResponseSection({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">Thumbnail URL</Label>
+                <Label className="text-xs">{t("ar_thumbnailUrl")}</Label>
                 <Input
                   value={form.response_embed.thumbnail_url}
                   onChange={(e) =>
@@ -344,7 +346,7 @@ export function ResponseSection({
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Image URL</Label>
+                <Label className="text-xs">{t("ar_imageUrl")}</Label>
                 <Input
                   value={form.response_embed.image_url}
                   onChange={(e) =>
@@ -368,16 +370,16 @@ export function ResponseSection({
           {/* Fields builder */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Fields</p>
+              <p className="text-sm font-medium">{t("ar_fields")}</p>
               <Button variant="outline" size="sm" onClick={addField}>
                 <Plus className="h-3.5 w-3.5 mr-1" />
-                Add field
+                {t("ar_addField")}
               </Button>
             </div>
 
             {form.response_embed.fields.length === 0 && (
               <p className="text-xs text-muted-foreground text-center py-4">
-                No fields yet. Click "Add field" to get started.
+                {t("ar_noFieldsYet")}
               </p>
             )}
 
@@ -389,7 +391,7 @@ export function ResponseSection({
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-muted-foreground">
-                      Field #{idx + 1}
+                      {t("ar_field")} #{idx + 1}
                     </span>
                     <Button
                       variant="ghost"
@@ -403,24 +405,24 @@ export function ResponseSection({
 
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
-                      <Label className="text-xs">Name</Label>
+                      <Label className="text-xs">{t("ar_name")}</Label>
                       <Input
                         value={field.name}
                         onChange={(e) =>
                           updateField(idx, { name: e.target.value })
                         }
-                        placeholder="Name field"
+                        placeholder={t("ar_nameFieldPlaceholder")}
                         className="h-8 text-sm"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Value</Label>
+                      <Label className="text-xs">{t("ar_value")}</Label>
                       <Input
                         value={field.value}
                         onChange={(e) =>
                           updateField(idx, { value: e.target.value })
                         }
-                        placeholder="Content"
+                        placeholder={t("ar_content")}
                         className="h-8 text-sm"
                       />
                     </div>
@@ -434,7 +436,7 @@ export function ResponseSection({
                       }
                       className="scale-75"
                     />
-                    <Label className="text-xs">Inline</Label>
+                    <Label className="text-xs">{t("ar_inline")}</Label>
                   </div>
                 </div>
               ))}
@@ -446,7 +448,7 @@ export function ResponseSection({
       {/* Reaction emojis */}
       {hasReact && (
         <div className="space-y-2">
-          <Label>Reaction emojis</Label>
+          <Label>{t("ar_reactionEmojis")}</Label>
           <div className="flex flex-wrap gap-1.5 min-h-[36px] p-2 rounded-md border bg-background">
             {form.reaction_emojis.map((emoji) => (
               <Badge
@@ -474,12 +476,12 @@ export function ResponseSection({
                 className="h-6 text-xs gap-1"
               >
                 <Plus className="h-3 w-3" />
-                Add
+                {t("ar_add")}
               </Button>
             </EmojiPicker>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Select an emoji to react to the original message
+            {t("ar_selectEmojiHint")}
           </p>
         </div>
       )}

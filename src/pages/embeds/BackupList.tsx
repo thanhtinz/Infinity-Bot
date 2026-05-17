@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { useT } from "@/i18n";
 
 export function BackupList({ getBackups, loadBackup, deleteBackup }: {
   getBackups: () => { id: string; name: string; timestamp: string; data: object }[];
   loadBackup: (data: Record<string, unknown>) => void;
   deleteBackup: (id: string) => void;
 }) {
+  const { t } = useT();
   const [list, setList] = useState(() => getBackups());
   const refresh = () => setList(getBackups());
-  if (!list.length) return <p className="text-sm text-muted-foreground text-center py-6">No backups yet. Click "Save current backup".</p>;
+  if (!list.length) return <p className="text-sm text-muted-foreground text-center py-6">{t("embed_noBackupsYet")}</p>;
   return (
     <div className="space-y-1.5 max-h-72 overflow-y-auto">
       {list.map(b => (
@@ -19,7 +21,7 @@ export function BackupList({ getBackups, loadBackup, deleteBackup }: {
             <div className="text-xs text-muted-foreground">{new Date(b.timestamp).toLocaleString("vi-VN")}</div>
           </div>
           <Button size="sm" variant="outline" className="h-7 text-xs"
-            onClick={() => loadBackup(b.data as Record<string, unknown>)}>Load</Button>
+            onClick={() => loadBackup(b.data as Record<string, unknown>)}>{t("embed_load")}</Button>
           <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive"
             onClick={() => { deleteBackup(b.id); refresh(); }}>
             <Trash2 className="h-3.5 w-3.5" />

@@ -17,6 +17,8 @@ import {
   Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
+import { useT } from "@/i18n";
 
 // ─── Rule Card ───────────────────────────────────────────────────────────────
 
@@ -33,6 +35,7 @@ export function RuleCard({
   onToggle: () => void;
   togglePending: boolean;
 }) {
+  const { t } = useT();
   const triggerCfg = TRIGGER_TYPE_CONFIG[rule.trigger_type];
   const TriggerIcon = triggerCfg.icon;
   const showText = rule.response_type.includes("text");
@@ -46,16 +49,16 @@ export function RuleCard({
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
             <span className="font-semibold text-sm truncate max-w-[180px]">
-              {rule.name || "Untitled"}
+              {rule.name || t("ar_untitled")}
             </span>
             <Badge className={cn("border shrink-0 text-[11px] px-2", triggerCfg.color)}>
               <TriggerIcon className="h-3 w-3 mr-0.5" />
               {triggerCfg.label}
             </Badge>
             <Badge variant="outline" className="text-[10px] px-1.5 shrink-0">
-              {showText && <><Type className="h-3 w-3 mr-0.5" />Text</>}
-              {showEmbed && <><Layout className="h-3 w-3 mr-0.5" />Embed</>}
-              {showReact && <><Smile className="h-3 w-3 mr-0.5" />React</>}
+              {showText && <><Type className="h-3 w-3 mr-0.5" />{t("ar_textType")}</>}
+              {showEmbed && <><Layout className="h-3 w-3 mr-0.5" />{t("ar_embedType")}</>}
+              {showReact && <><Smile className="h-3 w-3 mr-0.5" />{t("ar_reactType")}</>}
             </Badge>
           </div>
           <div className="flex items-center gap-2">
@@ -94,10 +97,10 @@ export function RuleCard({
               />
               <div className="p-2.5 flex-1 min-w-0 bg-muted/30">
                 <p className="font-semibold text-xs leading-tight">
-                  {rule.response_embed.title || "Title"}
+                  {rule.response_embed.title || t("ticketPanels_title")}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
-                  {rule.response_embed.description || "Description..."}
+                  {rule.response_embed.description || t("ticketPanels_descriptionPlaceholder")}
                 </p>
               </div>
             </div>
@@ -129,22 +132,22 @@ export function RuleCard({
           )}
           {(rule.allowed_channels?.length ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-blue-600">
-              📌 {rule.allowed_channels.length} channel
+              📌 {rule.allowed_channels.length} {t("ar_channel")}
             </span>
           )}
           {(rule.blocked_channels?.length ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-red-600">
-              🚫 {rule.blocked_channels.length} channel
+              🚫 {rule.blocked_channels.length} {t("ar_channel")}
             </span>
           )}
           {(rule.allowed_roles?.length ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-green-600">
-              🛡️ {rule.allowed_roles.length} role
+              🛡️ {rule.allowed_roles.length} {t("ar_role")}
             </span>
           )}
           {(rule.blocked_roles?.length ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-red-600">
-              🚫 {rule.blocked_roles.length} role
+              🚫 {rule.blocked_roles.length} {t("ar_role")}
             </span>
           )}
           {(rule.priority ?? 0) > 0 && (
@@ -155,22 +158,22 @@ export function RuleCard({
           {rule.reply_to_message && (
             <span className="flex items-center gap-1">
               <Reply className="h-3 w-3" />
-              Reply
+              {t("ar_reply")}
             </span>
           )}
           {rule.delete_trigger && (
-            <span className="text-rose-600">Delete original message</span>
+            <span className="text-rose-600">{t("ar_deleteOriginal")}</span>
           )}
           {rule.send_dm && (
             <span className="flex items-center gap-1">
               <Mail className="h-3 w-3" />
-              DM
+              {t("ar_dm")}
             </span>
           )}
           {rule.ignore_bots && (
             <span className="flex items-center gap-1">
               <Bot className="h-3 w-3" />
-              Ignore bots
+              {t("ar_ignoreBots")}
             </span>
           )}
         </div>
@@ -195,7 +198,7 @@ export function RuleCard({
               onClick={onEdit}
             >
               <Pencil className="h-3.5 w-3.5 mr-1" />
-              Edit
+              {t("edit")}
             </Button>
             <Button
               variant="ghost"
@@ -204,7 +207,7 @@ export function RuleCard({
               onClick={onDelete}
             >
               <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Delete
+              {t("delete")}
             </Button>
           </div>
         </div>

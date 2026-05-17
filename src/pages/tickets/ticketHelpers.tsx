@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -65,22 +66,22 @@ export const PRIORITY_CONFIG: Record<
   { label: string; cls: string; iconCls: string }
 > = {
   low: {
-    label: "Low",
+    label: "tickets_low",
     cls: "bg-green-500/15 text-green-600 border-green-500/30",
     iconCls: "text-green-500",
   },
   normal: {
-    label: "Normal",
+    label: "tickets_normal",
     cls: "bg-blue-500/15 text-blue-600 border-blue-500/30",
     iconCls: "text-blue-500",
   },
   high: {
-    label: "High",
+    label: "tickets_high",
     cls: "bg-amber-500/15 text-amber-600 border-amber-500/30",
     iconCls: "text-amber-500",
   },
   urgent: {
-    label: "Urgent",
+    label: "tickets_urgent",
     cls: "bg-red-500/15 text-red-600 border-red-500/30",
     iconCls: "text-red-500",
   },
@@ -91,17 +92,17 @@ export const STATUS_CONFIG: Record<
   { label: string; cls: string; iconCls: string }
 > = {
   open: {
-    label: "Open",
+    label: "tickets_open",
     cls: "bg-green-500/15 text-green-600 border-green-500/30",
     iconCls: "text-green-500",
   },
   closed: {
-    label: "Closed",
+    label: "tickets_closed",
     cls: "bg-gray-500/15 text-gray-500 border-gray-500/30",
     iconCls: "text-gray-500",
   },
   deleted: {
-    label: "Deleted",
+    label: "tickets_deleted",
     cls: "bg-red-500/15 text-red-500 border-red-500/30",
     iconCls: "text-red-500",
   },
@@ -156,6 +157,7 @@ export function StatCard({
 // ─── Copyable ID chip ────────────────────────────────────────────────────────
 
 export function CopyableId({ value }: { value: string }) {
+  const { t } = useT();
   return (
     <TooltipProvider delayDuration={300}>
       <Tooltip>
@@ -169,7 +171,7 @@ export function CopyableId({ value }: { value: string }) {
             <Copy className="h-3 w-3 text-muted-foreground" />
           </button>
         </TooltipTrigger>
-        <TooltipContent>Copy</TooltipContent>
+        <TooltipContent>{t("copy")}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

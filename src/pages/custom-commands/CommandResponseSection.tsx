@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { VARIABLE_GROUPS } from "./ccConstants";
 import type { CommandForm, EmbedField } from "./ccTypes";
 import { EmbedResponseEditor } from "./EmbedResponseEditor";
+import { useT } from "@/i18n";
 
 interface CommandResponseSectionProps {
   form: CommandForm;
@@ -29,16 +30,17 @@ export function CommandResponseSection({
   onUpdateField,
   onFocusEmbedDesc,
 }: CommandResponseSectionProps) {
+  const { t } = useT();
   return (
     <div className="space-y-4">
       <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
         <Layout className="h-3.5 w-3.5" />
-        Response
+        {t("cc_response")}
       </p>
 
       {/* Response type toggle */}
       <div className="space-y-2">
-        <Label>Response type</Label>
+        <Label>{t("cc_responseType")}</Label>
         <div className="flex gap-2">
           <button
             type="button"
@@ -53,7 +55,7 @@ export function CommandResponseSection({
             )}
           >
             <Type className="h-4 w-4" />
-            Text
+            {t("cc_text")}
           </button>
           <button
             type="button"
@@ -68,7 +70,7 @@ export function CommandResponseSection({
             )}
           >
             <Layout className="h-4 w-4" />
-            Embed
+            {t("cc_embed")}
           </button>
         </div>
       </div>
@@ -82,7 +84,7 @@ export function CommandResponseSection({
         >
           <span className="flex items-center gap-2">
             <Variable className="h-4 w-4 text-indigo-500" />
-            Available variables
+            {t("cc_availableVariables")}
           </span>
           {varsOpen ? (
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -93,7 +95,7 @@ export function CommandResponseSection({
         {varsOpen && (
           <div className="px-3 pb-3 space-y-3">
             <p className="text-[11px] text-muted-foreground">
-              Click a variable to insert it. Click the text field first to set the insertion point.
+              {t("cc_clickVariableHint")}
             </p>
             {VARIABLE_GROUPS.map((group) => {
               const Icon = group.icon;
@@ -126,13 +128,13 @@ export function CommandResponseSection({
       {/* Text response */}
       {form.response_type === "text" && (
         <div className="space-y-2">
-          <Label>Content</Label>
+          <Label>{t("cc_content")}</Label>
           <Textarea
             value={form.response_text}
             onChange={(e) =>
               onFormChange((p) => ({ ...p, response_text: e.target.value }))
             }
-            placeholder="Content bot will send when the command is used..."
+            placeholder={t("cc_responseContentPlaceholder")}
             rows={5}
           />
         </div>

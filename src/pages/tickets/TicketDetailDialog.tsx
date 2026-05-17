@@ -98,7 +98,7 @@ export function TicketDetailDialog({
                       STATUS_CONFIG[detail.status]?.cls
                     )}
                   >
-                    {STATUS_CONFIG[detail.status]?.label}
+                    {t(STATUS_CONFIG[detail.status]?.label)}
                   </Badge>
                   <Badge
                     variant="outline"
@@ -107,7 +107,7 @@ export function TicketDetailDialog({
                       PRIORITY_CONFIG[detail.priority]?.cls
                     )}
                   >
-                    {PRIORITY_CONFIG[detail.priority]?.label}
+                    {t(PRIORITY_CONFIG[detail.priority]?.label)}
                   </Badge>
                 </DialogDescription>
               </DialogHeader>
@@ -332,7 +332,7 @@ export function TicketDetailDialog({
                   {detail.members.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                       <UserPlus className="h-10 w-10 mb-2 opacity-40" />
-                      <p className="text-sm">No members yet</p>
+                      <p className="text-sm">{t("ticket_noMembersYet")}</p>
                     </div>
                   ) : (
                     detail.members.map((memberId, i) => (
@@ -368,7 +368,7 @@ export function TicketDetailDialog({
                     }
                   >
                     <CheckCircle className="h-4 w-4" />
-                    Closed Ticket
+                    {t("tickets_close")}
                   </Button>
                 )}
                 {detail.status === "closed" && (
@@ -385,7 +385,7 @@ export function TicketDetailDialog({
                     }
                   >
                     <ArrowLeftRight className="h-4 w-4" />
-                    Reopen
+                    {t("tickets_reopen")}
                   </Button>
                 )}
                 {detail.status !== "deleted" && (
@@ -402,7 +402,7 @@ export function TicketDetailDialog({
                     }
                   >
                     <XCircle className="h-4 w-4" />
-                    Delete
+                    {t("delete")}
                   </Button>
                 )}
               </div>

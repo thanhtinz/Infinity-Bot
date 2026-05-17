@@ -26,6 +26,7 @@ import {
   Filter,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 import type { RuleForm } from "./arTypes";
 
@@ -54,6 +55,7 @@ export function FilterSection({
   addBlockedChannel,
   removeBlockedChannel,
 }: FilterSectionProps) {
+  const { t } = useT();
   return (
     <>
       {/* ═══════ Section 3: Settings (Collapsible) ═══════ */}
@@ -69,7 +71,7 @@ export function FilterSection({
               <ChevronRight className="h-3.5 w-3.5" />
             )}
             <Settings2 className="h-3.5 w-3.5" />
-            Settings
+            {t("ar_settings")}
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-4 pt-3">
@@ -78,10 +80,10 @@ export function FilterSection({
             <div className="space-y-0.5">
               <Label className="flex items-center gap-1.5">
                 <Reply className="h-3.5 w-3.5" />
-                Reply to message
+                {t("ar_replyToMessage")}
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Send response as a reply to the original message
+                {t("ar_replyToMessageDesc")}
               </p>
             </div>
             <Switch
@@ -97,10 +99,10 @@ export function FilterSection({
             <div className="space-y-0.5">
               <Label className="flex items-center gap-1.5">
                 <Trash2 className="h-3.5 w-3.5" />
-                Delete original message
+                {t("ar_deleteOriginal")}
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Delete the trigger message after responding
+                {t("ar_deleteOriginalDesc")}
               </p>
             </div>
             <Switch
@@ -116,10 +118,10 @@ export function FilterSection({
             <div className="space-y-0.5">
               <Label className="flex items-center gap-1.5">
                 <Mail className="h-3.5 w-3.5" />
-                Send DM
+                {t("ar_sendDm")}
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Send the response via DM instead of the channel
+                {t("ar_sendDmDesc")}
               </p>
             </div>
             <Switch
@@ -136,7 +138,7 @@ export function FilterSection({
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
-              Cooldown
+              {t("ar_cooldown")}
             </Label>
             <div className="flex items-center gap-2">
               <Input
@@ -149,10 +151,10 @@ export function FilterSection({
                     cooldown: Math.max(0, parseInt(e.target.value) || 0),
                   }))
                 }
-                placeholder="0 = unlimited"
+                placeholder={t("ar_unlimited")}
                 className="w-28"
               />
-              <span className="text-sm text-muted-foreground">seconds</span>
+              <span className="text-sm text-muted-foreground">{t("ar_seconds")}</span>
             </div>
             <div className="flex gap-2 mt-1">
               {(["per_user", "per_channel", "global"] as const).map((ct) => (
@@ -167,7 +169,7 @@ export function FilterSection({
                       : "border-transparent bg-muted/30 hover:bg-muted/50"
                   )}
                 >
-                  {ct === "per_user" ? "Per user" : ct === "per_channel" ? "Per channel" : "Global"}
+                  {ct === "per_user" ? t("ar_perUser") : ct === "per_channel" ? t("ar_perChannel") : t("ar_global")}
                   </button>
               ))}
             </div>
@@ -177,7 +179,7 @@ export function FilterSection({
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
               <ArrowUpRight className="h-3.5 w-3.5" />
-              Priority
+              {t("ar_priority")}
             </Label>
             <div className="flex items-center gap-2">
               <Input
@@ -194,7 +196,7 @@ export function FilterSection({
                 className="w-28"
               />
               <span className="text-[11px] text-muted-foreground">
-                Higher = higher priority
+                {t("ar_priorityHint")}
               </span>
             </div>
           </div>
@@ -202,9 +204,9 @@ export function FilterSection({
           {/* Enabled */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Activate</Label>
+              <Label>{t("ar_activate")}</Label>
               <p className="text-[11px] text-muted-foreground">
-                Enable/disable this rule
+                {t("ar_activateDesc")}
               </p>
             </div>
             <Switch
@@ -232,13 +234,13 @@ export function FilterSection({
               <ChevronRight className="h-3.5 w-3.5" />
             )}
             <Filter className="h-3.5 w-3.5" />
-            Limits
+            {t("ar_limits")}
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-4 pt-3">
           {/* Allowed channels */}
           <div className="space-y-2">
-            <Label>Allowed channels</Label>
+            <Label>{t("ar_allowedChannels")}</Label>
             {form.allowed_channels.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {form.allowed_channels.map((chId) => (
@@ -264,16 +266,16 @@ export function FilterSection({
               filter="text"
               value=""
               onChange={addAllowedChannel}
-              placeholder="Select allowed channels..."
+              placeholder={t("ar_selectAllowedChannels")}
             />
             <p className="text-[11px] text-muted-foreground">
-              Leave empty to allow all channels
+              {t("ar_leaveEmptyAllChannels")}
             </p>
           </div>
 
           {/* Blocked channels */}
           <div className="space-y-2">
-            <Label>Blocked channels</Label>
+            <Label>{t("ar_blockedChannels")}</Label>
             {form.blocked_channels.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {form.blocked_channels.map((chId) => (
@@ -299,7 +301,7 @@ export function FilterSection({
               filter="text"
               value=""
               onChange={addBlockedChannel}
-              placeholder="Select blocked channels..."
+              placeholder={t("ar_selectBlockedChannels")}
             />
           </div>
 
@@ -307,25 +309,25 @@ export function FilterSection({
 
           {/* Allowed roles */}
           <div className="space-y-2">
-            <Label>Allowed roles</Label>
+            <Label>{t("ar_allowedRoles")}</Label>
             <MultiRoleSelect
               value={form.allowed_roles}
               onChange={(roles) =>
                 setForm((p) => ({ ...p, allowed_roles: roles }))
               }
-              placeholder="Select allowed roles..."
+              placeholder={t("ar_selectAllowedRoles")}
             />
           </div>
 
           {/* Blocked roles */}
           <div className="space-y-2">
-            <Label>Blocked roles</Label>
+            <Label>{t("ar_blockedRoles")}</Label>
             <MultiRoleSelect
               value={form.blocked_roles}
               onChange={(roles) =>
                 setForm((p) => ({ ...p, blocked_roles: roles }))
               }
-              placeholder="Select blocked roles..."
+              placeholder={t("ar_selectBlockedRoles")}
             />
           </div>
 
@@ -336,10 +338,10 @@ export function FilterSection({
             <div className="space-y-0.5">
               <Label className="flex items-center gap-1.5">
                 <Bot className="h-3.5 w-3.5" />
-                Ignore bots
+                {t("ar_ignoreBots")}
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Do not trigger on messages from bots
+                {t("ar_ignoreBotsDesc")}
               </p>
             </div>
             <Switch

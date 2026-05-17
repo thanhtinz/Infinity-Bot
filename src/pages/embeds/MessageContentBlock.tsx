@@ -6,6 +6,7 @@ import {
   ChevronDown, ChevronRight, BellOff,
 } from "lucide-react";
 import type { CustomFormState } from "./embedTypes";
+import { useT } from "@/i18n";
 
 interface MessageContentBlockProps {
   form: CustomFormState;
@@ -28,6 +29,7 @@ export function MessageContentBlock({
   flagsOpen,
   onToggleFlags,
 }: MessageContentBlockProps) {
+  const { t } = useT();
   return (
     <>
       {/* ── Message block ── */}
@@ -35,11 +37,11 @@ export function MessageContentBlock({
         {/* Content */}
         <div className="p-4 space-y-1">
           <div className="flex items-center justify-between">
-            <Label className="text-xs font-semibold">Content</Label>
+            <Label className="text-xs font-semibold">{t("embed_content")}</Label>
             <span className="text-[11px] text-muted-foreground">{form.content.length}/2000</span>
           </div>
           <Textarea
-            placeholder="Message content (plain text, supports Discord markdown)"
+            placeholder={t("embed_contentPlaceholder")}
             value={form.content}
             onChange={(e) => onFormChange((f) => ({ ...f, content: e.target.value }))}
             rows={3}
@@ -53,11 +55,11 @@ export function MessageContentBlock({
           <button type="button" className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
             onClick={onToggleThread}>
             {threadOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-            Thread
+            {t("embed_thread")}
           </button>
           {threadOpen && (
             <div className="px-4 pb-4">
-              <Input placeholder="Name thread..." value={form.thread_name}
+              <Input placeholder={t("embed_nameThreadPlaceholder")} value={form.thread_name}
                 onChange={(e) => onFormChange((f) => ({ ...f, thread_name: e.target.value }))} className="text-sm" />
             </div>
           )}
@@ -68,17 +70,17 @@ export function MessageContentBlock({
           <button type="button" className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
             onClick={onToggleProfile}>
             {profileOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-            Profile
+            {t("embed_profile")}
           </button>
           {profileOpen && (
             <div className="px-4 pb-4 space-y-2">
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Webhook Username</Label>
-                <Input placeholder="Display name..." value={form.webhook_username}
+                <Label className="text-xs text-muted-foreground">{t("embed_webhookUsername")}</Label>
+                <Input placeholder={t("embed_displayNamePlaceholder")} value={form.webhook_username}
                   onChange={(e) => onFormChange((f) => ({ ...f, webhook_username: e.target.value }))} className="text-sm" />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Webhook Avatar URL</Label>
+                <Label className="text-xs text-muted-foreground">{t("embed_webhookAvatarUrl")}</Label>
                 <Input placeholder="https://..." value={form.webhook_avatar_url}
                   onChange={(e) => onFormChange((f) => ({ ...f, webhook_avatar_url: e.target.value }))} className="text-sm" />
               </div>

@@ -4,6 +4,7 @@ import { MultiRoleSelect } from "@/components/RoleSelect";
 import { Variable } from "lucide-react";
 import type { CommandForm } from "./ccTypes";
 import { CommandSettingsAdvanced } from "./CommandSettingsAdvanced";
+import { useT } from "@/i18n";
 
 interface CommandSettingsSectionProps {
   form: CommandForm;
@@ -32,19 +33,20 @@ export function CommandSettingsSection({
   advancedOpen,
   onAdvancedOpenChange,
 }: CommandSettingsSectionProps) {
+  const { t } = useT();
   return (
     <div className="space-y-4">
       <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
         <Variable className="h-3.5 w-3.5" />
-        Settings
+        {t("cc_settings")}
       </p>
 
       {/* Ephemeral toggle */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>Hidden (Ephemeral)</Label>
+          <Label>{t("cc_hiddenEphemeral")}</Label>
           <p className="text-[11px] text-muted-foreground">
-            Only the command user can see the response.
+            {t("cc_ephemeralDesc")}
           </p>
         </div>
         <Switch
@@ -58,9 +60,9 @@ export function CommandSettingsSection({
       {/* Enabled toggle */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>Activate</Label>
+          <Label>{t("cc_activate")}</Label>
           <p className="text-[11px] text-muted-foreground">
-            Enable/disable this command.
+            {t("cc_activateDesc")}
           </p>
         </div>
         <Switch
@@ -73,13 +75,13 @@ export function CommandSettingsSection({
 
       {/* Required roles */}
       <div className="space-y-2">
-        <Label>Required role</Label>
+        <Label>{t("cc_requiredRoles")}</Label>
         <MultiRoleSelect
           value={form.required_roles}
           onChange={(roles) =>
             onFormChange((p) => ({ ...p, required_roles: roles }))
           }
-          placeholder="Select required role..."
+          placeholder={t("cc_selectRequiredRole")}
         />
       </div>
 

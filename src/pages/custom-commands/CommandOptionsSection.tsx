@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, Wrench } from "lucide-react";
 import type { CommandForm } from "./ccTypes";
+import { useT } from "@/i18n";
 
 interface CommandOptionsSectionProps {
   form: CommandForm;
@@ -16,13 +17,14 @@ interface CommandOptionsSectionProps {
 }
 
 export function CommandOptionsSection({ form, onFormChange, open, onOpenChange }: CommandOptionsSectionProps) {
+  const { t } = useT();
   return (
     <Collapsible open={open} onOpenChange={onOpenChange}>
       <CollapsibleTrigger asChild>
         <button type="button" className="flex items-center justify-between w-full">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
             <Wrench className="h-3.5 w-3.5" />
-            Options
+            {t("cc_options")}
           </p>
           {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
         </button>
@@ -35,8 +37,8 @@ export function CommandOptionsSection({ form, onFormChange, open, onOpenChange }
             onCheckedChange={(v) => onFormChange((p) => ({ ...p, delete_trigger: !!v }))}
           />
           <div className="flex-1 space-y-0.5">
-            <Label className="text-sm font-medium">Delete Command</Label>
-            <p className="text-[11px] text-muted-foreground">Delete the user's !command message after the bot responds</p>
+            <Label className="text-sm font-medium">{t("cc_deleteCommand")}</Label>
+            <p className="text-[11px] text-muted-foreground">{t("cc_deleteCommandDesc")}</p>
           </div>
         </div>
 
@@ -47,8 +49,8 @@ export function CommandOptionsSection({ form, onFormChange, open, onOpenChange }
             onCheckedChange={(v) => onFormChange((p) => ({ ...p, silent: !!v }))}
           />
           <div className="flex-1 space-y-0.5">
-            <Label className="text-sm font-medium">Silent Command</Label>
-            <p className="text-[11px] text-muted-foreground">Execute the command silently without sending a response</p>
+            <Label className="text-sm font-medium">{t("cc_silentCommand")}</Label>
+            <p className="text-[11px] text-muted-foreground">{t("cc_silentCommandDesc")}</p>
           </div>
         </div>
 
@@ -59,8 +61,8 @@ export function CommandOptionsSection({ form, onFormChange, open, onOpenChange }
             onCheckedChange={(v) => onFormChange((p) => ({ ...p, dm_response: !!v }))}
           />
           <div className="flex-1 space-y-0.5">
-            <Label className="text-sm font-medium">DM Response</Label>
-            <p className="text-[11px] text-muted-foreground">Send the response via DM instead of the channel</p>
+            <Label className="text-sm font-medium">{t("cc_dmResponse")}</Label>
+            <p className="text-[11px] text-muted-foreground">{t("cc_dmResponseDesc")}</p>
           </div>
         </div>
 
@@ -71,8 +73,8 @@ export function CommandOptionsSection({ form, onFormChange, open, onOpenChange }
             onCheckedChange={(v) => onFormChange((p) => ({ ...p, no_everyone: !!v }))}
           />
           <div className="flex-1 space-y-0.5">
-            <Label className="text-sm font-medium">Disable @everyone, @here and role pings</Label>
-            <p className="text-[11px] text-muted-foreground">Suppress all pings in the response</p>
+            <Label className="text-sm font-medium">{t("cc_disablePings")}</Label>
+            <p className="text-[11px] text-muted-foreground">{t("cc_disablePingsDesc")}</p>
           </div>
         </div>
       </CollapsibleContent>

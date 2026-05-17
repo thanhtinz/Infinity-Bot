@@ -37,8 +37,10 @@ import { EditorToolbar } from "./EditorToolbar";
 import { MessageContentBlock } from "./MessageContentBlock";
 import { useCustomMessagesMutations } from "./useCustomMessagesMutations";
 import { apiFetch } from "@/hooks/useApi";
+import { useT } from "@/i18n";
 
 export function CustomMessagesTab() {
+  const { t } = useT();
   // ── Load share param from URL ──
   const shareInit = useMemo<Partial<CustomFormState>>(() => {
     try {
@@ -206,15 +208,15 @@ export function CustomMessagesTab() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="default" className="bg-indigo-600 hover:bg-indigo-700 gap-1">
-                  <Plus className="h-3.5 w-3.5" />Add<ChevronDown className="h-3 w-3" />
+                  <Plus className="h-3.5 w-3.5" />{t("embed_add")}<ChevronDown className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuItem onClick={addEmbed} disabled={form.embeds.length >= 10}>
-                  <Plus className="h-4 w-4 mr-2" />Add Embed
+                  <Plus className="h-4 w-4 mr-2" />{t("embed_addEmbed")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setForm(f => ({ ...f, components: [...f.components, emptyRow()] })) } disabled={form.components.length >= 5}>
-                  <LayoutGrid className="h-4 w-4 mr-2" />Add Component Row
+                  <LayoutGrid className="h-4 w-4 mr-2" />{t("embed_addComponentRow")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -223,35 +225,35 @@ export function CustomMessagesTab() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="outline" className="gap-1">
-                  Options<ChevronDown className="h-3 w-3" />
+                  {t("embed_options")}<ChevronDown className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuItem onClick={() => setJsonEditorOpen(true)}>
-                  <FileJson className="h-4 w-4 mr-2" />JSON Editor
+                  <FileJson className="h-4 w-4 mr-2" />{t("embed_jsonEditor")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={copyQueryData}>
-                  <Copy className="h-4 w-4 mr-2" />Copy Query Data
+                  <Copy className="h-4 w-4 mr-2" />{t("embed_copyQueryData")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setCodeGenOpen(true)}>
-                  <Code2 className="h-4 w-4 mr-2" />Generate Code
+                  <Code2 className="h-4 w-4 mr-2" />{t("embed_generateCode")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleShare}>
-                  <Share2 className="h-4 w-4 mr-2" />Share via Link
+                  <Share2 className="h-4 w-4 mr-2" />{t("embed_shareViaLink")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleExport} disabled={!editingExistingId}>
-                  <Download className="h-4 w-4 mr-2" />Export JSON
+                  <Download className="h-4 w-4 mr-2" />{t("embed_exportJson")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleImportFile}>
-                  <Upload className="h-4 w-4 mr-2" />Import JSON
+                  <Upload className="h-4 w-4 mr-2" />{t("embed_importJson")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={saveBackup}>
-                  <Save className="h-4 w-4 mr-2" />Save Backup
+                  <Save className="h-4 w-4 mr-2" />{t("embed_saveBackup")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setBackupsOpen(true)}>
-                  <Database className="h-4 w-4 mr-2" />Load Backup
+                  <Database className="h-4 w-4 mr-2" />{t("embed_loadBackup")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -273,12 +275,12 @@ export function CustomMessagesTab() {
       <Dialog open={backupsOpen} onOpenChange={setBackupsOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Database className="h-5 w-5" />Local backups</DialogTitle>
-            <DialogDescription>Backups are saved in your browser (max 20).</DialogDescription>
+            <DialogTitle className="flex items-center gap-2"><Database className="h-5 w-5" />{t("embed_localBackups")}</DialogTitle>
+            <DialogDescription>{t("embed_localBackupsDesc")}</DialogDescription>
           </DialogHeader>
           <BackupList getBackups={getBackups} loadBackup={loadBackup} deleteBackup={deleteBackup} />
           <DialogFooter>
-            <Button size="sm" onClick={saveBackup}><Save className="h-3.5 w-3.5 mr-1" />Save current backup</Button>
+            <Button size="sm" onClick={saveBackup}><Save className="h-3.5 w-3.5 mr-1" />{t("embed_saveCurrentBackup")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -295,11 +297,11 @@ export function CustomMessagesTab() {
       {/* ── Preview Dialog ── */}
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader><DialogTitle>Preview Discord</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("embed_previewDiscord")}</DialogTitle></DialogHeader>
           <div className="py-2">
             {form.content && <p className="text-sm mb-3 whitespace-pre-wrap text-foreground">{form.content}</p>}
             <DiscordPreview form={previewForm} />
-            {form.embeds.length > 1 && <p className="text-xs text-muted-foreground mt-2">* Preview only shows the first embed</p>}
+            {form.embeds.length > 1 && <p className="text-xs text-muted-foreground mt-2">{t("embed_previewFirstOnly")}</p>}
           </div>
         </DialogContent>
       </Dialog>
@@ -316,7 +318,7 @@ export function CustomMessagesTab() {
           <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground p-8">
             <div className="text-center space-y-2">
               <MessageSquare className="h-10 w-10 mx-auto text-muted-foreground/50" />
-              <p>Select a message from the list or create a new one</p>
+              <p>{t("embed_selectOrCreate")}</p>
             </div>
           </div>
         )}

@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Trash2, Plus, ExternalLink, LayoutGrid } from "lucide-react";
 import type { ComponentButton, ActionRow } from "./embedTypes";
 import { emptyButton } from "./customMessagesHelpers";
+import { useT } from "@/i18n";
 
 interface ComponentsSectionProps {
   components: ActionRow[];
@@ -13,6 +14,7 @@ interface ComponentsSectionProps {
 }
 
 export function ComponentsSection({ components, onChange }: ComponentsSectionProps) {
+  const { t } = useT();
   if (components.length === 0) return null;
 
   const updateRows = (updater: (rows: ActionRow[]) => ActionRow[]) => {
@@ -22,20 +24,20 @@ export function ComponentsSection({ components, onChange }: ComponentsSectionPro
   return (
     <div className="space-y-2 pt-1">
       <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-        <LayoutGrid className="h-3.5 w-3.5" />Components
+        <LayoutGrid className="h-3.5 w-3.5" />{t("embed_components")}
       </div>
       {components.map((row, rowIdx) => (
         <div key={rowIdx} className="rounded-lg border bg-card overflow-hidden">
           <div className="flex items-center gap-2 px-3 py-2 bg-muted/30">
-            <span className="text-xs font-semibold flex-1">Row {rowIdx + 1}</span>
-            <Button size="icon" variant="ghost" className="h-6 w-6" title="Add button"
+            <span className="text-xs font-semibold flex-1">{t("embed_row")} {rowIdx + 1}</span>
+            <Button size="icon" variant="ghost" className="h-6 w-6" title={t("embed_addButton")}
               disabled={row.components.length >= 5}
               onClick={() => {
                 updateRows(rows => rows.map((r, i) => i === rowIdx ? { ...r, components: [...r.components, emptyButton()] } : r));
               }}>
               <Plus className="h-3.5 w-3.5" />
             </Button>
-            <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive" title="Delete row"
+            <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive" title={t("embed_deleteRow")}
               onClick={() => updateRows(rows => rows.filter((_, i) => i !== rowIdx))}>
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
@@ -55,7 +57,7 @@ export function ComponentsSection({ components, onChange }: ComponentsSectionPro
                   <div key={btnIdx} className="flex items-center gap-1">
                     <div className={`px-3 py-1 rounded text-xs font-medium ${styleColors[btn.style] ?? styleColors[2]} ${btn.disabled ? "opacity-40" : ""}`}>
                       {btn.emoji && <span className="mr-1">{btn.emoji}</span>}
-                      {btn.label || "Button"}
+                      {btn.label || t("embed_button")}
                       {btn.style === 5 && <ExternalLink className="h-3 w-3 ml-1 inline" />}
                     </div>
                     <Button size="icon" variant="ghost" className="h-5 w-5 text-muted-foreground"
@@ -75,7 +77,7 @@ export function ComponentsSection({ components, onChange }: ComponentsSectionPro
             {row.components.map((btn, btnIdx) => (
               <div key={btnIdx} className="rounded-md border p-2 space-y-2 bg-muted/20">
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-muted-foreground font-medium w-12 shrink-0">Btn {btnIdx + 1}</span>
+                  <span className="text-[11px] text-muted-foreground font-medium w-12 shrink-0">{t("embed_btn")} {btnIdx + 1}</span>
                   <Select value={String(btn.style)} onValueChange={(v) => {
                     updateRows(rows => rows.map((r, ri) => ri === rowIdx ? {
                       ...r, components: r.components.map((b, bi) => bi === btnIdx ? { ...b, style: Number(v) as ComponentButton["style"] } : b),
@@ -83,11 +85,11 @@ export function ComponentsSection({ components, onChange }: ComponentsSectionPro
                   }}>
                     <SelectTrigger className="h-7 text-xs w-32"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">🟣 Primary</SelectItem>
-                      <SelectItem value="2">⬜ Secondary</SelectItem>
-                      <SelectItem value="3">🟢 Success</SelectItem>
-                      <SelectItem value="4">🔴 Danger</SelectItem>
-                      <SelectItem value="5">🔗 Link</SelectItem>
+                      <SelectItem value="1">🟣 {t("embed_primary")}</SelectItem>
+                      <SelectItem value="2">⬜ {t("embed_secondary")}</SelectItem>
+                      <SelectItem value="3">🟢 {t("embed_success")}</SelectItem>
+                      <SelectItem value="4">🔴 {t("embed_danger")}</SelectItem>
+                      <SelectItem value="5">🔗 {t("embed_link")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <Switch checked={!!btn.disabled}
@@ -96,12 +98,12 @@ export function ComponentsSection({ components, onChange }: ComponentsSectionPro
                         ...r, components: r.components.map((b, bi) => bi === btnIdx ? { ...b, disabled: v } : b),
                       } : r));
                     }} />
-                  <span className="text-[10px] text-muted-foreground">Disabled</span>
+                  <span className="text-[10px] text-muted-foreground">{t("embed_disabled")}</span>
                 </div>
                 <div className="flex gap-2">
                   <div className="flex-1 space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Label</Label>
-                    <Input className="h-7 text-xs" placeholder="Button label" value={btn.label}
+                    <Label className="text-[10px] text-muted-foreground">{t("embed_label")}</Label>
+                    <Input className="h-7 text-xs" placeholder={t("embed_buttonLabelPlaceholder")} value={btn.label}
                       onChange={(e) => {
                         updateRows(rows => rows.map((r, ri) => ri === rowIdx ? {
                           ...r, components: r.components.map((b, bi) => bi === btnIdx ? { ...b, label: e.target.value } : b),
@@ -109,7 +111,7 @@ export function ComponentsSection({ components, onChange }: ComponentsSectionPro
                       }} />
                   </div>
                   <div className="w-16 space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Emoji</Label>
+                    <Label className="text-[10px] text-muted-foreground">{t("embed_emoji")}</Label>
                     <Input className="h-7 text-xs" placeholder="😀" value={btn.emoji ?? ""}
                       onChange={(e) => {
                         updateRows(rows => rows.map((r, ri) => ri === rowIdx ? {
@@ -120,7 +122,7 @@ export function ComponentsSection({ components, onChange }: ComponentsSectionPro
                 </div>
                 {btn.style === 5 ? (
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">URL</Label>
+                    <Label className="text-[10px] text-muted-foreground">{t("embed_url")}</Label>
                     <Input className="h-7 text-xs" placeholder="https://..." value={btn.url ?? ""}
                       onChange={(e) => {
                         updateRows(rows => rows.map((r, ri) => ri === rowIdx ? {
@@ -130,7 +132,7 @@ export function ComponentsSection({ components, onChange }: ComponentsSectionPro
                   </div>
                 ) : (
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Custom ID</Label>
+                    <Label className="text-[10px] text-muted-foreground">{t("embed_customId")}</Label>
                     <Input className="h-7 text-xs font-mono" placeholder="my_button_id" value={btn.custom_id ?? ""}
                       onChange={(e) => {
                         updateRows(rows => rows.map((r, ri) => ri === rowIdx ? {

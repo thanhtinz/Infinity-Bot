@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Inbox, Shield, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 import type { TicketRow, BlacklistEntry } from "./ticketHelpers";
 import { PRIORITY_CONFIG, STATUS_CONFIG, formatDate, TableSkeleton } from "./ticketHelpers";
 
@@ -23,14 +24,15 @@ export interface TicketTableProps {
 }
 
 export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: TicketTableProps) {
+  const { t } = useT();
   if (isLoading) return <TableSkeleton />;
 
   if (tickets.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <Inbox className="h-12 w-12 mb-3 opacity-40" />
-        <p className="text-sm font-medium">No tickets yet</p>
-        <p className="text-xs mt-1">Try changing filters or search terms</p>
+        <p className="text-sm font-medium">{t("ticket_noTicketsYet")}</p>
+        <p className="text-xs mt-1">{t("ticket_tryChangingFilters")}</p>
       </div>
     );
   }
@@ -41,14 +43,14 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
         <TableHeader>
           <TableRow>
             <TableHead className="w-16">#</TableHead>
-            <TableHead>Subject</TableHead>
-            <TableHead>Creator</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Priority</TableHead>
-            <TableHead>Claimed</TableHead>
-            <TableHead>Panel</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead className="w-24 text-right">Actions</TableHead>
+            <TableHead>{t("tickets_subject")}</TableHead>
+            <TableHead>{t("tickets_creator")}</TableHead>
+            <TableHead>{t("status")}</TableHead>
+            <TableHead>{t("tickets_priority")}</TableHead>
+            <TableHead>{t("ticket_claimed")}</TableHead>
+            <TableHead>{t("ticketPanels_panels")}</TableHead>
+            <TableHead>{t("tickets_createdAt")}</TableHead>
+            <TableHead className="w-24 text-right">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -58,7 +60,7 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
               <TableCell className="max-w-[200px] truncate">
                 {t.subject || (
                   <span className="text-muted-foreground italic">
-                    No subject
+                    {t("ticket_noSubject")}
                   </span>
                 )}
               </TableCell>
@@ -72,7 +74,7 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
                   variant="outline"
                   className={cn("text-[11px]", STATUS_CONFIG[t.status]?.cls)}
                 >
-                  {STATUS_CONFIG[t.status]?.label ?? t.status}
+                  {t(STATUS_CONFIG[t.status]?.label ?? t.status)}
                 </Badge>
               </TableCell>
               <TableCell>
@@ -80,7 +82,7 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
                   variant="outline"
                   className={cn("text-[11px]", PRIORITY_CONFIG[t.priority]?.cls)}
                 >
-                  {PRIORITY_CONFIG[t.priority]?.label ?? t.priority}
+                  {t(PRIORITY_CONFIG[t.priority]?.label ?? t.priority)}
                 </Badge>
               </TableCell>
               <TableCell>
@@ -109,7 +111,7 @@ export function TicketTable({ tickets, isLoading, panelMap, onViewDetail }: Tick
                   className="h-7 text-xs"
                   onClick={() => onViewDetail(t.id)}
                 >
-                  Details
+                  {t("tickets_viewDetail")}
                 </Button>
               </TableCell>
             </TableRow>
@@ -130,15 +132,16 @@ export interface BlacklistTableProps {
 }
 
 export function BlacklistTable({ blacklist, isLoading, isRemoving, onRemove }: BlacklistTableProps) {
+  const { t } = useT();
   if (isLoading) return <TableSkeleton />;
 
   if (blacklist.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <Shield className="h-12 w-12 mb-3 opacity-40" />
-        <p className="text-sm font-medium">None yet ai trong blacklist</p>
+        <p className="text-sm font-medium">{t("ticket_noBlacklistYet")}</p>
         <p className="text-xs mt-1">
-          Blacklisted users cannot create tickets
+          {t("ticket_blacklistHint")}
         </p>
       </div>
     );
@@ -149,11 +152,11 @@ export function BlacklistTable({ blacklist, isLoading, isRemoving, onRemove }: B
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Discord ID</TableHead>
-            <TableHead>Reason</TableHead>
-            <TableHead>Added by</TableHead>
-            <TableHead>Date added</TableHead>
-            <TableHead className="w-24 text-right">Actions</TableHead>
+            <TableHead>{t("ticket_discordId")}</TableHead>
+            <TableHead>{t("reason")}</TableHead>
+            <TableHead>{t("ticket_addedBy")}</TableHead>
+            <TableHead>{t("ticket_dateAdded")}</TableHead>
+            <TableHead className="w-24 text-right">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -167,7 +170,7 @@ export function BlacklistTable({ blacklist, isLoading, isRemoving, onRemove }: B
               <TableCell className="max-w-[300px] truncate text-sm">
                 {b.reason || (
                   <span className="text-muted-foreground italic">
-                    No reason
+                    {t("ticket_noReason")}
                   </span>
                 )}
               </TableCell>
@@ -188,7 +191,7 @@ export function BlacklistTable({ blacklist, isLoading, isRemoving, onRemove }: B
                   onClick={() => onRemove(b.id)}
                 >
                   <Trash2 className="h-3.5 w-3.5 mr-1" />
-                  Delete
+                  {t("delete")}
                 </Button>
               </TableCell>
             </TableRow>
