@@ -11,7 +11,7 @@ import {
   Settings2, Save, Loader2, ExternalLink, Shield, Eye,
   Link2, Copy, Check, ChevronDown,
   Image, Paintbrush, Palette, Sparkles, Type, Share2,
-  Lock, Code2,
+  Lock, Code2, KeyRound, XCircle, Plus,
   Twitter, Github, Send, Tv, Youtube, Instagram, Globe, ShoppingCart,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -484,43 +484,143 @@ export function VerifyConfig() {
 
           {/* Security */}
           <Section title="Security" icon={Lock}>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">CAPTCHA</p>
-                  <p className="text-xs text-muted-foreground">Require CAPTCHA before verification</p>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Account Requirements</p>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <Label className="text-sm font-medium">Minimum account age</Label>
+                <div className="flex items-center gap-1.5">
+                  <Input type="number" min={0} max={365} value={configForm.min_account_age_days}
+                    onChange={e => update({ min_account_age_days: parseInt(e.target.value) || 0 })}
+                    className="w-16 h-7 text-xs text-center" />
+                  <span className="text-xs text-muted-foreground">days</span>
                 </div>
-                <Switch checked={configForm.captcha_enabled} onCheckedChange={v => update({ captcha_enabled: v })} />
               </div>
-              <Separator className="opacity-10" />
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Minimum Account Age (days)</Label>
-                <Input type="number" min={0} max={365} value={configForm.min_account_age_days}
-                  onChange={e => update({ min_account_age_days: parseInt(e.target.value) || 0 })} />
-              </div>
-              <Separator className="opacity-10" />
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Block VPN/Proxy</p>
-                  <p className="text-xs text-muted-foreground">Reject from VPN or proxy connections</p>
-                </div>
-                <Switch checked={configForm.block_vpn} onCheckedChange={v => update({ block_vpn: v })} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Kick on De-auth</p>
-                  <p className="text-xs text-muted-foreground">Kick members who remove authorization</p>
-                </div>
-                <Switch checked={configForm.kick_on_deauth} onCheckedChange={v => update({ kick_on_deauth: v })} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Close Page After Verify</p>
-                  <p className="text-xs text-muted-foreground">Auto-close page on success</p>
-                </div>
-                <Switch checked={configForm.close_page_after_verify} onCheckedChange={v => update({ close_page_after_verify: v })} />
-              </div>
+              <input type="range" min={0} max={365} value={configForm.min_account_age_days}
+                onChange={e => update({ min_account_age_days: parseInt(e.target.value) })}
+                className="w-full h-1.5 rounded-full appearance-none bg-white/10 accent-indigo-500" />
+              <p className="text-xs text-muted-foreground text-right mt-1">
+                {configForm.min_account_age_days >= 30
+                  ? `${Math.floor(configForm.min_account_age_days / 30)} month${Math.floor(configForm.min_account_age_days / 30) > 1 ? "s" : ""}`
+                  : `${configForm.min_account_age_days} days`}
+              </p>
             </div>
+
+            <Separator className="opacity-10" />
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">User Experience</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Require CAPTCHA to verify</p>
+                <p className="text-xs text-muted-foreground">Members must complete a captcha</p>
+              </div>
+              <Switch checked={configForm.captcha_enabled} onCheckedChange={v => update({ captcha_enabled: v })} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Close page when complete</p>
+                <p className="text-xs text-muted-foreground">Auto-close after successful verification</p>
+              </div>
+              <Switch checked={configForm.close_page_after_verify} onCheckedChange={v => update({ close_page_after_verify: v })} />
+            </div>
+
+            <Separator className="opacity-10" />
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Protection</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">Block VPN networks</p>
+              <Switch checked={configForm.block_vpn} onCheckedChange={v => update({ block_vpn: v })} />
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">Block mobile/wireless networks</p>
+              <Switch checked={configForm.block_mobile} onCheckedChange={v => update({ block_mobile: v })} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Remove role from unauthorized members</p>
+                <p className="text-xs text-muted-foreground">Kick when user de-authorizes the bot</p>
+              </div>
+              <Switch checked={configForm.kick_on_deauth} onCheckedChange={v => update({ kick_on_deauth: v })} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Block scammers from verification</p>
+                <p className="text-xs text-muted-foreground">Block known scammer accounts</p>
+              </div>
+              <Switch checked={configForm.block_scammers} onCheckedChange={v => update({ block_scammers: v })} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">{"Don't give role to alts"}</p>
+                <p className="text-xs text-muted-foreground">Detected alt accounts won't get verified role</p>
+              </div>
+              <Switch checked={configForm.deny_alt_role} onCheckedChange={v => update({ deny_alt_role: v })} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Automatically ban alt accounts</p>
+                <p className="text-xs text-muted-foreground">Ban detected alts on verification</p>
+              </div>
+              <Switch checked={configForm.auto_ban_alts} onCheckedChange={v => update({ auto_ban_alts: v })} />
+            </div>
+
+            <Separator className="opacity-10" />
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Privacy</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">{"Don't save IP address"}</p>
+                <p className="text-xs text-muted-foreground">IP addresses will not be stored</p>
+              </div>
+              <Switch checked={configForm.no_save_ip} onCheckedChange={v => update({ no_save_ip: v })} />
+            </div>
+
+            <Separator className="opacity-10" />
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Permissions</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">{"Enable \"Join servers for you\" permission"}</p>
+                <p className="text-xs text-muted-foreground">Allow bot to add members to guilds</p>
+              </div>
+              <Switch checked={configForm.guild_join_enabled} onCheckedChange={v => update({ guild_join_enabled: v })} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Force members to accept all permissions</p>
+                <p className="text-xs text-muted-foreground">Users cannot uncheck OAuth scopes</p>
+              </div>
+              <Switch checked={configForm.force_all_permissions} onCheckedChange={v => update({ force_all_permissions: v })} />
+            </div>
+          </Section>
+
+          {/* Firewall — Passwords */}
+          <Section title="Firewall" icon={KeyRound}>
+            <p className="text-xs text-muted-foreground mb-2">
+              Create password-protected verification links. Users will need the correct password to verify.
+            </p>
+            {(configForm.verify_passwords || []).map((pw, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <Input value={pw.label} placeholder="Label"
+                  onChange={e => {
+                    const arr = [...(configForm.verify_passwords || [])];
+                    arr[idx] = { ...arr[idx], label: e.target.value };
+                    update({ verify_passwords: arr });
+                  }} className="flex-1 text-xs" />
+                <Input value={pw.password} placeholder="Password"
+                  onChange={e => {
+                    const arr = [...(configForm.verify_passwords || [])];
+                    arr[idx] = { ...arr[idx], password: e.target.value };
+                    update({ verify_passwords: arr });
+                  }} className="flex-1 text-xs" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-red-400 hover:text-red-300"
+                  onClick={() => {
+                    const arr = (configForm.verify_passwords || []).filter((_, i) => i !== idx);
+                    update({ verify_passwords: arr });
+                  }}>
+                  <XCircle className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+            <Button variant="outline" size="sm" className="w-full"
+              onClick={() => update({ verify_passwords: [...(configForm.verify_passwords || []), { password: "", label: "" }] })}>
+              <Plus className="w-4 h-4 mr-1.5" /> Add Password
+            </Button>
           </Section>
 
           {/* Roles & Channels */}
@@ -543,10 +643,29 @@ export function VerifyConfig() {
                 <Input value={configForm.log_channel_id} onChange={e => update({ log_channel_id: e.target.value })} placeholder="Channel ID" />
               </div>
             </div>
+            <Separator className="opacity-10" />
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Notify Roles</p>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Notify role for successful verifications</Label>
+              <Input value={configForm.notify_success_role_id} onChange={e => update({ notify_success_role_id: e.target.value })}
+                placeholder="Role ID — pinged when member verifies" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Notify role for blocked events</Label>
+              <Input value={configForm.notify_blocked_role_id} onChange={e => update({ notify_blocked_role_id: e.target.value })}
+                placeholder="Role ID — pinged when member is blocked" />
+            </div>
           </Section>
 
-          {/* Advanced */}
+          {/* Extra / Advanced */}
           <Section title="Advanced" icon={Code2}>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Gateway Server ID</Label>
+              <Input value={configForm.gateway_guild_id} onChange={e => update({ gateway_guild_id: e.target.value })}
+                placeholder="Add members to an extra server on verify" />
+              <p className="text-xs text-muted-foreground mt-1">Optional — members will also be added to this server</p>
+            </div>
+            <Separator className="opacity-10" />
             <div>
               <Label className="text-xs text-muted-foreground mb-1.5 block">Redirect URL (after verify)</Label>
               <Input value={configForm.redirect_url} onChange={e => update({ redirect_url: e.target.value })} placeholder="https://..." />

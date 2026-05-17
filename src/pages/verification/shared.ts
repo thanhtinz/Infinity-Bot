@@ -62,6 +62,22 @@ export interface VerificationConfig {
   tilt_effect: boolean;
   bio_description: string;
   socials: Record<string, string>;
+  // Protection
+  block_mobile: boolean;
+  block_scammers: boolean;
+  deny_alt_role: boolean;
+  auto_ban_alts: boolean;
+  no_save_ip: boolean;
+  // OAuth Permissions
+  guild_join_enabled: boolean;
+  force_all_permissions: boolean;
+  // Notifications
+  notify_success_role_id: string;
+  notify_blocked_role_id: string;
+  // Gateway
+  gateway_guild_id: string;
+  // Passwords
+  verify_passwords: { password: string; label: string }[];
 }
 
 export interface VerificationStats {

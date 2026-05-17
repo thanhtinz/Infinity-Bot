@@ -69,6 +69,22 @@ def get_config(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_
         "tilt_effect": getattr(cfg, "tilt_effect", False),
         "bio_description": getattr(cfg, "bio_description", "") or "",
         "socials": getattr(cfg, "socials", {}) or {},
+        # Protection
+        "block_mobile": getattr(cfg, "block_mobile", False),
+        "block_scammers": getattr(cfg, "block_scammers", False),
+        "deny_alt_role": getattr(cfg, "deny_alt_role", False),
+        "auto_ban_alts": getattr(cfg, "auto_ban_alts", False),
+        "no_save_ip": getattr(cfg, "no_save_ip", False),
+        # OAuth Permissions
+        "guild_join_enabled": getattr(cfg, "guild_join_enabled", True),
+        "force_all_permissions": getattr(cfg, "force_all_permissions", False),
+        # Notifications
+        "notify_success_role_id": getattr(cfg, "notify_success_role_id", "") or "",
+        "notify_blocked_role_id": getattr(cfg, "notify_blocked_role_id", "") or "",
+        # Gateway
+        "gateway_guild_id": getattr(cfg, "gateway_guild_id", "") or "",
+        # Passwords
+        "verify_passwords": getattr(cfg, "verify_passwords", []) or [],
     }
 
 
@@ -87,6 +103,10 @@ def update_config(body: dict, guild_id: str = Depends(get_guild_id), db: Session
         "card_border_color", "card_bg_color",
         "typewriter_effect", "glow_effect", "tilt_effect",
         "bio_description", "socials",
+        "block_mobile", "block_scammers", "deny_alt_role", "auto_ban_alts", "no_save_ip",
+        "guild_join_enabled", "force_all_permissions",
+        "notify_success_role_id", "notify_blocked_role_id",
+        "gateway_guild_id", "verify_passwords",
     ]
     for field in allowed:
         if field in body:

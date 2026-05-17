@@ -1075,6 +1075,22 @@ class VerificationConfig(Base):
     bio_description = Column(Text, nullable=True)
     # Socials (JSON: {"twitter": "url", "github": "url", ...})
     socials = Column(JSON, default=dict)
+    # ── Protection ──
+    block_mobile = Column(Boolean, default=False)         # block wireless/mobile networks
+    block_scammers = Column(Boolean, default=False)       # block known scammer accounts
+    deny_alt_role = Column(Boolean, default=False)        # don't give verified role to alts
+    auto_ban_alts = Column(Boolean, default=False)        # automatically ban alt accounts
+    no_save_ip = Column(Boolean, default=False)           # don't store IP addresses
+    # ── OAuth Permissions ──
+    guild_join_enabled = Column(Boolean, default=True)    # "Join servers for you" OAuth scope
+    force_all_permissions = Column(Boolean, default=False) # force members to accept all perms
+    # ── Notifications ──
+    notify_success_role_id = Column(String, nullable=True)  # role pinged on successful verify
+    notify_blocked_role_id = Column(String, nullable=True)  # role pinged on blocked events
+    # ── Gateway ──
+    gateway_guild_id = Column(String, nullable=True)       # add to extra server on verify
+    # ── Passwords (JSON list of {password, label})
+    verify_passwords = Column(JSON, default=list)
 
 
 class StaffPermission(Base):
