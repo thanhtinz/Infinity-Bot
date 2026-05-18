@@ -38,13 +38,13 @@ import {
   RefreshCw, Play, Square, Eye, Info, RotateCcw,
   Users,
 } from "lucide-react";
-import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
+import { PremiumGate } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { apiFetch } from "@/hooks/useApi";
 import {
   fetchMembers, fetchStats, blacklistMember, deleteMember,
   deleteUnauthorized, transferMembers, formatDate, riskBadge,
-  startPull, stopPull, fetchPullStatus, fetchPullHistory, fetchSourceGuilds,
+  startPull, stopPull, fetchPullStatus, fetchSourceGuilds,
 } from "./shared";
 import type { VerifiedMember } from "./shared";
 

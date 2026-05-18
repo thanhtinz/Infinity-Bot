@@ -244,7 +244,6 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
   const btnColor = c.btn_color || "#5865F2";
   const cardBg = c.card_bg_color || "#1a1d2e";
   const cardBorder = c.card_border_color || "#2a2d3e";
-  const cardOpacity = (c.card_opacity ?? 95) / 100;
   const contentOpacity = (c.content_opacity ?? 100) / 100;
 
   return (

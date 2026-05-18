@@ -337,7 +337,6 @@ export function VerifyPage() {
   const btnBorder = config?.btn_border_color || btnColor;
   const cardBg = config?.card_bg_color || "#1a1d2e";
   const cardBorder = config?.card_border_color || "#1a1d2e";
-  const cardOpacity = ((config?.card_opacity ?? 95) / 100);
   const contentOpacity = ((config?.content_opacity ?? 100) / 100);
   const fontFamily = config?.font_family || "Inter";
   const bgImage = config?.page_background_url;
