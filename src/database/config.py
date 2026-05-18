@@ -220,6 +220,21 @@ async def init_db():
         if "emoji" not in pr:
             all_stmts.append("ALTER TABLE products ADD COLUMN emoji VARCHAR")
 
+        # orders
+        ord_ = cols("orders")
+        for col, stmt in {
+            "currency": "ALTER TABLE orders ADD COLUMN currency VARCHAR DEFAULT 'VND'",
+            "payment_method": "ALTER TABLE orders ADD COLUMN payment_method VARCHAR",
+            "payment_id": "ALTER TABLE orders ADD COLUMN payment_id VARCHAR",
+        }.items():
+            if col not in ord_:
+                all_stmts.append(stmt)
+
+        # verification_configs
+        vc = cols("verification_configs")
+        if "verify_slug" not in vc:
+            all_stmts.append("ALTER TABLE verification_configs ADD COLUMN verify_slug VARCHAR UNIQUE")
+
         # ── Thực thi tất cả ALTER trong 1 transaction ──
         if all_stmts:
             with engine.begin() as connection:
