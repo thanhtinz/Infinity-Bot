@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, Home, BarChart, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, UserCog, Lock } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, Home, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, UserCog, Lock } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
@@ -42,6 +42,7 @@ const SecurityConfig = lazy(() => import("./pages/SecurityConfig").then(m => ({ 
 const FirewallLogs = lazy(() => import("./pages/firewall/FirewallLogs").then(m => ({ default: m.FirewallLogs })));
 const AlertsConfig = lazy(() => import("./pages/AlertsConfig").then(m => ({ default: m.AlertsConfig })));
 const VerificationPage = lazy(() => import("./pages/verification/VerificationPage"));
+const VerifyStatsPage = lazy(() => import("./pages/verification/VerifyStatsPage"));
 const ModerationPage = lazy(() => import("./pages/moderation/ModerationPage"));
 const LoggingPage = lazy(() => import("./pages/LoggingPage"));
 const InvitesPage = lazy(() => import("./pages/invites/InvitesPage"));
@@ -140,6 +141,7 @@ const navGroups: NavGroup[] = [
     label: "nav_security",
     items: [
       { to: "/verification", icon: CheckCircle, label: "Verification" },
+      { to: "/verification/stats", icon: BarChart3, label: "Verify Stats" },
       { to: "/firewall/logs", icon: ShieldAlert, label: "Firewall Logs" },
       { to: "/alerts", icon: Bell, label: "Server Alerts" },
     ],
@@ -666,6 +668,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/logging" element={<LoggingPage />} />
         {/* Security */}
         <Route path="/verification" element={<VerificationPage />} />
+        <Route path="/verification/stats" element={<VerifyStatsPage />} />
         <Route path="/backup" element={<BackupPage />} />
         <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
         <Route path="/firewall/logs" element={<FirewallLogs />} />
