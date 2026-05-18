@@ -243,6 +243,13 @@ async def init_db():
         if "verify_slug" not in vc:
             all_stmts.append("ALTER TABLE verification_configs ADD COLUMN verify_slug VARCHAR UNIQUE")
 
+        # member_pulls
+        mp = cols("member_pulls")
+        if "target_guild_id" not in mp:
+            all_stmts.append("ALTER TABLE member_pulls ADD COLUMN target_guild_id VARCHAR")
+        if "role_ids" not in mp:
+            all_stmts.append("ALTER TABLE member_pulls ADD COLUMN role_ids JSON DEFAULT '[]'")
+
         # ── Thực thi tất cả ALTER trong 1 transaction ──
         if all_stmts:
             logger.info(f"[init_db] Running {len(all_stmts)} migration(s): {all_stmts}")

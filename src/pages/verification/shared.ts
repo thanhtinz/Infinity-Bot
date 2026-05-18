@@ -262,7 +262,12 @@ export async function deleteGuildBot(): Promise<{ ok: boolean }> {
   return res.json();
 }
 
-export async function startPull(data: { restore_roles: boolean; join_delay_seconds: number }): Promise<void> {
+export async function startPull(data: {
+  restore_roles: boolean;
+  join_delay_seconds: number;
+  target_guild_id?: string;
+  role_ids?: string[];
+}): Promise<void> {
   const res = await apiFetch("/api/member-pull/start", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

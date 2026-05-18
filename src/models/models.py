@@ -668,6 +668,8 @@ class MemberPull(Base):
     failed_members = Column(Integer, default=0)
     restore_roles = Column(Boolean, default=True)
     join_delay_seconds = Column(Integer, default=1)
+    target_guild_id = Column(String, nullable=True)   # source server to pull from
+    role_ids = Column(JSON, default=list)              # roles to assign after pull
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
     error = Column(Text, nullable=True)

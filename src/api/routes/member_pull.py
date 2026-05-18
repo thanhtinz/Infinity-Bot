@@ -53,7 +53,9 @@ def start_pull(
         guild_id=guild_id,
         status="pending",
         restore_roles=opts.get("restore_roles", True),
-        join_delay_seconds=max(1, opts.get("join_delay_seconds", 1)),
+        join_delay_seconds=max(0, opts.get("join_delay_seconds", 0)),
+        target_guild_id=opts.get("target_guild_id") or None,
+        role_ids=opts.get("role_ids") or [],
     )
     db.add(pull)
     db.commit()

@@ -18,6 +18,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
@@ -37,6 +40,7 @@ import {
 } from "lucide-react";
 import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
+import { apiFetch } from "@/hooks/useApi";
 import {
   fetchMembers, fetchStats, blacklistMember, deleteMember,
   deleteUnauthorized, transferMembers, formatDate, riskBadge,
@@ -63,6 +67,9 @@ export function VerifyMembersPage() {
   // ── Pull form state ──
   const [pullDelay, setPullDelay] = useState(0);
   const [preventDuplicates, setPreventDuplicates] = useState(true);
+  const [selectedGuildId, setSelectedGuildId] = useState("");
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
+  const [memberCount, setMemberCount] = useState("");
   const logEndRef = useRef<HTMLDivElement>(null);
 
   // ── Members table state ──
@@ -78,6 +85,20 @@ export function VerifyMembersPage() {
 
   // ── Queries ──
   const statsQuery = useQuery({ queryKey: ["verification-stats"], queryFn: fetchStats });
+
+  const guildsQuery = useQuery<{ id: string; name: string }[]>({
+    queryKey: ["discord_guilds_pull"],
+    queryFn: () => apiFetch("/api/discord/guilds").then((r) => r.ok ? r.json() : []),
+    enabled: pullDialogOpen,
+    staleTime: 60_000,
+  });
+
+  const rolesQuery = useQuery<{ id: string; name: string; color: number }[]>({
+    queryKey: ["discord_roles_pull", selectedGuildId],
+    queryFn: () => apiFetch(`/api/discord/roles${selectedGuildId ? `?guild_id=${selectedGuildId}` : ""}`).then((r) => r.ok ? r.json() : []),
+    enabled: pullDialogOpen,
+    staleTime: 60_000,
+  });
 
   const membersQuery = useQuery({
     queryKey: ["verification-members", page, PER_PAGE, debouncedSearch, showBlacklisted],
@@ -371,24 +392,89 @@ export function VerifyMembersPage() {
 
           <div className="space-y-4">
             {/* Select a server */}
-            <div className="border border-blue-500 rounded-lg px-4 py-3 flex items-center justify-between bg-transparent cursor-pointer hover:bg-muted/30 transition-colors">
-              <span className="text-sm text-muted-foreground">Select a server</span>
-              <ChevronLeft className="h-4 w-4 text-muted-foreground rotate-[-90deg]" />
-            </div>
+            <Select value={selectedGuildId} onValueChange={setSelectedGuildId}>
+              <SelectTrigger className="border-blue-500 focus:ring-blue-500">
+                <SelectValue placeholder="Select a server" />
+              </SelectTrigger>
+              <SelectContent>
+                {guildsQuery.isLoading ? (
+                  <SelectItem value="__loading" disabled>Loading...</SelectItem>
+                ) : !guildsQuery.data?.length ? (
+                  <SelectItem value="__empty" disabled>No servers found</SelectItem>
+                ) : guildsQuery.data.map((g) => (
+                  <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {/* Select roles */}
-            <div className="border border-border rounded-lg px-4 py-3 flex items-center justify-between bg-transparent cursor-pointer hover:bg-muted/30 transition-colors">
-              <span className="text-sm text-muted-foreground">Select role(s) to give</span>
-              <div className="flex gap-0.5">
-                <ChevronLeft className="h-3 w-3 text-muted-foreground rotate-90" />
-                <ChevronLeft className="h-3 w-3 text-muted-foreground -rotate-90" />
-              </div>
+            <div className="space-y-1.5">
+              <Select
+                onValueChange={(roleId) => {
+                  setSelectedRoleIds((prev) =>
+                    prev.includes(roleId) ? prev.filter((r) => r !== roleId) : [...prev, roleId]
+                  );
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      selectedRoleIds.length
+                        ? `${selectedRoleIds.length} role(s) selected`
+                        : "Select role(s) to give"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {rolesQuery.isLoading ? (
+                    <SelectItem value="__loading" disabled>Loading...</SelectItem>
+                  ) : !rolesQuery.data?.length ? (
+                    <SelectItem value="__empty" disabled>No roles found</SelectItem>
+                  ) : rolesQuery.data.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      <div className="flex items-center gap-2">
+                        {selectedRoleIds.includes(r.id) && (
+                          <span className="text-blue-500 text-xs">✓</span>
+                        )}
+                        {r.color ? (
+                          <span
+                            className="w-2.5 h-2.5 rounded-full inline-block"
+                            style={{ backgroundColor: `#${r.color.toString(16).padStart(6, "0")}` }}
+                          />
+                        ) : null}
+                        {r.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedRoleIds.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {selectedRoleIds.map((id) => {
+                    const r = rolesQuery.data?.find((x) => x.id === id);
+                    return (
+                      <Badge
+                        key={id}
+                        variant="outline"
+                        className="text-xs cursor-pointer hover:bg-destructive/20"
+                        onClick={() => setSelectedRoleIds((prev) => prev.filter((x) => x !== id))}
+                      >
+                        {r?.name ?? id} ✕
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Number of members */}
             <Input
               placeholder="Number of members (Leave blank = all)"
               className="bg-transparent"
+              value={memberCount}
+              onChange={(e) => setMemberCount(e.target.value)}
+              type="number"
+              min={1}
             />
 
             {/* Join Delay */}
@@ -460,11 +546,17 @@ export function VerifyMembersPage() {
 
             {/* Refresh buttons */}
             <div className="grid grid-cols-2 gap-2">
-              <button className="flex items-center justify-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-lg h-9 text-sm font-medium transition-colors">
+              <button
+                className="flex items-center justify-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-lg h-9 text-sm font-medium transition-colors"
+                onClick={() => qc.invalidateQueries({ queryKey: ["discord_guilds_pull"] })}
+              >
                 <RotateCcw className="h-3.5 w-3.5" />
                 Refresh servers
               </button>
-              <button className="flex items-center justify-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-lg h-9 text-sm font-medium transition-colors">
+              <button
+                className="flex items-center justify-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-lg h-9 text-sm font-medium transition-colors"
+                onClick={() => qc.invalidateQueries({ queryKey: ["discord_roles_pull"] })}
+              >
                 <RotateCcw className="h-3.5 w-3.5" />
                 Refresh roles
               </button>
@@ -504,7 +596,12 @@ export function VerifyMembersPage() {
                   <Button
                     className="bg-blue-600 hover:bg-blue-700 gap-2"
                     onClick={() =>
-                      startPullMutation.mutate({ restore_roles: preventDuplicates, join_delay_seconds: pullDelay })
+                      startPullMutation.mutate({
+                        restore_roles: preventDuplicates,
+                        join_delay_seconds: pullDelay,
+                        target_guild_id: selectedGuildId || undefined,
+                        role_ids: selectedRoleIds,
+                      })
                     }
                     disabled={startPullMutation.isPending}
                   >
