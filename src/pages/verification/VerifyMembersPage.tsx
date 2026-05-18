@@ -364,7 +364,7 @@ export function VerifyMembersPage() {
 
       {/* ── Pull Members Dialog ── */}
       <Dialog open={pullDialogOpen} onOpenChange={setPullDialogOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-lg w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-center text-lg">Pull Members</DialogTitle>
           </DialogHeader>
