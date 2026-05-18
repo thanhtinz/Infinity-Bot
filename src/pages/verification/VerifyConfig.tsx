@@ -323,6 +323,9 @@ export function VerifyConfig() {
   const { hasFeature, isLoading: entLoading } = useEntitlements();
 
   const configQuery = useQuery({ queryKey: ["verification-config", selectedGuildId], queryFn: fetchConfig, enabled: !!selectedGuildId });
+
+  // Reset configForm when guild changes so stale data isn't shown
+  const prevGuildRef = useRef<string | null>(null);
   const domainStatusQuery = useQuery({
     queryKey: ["verification-domain-status", selectedGuildId],
     queryFn: async () => {
@@ -339,7 +342,19 @@ export function VerifyConfig() {
     enabled: !!selectedGuildId,
   });
 
-  useEffect(() => { if (configQuery.data && !configForm) setConfigForm(configQuery.data); }, [configQuery.data]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (configQuery.data) {
+      const guildChanged = prevGuildRef.current !== selectedGuildId;
+      if (!configForm || guildChanged) {
+        setConfigForm(configQuery.data);
+        prevGuildRef.current = selectedGuildId;
+      }
+    } else if (selectedGuildId !== prevGuildRef.current) {
+      // Guild changed, clear stale form while new data loads
+      setConfigForm(null);
+      prevGuildRef.current = selectedGuildId;
+    }
+  }, [configQuery.data, selectedGuildId]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (configQuery.data?.verify_slug && !slugInput) setSlugInput(configQuery.data.verify_slug); }, [configQuery.data?.verify_slug]);
 
   const configMutation = useMutation({

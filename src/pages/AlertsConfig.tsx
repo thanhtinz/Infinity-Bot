@@ -13,6 +13,8 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { PremiumGate } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
+import { useGuild } from "@/contexts/GuildContext";
+import { apiFetch } from "@/hooks/useApi";
 
 /* ── Types ──────────────────────────────────────────── */
 interface AlertConfig {
@@ -61,15 +63,16 @@ export function AlertsConfig() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const { hasFeature, isLoading: entLoading } = useEntitlements();
+  const { selectedGuildId } = useGuild();
   const [webhookUrl, setWebhookUrl] = useState("");
   const [alerts, setAlerts] = useState<AlertConfig[]>([]);
   const [dirty, setDirty] = useState(false);
 
   /* Fetch config */
   const { isLoading } = useQuery({
-    queryKey: ["alerts-config"],
+    queryKey: ["alerts-config", selectedGuildId],
     queryFn: async () => {
-      const res = await fetch("/api/alerts/config", { credentials: "include" });
+      const res = await apiFetch("/api/alerts/config");
       if (!res.ok) throw new Error("Failed to load");
       const data: AlertConfig[] = await res.json();
       setAlerts(data);
@@ -77,25 +80,26 @@ export function AlertsConfig() {
       setWebhookUrl(wh);
       return data;
     },
+    enabled: !!selectedGuildId,
   });
 
   /* Fetch history */
   const { data: history = [] } = useQuery({
-    queryKey: ["alerts-history"],
+    queryKey: ["alerts-history", selectedGuildId],
     queryFn: async () => {
-      const res = await fetch("/api/alerts/history?limit=20", { credentials: "include" });
+      const res = await apiFetch("/api/alerts/history?limit=20");
       if (!res.ok) return [];
       return res.json() as Promise<AlertHistoryEntry[]>;
     },
+    enabled: !!selectedGuildId,
   });
 
   /* Save */
   const saveMut = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/alerts/config", {
+      const res = await apiFetch("/api/alerts/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ alerts, webhook_url: webhookUrl }),
       });
       if (!res.ok) throw new Error("Save failed");
@@ -103,7 +107,7 @@ export function AlertsConfig() {
     onSuccess: () => {
       toast({ title: "Saved", description: "Alert configuration updated." });
       setDirty(false);
-      qc.invalidateQueries({ queryKey: ["alerts-config"] });
+      qc.invalidateQueries({ queryKey: ["alerts-config", selectedGuildId] });
     },
     onError: () => toast({ title: "Error", description: "Failed to save.", variant: "destructive" }),
   });
@@ -111,12 +115,12 @@ export function AlertsConfig() {
   /* Test alert */
   const testMut = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/alerts/test", { method: "POST", credentials: "include" });
+      const res = await apiFetch("/api/alerts/test", { method: "POST" });
       if (!res.ok) throw new Error("Test failed");
     },
     onSuccess: () => {
       toast({ title: "Test Alert Sent", description: "Check your alert history." });
-      qc.invalidateQueries({ queryKey: ["alerts-history"] });
+      qc.invalidateQueries({ queryKey: ["alerts-history", selectedGuildId] });
     },
   });
 
@@ -137,17 +141,17 @@ export function AlertsConfig() {
     <PremiumGate feature="alerts" featureLabel="Server Alerts" hasAccess={hasFeature("alerts")} isLoading={entLoading}>
     <div className="space-y-6 p-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
             <Bell className="w-5 h-5 text-orange-500" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Server Alerts</h1>
+            <h1 className="text-xl font-bold sm:text-2xl">Server Alerts</h1>
             <p className="text-sm text-muted-foreground">Detect nuke attempts, mass bans, and suspicious activity</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <Button variant="outline" size="sm" onClick={() => testMut.mutate()} disabled={testMut.isPending}>
             <FlaskConical className="w-4 h-4 mr-1.5" />
             Test Alert
