@@ -69,7 +69,9 @@ const SOCIAL_ICONS: Record<string, { icon: LucideIcon; color: string }> = {
 };
 
 async function fetchVerifyConfig(guildId: string): Promise<VerifyConfig> {
-  const res = await apiFetch(`/api/verify/${guildId}/config`);
+  const res = await apiFetch(`/api/verify/${guildId}/config`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load verification config");
   return res.json();
 }

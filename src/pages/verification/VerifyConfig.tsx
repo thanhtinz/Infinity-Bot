@@ -787,7 +787,13 @@ export function VerifyConfig() {
 
             {/* Right: Live Preview */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground"><Eye className="h-4 w-4" /><span className="font-medium">Live Preview</span></div>
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <div className="flex items-center gap-2"><Eye className="h-4 w-4" /><span className="font-medium">Live Preview</span></div>
+                <a href={verifyUrl} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-xs text-primary hover:underline">
+                  <ExternalLink className="h-3 w-3" />Open live page
+                </a>
+              </div>
               <div className="sticky top-4"><VerifyPreview config={configForm} /></div>
             </div>
           </div>
