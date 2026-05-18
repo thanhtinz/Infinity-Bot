@@ -16,7 +16,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
-from src.models.models import SystemConfig, VerificationConfig, VerifiedMember, FirewallRule, FirewallLog, GuildBot
+from src.models.models import SystemConfig, VerificationConfig, VerifiedMember, FirewallRule, FirewallLog, GuildBot, GuildSubscription
 from src.api.auth import get_public_base_url, get_discord_oauth_config
 
 logger = logging.getLogger(__name__)
@@ -147,6 +147,20 @@ def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):
     guild_name = sys_cfg.guild_name if sys_cfg else None
     guild_icon = sys_cfg.guild_icon if sys_cfg else None
 
+    # Check premium feature: background_music
+    has_music = False
+    sub = db.execute(
+        select(GuildSubscription)
+        .where(
+            GuildSubscription.guild_id == guild_id,
+            GuildSubscription.status.in_(["active", "trial"]),
+        )
+        .order_by(GuildSubscription.current_period_end.desc())
+        .limit(1)
+    ).scalars().first()
+    if sub and sub.plan and sub.plan.features:
+        has_music = bool(sub.plan.features.get("background_music"))
+
     return {
         "guild_id": guild_id,
         "guild_name": guild_name,
@@ -183,7 +197,7 @@ def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):
         "tilt_effect": getattr(cfg, "tilt_effect", False),
         "bio_description": getattr(cfg, "bio_description", "") or "",
         "socials": getattr(cfg, "socials", {}) or {},
-        "music_url": getattr(cfg, "music_url", "") or "",
+        "music_url": (getattr(cfg, "music_url", "") or "") if has_music else "",
         "terms_url": getattr(cfg, "terms_url", "") or "",
         "custom_css": getattr(cfg, "custom_css", "") or "",
     }
