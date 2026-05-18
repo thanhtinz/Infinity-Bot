@@ -417,7 +417,7 @@ export function VerifyPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      className="h-screen w-screen flex items-center justify-center p-4 relative overflow-hidden"
       style={{
         backgroundColor: bgColor,
         fontFamily,
@@ -678,10 +678,12 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
     dragging.current = true;
     didDrag.current  = false;
     dragOffset.current = { dx: clientX - pos.x, dy: clientY - pos.y };
+    document.body.style.overflow = "hidden"; // prevent page scroll during drag
   }
   useEffect(() => {
     function onMove(e: MouseEvent | TouchEvent) {
       if (!dragging.current) return;
+      e.preventDefault(); // prevent page scroll while dragging
       const { clientX, clientY } = "touches" in e ? e.touches[0] : e;
       didDrag.current = true;
       setPos({
@@ -689,10 +691,13 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
         y: Math.max(0, Math.min(window.innerHeight - 56, clientY - dragOffset.current.dy)),
       });
     }
-    function onUp() { dragging.current = false; }
+    function onUp() {
+      dragging.current = false;
+      document.body.style.overflow = "";
+    }
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup",   onUp);
-    window.addEventListener("touchmove", onMove, { passive: true });
+    window.addEventListener("touchmove", onMove, { passive: false });
     window.addEventListener("touchend",  onUp);
     return () => {
       window.removeEventListener("mousemove", onMove);
