@@ -294,9 +294,10 @@ def start_verification(guild_id: str, request: Request, fp: str = "", captcha_to
     client_id, client_secret, _, public_app_url = _get_oauth_config(db, guild_id)
     if not client_id or not client_secret:
         raise HTTPException(500, "Discord OAuth not configured")
+    if not public_app_url:
+        raise HTTPException(500, "Public app URL not configured — set it in Bot Settings")
 
-    base_url = public_app_url or get_public_base_url(request)
-    redirect_uri = f"{base_url.rstrip('/')}/api/verify/callback"  # fixed — no guild_id in path
+    redirect_uri = f"{public_app_url.rstrip('/')}/api/verify/callback"
 
     # Encode guild_id + fingerprint in state: "guild_id:fp"
     state = f"{guild_id}:{fp}"  # always include guild_id so callback can recover it
@@ -338,10 +339,11 @@ async def verify_callback(
     client_id, client_secret, bot_token, public_app_url = _get_oauth_config(db, guild_id)
     if not client_id or not client_secret:
         raise HTTPException(500, "Discord OAuth not configured")
+    if not public_app_url:
+        raise HTTPException(500, "Public app URL not configured")
 
-    base_url = public_app_url or get_public_base_url(request)
-    redirect_uri = f"{base_url.rstrip('/')}/api/verify/callback"  # must match start_verification
-    verify_page = f"{base_url.rstrip('/')}/verify/{guild_id}"
+    redirect_uri = f"{public_app_url.rstrip('/')}/api/verify/callback"
+    verify_page = f"{public_app_url.rstrip('/')}/verify/{guild_id}"
 
     async with httpx.AsyncClient() as client:
         # 1. Exchange code for tokens
