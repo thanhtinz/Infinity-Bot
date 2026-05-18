@@ -418,6 +418,7 @@ export function VerifyPage() {
   }
 
   return (
+    <>
     <div
       className="flex items-center justify-center p-4 relative overflow-hidden"
       style={{
@@ -651,43 +652,58 @@ export function VerifyPage() {
         }
       `}</style>
 
-      {config?.music_url && <MusicPlayer url={config.music_url} color={btnColor} />}
     </div>
+    {config?.music_url && <MusicPlayer url={config.music_url} color={btnColor} />}
+    </>
   );
 }
 
 function MusicPlayer({ url, color }: { url: string; color: string }) {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying]   = useState(false);
-  const [hovered, setHovered]   = useState(false);
-  const [pos, setPos]           = useState({ x: 16, y: window.innerHeight / 2 - 28 });
-  const dragging                = useRef(false);
-  const dragOffset              = useRef({ dx: 0, dy: 0 });
-  const didDrag                 = useRef(false);
+  const audioRef  = useRef<HTMLAudioElement>(null);
+  const [audioState, setAudioState] = useState<"idle" | "loading" | "playing" | "error">("idle");
+  const [hovered, setHovered]       = useState(false);
+  const [pos, setPos]               = useState({ x: 16, y: window.innerHeight / 2 - 28 });
+  const posRef    = useRef(pos);
+  posRef.current  = pos;
+  const dragging  = useRef(false);
+  const dragOffset = useRef({ dx: 0, dy: 0 });
+  const didDrag   = useRef(false);
 
   /* ── Audio event sync ── */
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
     a.volume = 0.3;
-    const onPlay  = () => setPlaying(true);
-    const onPause = () => setPlaying(false);
-    a.addEventListener("play",  onPlay);
-    a.addEventListener("pause", onPause);
-    return () => { a.removeEventListener("play", onPlay); a.removeEventListener("pause", onPause); };
+    const onPlay    = () => setAudioState("playing");
+    const onPause   = () => setAudioState("idle");
+    const onWaiting = () => setAudioState("loading");
+    const onPlaying = () => setAudioState("playing");
+    const onError   = () => { console.error("[MusicPlayer] audio error", a.error); setAudioState("error"); };
+    a.addEventListener("play",    onPlay);
+    a.addEventListener("pause",   onPause);
+    a.addEventListener("waiting", onWaiting);
+    a.addEventListener("playing", onPlaying);
+    a.addEventListener("error",   onError);
+    return () => {
+      a.removeEventListener("play",    onPlay);
+      a.removeEventListener("pause",   onPause);
+      a.removeEventListener("waiting", onWaiting);
+      a.removeEventListener("playing", onPlaying);
+      a.removeEventListener("error",   onError);
+    };
   }, [url]);
 
-  /* ── Drag handlers (mouse + touch) ── */
+  /* ── Drag handlers — empty deps, read pos via ref ── */
   function startDrag(clientX: number, clientY: number) {
-    dragging.current = true;
-    didDrag.current  = false;
-    dragOffset.current = { dx: clientX - pos.x, dy: clientY - pos.y };
-    document.body.style.overflow = "hidden"; // prevent page scroll during drag
+    dragging.current  = true;
+    didDrag.current   = false;
+    dragOffset.current = { dx: clientX - posRef.current.x, dy: clientY - posRef.current.y };
+    document.body.style.overflow = "hidden";
   }
   useEffect(() => {
     function onMove(e: MouseEvent | TouchEvent) {
       if (!dragging.current) return;
-      e.preventDefault(); // prevent page scroll while dragging
+      e.preventDefault();
       const { clientX, clientY } = "touches" in e ? e.touches[0] : e;
       didDrag.current = true;
       setPos({
@@ -709,27 +725,37 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
       window.removeEventListener("touchmove", onMove);
       window.removeEventListener("touchend",  onUp);
     };
-  }, [pos.x, pos.y]);
+  }, []); // ← mount/unmount only; pos read via posRef
 
   /* ── Toggle play / pause ── */
   function handleClick() {
-    if (didDrag.current) return; // ignore click after drag
+    if (didDrag.current) return;
     const a = audioRef.current;
     if (!a) return;
     if (!a.paused) {
       a.pause();
     } else {
-      a.play().catch(() => {});
+      setAudioState("loading");
+      a.play().catch((err) => {
+        console.error("[MusicPlayer] play() rejected:", err);
+        setAudioState("error");
+      });
     }
   }
+
+  const playing = audioState === "playing";
+  const loading = audioState === "loading";
+  const hasError = audioState === "error";
 
   return (
     <>
       <audio ref={audioRef} src={url} loop preload="auto" />
       <style>{`
         @keyframes vSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes vPulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
         .v-spin  { animation: vSpin 3s linear infinite; }
         .v-pause { animation: vSpin 3s linear infinite; animation-play-state:paused; }
+        .v-load  { animation: vSpin 1s linear infinite; }
       `}</style>
 
       <div
@@ -739,8 +765,8 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          position: "fixed", left: pos.x, top: pos.y, zIndex: 50,
-          cursor: dragging.current ? "grabbing" : "grab",
+          position: "fixed", left: pos.x, top: pos.y, zIndex: 9999,
+          cursor: "grab",
           userSelect: "none", WebkitUserSelect: "none",
         }}
       >
@@ -749,68 +775,82 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
           width: 56, height: 56, borderRadius: "50%",
           transition: "box-shadow .3s, transform .2s",
           transform: hovered ? "scale(1.12)" : "scale(1)",
-          boxShadow: playing
-            ? `0 0 22px ${color}80, 0 0 8px ${color}50, 0 4px 14px rgba(0,0,0,0.6)`
-            : "0 4px 14px rgba(0,0,0,0.55)",
+          boxShadow: hasError
+            ? "0 0 16px rgba(239,68,68,0.7), 0 4px 14px rgba(0,0,0,0.6)"
+            : playing
+              ? `0 0 22px ${color}80, 0 0 8px ${color}50, 0 4px 14px rgba(0,0,0,0.6)`
+              : "0 4px 14px rgba(0,0,0,0.55)",
           position: "relative",
         }}>
           {/* Vinyl disc */}
-          <div className={playing ? "v-spin" : "v-pause"} style={{
-            width: 56, height: 56, borderRadius: "50%", position: "absolute",
-            background: `conic-gradient(
-              #111 0deg,#1d1d1d 20deg,#111 40deg,#1a1a1a 60deg,
-              #111 80deg,#1d1d1d 100deg,#111 120deg,#1a1a1a 140deg,
-              #111 160deg,#1d1d1d 180deg,#111 200deg,#1a1a1a 220deg,
-              #111 240deg,#1d1d1d 260deg,#111 280deg,#1a1a1a 300deg,
-              #111 320deg,#1d1d1d 340deg,#111 360deg
-            )`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
+          <div
+            className={loading ? "v-load" : playing ? "v-spin" : "v-pause"}
+            style={{
+              width: 56, height: 56, borderRadius: "50%", position: "absolute",
+              background: hasError
+                ? "conic-gradient(#3f0000 0deg,#5c0a0a 30deg,#3f0000 60deg,#4a0808 90deg,#3f0000 120deg,#5c0a0a 150deg,#3f0000 180deg,#4a0808 210deg,#3f0000 240deg,#5c0a0a 270deg,#3f0000 300deg,#4a0808 330deg,#3f0000 360deg)"
+                : `conic-gradient(#111 0deg,#1d1d1d 20deg,#111 40deg,#1a1a1a 60deg,#111 80deg,#1d1d1d 100deg,#111 120deg,#1a1a1a 140deg,#111 160deg,#1d1d1d 180deg,#111 200deg,#1a1a1a 220deg,#111 240deg,#1d1d1d 260deg,#111 280deg,#1a1a1a 300deg,#111 320deg,#1d1d1d 340deg,#111 360deg)`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
             {/* Groove rings */}
-            {[46,36,26].map(s => (
-              <div key={s} style={{ position:"absolute", width:s, height:s, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.07)" }} />
+            {[46, 36, 26].map(s => (
+              <div key={s} style={{ position: "absolute", width: s, height: s, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.07)" }} />
             ))}
             {/* Center label */}
             <div style={{
-              width:18, height:18, borderRadius:"50%", backgroundColor:color,
-              boxShadow:`0 0 8px ${color}70`, zIndex:2, position:"relative",
-              display:"flex", alignItems:"center", justifyContent:"center",
+              width: 18, height: 18, borderRadius: "50%",
+              backgroundColor: hasError ? "#ef4444" : color,
+              boxShadow: `0 0 8px ${hasError ? "#ef444470" : color + "70"}`,
+              zIndex: 2, position: "relative",
+              display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <div style={{ width:5, height:5, borderRadius:"50%", background:"rgba(0,0,0,0.75)" }} />
+              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(0,0,0,0.75)" }} />
             </div>
           </div>
 
-          {/* Hover icon overlay */}
+          {/* Hover overlay — play/pause icon */}
           <div style={{
-            position:"absolute", inset:0, borderRadius:"50%",
-            display:"flex", alignItems:"center", justifyContent:"center",
-            background: hovered ? "rgba(0,0,0,0.38)" : "transparent",
-            transition:"background .2s",
+            position: "absolute", inset: 0, borderRadius: "50%",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: hovered ? "rgba(0,0,0,0.42)" : "transparent",
+            transition: "background .2s",
           }}>
-            {hovered && (playing ? (
-              <div style={{ display:"flex", gap:4 }}>
-                <div style={{ width:4, height:14, borderRadius:2, background:"rgba(255,255,255,0.92)" }} />
-                <div style={{ width:4, height:14, borderRadius:2, background:"rgba(255,255,255,0.92)" }} />
+            {hovered && !loading && (playing ? (
+              <div style={{ display: "flex", gap: 4 }}>
+                <div style={{ width: 4, height: 14, borderRadius: 2, background: "rgba(255,255,255,0.92)" }} />
+                <div style={{ width: 4, height: 14, borderRadius: 2, background: "rgba(255,255,255,0.92)" }} />
               </div>
             ) : (
-              <svg width="13" height="15" viewBox="0 0 13 15" fill="rgba(255,255,255,0.92)" style={{marginLeft:2}}>
+              <svg width="13" height="15" viewBox="0 0 13 15" fill="rgba(255,255,255,0.92)" style={{ marginLeft: 2 }}>
                 <path d="M0 0 L13 7.5 L0 15 Z" />
               </svg>
             ))}
+            {/* Loading spinner overlay */}
+            {loading && (
+              <svg width="20" height="20" viewBox="0 0 20 20" style={{ animation: "vSpin 0.8s linear infinite" }}>
+                <circle cx="10" cy="10" r="8" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeDasharray="25 15" />
+              </svg>
+            )}
           </div>
         </div>
 
-        {/* Hint tooltip — only when stopped & not hovered */}
-        {!playing && !hovered && (
+        {/* Tooltip */}
+        {!hovered && (
           <div style={{
-            position:"absolute", top:"50%", left:"calc(100% + 8px)",
-            transform:"translateY(-50%)", whiteSpace:"nowrap",
-            fontSize:10, color:"rgba(255,255,255,0.45)",
-            background:"rgba(0,0,0,0.48)", borderRadius:4, padding:"2px 7px",
-            pointerEvents:"none",
-          }}>🎵 click to play</div>
+            position: "absolute", top: "50%", left: "calc(100% + 8px)",
+            transform: "translateY(-50%)", whiteSpace: "nowrap",
+            fontSize: 10, borderRadius: 4, padding: "2px 7px",
+            pointerEvents: "none",
+            color: hasError ? "rgba(252,165,165,0.9)" : "rgba(255,255,255,0.45)",
+            background: hasError ? "rgba(80,0,0,0.6)" : "rgba(0,0,0,0.48)",
+          }}>
+            {hasError ? "⚠ audio error" : playing ? "🎵 playing" : "🎵 click to play"}
+          </div>
         )}
       </div>
     </>
   );
 }
+
+
