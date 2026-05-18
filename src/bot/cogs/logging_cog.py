@@ -107,14 +107,14 @@ class LoggingCog(discord.Cog):
         if self._is_ignored(cfg, str(message.channel.id)):
             return
 
-        content = (message.content or "*(trống)*")[:1024]
+        content = (message.content or "*(empty)*")[:1024]
         db = SessionLocal()
         try:
             _save_log(db, str(message.guild.id), "log_message_delete",
                        actor=message.author,
                        target_id=str(message.channel.id),
                        target_name=f"#{message.channel.name}",
-                       description=f"Xóa tin nhắn trong #{message.channel.name}",
+                       description=f"Delete messages in #{message.channel.name}",
                        details={"content": content})
 
             if cfg.message_log_channel_id:
@@ -143,15 +143,15 @@ class LoggingCog(discord.Cog):
         if self._is_ignored(cfg, str(before.channel.id)):
             return
 
-        before_content = (before.content or "*(trống)*")[:1024]
-        after_content = (after.content or "*(trống)*")[:1024]
+        before_content = (before.content or "*(empty)*")[:1024]
+        after_content = (after.content or "*(empty)*")[:1024]
         db = SessionLocal()
         try:
             _save_log(db, str(before.guild.id), "log_message_edit",
                        actor=before.author,
                        target_id=str(before.channel.id),
                        target_name=f"#{before.channel.name}",
-                       description=f"Sửa tin nhắn trong #{before.channel.name}",
+                       description=f"Edit messages in #{before.channel.name}",
                        details={"before": before_content, "after": after_content, "url": after.jump_url})
 
             if cfg.message_log_channel_id:
@@ -180,7 +180,7 @@ class LoggingCog(discord.Cog):
             _save_log(db, str(messages[0].guild.id), "log_message_bulk_delete",
                        target_id=str(messages[0].channel.id),
                        target_name=f"#{messages[0].channel.name}",
-                       description=f"Xóa hàng loạt {len(messages)} tin nhắn trong #{messages[0].channel.name}",
+                       description=f"Bulk deleted {len(messages)} messages in #{messages[0].channel.name}",
                        details={"count": len(messages)})
 
             if cfg.message_log_channel_id:
@@ -220,17 +220,17 @@ class LoggingCog(discord.Cog):
 
             if before.channel is None and after.channel is not None:
                 event_type = "log_voice_join"
-                desc = f"Vào voice {after.channel.name}"
+                desc = f"Join voice {after.channel.name}"
                 details = {"channel": after.channel.name}
                 embed = build_embed("log_voice_join", db, vars={**vars_base, "channel": after.channel.mention})
             elif before.channel is not None and after.channel is None:
                 event_type = "log_voice_leave"
-                desc = f"Rời voice {before.channel.name}"
+                desc = f"Leave voice {before.channel.name}"
                 details = {"channel": before.channel.name}
                 embed = build_embed("log_voice_leave", db, vars={**vars_base, "channel": before.channel.mention})
             elif before.channel != after.channel:
                 event_type = "log_voice_move"
-                desc = f"Chuyển voice {before.channel.name} → {after.channel.name}"
+                desc = f"Moved voice {before.channel.name} → {after.channel.name}"
                 details = {"from": before.channel.name, "to": after.channel.name}
                 embed = build_embed("log_voice_move", db, vars={
                     **vars_base, "from": before.channel.mention, "to": after.channel.mention,
@@ -258,7 +258,7 @@ class LoggingCog(discord.Cog):
         try:
             _save_log(db, str(member.guild.id), "log_member_join",
                        actor=member,
-                       description=f"{member} đã tham gia server",
+                       description=f"{member} joined the server",
                        details={"member_count": member.guild.member_count})
 
             if cfg.member_log_channel_id:
@@ -280,14 +280,14 @@ class LoggingCog(discord.Cog):
             return
         db = SessionLocal()
         try:
-            roles = ", ".join(r.name for r in member.roles[1:]) or "Không có"
+            roles = ", ".join(r.name for r in member.roles[1:]) or "None"
             _save_log(db, str(member.guild.id), "log_member_leave",
                        actor=member,
-                       description=f"{member} đã rời server",
+                       description=f"{member} left the server",
                        details={"roles": roles, "member_count": member.guild.member_count})
 
             if cfg.member_log_channel_id:
-                roles_mention = ", ".join(r.mention for r in member.roles[1:]) or "Không có"
+                roles_mention = ", ".join(r.mention for r in member.roles[1:]) or "None"
                 embed = build_embed("log_member_leave", db, vars={
                     "user": str(member), "user.mention": member.mention,
                     "user.id": str(member.id),
@@ -317,7 +317,7 @@ class LoggingCog(discord.Cog):
                 new_nick = after.nick or after.name
                 _save_log(db, str(before.guild.id), "log_nickname_change",
                            actor=after,
-                           description=f"Đổi nick: {old_nick} → {new_nick}",
+                           description=f"Change nick: {old_nick} → {new_nick}",
                            details={"before": old_nick, "after": new_nick})
 
                 if cfg.member_log_channel_id:
@@ -339,7 +339,7 @@ class LoggingCog(discord.Cog):
                         parts.append(f"➖ {', '.join(r.name for r in removed)}")
                     _save_log(db, str(before.guild.id), "log_role_update",
                                actor=after,
-                               description=f"Thay đổi role: {'; '.join(parts)}",
+                               description=f"Role changes: {'; '.join(parts)}",
                                details={"added": [r.name for r in added], "removed": [r.name for r in removed]})
 
                     if cfg.member_log_channel_id:
@@ -369,7 +369,7 @@ class LoggingCog(discord.Cog):
             _save_log(db, str(channel.guild.id), "log_channel_create",
                        target_id=str(channel.id),
                        target_name=f"#{channel.name}",
-                       description=f"Tạo kênh #{channel.name} ({channel.type})",
+                       description=f"Channel created #{channel.name} ({channel.type})",
                        details={"type": str(channel.type)})
 
             if cfg.server_log_channel_id:
@@ -391,7 +391,7 @@ class LoggingCog(discord.Cog):
         try:
             _save_log(db, str(channel.guild.id), "log_channel_delete",
                        target_name=f"#{channel.name}",
-                       description=f"Xóa kênh #{channel.name} ({channel.type})",
+                       description=f"Channel deleted #{channel.name} ({channel.type})",
                        details={"type": str(channel.type)})
 
             if cfg.server_log_channel_id:
@@ -410,9 +410,9 @@ class LoggingCog(discord.Cog):
         data = self.snipe_cache.get(ctx.channel.id, {})
         msg = data.get("deleted")
         if not msg:
-            return await ctx.respond("❌ Không có tin nhắn nào bị xóa gần đây.", ephemeral=True)
+            return await ctx.respond("❌ No recently deleted messages.", ephemeral=True)
         embed = discord.Embed(
-            description=msg.content[:2048] if msg.content else "*(trống)*",
+            description=msg.content[:2048] if msg.content else "*(empty)*",
             color=0xED4245,
             timestamp=msg.created_at,
         )
@@ -426,11 +426,11 @@ class LoggingCog(discord.Cog):
         data = self.snipe_cache.get(ctx.channel.id, {})
         edited = data.get("edited")
         if not edited:
-            return await ctx.respond("❌ Không có tin nhắn nào bị sửa gần đây.", ephemeral=True)
+            return await ctx.respond("❌ No recently edited messages.", ephemeral=True)
         before, after = edited
         embed = discord.Embed(color=0xFEE75C, timestamp=after.created_at)
         embed.set_author(name=str(before.author), icon_url=before.author.display_avatar.url)
-        embed.add_field(name="Trước", value=(before.content or "*(trống)*")[:1024], inline=False)
-        embed.add_field(name="Sau", value=(after.content or "*(trống)*")[:1024], inline=False)
+        embed.add_field(name="Before", value=(before.content or "*(empty)*")[:1024], inline=False)
+        embed.add_field(name="After", value=(after.content or "*(empty)*")[:1024], inline=False)
         embed.set_footer(text=f"#{before.channel.name}")
         await ctx.respond(embed=embed)

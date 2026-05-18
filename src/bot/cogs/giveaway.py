@@ -49,7 +49,7 @@ async def end_giveaway(bot: discord.Bot, giveaway_id: int, reroll: bool = False)
 
         entries = giveaway.entries
         if not entries:
-            winners_text = "Không có người tham gia 😢"
+            winners_text = "No participants 😢"
             winner_mentions = ""
         else:
             count = min(giveaway.winners_count, len(entries))
@@ -88,7 +88,7 @@ async def end_giveaway(bot: discord.Bot, giveaway_id: int, reroll: bool = False)
                 await msg.edit(embed=result_embed)
                 if winner_mentions:
                     await channel.send(
-                        f"🎊 Chúc mừng {winner_mentions}! Bạn đã thắng **{giveaway.prize}**!"
+                        f"🎊 Congratulations {winner_mentions}! You won **{giveaway.prize}**!"
                     )
             except Exception as e:
                 logger.error(f"end_giveaway edit error: {e}")
@@ -165,13 +165,13 @@ class GiveawayCog(discord.Cog):
                 return
 
             # Check already entered
-            existing = session.execute(
+            exismessagesg = session.execute(
                 select(GiveawayEntry).where(
                     GiveawayEntry.giveaway_id == giveaway.id,
                     GiveawayEntry.discord_id == str(payload.user_id),
                 )
             ).scalars().first()
-            if not existing:
+            if not exismessagesg:
                 session.add(GiveawayEntry(
                     giveaway_id=giveaway.id,
                     discord_id=str(payload.user_id),
@@ -271,7 +271,7 @@ class GiveawayCog(discord.Cog):
         id: discord.Option(int, "Giveaway ID"),
     ):
         await end_giveaway(self.bot, id, reroll=True)
-        await ctx.respond(f"✅ Đã reroll giveaway #{id}.", ephemeral=True)
+        await ctx.respond(f"✅ Rerolled giveaway #{id}.", ephemeral=True)
 
     @discord.slash_command(name="giveaway_list", description="View active giveaways")
     async def list_cmd(self, ctx: discord.ApplicationContext):
@@ -284,17 +284,17 @@ class GiveawayCog(discord.Cog):
                 )
             ).scalars().all()
             if not actives:
-                await ctx.respond("Không có giveaway nào đang chạy.", ephemeral=True)
+                await ctx.respond("No active giveaways.", ephemeral=True)
                 return
 
-            embed = discord.Embed(title="🎉 Giveaway đang chạy", color=0xF0B232)
+            embed = discord.Embed(title="🎉 Active Giveaways", color=0xF0B232)
             for g in actives[:10]:
                 entry_count = len(session.execute(
                     select(GiveawayEntry).where(GiveawayEntry.giveaway_id == g.id)
                 ).scalars().all())
                 embed.add_field(
                     name=f"#{g.id} — {g.title or g.prize}",
-                    value=f"🎁 {g.prize}\n👥 {entry_count} người tham gia\n⏰ Kết thúc <t:{int(g.ends_at.timestamp())}:R>",
+                    value=f"🎁 {g.prize}\n👥 {entry_count} participants\n⏰ End <t:{int(g.ends_at.timestamp())}:R>",
                     inline=False,
                 )
             await ctx.respond(embed=embed, ephemeral=True)
@@ -307,7 +307,7 @@ class GiveawayCog(discord.Cog):
         if id in self._tasks:
             self._tasks[id].cancel()
         await end_giveaway(self.bot, id)
-        await ctx.respond(f"✅ Đã kết thúc giveaway #{id}.", ephemeral=True)
+        await ctx.respond(f"✅ Ended giveaway #{id}.", ephemeral=True)
 
     @discord.slash_command(name="giveaway_ban", description="[Admin] Ban user from giveaway")
     @discord.default_permissions(administrator=True)
@@ -319,16 +319,16 @@ class GiveawayCog(discord.Cog):
     ):
         session = get_session()
         try:
-            existing = session.execute(
+            exismessagesg = session.execute(
                 select(GiveawayBanned).where(
                     GiveawayBanned.giveaway_id == id,
                     GiveawayBanned.discord_id == str(user.id),
                 )
             ).scalars().first()
-            if not existing:
+            if not exismessagesg:
                 session.add(GiveawayBanned(giveaway_id=id, discord_id=str(user.id)))
                 session.commit()
-            await ctx.respond(f"✅ Đã ban {user.mention} khỏi giveaway #{id}.", ephemeral=True)
+            await ctx.respond(f"✅ Banned {user.mention} from giveaway #{id}.", ephemeral=True)
         finally:
             session.close()
 
@@ -351,6 +351,6 @@ class GiveawayCog(discord.Cog):
             if rec:
                 session.delete(rec)
                 session.commit()
-            await ctx.respond(f"✅ Đã unban {user.mention} khỏi giveaway #{id}.", ephemeral=True)
+            await ctx.respond(f"✅ Unbanned {user.mention} from giveaway #{id}.", ephemeral=True)
         finally:
             session.close()

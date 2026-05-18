@@ -38,7 +38,7 @@ def update_bot_status(status: str):
 
 
 async def _check_expired_orders(bot_client: discord.Bot):
-    """Background task: mỗi 2 phút check đơn PENDING > 15 phút, mark EXPIRED và DM user."""
+    """Background task: every 2 minutes check PENDING orders > 15 min, mark EXPIRED and DM user."""
     import datetime as _dt
     from src.bot.embed_utils import build_embed
     await asyncio.sleep(60)  # delay 60s sau khi bot ready
@@ -60,7 +60,7 @@ async def _check_expired_orders(bot_client: discord.Bot):
                         user_obj = session.execute(
                             select(User).where(User.id == order.user_id)
                         ).scalars().first()
-                        product_name = "Sản phẩm"
+                        product_name = "Product"
                         if order.product_id:
                             prod = session.execute(
                                 select(Product).where(Product.id == order.product_id)
@@ -88,11 +88,11 @@ async def _check_expired_orders(bot_client: discord.Bot):
                 session.close()
         except Exception as e:
             logger.error(f"_check_expired_orders error: {e}")
-        await asyncio.sleep(120)  # check mỗi 2 phút
+        await asyncio.sleep(120)  # check every 2 minutes
 
 
 def get_bot_client():
-    """Trả về bot instance hiện tại (hoặc None nếu chưa chạy)."""
+    """Return current bot instance (or None if not running)."""
     return bot
 
 
@@ -101,7 +101,7 @@ def create_bot():
     intents.message_content = True
     intents.members = True
 
-    # Đọc shard_count từ DB (None = auto)
+    # Read shard_count from DB (None = auto)
     _shard_count = None
     _debug_guilds = []
     try:
@@ -123,10 +123,10 @@ def create_bot():
     except Exception:
         pass
 
-    # Multi-guild: dùng AutoShardedBot để hỗ trợ nhiều shard tự động
+    # Multi-guild: use AutoShardedBot for automatic multi-shard support
     bot_client = discord.AutoShardedBot(
         intents=intents,
-        shard_count=_shard_count,  # None = Discord tự quyết
+        shard_count=_shard_count,  # None = Discord auto-decides
         debug_guilds=_debug_guilds or None,  # instant sync for known guilds
         auto_sync_commands=False,  # We sync manually in on_ready with error handling
     )
@@ -236,7 +236,7 @@ def create_bot():
         cog = ctx.command.cog
         if cog and getattr(cog, "feature_key", None):
             if not feature_enabled(cog.feature_key):
-                await ctx.respond("❌ Tính năng này đã bị tắt.", ephemeral=True)
+                await ctx.respond("❌ This feature has been disabled.", ephemeral=True)
                 raise Exception("Feature disabled")
 
     # ── Legacy commands (status, san_pham, account) ──────────
@@ -245,13 +245,13 @@ def create_bot():
         session = get_session()
         try:
             config = session.execute(select(SystemConfig).limit(1)).scalars().first()
-            embed = discord.Embed(title="🤖 Trạng thái Bot", color=discord.Color.green())
-            embed.add_field(name="Trạng thái", value="🟢 Đang hoạt động", inline=True)
+            embed = discord.Embed(title="🤖 Status Bot", color=discord.Color.green())
+            embed.add_field(name="Status", value="🟢 Active", inline=True)
             if config and config.guild_id:
                 guild = bot_client.get_guild(int(config.guild_id))
                 if guild:
                     embed.add_field(name="Server", value=guild.name, inline=True)
-                    embed.add_field(name="Thành viên", value=str(guild.member_count), inline=True)
+                    embed.add_field(name="Member", value=str(guild.member_count), inline=True)
             await ctx.respond(embed=embed)
         finally:
             session.close()
@@ -268,12 +268,12 @@ def create_bot():
 
             if not user_record:
                 await ctx.respond(
-                    "Bạn chưa có tài khoản trong hệ thống. Hãy đặt hàng lần đầu để tạo tài khoản!",
+                    "You don't have an account yet. Place your first order to create one!",
                     ephemeral=True,
                 )
                 return
 
-            # Lấy 5 đơn gần nhất
+            # Get 5 most recent orders
             recent_orders = session.execute(
                 select(Order)
                 .where(Order.user_id == user_record.id)
@@ -286,12 +286,12 @@ def create_bot():
             ).scalar() or 0
 
             embed = discord.Embed(
-                title=f"👤 Tài khoản — {ctx.author.display_name}",
+                title=f"👤 Account — {ctx.author.display_name}",
                 color=discord.Color.blurple(),
             )
             embed.set_thumbnail(url=ctx.author.display_avatar.url)
-            embed.add_field(name="💰 Tổng chi tiêu", value=f"{user_record.total_spent or 0:,.0f}đ", inline=True)
-            embed.add_field(name="📦 Tổng đơn", value=str(total_orders), inline=True)
+            embed.add_field(name="💰 Total spent", value=f"{user_record.total_spent or 0:,.0f} VND", inline=True)
+            embed.add_field(name="📦 Total orders", value=str(total_orders), inline=True)
             embed.add_field(name="🆔 Discord ID", value=f"`{ctx.author.id}`", inline=True)
 
             if recent_orders:
@@ -307,14 +307,14 @@ def create_bot():
                         if prod:
                             product_name = f"{prod.name}" + (f" ({o.package_name})" if o.package_name else "")
                     icon = status_map.get(o.status, "•")
-                    lines.append(f"{icon} **#{o.id}** {product_name} — {o.total_price:,.0f}đ")
+                    lines.append(f"{icon} **#{o.id}** {product_name} — {o.total_price:,.0f} VND")
                 embed.add_field(
-                    name="📋 5 đơn gần nhất",
+                    name="📋 5 recent orders",
                     value="\n".join(lines),
                     inline=False,
                 )
 
-            embed.set_footer(text="Dùng /orders để xem chi tiết đơn hàng")
+            embed.set_footer(text="Use /orders to view order details")
             await ctx.respond(embed=embed, ephemeral=True)
         finally:
             session.close()
@@ -366,7 +366,7 @@ def create_bot():
                 _inv_session.close()
         except Exception as _inv_err:
             logger.warning(f"Failed to apply invisible status / cache guild info: {_inv_err}")
-        # Re-register persistent views (bảng giá) để hoạt động sau restart
+        # Re-register persistent views (price list) to work after restart
         try:
             from src.bot.cogs.admin_shop import BangGiaView
             bot_client.add_view(BangGiaView())
@@ -386,16 +386,16 @@ def create_bot():
 
     @bot_client.event
     async def on_guild_join(guild: discord.Guild):
-        """Khi bot join guild mới → tự tạo SystemConfig row cho guild đó."""
+        """When bot joins a new guild → auto-create SystemConfig row for that guild."""
         logger.info(f"Bot joined guild: {guild.name} ({guild.id})")
         try:
             session = get_session()
             try:
-                existing = session.execute(
+                exismessagesg = session.execute(
                     select(SystemConfig).where(SystemConfig.guild_id == str(guild.id))
                 ).scalars().first()
-                if not existing:
-                    # Lấy discord_token từ config đầu tiên (shared token)
+                if not exismessagesg:
+                    # Get discord_token from first config (shared token)
                     first_cfg = session.execute(select(SystemConfig).limit(1)).scalars().first()
                     new_cfg = SystemConfig(
                         guild_id=str(guild.id),
@@ -476,7 +476,7 @@ async def start_bot():
         current_task = bot_task  # snapshot before callback may null it
         if current_task is not None and current_task.done():
             return False
-        logger.info("Bot start still connecting; leaving task running")
+        logger.info("Bot start still connecmessagesg; leaving task running")
         return True
 
 
@@ -502,7 +502,7 @@ async def stop_bot():
                 raise
             logger.warning("Bot task ended with already-closed session during shutdown")
         except Exception as e:
-            logger.error(f"Error waiting for bot task shutdown: {e}")
+            logger.error(f"Error waimessagesg for bot task shutdown: {e}")
 
     update_bot_status("offline")
     return True

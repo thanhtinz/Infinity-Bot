@@ -6,7 +6,7 @@ Usage in cogs:
 
     # In a command:
     if not feature_enabled("shop", session, guild_id):
-        return await ctx.respond("❌ Tính năng này đã bị tắt.", ephemeral=True)
+        return await ctx.respond("❌ This feature has been disabled.", ephemeral=True)
 
     # Or as a cog_check in __init__:
     async def cog_check(self, ctx):

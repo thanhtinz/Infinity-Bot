@@ -1,7 +1,7 @@
 """
-embed_utils.py — Load embed templates từ DB và build discord.Embed với variable substitution.
+embed_utils.py — Load embed templates from DB and build discord.Embed with variable substitution.
 
-Dùng trong tất cả bot cogs:
+Used across all bot cogs:
     from src.bot.embed_utils import build_embed, DEFAULTS
 
     embed = build_embed("don_hang_moi", db_session, vars={...})
@@ -12,171 +12,171 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 
-# ── Default templates (dùng khi chưa có tùy chỉnh trong DB) ──────────────
+# ── Default templates (used when no customisation exists in DB) ──────────
 
 DEFAULTS: dict[str, dict] = {
     "don_hang_moi": {
-        "title": "🛒 Đơn hàng mới",
-        "description": "Vui lòng thanh toán để hoàn tất đơn hàng.\n⏰ Hết hạn sau **15 phút**.",
+        "title": "🛒 New Order",
+        "description": "Please pay to complete your order.\n⏰ Expires after **15 minutes**.",
         "color": "#F0B232",
-        "footer": "⏳ Đang chờ thanh toán...",
+        "footer": "⏳ Awaiting payment...",
         "fields": [
-            {"name": "🔢 ID Đơn", "value": "#{order.id}", "inline": True},
-            {"name": "👤 Khách hàng", "value": "{user.mention}", "inline": True},
-            {"name": "📦 Sản phẩm", "value": "{product.name}", "inline": False},
-            {"name": "💰 Số tiền", "value": "{order.total} VNĐ", "inline": True},
+            {"name": "🔢 Order ID", "value": "#{order.id}", "inline": True},
+            {"name": "👤 Customer", "value": "{user.mention}", "inline": True},
+            {"name": "📦 Product", "value": "{product.name}", "inline": False},
+            {"name": "💰 Amount", "value": "{order.total} VNĐ", "inline": True},
         ],
     },
     "thanh_toan": {
-        "title": "✅ Thanh toán thành công",
-        "description": "Cảm ơn {user.mention}! Đơn hàng #{order.id} đã được thanh toán.",
+        "title": "✅ Payment Successful",
+        "description": "Thank you {user.mention}! Order #{order.id} has been paid.",
         "color": "#57F287",
         "footer": "Infinity Mall",
         "fields": [
-            {"name": "📦 Sản phẩm", "value": "{product.name}", "inline": True},
-            {"name": "💰 Số tiền", "value": "{order.total} VNĐ", "inline": True},
+            {"name": "📦 Product", "value": "{product.name}", "inline": True},
+            {"name": "💰 Amount", "value": "{order.total} VNĐ", "inline": True},
         ],
     },
     "giao_hang": {
-        "title": "📦 Đơn hàng đã được giao",
-        "description": "Đơn hàng #{order.id} của bạn đã được giao thành công!",
+        "title": "📦 Order Delivered",
+        "description": "Your order #{order.id} has been delivered successfully!",
         "color": "#5865F2",
-        "footer": "Infinity Mall — Cảm ơn bạn đã mua hàng!",
+        "footer": "Infinity Mall — Thank you for your purchase!",
         "fields": [
-            {"name": "📦 Sản phẩm", "value": "{product.name}", "inline": True},
-            {"name": "📅 Ngày giao", "value": "{date}", "inline": True},
+            {"name": "📦 Product", "value": "{product.name}", "inline": True},
+            {"name": "📅 Delivery Date", "value": "{date}", "inline": True},
         ],
     },
     "feedback": {
-        "title": "⭐ Feedback mới",
-        "description": "**{user}** đã gửi đánh giá cho **{product.name}**",
+        "title": "⭐ New Feedback",
+        "description": "**{user}** left a review for **{product.name}**",
         "color": "#FEE75C",
         "footer": "Infinity Mall — Feedback system",
         "fields": [
-            {"name": "Xếp hạng", "value": "{stars}", "inline": True},
-            {"name": "Nội dung", "value": "{content}", "inline": False},
+            {"name": "Rating", "value": "{stars}", "inline": True},
+            {"name": "Content", "value": "{content}", "inline": False},
         ],
     },
     "giveaway": {
         "title": "🎉 GIVEAWAY",
-        "description": "{prize}\n\nNhấn nút bên dưới để tham gia!\n⏰ Kết thúc: {ends_at}",
+        "description": "{prize}\n\nPress the button below to enter!\n⏰ Ends: {ends_at}",
         "color": "#EB459E",
-        "footer": "Host: {host} • Số người thắng: {winners_count}",
+        "footer": "Host: {host} • Winners: {winners_count}",
         "fields": [],
     },
     "don_hang_het_han": {
-        "title": "⏰ Đơn hàng đã hết hạn",
-        "description": "Đơn hàng #{order.id} của bạn đã hết hạn do chưa thanh toán sau 15 phút.",
+        "title": "⏰ Order Expired",
+        "description": "Your order #{order.id} has expired due to non-payment after 15 minutes.",
         "color": "#ED4245",
-        "footer": "Tạo đơn mới để tiếp tục mua hàng.",
+        "footer": "Create a new order to continue shopping.",
         "fields": [
-            {"name": "📦 Sản phẩm", "value": "{product.name}", "inline": True},
+            {"name": "📦 Product", "value": "{product.name}", "inline": True},
         ],
     },
     "ghi_chu_don_hang": {
-        "title": "📝 Ghi chú đơn hàng",
-        "description": "Đơn hàng #{order.id} của {user.mention} vừa được cập nhật ghi chú.",
+        "title": "📝 Order Note",
+        "description": "Order #{order.id} by {user.mention} has been updated with a note.",
         "color": "#5865F2",
         "footer": "Infinity Mall",
         "fields": [
-            {"name": "📦 Sản phẩm", "value": "{product.name}", "inline": True},
-            {"name": "📝 Ghi chú", "value": "{note}", "inline": False},
+            {"name": "📦 Product", "value": "{product.name}", "inline": True},
+            {"name": "📝 Note", "value": "{note}", "inline": False},
         ],
     },
     "ket_qua_giveaway": {
-        "title": "🏆 Kết quả Giveaway",
-        "description": "Giveaway đã kết thúc!\nPhần thưởng: **{prize}**",
+        "title": "🏆 Giveaway Results",
+        "description": "The giveaway has ended!\nPrize: **{prize}**",
         "color": "#EB459E",
-        "footer": "Chúc mừng người chiến thắng!",
+        "footer": "Congratulations to the winner!",
         "fields": [
-            {"name": "🎉 Người thắng", "value": "{winners}", "inline": False},
+            {"name": "🎉 Winner", "value": "{winners}", "inline": False},
         ],
     },
     "canh_bao": {
-        "title": "⚠️ Cảnh báo",
-        "description": "{user.mention} đã nhận cảnh báo từ ban quản trị.",
+        "title": "⚠️ Warning",
+        "description": "{user.mention} has received a warning from the moderation team.",
         "color": "#FEE75C",
-        "footer": "Hãy tuân thủ nội quy server",
+        "footer": "Please follow the server rules",
         "fields": [
-            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
-            {"name": "🔢 Tổng cảnh báo", "value": "{warn_count}", "inline": True},
+            {"name": "📋 Reason", "value": "{reason}", "inline": False},
+            {"name": "🔢 Total Warnings", "value": "{warn_count}", "inline": True},
         ],
     },
     # ── Moderation ────────────────────────────────────────────────────────────
     "kick": {
-        "title": "👟 Đã bị kick",
-        "description": "{user.mention} đã bị kick khỏi server **{server}**.",
+        "title": "👟 Kicked",
+        "description": "{user.mention} has been kicked from **{server}**.",
         "color": "#ED4245",
-        "footer": "Hành động được thực hiện bởi ban quản trị",
+        "footer": "Action performed by the moderation team",
         "fields": [
-            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "📋 Reason", "value": "{reason}", "inline": False},
             {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
         ],
     },
     "ban": {
-        "title": "🔨 Đã bị ban",
-        "description": "{user.mention} đã bị ban vĩnh viễn khỏi server **{server}**.",
+        "title": "🔨 Banned",
+        "description": "{user.mention} has been permanently banned from **{server}**.",
         "color": "#ED4245",
-        "footer": "Kháng cáo nếu bạn cho rằng đây là nhầm lẫn",
+        "footer": "Appeal if you believe this was a mistake",
         "fields": [
-            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "📋 Reason", "value": "{reason}", "inline": False},
             {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
         ],
     },
     "timeout": {
-        "title": "⏱️ Bị timeout",
-        "description": "{user.mention} đã bị timeout trong server **{server}**.",
+        "title": "⏱️ Timed Out",
+        "description": "{user.mention} has been timed out in **{server}**.",
         "color": "#FEE75C",
-        "footer": "Hãy tuân thủ nội quy server",
+        "footer": "Please follow the server rules",
         "fields": [
-            {"name": "⏰ Thời gian", "value": "{duration}", "inline": True},
-            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "⏰ Duration", "value": "{duration}", "inline": True},
+            {"name": "📋 Reason", "value": "{reason}", "inline": False},
         ],
     },
     # ── Invite / Community ────────────────────────────────────────────────────
     "invite_join": {
-        "title": "🎉 Thành viên mới từ invite",
-        "description": "{user.mention} đã tham gia qua link của **{inviter.name}**!",
+        "title": "🎉 New Member via Invite",
+        "description": "{user.mention} joined via **{inviter.name}**'s invite link!",
         "color": "#57F287",
         "footer": "Infinity Mall — Invite Tracking",
         "fields": [
-            {"name": "🔗 Code invite", "value": "{invite.code}", "inline": True},
-            {"name": "📊 Tổng invite của {inviter.name}", "value": "{inviter.total_invites}", "inline": True},
+            {"name": "🔗 Invite Code", "value": "{invite.code}", "inline": True},
+            {"name": "📊 {inviter.name}'s Total Invites", "value": "{inviter.total_invites}", "inline": True},
         ],
     },
     # Alias for dashboard compatibility
     "invite_leaderboard": {
-        "title": "🏆 Bảng xếp hạng Invite",
-        "description": "Top thành viên có nhiều lượt invite nhất trong **{server}**.",
+        "title": "🏆 Invite Leaderboard",
+        "description": "Top members with the most invites in **{server}**.",
         "color": "#F0B232",
-        "footer": "Cập nhật: {updated_at}",
+        "footer": "Updated: {updated_at}",
         "fields": [],
     },
-    # ── BXH Chi tiêu / Đơn hàng ─────────────────────────────────────────────
+    # ── Spending / Order Leaderboard ─────────────────────────────────────────
     "bxh_chi_tieu": {
-        "title": "🏆 BXH Chi tiêu — {time_label}",
+        "title": "🏆 Spending Leaderboard — {time_label}",
         "description": "{leaderboard_lines}",
         "color": "#F0B232",
-        "footer": "Cập nhật: {updated_at}",
+        "footer": "Updated: {updated_at}",
         "fields": [],
     },
     "bxh_don_hang": {
-        "title": "🏆 BXH Đơn hàng — {time_label}",
+        "title": "🏆 Order Leaderboard — {time_label}",
         "description": "{leaderboard_lines}",
         "color": "#F0B232",
-        "footer": "Cập nhật: {updated_at}",
+        "footer": "Updated: {updated_at}",
         "fields": [],
     },
     # ── QR / Payment ──────────────────────────────────────────────────────────
     "qr_thanh_toan": {
-        "title": "💳 Thanh toán đơn hàng #{order.id}",
-        "description": "Quét mã QR bên dưới để thanh toán.\nĐơn hàng sẽ hết hạn sau **15 phút**.",
+        "title": "💳 Payment for Order #{order.id}",
+        "description": "Scan the QR code below to pay.\nOrder expires after **15 minutes**.",
         "color": "#5865F2",
-        "footer": "Quét QR bằng app ngân hàng",
+        "footer": "Scan QR with your banking app",
         "image_url": "{qr_url}",
         "fields": [
-            {"name": "💰 Số tiền", "value": "{order.total} VNĐ", "inline": True},
-            {"name": "📝 Nội dung CK", "value": "{transfer_content}", "inline": True},
+            {"name": "💰 Amount", "value": "{order.total} VNĐ", "inline": True},
+            {"name": "📝 Transfer Content", "value": "{transfer_content}", "inline": True},
         ],
     },
     # ── Per-payment embed events ──────────────────────────────────────────────
@@ -209,62 +209,62 @@ DEFAULTS: dict[str, dict] = {
     },
     # ── Order details ─────────────────────────────────────────────────────────
     "don_hang_chi_tiet": {
-        "title": "📋 Chi tiết đơn hàng #{order.id}",
-        "description": "Thông tin chi tiết đơn hàng.",
+        "title": "📋 Order Details #{order.id}",
+        "description": "Order information.",
         "color": "#5865F2",
         "fields": [
-            {"name": "👤 Khách hàng", "value": "{user.mention}", "inline": True},
-            {"name": "📊 Trạng thái", "value": "{order.status}", "inline": True},
-            {"name": "📦 Sản phẩm", "value": "{product.name}", "inline": False},
-            {"name": "💰 Số tiền", "value": "{order.total} VNĐ", "inline": True},
-            {"name": "📅 Ngày tạo", "value": "{order.created_at}", "inline": True},
+            {"name": "👤 Customer", "value": "{user.mention}", "inline": True},
+            {"name": "📊 Status", "value": "{order.status}", "inline": True},
+            {"name": "📦 Product", "value": "{product.name}", "inline": False},
+            {"name": "💰 Amount", "value": "{order.total} VNĐ", "inline": True},
+            {"name": "📅 Created", "value": "{order.created_at}", "inline": True},
         ],
     },
     # ── Product ───────────────────────────────────────────────────────────────
     # ── Coupon ────────────────────────────────────────────────────────────────
     "coupon": {
-        "title": "🏷️ Mã giảm giá",
-        "description": "Mã **{coupon.code}** đã được áp dụng!",
+        "title": "🏷️ Coupon Applied",
+        "description": "Coupon **{coupon.code}** has been applied!",
         "color": "#FEE75C",
         "fields": [
-            {"name": "💸 Giảm", "value": "{coupon.discount}", "inline": True},
-            {"name": "⏰ Hạn sử dụng", "value": "{coupon.expires_at}", "inline": True},
+            {"name": "💸 Discount", "value": "{coupon.discount}", "inline": True},
+            {"name": "⏰ Expires", "value": "{coupon.expires_at}", "inline": True},
         ],
     },
     # ── Shop ban/unban ────────────────────────────────────────────────────────
     "ban_shop": {
-        "title": "🚫 Cấm mua hàng",
-        "description": "{user.mention} đã bị cấm mua hàng.",
+        "title": "🚫 Shop Banned",
+        "description": "{user.mention} has been banned from purchasing.",
         "color": "#ED4245",
         "fields": [
-            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
-            {"name": "👮 Người thực hiện", "value": "{moderator}", "inline": True},
+            {"name": "📋 Reason", "value": "{reason}", "inline": False},
+            {"name": "👮 Action By", "value": "{moderator}", "inline": True},
         ],
     },
     "unban_shop": {
-        "title": "✅ Bỏ cấm mua hàng",
-        "description": "{user.mention} đã được bỏ cấm mua hàng.",
+        "title": "✅ Shop Unbanned",
+        "description": "{user.mention} has been unbanned from purchasing.",
         "color": "#57F287",
         "fields": [
-            {"name": "👮 Người thực hiện", "value": "{moderator}", "inline": True},
+            {"name": "👮 Action By", "value": "{moderator}", "inline": True},
         ],
     },
     # ── Giveaway banned ───────────────────────────────────────────────────────
     "giveaway_banned": {
-        "title": "⛔ Cấm tham gia Giveaway",
-        "description": "{user.mention} đã bị cấm tham gia giveaway.",
+        "title": "⛔ Giveaway Banned",
+        "description": "{user.mention} has been banned from giveaways.",
         "color": "#ED4245",
         "fields": [
-            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "📋 Reason", "value": "{reason}", "inline": False},
         ],
     },
     # ── Unban ─────────────────────────────────────────────────────────────────
     "unban": {
-        "title": "🔓 Unban thành viên",
-        "description": "{user.mention} đã được unban khỏi server **{server}**.",
+        "title": "🔓 Member Unbanned",
+        "description": "{user.mention} has been unbanned from **{server}**.",
         "color": "#57F287",
         "fields": [
-            {"name": "👮 Người thực hiện", "value": "{moderator}", "inline": True},
+            {"name": "👮 Action By", "value": "{moderator}", "inline": True},
         ],
     },
     # ── Sticky ────────────────────────────────────────────────────────────────
@@ -277,124 +277,124 @@ DEFAULTS: dict[str, dict] = {
     },
     # ── Phase 4: Logging ──────────────────────────────────────────────────────
     "log_message_delete": {
-        "title": "🗑️ Tin nhắn bị xóa",
-        "description": "Tin nhắn của {user.mention} trong {channel} đã bị xóa.",
+        "title": "🗑️ Message Deleted",
+        "description": "Message by {user.mention} in {channel} was deleted.",
         "color": "#ED4245",
         "fields": [
-            {"name": "Nội dung", "value": "{content}", "inline": False},
+            {"name": "Content", "value": "{content}", "inline": False},
         ],
     },
     "log_message_edit": {
-        "title": "✏️ Tin nhắn được sửa",
-        "description": "{user.mention} đã sửa tin nhắn trong {channel}. [Nhảy tới]({message.url})",
+        "title": "✏️ Message Edited",
+        "description": "{user.mention} edited a message in {channel}. [Jump]({message.url})",
         "color": "#FEE75C",
         "fields": [
-            {"name": "Trước", "value": "{before}", "inline": False},
-            {"name": "Sau", "value": "{after}", "inline": False},
+            {"name": "Before", "value": "{before}", "inline": False},
+            {"name": "After", "value": "{after}", "inline": False},
         ],
     },
     "log_message_bulk_delete": {
-        "title": "🗑️ Xóa hàng loạt",
-        "description": "**{count}** tin nhắn đã bị xóa trong {channel}.",
+        "title": "🗑️ Bulk Delete",
+        "description": "**{count}** messages were deleted in {channel}.",
         "color": "#ED4245",
         "fields": [],
     },
     "log_voice_join": {
-        "title": "🔊 Vào voice",
-        "description": "{user.mention} đã vào {channel}.",
+        "title": "🔊 Joined Voice",
+        "description": "{user.mention} joined {channel}.",
         "color": "#57F287",
         "fields": [],
     },
     "log_voice_leave": {
-        "title": "🔇 Rời voice",
-        "description": "{user.mention} đã rời {channel}.",
+        "title": "🔇 Left Voice",
+        "description": "{user.mention} left {channel}.",
         "color": "#ED4245",
         "fields": [],
     },
     "log_voice_move": {
-        "title": "🔀 Chuyển voice",
-        "description": "{user.mention} đã chuyển từ {from} sang {to}.",
+        "title": "🔀 Moved Voice",
+        "description": "{user.mention} moved from {from} to {to}.",
         "color": "#FEE75C",
         "fields": [],
     },
     "log_member_join": {
-        "title": "📥 Thành viên mới",
-        "description": "{user.mention} đã tham gia server.",
+        "title": "📥 Member Joined",
+        "description": "{user.mention} has joined the server.",
         "color": "#57F287",
         "fields": [
-            {"name": "Tạo tài khoản", "value": "{account_age}", "inline": True},
-            {"name": "Thành viên thứ", "value": "{member_count}", "inline": True},
+            {"name": "Account Created", "value": "{account_age}", "inline": True},
+            {"name": "Member #", "value": "{member_count}", "inline": True},
         ],
     },
     "log_member_leave": {
-        "title": "📤 Thành viên rời",
-        "description": "{user.mention} đã rời server.",
+        "title": "📤 Member Left",
+        "description": "{user.mention} has left the server.",
         "color": "#ED4245",
         "fields": [
             {"name": "Roles", "value": "{roles}", "inline": False},
-            {"name": "Còn lại", "value": "{member_count} thành viên", "inline": True},
+            {"name": "Remaining", "value": "{member_count} members", "inline": True},
         ],
     },
     "log_nickname_change": {
-        "title": "📝 Đổi nickname",
-        "description": "{user.mention} đã đổi nickname.",
+        "title": "📝 Nickname Changed",
+        "description": "{user.mention} changed their nickname.",
         "color": "#5865F2",
         "fields": [
-            {"name": "Trước", "value": "{before}", "inline": True},
-            {"name": "Sau", "value": "{after}", "inline": True},
+            {"name": "Before", "value": "{before}", "inline": True},
+            {"name": "After", "value": "{after}", "inline": True},
         ],
     },
     "log_role_update": {
-        "title": "🎭 Thay đổi role",
-        "description": "Role của {user.mention} đã được thay đổi.",
+        "title": "🎭 Role Updated",
+        "description": "Roles for {user.mention} have been updated.",
         "color": "#5865F2",
         "fields": [
-            {"name": "Thay đổi", "value": "{changes}", "inline": False},
+            {"name": "Changes", "value": "{changes}", "inline": False},
         ],
     },
     "log_channel_create": {
-        "title": "📺 Kênh mới",
-        "description": "Kênh {channel} ({type}) đã được tạo.",
+        "title": "📺 Channel Created",
+        "description": "Channel {channel} ({type}) was created.",
         "color": "#57F287",
         "fields": [],
     },
     "log_channel_delete": {
-        "title": "📺 Kênh bị xóa",
-        "description": "Kênh **{channel.name}** ({type}) đã bị xóa.",
+        "title": "📺 Channel Deleted",
+        "description": "Channel **{channel.name}** ({type}) was deleted.",
         "color": "#ED4245",
         "fields": [],
     },
 
     # ── Auto Mod ──────────────────────────────────────────────────────────
     "automod_warn": {
-        "title": "⚠️ AutoMod — Cảnh báo",
-        "description": "{user.mention} đã bị cảnh báo bởi AutoMod.\n**Lý do:** {reason}",
+        "title": "⚠️ AutoMod — Warning",
+        "description": "{user.mention} was warned by AutoMod.\n**Reason:** {reason}",
         "color": "#FEE75C",
-        "fields": [{"name": "Kênh", "value": "{channel}", "inline": True}],
+        "fields": [{"name": "Channel", "value": "{channel}", "inline": True}],
     },
     "automod_mute": {
         "title": "🔇 AutoMod — Mute",
-        "description": "{user.mention} đã bị mute bởi AutoMod.\n**Lý do:** {reason}",
+        "description": "{user.mention} was muted by AutoMod.\n**Reason:** {reason}",
         "color": "#E67E22",
-        "fields": [{"name": "Thời gian", "value": "{duration}", "inline": True}],
+        "fields": [{"name": "Duration", "value": "{duration}", "inline": True}],
     },
     "automod_kick": {
         "title": "👢 AutoMod — Kick",
-        "description": "{user.mention} đã bị kick bởi AutoMod.\n**Lý do:** {reason}",
+        "description": "{user.mention} was kicked by AutoMod.\n**Reason:** {reason}",
         "color": "#ED4245",
         "fields": [],
     },
     "automod_delete": {
-        "title": "🗑️ AutoMod — Xóa tin nhắn",
-        "description": "Tin nhắn của {user.mention} đã bị xóa bởi AutoMod.\n**Lý do:** {reason}",
+        "title": "🗑️ AutoMod — Message Deleted",
+        "description": "Message by {user.mention} was deleted by AutoMod.\n**Reason:** {reason}",
         "color": "#95A5A6",
-        "fields": [{"name": "Nội dung", "value": "{content}", "inline": False}],
+        "fields": [{"name": "Content", "value": "{content}", "inline": False}],
     },
 
     # ── Reaction Roles ────────────────────────────────────────────────────
     "reaction_role_panel": {
-        "title": "🎭 Chọn Role",
-        "description": "React emoji tương ứng để nhận role!",
+        "title": "🎭 Select Role",
+        "description": "React with the corresponding emoji to get a role!",
         "color": "#5865F2",
         "fields": [],
     },
@@ -404,108 +404,108 @@ DEFAULTS: dict[str, dict] = {
         "title": "",
         "description": "{content}",
         "color": "#F1C40F",
-        "fields": [{"name": "Nguồn", "value": "[Nhảy tới tin nhắn]({message.url})", "inline": True}],
+        "fields": [{"name": "Source", "value": "[Jump to message]({message.url})", "inline": True}],
     },
 
     # ── AFK ────────────────────────────────────────────────────────────────
     "afk_set": {
         "title": "💤 AFK",
-        "description": "{user.mention} đã đặt AFK: **{reason}**",
+        "description": "{user.mention} is now AFK: **{reason}**",
         "color": "#95A5A6",
         "fields": [],
     },
     "afk_return": {
-        "title": "👋 Đã trở lại",
-        "description": "{user.mention} đã trở lại! (AFK {duration})",
+        "title": "👋 Welcome Back",
+        "description": "{user.mention} is back! (AFK {duration})",
         "color": "#57F287",
         "fields": [],
     },
 
-    # ── Tương tác — có mục tiêu ───────────────────────────────────────────
-    "interact_airkiss":    {"title": "😘 Airkiss!", "description": "{user.mention} gửi nụ hôn gió cho {target.mention}", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
-    "interact_angrystare": {"title": "😠 Angry Stare!", "description": "{user.mention} nhìn giận dữ {target.mention}", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
-    "interact_bite":       {"title": "😬 Bite!", "description": "{user.mention} cắn {target.mention}", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
-    "interact_brofist":    {"title": "🤜 Brofist!", "description": "{user.mention} đấm tay với {target.mention}", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
-    "interact_cuddle":     {"title": "🤗 Cuddle!", "description": "{user.mention} ôm ấp {target.mention}", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
-    "interact_handhold":   {"title": "🤝 Handhold!", "description": "{user.mention} nắm tay {target.mention}", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
-    "interact_hug":        {"title": "🫂 Hug!", "description": "{user.mention} ôm {target.mention}", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
-    "interact_kiss":       {"title": "💋 Kiss!", "description": "{user.mention} hôn {target.mention}", "color": "#E91E63", "image_url": "{gif_url}", "fields": []},
-    "interact_lick":       {"title": "👅 Lick!", "description": "{user.mention} liếm {target.mention}", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
-    "interact_nom":        {"title": "😋 Nom!", "description": "{user.mention} ăn {target.mention}", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
-    "interact_nuzzle":     {"title": "🥰 Nuzzle!", "description": "{user.mention} cọ mũi với {target.mention}", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
-    "interact_pat":        {"title": "🤚 Pat!", "description": "{user.mention} xoa đầu {target.mention}", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
-    "interact_pinch":      {"title": "🤏 Pinch!", "description": "{user.mention} véo {target.mention}", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
-    "interact_poke":       {"title": "👉 Poke!", "description": "{user.mention} chọc {target.mention}", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
-    "interact_punch":      {"title": "👊 Punch!", "description": "{user.mention} đấm {target.mention}", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
-    "interact_slap":       {"title": "🫲 Slap!", "description": "{user.mention} tát {target.mention}", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
-    "interact_smack":      {"title": "💥 Smack!", "description": "{user.mention} đánh {target.mention}", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
-    "interact_tickle":     {"title": "🤭 Tickle!", "description": "{user.mention} cù {target.mention}", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
-    "interact_wave":       {"title": "👋 Wave!", "description": "{user.mention} vẫy tay với {target.mention}", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
-    "interact_wink":       {"title": "😉 Wink!", "description": "{user.mention} nháy mắt với {target.mention}", "color": "#9B59B6", "image_url": "{gif_url}", "fields": []},
-    "interact_stare":      {"title": "👀 Stare!", "description": "{user.mention} nhìn chằm chằm {target.mention}", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_peek":       {"title": "🫣 Peek!", "description": "{user.mention} nhìn trộm {target.mention}", "color": "#9B59B6", "image_url": "{gif_url}", "fields": []},
+    # ── Interactions — targeted ───────────────────────────────────────────
+    "interact_airkiss":    {"title": "😘 Airkiss!", "description": "{user.mention} sends an air kiss to {target.mention}", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
+    "interact_angrystare": {"title": "😠 Angry Stare!", "description": "{user.mention} glares angrily at {target.mention}", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
+    "interact_bite":       {"title": "😬 Bite!", "description": "{user.mention} bites {target.mention}", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
+    "interact_brofist":    {"title": "🤜 Brofist!", "description": "{user.mention} brofists {target.mention}", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
+    "interact_cuddle":     {"title": "🤗 Cuddle!", "description": "{user.mention} cuddles {target.mention}", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
+    "interact_handhold":   {"title": "🤝 Handhold!", "description": "{user.mention} holds hands with {target.mention}", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
+    "interact_hug":        {"title": "🫂 Hug!", "description": "{user.mention} hugs {target.mention}", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
+    "interact_kiss":       {"title": "💋 Kiss!", "description": "{user.mention} kisses {target.mention}", "color": "#E91E63", "image_url": "{gif_url}", "fields": []},
+    "interact_lick":       {"title": "👅 Lick!", "description": "{user.mention} licks {target.mention}", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
+    "interact_nom":        {"title": "😋 Nom!", "description": "{user.mention} noms {target.mention}", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
+    "interact_nuzzle":     {"title": "🥰 Nuzzle!", "description": "{user.mention} nuzzles {target.mention}", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
+    "interact_pat":        {"title": "🤚 Pat!", "description": "{user.mention} pats {target.mention}'s head", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
+    "interact_pinch":      {"title": "🤏 Pinch!", "description": "{user.mention} pinches {target.mention}", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
+    "interact_poke":       {"title": "👉 Poke!", "description": "{user.mention} pokes {target.mention}", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
+    "interact_punch":      {"title": "👊 Punch!", "description": "{user.mention} punches {target.mention}", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
+    "interact_slap":       {"title": "🫲 Slap!", "description": "{user.mention} slaps {target.mention}", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
+    "interact_smack":      {"title": "💥 Smack!", "description": "{user.mention} smacks {target.mention}", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
+    "interact_tickle":     {"title": "🤭 Tickle!", "description": "{user.mention} tickles {target.mention}", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
+    "interact_wave":       {"title": "👋 Wave!", "description": "{user.mention} waves at {target.mention}", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
+    "interact_wink":       {"title": "😉 Wink!", "description": "{user.mention} winks at {target.mention}", "color": "#9B59B6", "image_url": "{gif_url}", "fields": []},
+    "interact_stare":      {"title": "👀 Stare!", "description": "{user.mention} stares at {target.mention}", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_peek":       {"title": "🫣 Peek!", "description": "{user.mention} peeks at {target.mention}", "color": "#9B59B6", "image_url": "{gif_url}", "fields": []},
 
-    # ── Tương tác — tự thân / biểu cảm ────────────────────────────────────
-    "interact_bleh":       {"title": "😝 Bleh!", "description": "{user.mention} le lưỡi", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
-    "interact_blush":      {"title": "😊 Blush!", "description": "{user.mention} đỏ mặt", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
-    "interact_celebrate":  {"title": "🎉 Celebrate!", "description": "{user.mention} ăn mừng", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
-    "interact_cheers":     {"title": "🍻 Cheers!", "description": "{user.mention} nâng ly", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
-    "interact_clap":       {"title": "👏 Clap!", "description": "{user.mention} vỗ tay", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
-    "interact_confused":   {"title": "😕 Confused!", "description": "{user.mention} bối rối", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_cool":       {"title": "😎 Cool!", "description": "{user.mention} ngầu", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
-    "interact_cry":        {"title": "😢 Cry!", "description": "{user.mention} khóc", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
-    "interact_dance":      {"title": "💃 Dance!", "description": "{user.mention} nhảy", "color": "#9B59B6", "image_url": "{gif_url}", "fields": []},
-    "interact_drool":      {"title": "🤤 Drool!", "description": "{user.mention} chảy nước miếng", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
-    "interact_evillaugh":  {"title": "😈 Evil Laugh!", "description": "{user.mention} cười ác", "color": "#8E44AD", "image_url": "{gif_url}", "fields": []},
-    "interact_facepalm":   {"title": "🤦 Facepalm!", "description": "{user.mention} facepalm", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_happy":      {"title": "😄 Happy!", "description": "{user.mention} vui vẻ", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
-    "interact_headbang":   {"title": "🤘 Headbang!", "description": "{user.mention} headbang", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
-    "interact_huh":        {"title": "❓ Huh?", "description": "{user.mention} hả?", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_laugh":      {"title": "😂 Laugh!", "description": "{user.mention} cười", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
-    "interact_love":       {"title": "❤️ Love!", "description": "{user.mention} yêu", "color": "#E91E63", "image_url": "{gif_url}", "fields": []},
-    "interact_mad":        {"title": "😡 Mad!", "description": "{user.mention} giận dữ", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
-    "interact_nervous":    {"title": "😰 Nervous!", "description": "{user.mention} lo lắng", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_no":         {"title": "🙅 No!", "description": "{user.mention} lắc đầu", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
-    "interact_nosebleed":  {"title": "🫠 Nosebleed!", "description": "{user.mention} chảy máu mũi", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
+    # ── Interactions — self / expressions ──────────────────────────────────
+    "interact_bleh":       {"title": "😝 Bleh!", "description": "{user.mention} sticks their tongue out", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
+    "interact_blush":      {"title": "😊 Blush!", "description": "{user.mention} blushes", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
+    "interact_celebrate":  {"title": "🎉 Celebrate!", "description": "{user.mention} celebrates", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
+    "interact_cheers":     {"title": "🍻 Cheers!", "description": "{user.mention} raises a glass", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
+    "interact_clap":       {"title": "👏 Clap!", "description": "{user.mention} claps", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
+    "interact_confused":   {"title": "😕 Confused!", "description": "{user.mention} is confused", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_cool":       {"title": "😎 Cool!", "description": "{user.mention} looks cool", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
+    "interact_cry":        {"title": "😢 Cry!", "description": "{user.mention} cries", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
+    "interact_dance":      {"title": "💃 Dance!", "description": "{user.mention} dances", "color": "#9B59B6", "image_url": "{gif_url}", "fields": []},
+    "interact_drool":      {"title": "🤤 Drool!", "description": "{user.mention} drools", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
+    "interact_evillaugh":  {"title": "😈 Evil Laugh!", "description": "{user.mention} laughs evilly", "color": "#8E44AD", "image_url": "{gif_url}", "fields": []},
+    "interact_facepalm":   {"title": "🤦 Facepalm!", "description": "{user.mention} facepalms", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_happy":      {"title": "😄 Happy!", "description": "{user.mention} is happy", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
+    "interact_headbang":   {"title": "🤘 Headbang!", "description": "{user.mention} headbangs", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
+    "interact_huh":        {"title": "❓ Huh?", "description": "{user.mention} is confused", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_laugh":      {"title": "😂 Laugh!", "description": "{user.mention} laughs", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
+    "interact_love":       {"title": "❤️ Love!", "description": "{user.mention} is in love", "color": "#E91E63", "image_url": "{gif_url}", "fields": []},
+    "interact_mad":        {"title": "😡 Mad!", "description": "{user.mention} is angry", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
+    "interact_nervous":    {"title": "😰 Nervous!", "description": "{user.mention} is nervous", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_no":         {"title": "🙅 No!", "description": "{user.mention} shakes their head", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
+    "interact_nosebleed":  {"title": "🫠 Nosebleed!", "description": "{user.mention} gets a nosebleed", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
     "interact_nyah":       {"title": "😜 Nyah~", "description": "{user.mention} nyah~", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
-    "interact_pout":       {"title": "😤 Pout!", "description": "{user.mention} phụng phịu", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
-    "interact_roll":       {"title": "🙄 Roll!", "description": "{user.mention} lăn", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_run":        {"title": "🏃 Run!", "description": "{user.mention} chạy", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
-    "interact_sad":        {"title": "😞 Sad!", "description": "{user.mention} buồn", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
-    "interact_scared":     {"title": "😱 Scared!", "description": "{user.mention} sợ hãi", "color": "#8E44AD", "image_url": "{gif_url}", "fields": []},
-    "interact_shout":      {"title": "📢 Shout!", "description": "{user.mention} hét", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
-    "interact_shrug":      {"title": "🤷 Shrug!", "description": "{user.mention} nhún vai", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_shy":        {"title": "🙈 Shy!", "description": "{user.mention} ngại ngùng", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
-    "interact_sigh":       {"title": "😮‍💨 Sigh!", "description": "{user.mention} thở dài", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_sip":        {"title": "🍵 Sip!", "description": "{user.mention} nhâm nhi", "color": "#2ECC71", "image_url": "{gif_url}", "fields": []},
-    "interact_sleep":      {"title": "😴 Sleep!", "description": "{user.mention} ngủ", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
-    "interact_slowclap":   {"title": "👏 Slow Clap!", "description": "{user.mention} vỗ tay chậm", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_smile":      {"title": "😊 Smile!", "description": "{user.mention} cười", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
-    "interact_smug":       {"title": "😏 Smug!", "description": "{user.mention} tự mãn", "color": "#9B59B6", "image_url": "{gif_url}", "fields": []},
-    "interact_sneeze":     {"title": "🤧 Sneeze!", "description": "{user.mention} hắt xì", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_sorry":      {"title": "🙏 Sorry!", "description": "{user.mention} xin lỗi", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
-    "interact_stop":       {"title": "🛑 Stop!", "description": "{user.mention} dừng lại", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
-    "interact_surprised":  {"title": "😲 Surprised!", "description": "{user.mention} ngạc nhiên", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
-    "interact_sweat":      {"title": "😓 Sweat!", "description": "{user.mention} toát mồ hôi", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
-    "interact_thumbsup":   {"title": "👍 Thumbs Up!", "description": "{user.mention} thích", "color": "#2ECC71", "image_url": "{gif_url}", "fields": []},
-    "interact_tired":      {"title": "😩 Tired!", "description": "{user.mention} mệt", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_woah":       {"title": "😮 Woah!", "description": "{user.mention} woah", "color": "#9B59B6", "image_url": "{gif_url}", "fields": []},
-    "interact_yawn":       {"title": "🥱 Yawn!", "description": "{user.mention} ngáp", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
-    "interact_yay":        {"title": "🥳 Yay!", "description": "{user.mention} yay!", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
-    "interact_yes":        {"title": "✅ Yes!", "description": "{user.mention} gật đầu", "color": "#2ECC71", "image_url": "{gif_url}", "fields": []},
+    "interact_pout":       {"title": "😤 Pout!", "description": "{user.mention} pouts", "color": "#E67E22", "image_url": "{gif_url}", "fields": []},
+    "interact_roll":       {"title": "🙄 Roll!", "description": "{user.mention} rolls their eyes", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_run":        {"title": "🏃 Run!", "description": "{user.mention} runs", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
+    "interact_sad":        {"title": "😞 Sad!", "description": "{user.mention} is sad", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
+    "interact_scared":     {"title": "😱 Scared!", "description": "{user.mention} is scared", "color": "#8E44AD", "image_url": "{gif_url}", "fields": []},
+    "interact_shout":      {"title": "📢 Shout!", "description": "{user.mention} shouts", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
+    "interact_shrug":      {"title": "🤷 Shrug!", "description": "{user.mention} shrugs", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_shy":        {"title": "🙈 Shy!", "description": "{user.mention} is shy", "color": "#FF69B4", "image_url": "{gif_url}", "fields": []},
+    "interact_sigh":       {"title": "😮‍💨 Sigh!", "description": "{user.mention} sighs", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_sip":        {"title": "🍵 Sip!", "description": "{user.mention} takes a sip", "color": "#2ECC71", "image_url": "{gif_url}", "fields": []},
+    "interact_sleep":      {"title": "😴 Sleep!", "description": "{user.mention} falls asleep", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
+    "interact_slowclap":   {"title": "👏 Slow Clap!", "description": "{user.mention} slow claps", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_smile":      {"title": "😊 Smile!", "description": "{user.mention} smiles", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
+    "interact_smug":       {"title": "😏 Smug!", "description": "{user.mention} looks smug", "color": "#9B59B6", "image_url": "{gif_url}", "fields": []},
+    "interact_sneeze":     {"title": "🤧 Sneeze!", "description": "{user.mention} sneezes", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_sorry":      {"title": "🙏 Sorry!", "description": "{user.mention} apologizes", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
+    "interact_stop":       {"title": "🛑 Stop!", "description": "{user.mention} says stop", "color": "#E74C3C", "image_url": "{gif_url}", "fields": []},
+    "interact_surprised":  {"title": "😲 Surprised!", "description": "{user.mention} is surprised", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
+    "interact_sweat":      {"title": "😓 Sweat!", "description": "{user.mention} sweats", "color": "#3498DB", "image_url": "{gif_url}", "fields": []},
+    "interact_thumbsup":   {"title": "👍 Thumbs Up!", "description": "{user.mention} gives a thumbs up", "color": "#2ECC71", "image_url": "{gif_url}", "fields": []},
+    "interact_tired":      {"title": "😩 Tired!", "description": "{user.mention} is tired", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_woah":       {"title": "😮 Woah!", "description": "{user.mention} says woah", "color": "#9B59B6", "image_url": "{gif_url}", "fields": []},
+    "interact_yawn":       {"title": "🥱 Yawn!", "description": "{user.mention} yawns", "color": "#95A5A6", "image_url": "{gif_url}", "fields": []},
+    "interact_yay":        {"title": "🥳 Yay!", "description": "{user.mention} says yay!", "color": "#F1C40F", "image_url": "{gif_url}", "fields": []},
+    "interact_yes":        {"title": "✅ Yes!", "description": "{user.mention} nods", "color": "#2ECC71", "image_url": "{gif_url}", "fields": []},
     # ── Help ──
     "help_menu": {
-        "title": "📋 Trợ giúp — {bot_name}",
-        "description": "Xin chào {user.mention}!\nChọn **danh mục** bên dưới để xem danh sách lệnh.",
+        "title": "📋 Help — {bot_name}",
+        "description": "Hello {user.mention}!\nSelect a **category** below to see the command list.",
         "color": "#5865F2",
-        "footer": "{bot_name} • Chọn danh mục để tiếp tục",
+        "footer": "{bot_name} • Select a category to continue",
         "fields": [],
     },
     "help_category": {
         "title": "{category_emoji} {category_name}",
-        "description": "Danh sách lệnh trong **{category_name}**:\n{commands_list}",
+        "description": "Commands in **{category_name}**:\n{commands_list}",
         "color": "#5865F2",
-        "footer": "{bot_name} • Chọn lệnh để xem chi tiết",
+        "footer": "{bot_name} • Select a command for details",
         "fields": [],
     },
     "help_command": {
@@ -514,49 +514,49 @@ DEFAULTS: dict[str, dict] = {
         "color": "#57F287",
         "footer": "{bot_name}",
         "fields": [
-            {"name": "📌 Cách dùng", "value": "{command_usage}", "inline": False},
+            {"name": "📌 Usage", "value": "{command_usage}", "inline": False},
         ],
     },
     "bang_gia": {
-        "title": "🛒 Bảng Giá Sản Phẩm",
-        "description": "Chọn sản phẩm từ menu bên dưới để xem chi tiết và giá các gói.",
+        "title": "🛒 Product Price List",
+        "description": "Select a product from the menu below to view details and pricing.",
         "color": "#5865F2",
-        "footer": "Bấm vào tên sản phẩm bên dưới để xem chi tiết",
+        "footer": "Click a product name below for details",
         "fields": [],
     },
     # ── Extended Moderation ───────────────────────────────────────────────────
     "softban": {
         "title": "🔨 Softbanned",
-        "description": "{user.mention} đã bị softban khỏi server **{server}**.",
+        "description": "{user.mention} has been softbanned from **{server}**.",
         "color": "#ED4245",
-        "footer": "Softban — tin nhắn đã bị xóa",
+        "footer": "Softban — messages deleted",
         "fields": [
-            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "📋 Reason", "value": "{reason}", "inline": False},
             {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
         ],
     },
     "mute": {
-        "title": "🔇 Đã bị mute",
-        "description": "{user.mention} đã bị mute trong server **{server}**.",
+        "title": "🔇 Muted",
+        "description": "{user.mention} has been muted in **{server}**.",
         "color": "#5865F2",
-        "footer": "Hãy tuân thủ nội quy server",
+        "footer": "Please follow the server rules",
         "fields": [
-            {"name": "⏰ Thời gian", "value": "{duration}", "inline": True},
-            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "⏰ Duration", "value": "{duration}", "inline": True},
+            {"name": "📋 Reason", "value": "{reason}", "inline": False},
         ],
     },
     "deafen": {
-        "title": "🔇 Đã bị deafen",
-        "description": "{user.mention} đã bị deafen trong server **{server}**.",
+        "title": "🔇 Deafened",
+        "description": "{user.mention} has been deafened in **{server}**.",
         "color": "#9B59B6",
         "fields": [
-            {"name": "📋 Lý do", "value": "{reason}", "inline": False},
+            {"name": "📋 Reason", "value": "{reason}", "inline": False},
             {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
         ],
     },
     "rolepersist": {
         "title": "📌 Role Persist",
-        "description": "Role **{role.name}** đã được gán cố định cho {user.mention}.",
+        "description": "Role **{role.name}** has been persistently assigned to {user.mention}.",
         "color": "#5865F2",
         "fields": [
             {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
@@ -564,27 +564,27 @@ DEFAULTS: dict[str, dict] = {
     },
     "temprole": {
         "title": "⏱️ Temporary Role",
-        "description": "Role **{role.name}** đã được gán cho {user.mention} trong **{duration}**.",
+        "description": "Role **{role.name}** has been assigned to {user.mention} for **{duration}**.",
         "color": "#F0B232",
         "fields": [
             {"name": "👮 Mod", "value": "{mod.name}", "inline": True},
-            {"name": "⏰ Hết hạn", "value": "{expires_at}", "inline": True},
+            {"name": "⏰ Expires", "value": "{expires_at}", "inline": True},
         ],
     },
     "lockdown_start": {
         "title": "🔒 Lockdown",
-        "description": "Server **{server}** đã vào chế độ lockdown.",
+        "description": "**{server}** has entered lockdown mode.",
         "color": "#ED4245",
         "fields": [
-            {"name": "🔒 Kênh bị khóa", "value": "{count}", "inline": True},
+            {"name": "🔒 Channels Locked", "value": "{count}", "inline": True},
         ],
     },
     "lockdown_end": {
         "title": "🔓 Lockdown End",
-        "description": "Server **{server}** đã thoát chế độ lockdown.",
+        "description": "**{server}** has exited lockdown mode.",
         "color": "#57F287",
         "fields": [
-            {"name": "🔓 Kênh được mở", "value": "{count}", "inline": True},
+            {"name": "🔓 Channels Unlocked", "value": "{count}", "inline": True},
         ],
     },
     # ── Security & Recovery ───────────────────────────────────────────────────
@@ -609,62 +609,62 @@ DEFAULTS: dict[str, dict] = {
         "fields": [],
     },
     "verification_log": {
-        "title": "✅ Xác minh thành công",
-        "description": "{user.mention} đã xác minh thành công.",
+        "title": "✅ Verification Successful",
+        "description": "{user.mention} has been verified successfully.",
         "color": "#57F287",
         "fields": [
-            {"name": "👤 Người dùng", "value": "{user.tag}", "inline": True},
+            {"name": "👤 User", "value": "{user.tag}", "inline": True},
             {"name": "📧 Email", "value": "{email}", "inline": True},
             {"name": "🌐 IP", "value": "{ip}", "inline": True},
             {"name": "⚠️ Risk Score", "value": "{risk_score}", "inline": True},
         ],
     },
     "verification_denied": {
-        "title": "❌ Xác minh bị từ chối",
-        "description": "Một người dùng đã bị từ chối xác minh.",
+        "title": "❌ Verification Denied",
+        "description": "A user was denied verification.",
         "color": "#ED4245",
         "fields": [
-            {"name": "👤 Người dùng", "value": "{user.tag}", "inline": True},
-            {"name": "📝 Lý do", "value": "{reason}", "inline": False},
+            {"name": "👤 User", "value": "{user.tag}", "inline": True},
+            {"name": "📝 Reason", "value": "{reason}", "inline": False},
         ],
     },
     "backup_completed": {
-        "title": "✅ Sao lưu hoàn tất",
-        "description": "Server backup đã hoàn tất thành công.",
+        "title": "✅ Backup Completed",
+        "description": "Server backup completed successfully.",
         "color": "#57F287",
         "fields": [
-            {"name": "📋 Loại", "value": "{backup_type}", "inline": True},
+            {"name": "📋 Type", "value": "{backup_type}", "inline": True},
             {"name": "📁 Channels", "value": "{channel_count}", "inline": True},
             {"name": "🎭 Roles", "value": "{role_count}", "inline": True},
             {"name": "👥 Members", "value": "{member_count}", "inline": True},
         ],
     },
     "restore_started": {
-        "title": "🔄 Đang khôi phục...",
-        "description": "Đang khôi phục server từ bản sao lưu.",
+        "title": "🔄 Restoring...",
+        "description": "Restoring server from backup.",
         "color": "#FEE75C",
         "fields": [],
     },
     "restore_completed": {
-        "title": "✅ Khôi phục hoàn tất",
-        "description": "Server đã được khôi phục thành công.",
+        "title": "✅ Restore Completed",
+        "description": "Server has been restored successfully.",
         "color": "#57F287",
         "fields": [],
     },
     "member_pull_started": {
-        "title": "🔄 Đang kéo thành viên...",
-        "description": "Đang kéo **{total_members}** thành viên về server.",
+        "title": "🔄 Pulling Members...",
+        "description": "Pulling **{total_members}** members to the server.",
         "color": "#5865F2",
         "fields": [],
     },
     "member_pull_completed": {
-        "title": "✅ Kéo thành viên hoàn tất",
-        "description": "Đã kéo thành viên về server thành công.",
+        "title": "✅ Member Pull Completed",
+        "description": "Members have been pulled to the server successfully.",
         "color": "#57F287",
         "fields": [
-            {"name": "✅ Thành công", "value": "{pulled}", "inline": True},
-            {"name": "❌ Thất bại", "value": "{failed}", "inline": True},
-            {"name": "📊 Tổng", "value": "{total}", "inline": True},
+            {"name": "✅ Succeeded", "value": "{pulled}", "inline": True},
+            {"name": "❌ Failed", "value": "{failed}", "inline": True},
+            {"name": "📊 Total", "value": "{total}", "inline": True},
         ],
     },
     # ── Server Alerts ──
@@ -720,7 +720,7 @@ DEFAULTS: dict[str, dict] = {
 
 
 def _sub(text: str | None, vars: dict) -> str:
-    """Thay thế biến {key} trong chuỗi."""
+    """Replace {key} variables in a string."""
     if not text:
         return ""
     for k, v in vars.items():
@@ -729,7 +729,7 @@ def _sub(text: str | None, vars: dict) -> str:
 
 
 def _hex_to_int(hex_color: str) -> int:
-    """Chuyển #RRGGBB → int cho discord.Color."""
+    """Convert #RRGGBB to int for discord.Color."""
     try:
         return int(hex_color.lstrip("#"), 16)
     except Exception:
@@ -738,15 +738,15 @@ def _hex_to_int(hex_color: str) -> int:
 
 def resolve_image_url(image_url: str | None, db: Session) -> str | None:
     """
-    Chuyển relative path (/static/uploads/...) thành full URL dùng được trong Discord.
-    Trả về None nếu không có hoặc không hợp lệ.
+    Convert relative path (/static/uploads/...) to full URL usable in Discord.
+    Returns None if missing or invalid.
     """
     if not image_url:
         return None
     if image_url.startswith("http://") or image_url.startswith("https://"):
         return image_url
     if image_url.startswith("/"):
-        # Relative path — cần ghép với public_app_url
+        # Relative path — need to prepend public_app_url
         from src.models.models import SystemConfig
         config = db.execute(select(SystemConfig).limit(1)).scalars().first()
         base = (config.public_app_url or "").rstrip("/") if config else ""
@@ -761,8 +761,8 @@ def build_embed(
     vars: dict | None = None,
 ) -> discord.Embed:
     """
-    Load template từ DB (hoặc dùng default), apply variable substitution, trả về discord.Embed.
-    Luôn trả về Embed — nếu cần check text mode, dùng build_response() thay thế.
+    Load template from DB (or use default), apply variable substitution, return discord.Embed.
+    Always returns an Embed — if you need text mode, use build_response() instead.
     """
     result = build_response(event_type, db, vars)
     if isinstance(result, discord.Embed):
@@ -777,10 +777,10 @@ def build_response(
     vars: dict | None = None,
 ) -> discord.Embed | str:
     """
-    Load template từ DB (hoặc dùng default), apply variable substitution.
-    Trả về discord.Embed nếu response_mode == "embed", hoặc str nếu "text".
+    Load template from DB (or use default), apply variable substitution.
+    Returns discord.Embed if response_mode == "embed", or str if "text".
 
-    vars có thể chứa bất kỳ key nào. Các biến chuẩn:
+    vars can contain any key. Standard variables:
         user, user.id, user.mention, order.id, order.total,
         product.name, package, date, server, member_count,
         stars, content, prize, ends_at, host, winners_count
@@ -790,11 +790,11 @@ def build_response(
     if vars is None:
         vars = {}
 
-    # Điền giá trị mặc định cho biến hay dùng
+    # Fill default values for commonly used variables
     vars.setdefault("date", datetime.datetime.now().strftime("%d/%m/%Y %H:%M"))
     vars.setdefault("server", "Server")
 
-    # Tìm template trong DB
+    # Find template in DB
     tmpl = db.execute(
         select(EmbedTemplate).where(EmbedTemplate.event_type == event_type)
     ).scalars().first()

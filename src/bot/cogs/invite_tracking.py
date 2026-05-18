@@ -139,12 +139,12 @@ class InviteTrackingCog(commands.Cog):
         left_count = sum(1 for r in rows if r.left)
 
         embed = discord.Embed(
-            title="📨 Invite của bạn",
+            title="📨 Your Invites",
             color=0x5865F2,
         )
-        embed.add_field(name="Tổng invite", value=str(total), inline=True)
+        embed.add_field(name="Total invite", value=str(total), inline=True)
         embed.add_field(name="✅ Active", value=str(active), inline=True)
-        embed.add_field(name="❌ Đã rời", value=str(left_count), inline=True)
+        embed.add_field(name="❌ Left", value=str(left_count), inline=True)
         embed.set_footer(text=f"ID: {ctx.author.id}")
         await ctx.respond(embed=embed, ephemeral=True)
 
@@ -172,12 +172,12 @@ class InviteTrackingCog(commands.Cog):
         fake = sum(1 for r in rows if r.is_fake)
 
         embed = discord.Embed(
-            title=f"📨 Invite của {member.display_name}",
+            title=f"📨 Invites for {member.display_name}",
             color=0x5865F2,
         )
-        embed.add_field(name="Tổng", value=str(total), inline=True)
+        embed.add_field(name="Total", value=str(total), inline=True)
         embed.add_field(name="✅ Active", value=str(active), inline=True)
-        embed.add_field(name="❌ Đã rời", value=str(left), inline=True)
+        embed.add_field(name="❌ Left", value=str(left), inline=True)
         embed.add_field(name="🚫 Fake", value=str(fake), inline=True)
         embed.set_thumbnail(url=member.display_avatar.url)
         await ctx.respond(embed=embed)
@@ -203,7 +203,7 @@ class InviteTrackingCog(commands.Cog):
             db.close()
 
         if not rows:
-            await ctx.respond("Chưa có dữ liệu invite.", ephemeral=True)
+            await ctx.respond("No invite data yet.", ephemeral=True)
             return
 
         medals = ["🥇", "🥈", "🥉"]
@@ -218,7 +218,7 @@ class InviteTrackingCog(commands.Cog):
             lines.append(f"{medal} **{name}** — {row.total} invites")
 
         embed = discord.Embed(
-            title="🏆 Bảng xếp hạng Invite",
+            title="🏆 Leaderboard Invite",
             description="\n".join(lines),
             color=0xF1C40F,
         )
@@ -248,4 +248,4 @@ class InviteTrackingCog(commands.Cog):
         finally:
             db.close()
 
-        await ctx.respond(f"✅ Đã đánh dấu {count} record invite của {member.mention} là fake.", ephemeral=True)
+        await ctx.respond(f"✅ Marked {count} invite records for {member.mention} as fake.", ephemeral=True)

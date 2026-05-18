@@ -21,15 +21,15 @@ def _format_duration(seconds: float) -> str:
     if seconds < 60:
         return f"{int(seconds)} giây"
     elif seconds < 3600:
-        return f"{int(seconds // 60)} phút"
+        return f"{int(seconds // 60)} minutes"
     elif seconds < 86400:
         h = int(seconds // 3600)
         m = int((seconds % 3600) // 60)
-        return f"{h} giờ {m} phút" if m else f"{h} giờ"
+        return f"{h} hours {m} minutes" if m else f"{h} hours"
     else:
         d = int(seconds // 86400)
         h = int((seconds % 86400) // 3600)
-        return f"{d} ngày {h} giờ" if h else f"{d} ngày"
+        return f"{d} days {h} hours" if h else f"{d} days"
 
 
 class AFKCog(discord.Cog):
@@ -44,16 +44,16 @@ class AFKCog(discord.Cog):
     ):
         session = get_session()
         try:
-            existing = session.execute(
+            exismessagesg = session.execute(
                 select(AFKStatus).where(
                     AFKStatus.guild_id == str(ctx.guild.id),
                     AFKStatus.user_id == str(ctx.author.id),
                 )
             ).scalars().first()
 
-            if existing:
-                existing.reason = reason
-                existing.set_at = datetime.datetime.utcnow()
+            if exismessagesg:
+                exismessagesg.reason = reason
+                exismessagesg.set_at = datetime.datetime.utcnow()
             else:
                 session.add(AFKStatus(
                     guild_id=str(ctx.guild.id),
@@ -121,7 +121,7 @@ class AFKCog(discord.Cog):
             if message.mentions:
                 for user in message.mentions:
                     if user.bot:
-                        continue
+                        conmessagesue
                     afk = session.execute(
                         select(AFKStatus).where(
                             AFKStatus.guild_id == str(message.guild.id),
@@ -132,7 +132,7 @@ class AFKCog(discord.Cog):
                         duration_sec = (datetime.datetime.utcnow() - afk.set_at).total_seconds()
                         duration_text = _format_duration(duration_sec)
                         await message.channel.send(
-                            f"💤 **{user.display_name}** đang AFK: {afk.reason} ({duration_text})",
+                            f"💤 **{user.display_name}** is AFK: {afk.reason} ({duration_text})",
                             delete_after=10,
                         )
         finally:

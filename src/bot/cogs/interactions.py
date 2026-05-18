@@ -18,78 +18,78 @@ API_BASE = "https://api.otakugifs.xyz/gif"
 # ── Reaction metadata ─────────────────────────────────────────────────────────
 
 REACTIONS: dict[str, dict] = {
-    # ── Tương tác với người khác ──
-    "airkiss":    {"label": "gửi nụ hôn gió cho",   "emoji": "😘", "targeted": True},
-    "angrystare": {"label": "nhìn giận dữ",          "emoji": "😠", "targeted": True},
-    "bite":       {"label": "cắn",                    "emoji": "😬", "targeted": True},
-    "brofist":    {"label": "đấm tay với",            "emoji": "🤜", "targeted": True},
-    "cuddle":     {"label": "ôm ấp",                  "emoji": "🤗", "targeted": True},
-    "handhold":   {"label": "nắm tay",                "emoji": "🤝", "targeted": True},
-    "hug":        {"label": "ôm",                     "emoji": "🫂", "targeted": True},
-    "kiss":       {"label": "hôn",                    "emoji": "💋", "targeted": True},
-    "lick":       {"label": "liếm",                   "emoji": "👅", "targeted": True},
-    "nom":        {"label": "ăn",                     "emoji": "😋", "targeted": True},
-    "nuzzle":     {"label": "cọ mũi với",             "emoji": "🥰", "targeted": True},
-    "pat":        {"label": "xoa đầu",                "emoji": "🤚", "targeted": True},
-    "pinch":      {"label": "véo",                    "emoji": "🤏", "targeted": True},
-    "poke":       {"label": "chọc",                   "emoji": "👉", "targeted": True},
-    "punch":      {"label": "đấm",                    "emoji": "👊", "targeted": True},
-    "slap":       {"label": "tát",                    "emoji": "🫲", "targeted": True},
-    "smack":      {"label": "đánh",                   "emoji": "💥", "targeted": True},
-    "tickle":     {"label": "cù",                     "emoji": "🤭", "targeted": True},
-    "wave":       {"label": "vẫy tay với",            "emoji": "👋", "targeted": True},
-    "wink":       {"label": "nháy mắt với",           "emoji": "😉", "targeted": True},
-    "stare":      {"label": "nhìn chằm chằm",        "emoji": "👀", "targeted": True},
-    "peek":       {"label": "nhìn trộm",              "emoji": "🫣", "targeted": True},
+    # ── Targeted interactions ──
+    "airkiss":    {"label": "sends an air kiss to",   "emoji": "😘", "targeted": True},
+    "angrystare": {"label": "glares angrily at",       "emoji": "😠", "targeted": True},
+    "bite":       {"label": "bites",                   "emoji": "😬", "targeted": True},
+    "brofist":    {"label": "brofists",                "emoji": "🤜", "targeted": True},
+    "cuddle":     {"label": "cuddles",                 "emoji": "🤗", "targeted": True},
+    "handhold":   {"label": "holds hands with",        "emoji": "🤝", "targeted": True},
+    "hug":        {"label": "hugs",                    "emoji": "🫂", "targeted": True},
+    "kiss":       {"label": "kisses",                  "emoji": "💋", "targeted": True},
+    "lick":       {"label": "licks",                   "emoji": "👅", "targeted": True},
+    "nom":        {"label": "noms",                    "emoji": "😋", "targeted": True},
+    "nuzzle":     {"label": "nuzzles",                 "emoji": "🥰", "targeted": True},
+    "pat":        {"label": "pats",                    "emoji": "🤚", "targeted": True},
+    "pinch":      {"label": "pinches",                 "emoji": "🤏", "targeted": True},
+    "poke":       {"label": "pokes",                   "emoji": "👉", "targeted": True},
+    "punch":      {"label": "punches",                 "emoji": "👊", "targeted": True},
+    "slap":       {"label": "slaps",                   "emoji": "🫲", "targeted": True},
+    "smack":      {"label": "smacks",                  "emoji": "💥", "targeted": True},
+    "tickle":     {"label": "tickles",                 "emoji": "🤭", "targeted": True},
+    "wave":       {"label": "waves at",                "emoji": "👋", "targeted": True},
+    "wink":       {"label": "winks at",                "emoji": "😉", "targeted": True},
+    "stare":      {"label": "stares at",               "emoji": "👀", "targeted": True},
+    "peek":       {"label": "peeks at",                "emoji": "🫣", "targeted": True},
 
-    # ── Tự thân / biểu cảm ──
-    "bleh":       {"label": "le lưỡi",                "emoji": "😝", "targeted": False},
-    "blush":      {"label": "đỏ mặt",                 "emoji": "😊", "targeted": False},
-    "celebrate":  {"label": "ăn mừng",                "emoji": "🎉", "targeted": False},
-    "cheers":     {"label": "nâng ly",                "emoji": "🍻", "targeted": False},
-    "clap":       {"label": "vỗ tay",                 "emoji": "👏", "targeted": False},
-    "confused":   {"label": "bối rối",                "emoji": "😕", "targeted": False},
-    "cool":       {"label": "ngầu",                   "emoji": "😎", "targeted": False},
-    "cry":        {"label": "khóc",                   "emoji": "😢", "targeted": False},
-    "dance":      {"label": "nhảy",                   "emoji": "💃", "targeted": False},
-    "drool":      {"label": "chảy nước miếng",        "emoji": "🤤", "targeted": False},
-    "evillaugh":  {"label": "cười ác",                "emoji": "😈", "targeted": False},
-    "facepalm":   {"label": "facepalm",               "emoji": "🤦", "targeted": False},
-    "happy":      {"label": "vui vẻ",                 "emoji": "😄", "targeted": False},
-    "headbang":   {"label": "headbang",                "emoji": "🤘", "targeted": False},
-    "huh":        {"label": "hả?",                    "emoji": "❓", "targeted": False},
-    "laugh":      {"label": "cười",                   "emoji": "😂", "targeted": False},
-    "love":       {"label": "yêu",                    "emoji": "❤️", "targeted": False},
-    "mad":        {"label": "giận dữ",                "emoji": "😡", "targeted": False},
-    "nervous":    {"label": "lo lắng",                "emoji": "😰", "targeted": False},
-    "no":         {"label": "lắc đầu",                "emoji": "🙅", "targeted": False},
-    "nosebleed":  {"label": "chảy máu mũi",           "emoji": "🫠", "targeted": False},
-    "nyah":       {"label": "nyah~",                  "emoji": "😜", "targeted": False},
-    "pout":       {"label": "phụng phịu",             "emoji": "😤", "targeted": False},
-    "roll":       {"label": "lăn",                    "emoji": "🙄", "targeted": False},
-    "run":        {"label": "chạy",                   "emoji": "🏃", "targeted": False},
-    "sad":        {"label": "buồn",                   "emoji": "😞", "targeted": False},
-    "scared":     {"label": "sợ hãi",                 "emoji": "😱", "targeted": False},
-    "shout":      {"label": "hét",                    "emoji": "📢", "targeted": False},
-    "shrug":      {"label": "nhún vai",               "emoji": "🤷", "targeted": False},
-    "shy":        {"label": "ngại ngùng",             "emoji": "🙈", "targeted": False},
-    "sigh":       {"label": "thở dài",                "emoji": "😮‍💨", "targeted": False},
-    "sip":        {"label": "nhâm nhi",               "emoji": "🍵", "targeted": False},
-    "sleep":      {"label": "ngủ",                    "emoji": "😴", "targeted": False},
-    "slowclap":   {"label": "vỗ tay chậm",            "emoji": "👏", "targeted": False},
-    "smile":      {"label": "cười",                   "emoji": "😊", "targeted": False},
-    "smug":       {"label": "tự mãn",                 "emoji": "😏", "targeted": False},
-    "sneeze":     {"label": "hắt xì",                 "emoji": "🤧", "targeted": False},
-    "sorry":      {"label": "xin lỗi",                "emoji": "🙏", "targeted": False},
-    "stop":       {"label": "dừng lại",               "emoji": "🛑", "targeted": False},
-    "surprised":  {"label": "ngạc nhiên",              "emoji": "😲", "targeted": False},
-    "sweat":      {"label": "toát mồ hôi",            "emoji": "😓", "targeted": False},
-    "thumbsup":   {"label": "thích",                  "emoji": "👍", "targeted": False},
-    "tired":      {"label": "mệt",                   "emoji": "😩", "targeted": False},
-    "woah":       {"label": "woah",                   "emoji": "😮", "targeted": False},
-    "yawn":       {"label": "ngáp",                   "emoji": "🥱", "targeted": False},
-    "yay":        {"label": "yay!",                   "emoji": "🥳", "targeted": False},
-    "yes":        {"label": "gật đầu",                "emoji": "✅", "targeted": False},
+    # ── Self / expressions ──
+    "bleh":       {"label": "sticks tongue out",       "emoji": "😝", "targeted": False},
+    "blush":      {"label": "blushes",                 "emoji": "😊", "targeted": False},
+    "celebrate":  {"label": "celebrates",              "emoji": "🎉", "targeted": False},
+    "cheers":     {"label": "raises a glass",          "emoji": "🍻", "targeted": False},
+    "clap":       {"label": "claps",                   "emoji": "👏", "targeted": False},
+    "confused":   {"label": "is confused",             "emoji": "😕", "targeted": False},
+    "cool":       {"label": "looks cool",              "emoji": "😎", "targeted": False},
+    "cry":        {"label": "cries",                   "emoji": "😢", "targeted": False},
+    "dance":      {"label": "dances",                  "emoji": "💃", "targeted": False},
+    "drool":      {"label": "drools",                  "emoji": "🤤", "targeted": False},
+    "evillaugh":  {"label": "laughs evilly",           "emoji": "😈", "targeted": False},
+    "facepalm":   {"label": "facepalms",               "emoji": "🤦", "targeted": False},
+    "happy":      {"label": "is happy",                "emoji": "😄", "targeted": False},
+    "headbang":   {"label": "headbangs",               "emoji": "🤘", "targeted": False},
+    "huh":        {"label": "is confused",             "emoji": "❓", "targeted": False},
+    "laugh":      {"label": "laughs",                  "emoji": "😂", "targeted": False},
+    "love":       {"label": "is in love",              "emoji": "❤️", "targeted": False},
+    "mad":        {"label": "is angry",                "emoji": "😡", "targeted": False},
+    "nervous":    {"label": "is nervous",              "emoji": "😰", "targeted": False},
+    "no":         {"label": "shakes head",             "emoji": "🙅", "targeted": False},
+    "nosebleed":  {"label": "gets a nosebleed",        "emoji": "🫠", "targeted": False},
+    "nyah":       {"label": "nyah~",                   "emoji": "😜", "targeted": False},
+    "pout":       {"label": "pouts",                   "emoji": "😤", "targeted": False},
+    "roll":       {"label": "rolls eyes",              "emoji": "🙄", "targeted": False},
+    "run":        {"label": "runs",                    "emoji": "🏃", "targeted": False},
+    "sad":        {"label": "is sad",                  "emoji": "😞", "targeted": False},
+    "scared":     {"label": "is scared",               "emoji": "😱", "targeted": False},
+    "shout":      {"label": "shouts",                  "emoji": "📢", "targeted": False},
+    "shrug":      {"label": "shrugs",                  "emoji": "🤷", "targeted": False},
+    "shy":        {"label": "is shy",                  "emoji": "🙈", "targeted": False},
+    "sigh":       {"label": "sighs",                   "emoji": "😮‍💨", "targeted": False},
+    "sip":        {"label": "takes a sip",             "emoji": "🍵", "targeted": False},
+    "sleep":      {"label": "falls asleep",            "emoji": "😴", "targeted": False},
+    "slowclap":   {"label": "slow claps",              "emoji": "👏", "targeted": False},
+    "smile":      {"label": "smiles",                  "emoji": "😊", "targeted": False},
+    "smug":       {"label": "looks smug",              "emoji": "😏", "targeted": False},
+    "sneeze":     {"label": "sneezes",                 "emoji": "🤧", "targeted": False},
+    "sorry":      {"label": "apologizes",              "emoji": "🙏", "targeted": False},
+    "stop":       {"label": "says stop",               "emoji": "🛑", "targeted": False},
+    "surprised":  {"label": "is surprised",            "emoji": "😲", "targeted": False},
+    "sweat":      {"label": "sweats",                  "emoji": "😓", "targeted": False},
+    "thumbsup":   {"label": "gives a thumbs up",       "emoji": "👍", "targeted": False},
+    "tired":      {"label": "is tired",                "emoji": "😩", "targeted": False},
+    "woah":       {"label": "says woah",               "emoji": "😮", "targeted": False},
+    "yawn":       {"label": "yawns",                   "emoji": "🥱", "targeted": False},
+    "yay":        {"label": "says yay!",               "emoji": "🥳", "targeted": False},
+    "yes":        {"label": "nods",                    "emoji": "✅", "targeted": False},
 }
 
 
@@ -187,12 +187,12 @@ class InteractionCog(discord.Cog):
             if message.mentions:
                 target = message.mentions[0]
                 if target.id == message.author.id:
-                    await message.reply("Bạn không thể tự tương tác với chính mình! 😅", delete_after=5)
+                    await message.reply("You can't interact with yourself! 😅", delete_after=5)
                     return
             else:
                 # Targeted command without mention — show usage hint
                 await message.reply(
-                    f"Dùng: `{prefix}{cmd_name} @user`",
+                    f"Usage: `{prefix}{cmd_name} @user`",
                     delete_after=5,
                 )
                 return
@@ -209,7 +209,7 @@ class InteractionCog(discord.Cog):
     ):
         prefix = prefix.strip()
         if not prefix:
-            await ctx.respond("❌ Prefix không được để trống!", ephemeral=True)
+            await ctx.respond("❌ Prefix cannot be empty!", ephemeral=True)
             return
 
         session = get_session()
@@ -218,9 +218,9 @@ class InteractionCog(discord.Cog):
             if config:
                 config.command_prefix = prefix
                 session.commit()
-                await ctx.respond(f"✅ Prefix đã được đổi thành `{prefix}`\nVí dụ: `{prefix}hug @user`", ephemeral=True)
+                await ctx.respond(f"✅ Prefix changed to `{prefix}`\nExample: `{prefix}hug @user`", ephemeral=True)
             else:
-                await ctx.respond("❌ Chưa có cấu hình hệ thống!", ephemeral=True)
+                await ctx.respond("❌ No system configuration found!", ephemeral=True)
         finally:
             session.close()
 
@@ -228,7 +228,7 @@ class InteractionCog(discord.Cog):
 # ── Slash command factory ─────────────────────────────────────────────────────
 
 def _make_command(reaction_key: str, meta: dict):
-    """Factory: tạo slash command cho một reaction."""
+    """Factory: create a slash command for a reaction."""
 
     if meta["targeted"]:
         async def _cmd(
@@ -237,7 +237,7 @@ def _make_command(reaction_key: str, meta: dict):
             user: discord.Option(discord.Member, "User to interact with", required=True),  # type: ignore
         ):
             if user.id == ctx.author.id:
-                await ctx.respond("Bạn không thể tự tương tác với chính mình! 😅", ephemeral=True)
+                await ctx.respond("You can't interact with yourself! 😅", ephemeral=True)
                 return
             gif_url = await _fetch_gif(reaction_key)
             session = get_session()

@@ -17,18 +17,18 @@ def get_session():
 
 class FeedbackModal(discord.ui.Modal):
     def __init__(self, product: Product, user_id: int):
-        super().__init__(title=f"Đánh giá: {product.name[:40]}")
+        super().__init__(title=f"Review: {product.name[:40]}")
         self.product = product
         self.db_user_id = user_id
         self.stars_input = discord.ui.InputText(
-            label="Số sao (1-5)",
-            placeholder="Nhập số từ 1 đến 5",
+            label="Stars (1-5)",
+            placeholder="Enter a number from 1 to 5",
             max_length=1,
             style=discord.InputTextStyle.short,
         )
         self.content_input = discord.ui.InputText(
-            label="Nội dung đánh giá",
-            placeholder="Chia sẻ trải nghiệm của bạn...",
+            label="Review content",
+            placeholder="Share your experience...",
             style=discord.InputTextStyle.long,
             max_length=500,
             required=False,
@@ -42,7 +42,7 @@ class FeedbackModal(discord.ui.Modal):
             if not 1 <= stars <= 5:
                 raise ValueError
         except ValueError:
-            await interaction.response.send_message("❌ Số sao phải từ 1 đến 5.", ephemeral=True)
+            await interaction.response.send_message("❌ Stars must be between 1 and 5.", ephemeral=True)
             return
 
         session = get_session()
@@ -78,18 +78,18 @@ class FeedbackModal(discord.ui.Modal):
 
             session.commit()
             await interaction.response.send_message(
-                f"✅ Cảm ơn bạn đã đánh giá **{self.product.name}**! {star_str}",
+                f"✅ Thank you for reviewing **{self.product.name}**! {star_str}",
                 ephemeral=True,
             )
         except Exception as e:
             session.rollback()
-            await interaction.response.send_message("❌ Lỗi hệ thống.", ephemeral=True)
+            await interaction.response.send_message("❌ System error.", ephemeral=True)
         finally:
             session.close()
 
 
 class ProductSelectView(discord.ui.View):
-    """View hiển thị dropdown chọn sản phẩm để feedback."""
+    """View showing product dropdown for feedback."""
     def __init__(self, products: list, db_user_id: int):
         super().__init__(timeout=60)
         options = [
@@ -100,7 +100,7 @@ class ProductSelectView(discord.ui.View):
         self.products = {str(p.id): p for p in products}
 
         select_menu = discord.ui.Select(
-            placeholder="Chọn sản phẩm đã mua...",
+            placeholder="Select a purchased product...",
             options=options,
         )
         select_menu.callback = self.on_select
@@ -123,18 +123,18 @@ class ShopCog(discord.Cog):
         try:
             config = session.execute(select(SystemConfig).limit(1)).scalars().first()
             embed = discord.Embed(
-                title="🆘 Hỗ trợ khách hàng",
+                title="🆘 Customer Support",
                 description=(
-                    "Nếu bạn gặp vấn đề với đơn hàng, hãy liên hệ Admin qua:\n\n"
-                    "• Mở ticket trong server\n"
-                    "• DM trực tiếp cho Admin\n"
-                    "• Cung cấp **ID đơn hàng** để được hỗ trợ nhanh hơn"
+                    "If you have issues with your order, contact Admin via:\n\n"
+                    "• Open a ticket in the server\n"
+                    "• DM Admin directly\n"
+                    "• Provide your **Order ID** for faster support"
                 ),
                 color=discord.Color.green(),
             )
             embed.add_field(
-                name="📌 Lưu ý",
-                value="Vui lòng cung cấp ảnh chụp màn hình lỗi và ID đơn hàng khi liên hệ.",
+                name="📌 Note",
+                value="Please provide a screenshot of the error and your Order ID when contacting support.",
                 inline=False,
             )
             await ctx.respond(embed=embed)
@@ -154,7 +154,7 @@ class ShopCog(discord.Cog):
             ).scalars().first()
 
             if not user:
-                await ctx.respond("❌ Bạn chưa có đơn hàng nào.", ephemeral=True)
+                await ctx.respond("❌ You have no orders yet.", ephemeral=True)
                 return
 
             STATUS_ICON = {
@@ -163,7 +163,7 @@ class ShopCog(discord.Cog):
             }
 
             if id:
-                # Chi tiết 1 đơn
+                # Order detail
                 order = session.execute(
                     select(Order)
                     .options(joinedload(Order.product))
@@ -171,27 +171,27 @@ class ShopCog(discord.Cog):
                 ).unique().scalars().first()
 
                 if not order:
-                    await ctx.respond(f"❌ Không tìm thấy đơn #{id}.", ephemeral=True)
+                    await ctx.respond(f"❌ Order not found #{id}.", ephemeral=True)
                     return
 
                 icon = STATUS_ICON.get(order.status, "❓")
                 embed = discord.Embed(
-                    title=f"📦 Đơn hàng #{order.id}",
+                    title=f"📦 Order #{order.id}",
                     color=discord.Color.green() if order.status == "DELIVERED" else discord.Color.gold(),
                 )
-                embed.add_field(name="Sản phẩm", value=(order.product.name or f"#{order.product_id}") if order.product else f"#{order.product_id}", inline=True)
+                embed.add_field(name="Product", value=(order.product.name or f"#{order.product_id}") if order.product else f"#{order.product_id}", inline=True)
                 if order.package_name:
-                    embed.add_field(name="Gói", value=order.package_name, inline=True)
-                embed.add_field(name="Số tiền", value=f"{order.total_price:,.0f} VNĐ", inline=True)
-                embed.add_field(name="Trạng thái", value=f"{icon} {order.status}", inline=True)
+                    embed.add_field(name="Package", value=order.package_name, inline=True)
+                embed.add_field(name="Amount", value=f"{order.total_price:,.0f} VNĐ", inline=True)
+                embed.add_field(name="Status", value=f"{icon} {order.status}", inline=True)
                 embed.add_field(
-                    name="Ngày tạo",
+                    name="Created",
                     value=order.created_at.strftime("%d/%m/%Y %H:%M") if order.created_at else "—",
                     inline=True,
                 )
                 await ctx.respond(embed=embed, ephemeral=True)
             else:
-                # 5 đơn gần nhất
+                # 5 recent orders
                 orders = session.execute(
                     select(Order)
                     .options(joinedload(Order.product))
@@ -201,20 +201,20 @@ class ShopCog(discord.Cog):
                 ).unique().scalars().all()
 
                 if not orders:
-                    await ctx.respond("❌ Bạn chưa có đơn hàng nào.", ephemeral=True)
+                    await ctx.respond("❌ You have no orders yet.", ephemeral=True)
                     return
 
-                embed = discord.Embed(title="📦 Đơn hàng của bạn", color=discord.Color.blue())
+                embed = discord.Embed(title="📦 Your Orders", color=discord.Color.blue())
                 for o in orders:
                     icon = STATUS_ICON.get(o.status, "❓")
                     pname = (o.product.name or f"#{o.product_id}") if o.product else f"#{o.product_id}"
                     pkg = f" ({o.package_name})" if o.package_name else ""
                     embed.add_field(
                         name=f"#{o.id} — {pname}{pkg}",
-                        value=f"{icon} {o.status} • {o.total_price:,.0f}đ",
+                        value=f"{icon} {o.status} • {o.total_price:,.0f} VND",
                         inline=False,
                     )
-                embed.set_footer(text="Dùng /orders id:<id> để xem chi tiết")
+                embed.set_footer(text="Use /orders id:<id> for details")
                 await ctx.respond(embed=embed, ephemeral=True)
         finally:
             session.close()
@@ -228,10 +228,10 @@ class ShopCog(discord.Cog):
             ).scalars().first()
 
             if not user:
-                await ctx.respond("❌ Bạn chưa mua hàng nào.", ephemeral=True)
+                await ctx.respond("❌ You have no purchases yet.", ephemeral=True)
                 return
 
-            # Lấy sản phẩm đã mua (PAID/DELIVERED)
+            # Get purchased products (PAID/DELIVERED)
             paid_orders = session.execute(
                 select(Order)
                 .options(joinedload(Order.product))
@@ -244,10 +244,10 @@ class ShopCog(discord.Cog):
             ).unique().scalars().all()
 
             if not paid_orders:
-                await ctx.respond("❌ Bạn chưa có đơn hàng đã thanh toán để đánh giá.", ephemeral=True)
+                await ctx.respond("❌ You have no paid orders to review.", ephemeral=True)
                 return
 
-            # Deduplicate sản phẩm
+            # Deduplicate products
             seen = set()
             products = []
             for o in paid_orders:
@@ -256,7 +256,7 @@ class ShopCog(discord.Cog):
                     products.append(o.product)
 
             view = ProductSelectView(products=products, db_user_id=user.id)
-            await ctx.respond("📝 Chọn sản phẩm bạn muốn đánh giá:", view=view, ephemeral=True)
+            await ctx.respond("📝 Select the product you want to review:", view=view, ephemeral=True)
         finally:
             session.close()
 
@@ -299,7 +299,7 @@ class ShopCog(discord.Cog):
             agg: dict[str, dict] = {}
             for o in orders:
                 if not o.user:
-                    continue
+                    conmessagesue
                 uid = o.user.discord_id
                 if uid not in agg:
                     agg[uid] = {"username": o.user.username, "total": 0.0, "count": 0}
@@ -307,18 +307,18 @@ class ShopCog(discord.Cog):
                 agg[uid]["count"] += 1
 
             if not agg:
-                await ctx.respond("Chưa có dữ liệu.", ephemeral=True)
+                await ctx.respond("No data available.", ephemeral=True)
                 return
 
             sort_key = "total" if loai == "chi_tieu" else "count"
             top = sorted(agg.values(), key=lambda x: x[sort_key], reverse=True)[:10]
 
-            time_map = {"daily": "Hôm nay", "7days": "7 ngày", "30days": "30 ngày", "all": "Tất cả"}
+            time_map = {"daily": "Today", "7days": "7 days", "30days": "30 days", "all": "All"}
             medals = ["🥇", "🥈", "🥉"] + ["🏅"] * 7
 
             lines = []
             for i, u in enumerate(top):
-                val = f"{u['total']:,.0f}đ" if loai == "chi_tieu" else f"{u['count']} đơn"
+                val = f"{u['total']:,.0f} VND" if loai == "chi_tieu" else f"{u['count']} orders"
                 lines.append(f"{medals[i]} **{u['username']}** — {val}")
 
             from src.bot.embed_utils import build_embed
@@ -352,7 +352,7 @@ class ShopCog(discord.Cog):
             ).scalars().all()
 
             if not milestones:
-                await ctx.respond("Chưa có mốc chi tiêu nào được cấu hình.", ephemeral=True)
+                await ctx.respond("No spending milestones configured.", ephemeral=True)
                 return
 
             lines = []
@@ -360,15 +360,15 @@ class ShopCog(discord.Cog):
                 reached = total >= m.threshold
                 icon = "✅" if reached else "⬜"
                 emoji = f" {m.emoji}" if m.emoji else ""
-                progress = " — **đã đạt!**" if reached else f" — còn **{m.threshold - total:,.0f}đ**"
-                lines.append(f"{icon}{emoji} **{m.name}** ({m.threshold:,.0f}đ){progress}")
+                progress = " — **reached!**" if reached else f" — remaining **{m.threshold - total:,.0f} VND**"
+                lines.append(f"{icon}{emoji} **{m.name}** ({m.threshold:,.0f} VND){progress}")
 
             embed = discord.Embed(
-                title="🏆 Mốc chi tiêu",
+                title="🏆 Spending Milestones",
                 description="\n".join(lines),
                 color=0xF0B232,
             )
-            embed.add_field(name="💰 Tổng chi tiêu của bạn", value=f"**{total:,.0f}đ**", inline=False)
+            embed.add_field(name="💰 Your total spending", value=f"**{total:,.0f} VND**", inline=False)
             embed.set_footer(text=f"{ctx.author.display_name}", icon_url=ctx.author.display_avatar.url if ctx.author.display_avatar else None)
             await ctx.respond(embed=embed, ephemeral=True)
         finally:

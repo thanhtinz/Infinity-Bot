@@ -41,7 +41,7 @@ class ModerationCog(discord.Cog):
             finally:
                 session.close()
         except discord.Forbidden:
-            await ctx.respond("❌ Bot không có quyền ban thành viên này.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks permission to ban this member.", ephemeral=True)
 
     @discord.slash_command(name="unban", description="[Admin] Unban a member")
     @discord.default_permissions(ban_members=True)
@@ -64,9 +64,9 @@ class ModerationCog(discord.Cog):
             finally:
                 session.close()
         except discord.NotFound:
-            await ctx.respond("❌ Không tìm thấy user này trong danh sách ban.", ephemeral=True)
+            await ctx.respond("❌ Could not find this user in the ban list.", ephemeral=True)
         except Exception as e:
-            await ctx.respond(f"❌ Lỗi: {e}", ephemeral=True)
+            await ctx.respond(f"❌ Error: {e}", ephemeral=True)
 
     @discord.slash_command(name="kick", description="[Admin] Kick a member")
     @discord.default_permissions(kick_members=True)
@@ -89,7 +89,7 @@ class ModerationCog(discord.Cog):
             finally:
                 session.close()
         except discord.Forbidden:
-            await ctx.respond("❌ Bot không có quyền kick thành viên này.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks permission to kick this member.", ephemeral=True)
 
     @discord.slash_command(name="warn", description="[Admin] Warn a member")
     @discord.default_permissions(manage_messages=True)
@@ -125,7 +125,7 @@ class ModerationCog(discord.Cog):
             })
             await ctx.respond(embed=embed)
 
-            # DM user sử dụng embed template từ DB
+            # DM user using embed template from DB
             try:
                 dm_embed = build_embed("canh_bao", session, vars={
                     "user": str(user),
@@ -155,11 +155,11 @@ class ModerationCog(discord.Cog):
                 select(Warning).where(Warning.id == warn_id, Warning.discord_id == str(user.id))
             ).scalars().first()
             if not w:
-                await ctx.respond("❌ Không tìm thấy cảnh cáo này.", ephemeral=True)
+                await ctx.respond("❌ Warning not found.", ephemeral=True)
                 return
             session.delete(w)
             session.commit()
-            await ctx.respond(f"✅ Đã xóa cảnh cáo #{warn_id} của {user.mention}.", ephemeral=True)
+            await ctx.respond(f"✅ Deleted warning #{warn_id} of {user.mention}.", ephemeral=True)
         finally:
             session.close()
 
@@ -182,18 +182,18 @@ class ModerationCog(discord.Cog):
             ).scalars().all()
 
             if not warns:
-                await ctx.respond(f"✅ {target.mention} không có cảnh cáo nào.", ephemeral=True)
+                await ctx.respond(f"✅ {target.mention} has no warnings.", ephemeral=True)
                 return
 
-            embed = discord.Embed(title=f"⚠️ Cảnh cáo của {target.display_name}", color=discord.Color.yellow())
+            embed = discord.Embed(title=f"⚠️ Warnings for {target.display_name}", color=discord.Color.yellow())
             for w in warns[:10]:
                 mod_mention = f"<@{w.moderator_id}>" if w.moderator_id else "Unknown"
                 embed.add_field(
                     name=f"#{w.id} — {w.created_at.strftime('%d/%m/%Y') if w.created_at else '—'}",
-                    value=f"**Lý do:** {w.reason or '—'}\n**Mod:** {mod_mention}",
+                    value=f"**Reason:** {w.reason or '—'}\n**Mod:** {mod_mention}",
                     inline=False,
                 )
-            embed.set_footer(text=f"Tổng: {len(warns)} cảnh cáo")
+            embed.set_footer(text=f"Total: {len(warns)} warnings")
             await ctx.respond(embed=embed, ephemeral=True)
         finally:
             session.close()

@@ -77,7 +77,7 @@ class StarboardCog(discord.Cog):
                             star_count -= 1
                     break
 
-            # Check/get existing entry
+            # Check/get exismessagesg entry
             entry = session.execute(
                 select(StarboardEntry).where(
                     StarboardEntry.source_message_id == str(payload.message_id),
@@ -100,8 +100,8 @@ class StarboardCog(discord.Cog):
                     icon_url=message.author.display_avatar.url,
                 )
                 embed.add_field(
-                    name="Nguồn",
-                    value=f"[Nhảy tới tin nhắn]({message.jump_url})",
+                    name="Source",
+                    value=f"[Jump to message]({message.jump_url})",
                     inline=True,
                 )
                 # Add first image attachment if any
@@ -113,7 +113,7 @@ class StarboardCog(discord.Cog):
                 header = f"{cfg.emoji} **{star_count}** | <#{payload.channel_id}>"
 
                 if entry and entry.starboard_message_id:
-                    # Update existing starboard message
+                    # Update exismessagesg starboard message
                     try:
                         sb_msg = await starboard_channel.fetch_message(int(entry.starboard_message_id))
                         await sb_msg.edit(content=header, embed=embed)

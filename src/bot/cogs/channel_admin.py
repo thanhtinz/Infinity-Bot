@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 async def _send_log(ctx: discord.ApplicationContext, color: int, title: str, desc: str):
     embed = discord.Embed(title=title, description=desc, color=color,
                           timestamp=datetime.datetime.utcnow())
-    embed.set_footer(text=f"Thực hiện bởi {ctx.author}")
+    embed.set_footer(text=f"Action by {ctx.author}")
     return embed
 
 
@@ -23,7 +23,7 @@ async def _send_log(ctx: discord.ApplicationContext, color: int, title: str, des
 class ChannelAdminCog(discord.Cog):
     def __init__(self, bot):
         self.bot = bot
-        # channel_id → set of (role_id/user_id, type) đang bị image-only
+        # channel_id → set of (role_id/user_id, type) currently image-only
         self._image_only: set[int] = set()
 
     # ── /purge ────────────────────────────────────────────────────────────────
@@ -42,13 +42,13 @@ class ChannelAdminCog(discord.Cog):
             return True
         try:
             deleted = await ctx.channel.purge(limit=so_luong, check=check)
-            who = f" của **{thanh_vien.display_name}**" if thanh_vien else ""
-            await ctx.respond(f"🗑️ Đã xóa **{len(deleted)}** tin nhắn{who}.", ephemeral=True)
+            who = f" from **{thanh_vien.display_name}**" if thanh_vien else ""
+            await ctx.respond(f"🗑️ Deleted **{len(deleted)}** messages{who}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Messages`.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Messages` permission.", ephemeral=True)
         except Exception as e:
             logger.error(f"purge_cmd error: {e}")
-            await ctx.respond("❌ Lỗi khi xóa tin nhắn.", ephemeral=True)
+            await ctx.respond("❌ Error deleting messages.", ephemeral=True)
 
     # ── /nuke ─────────────────────────────────────────────────────────────────
     @discord.slash_command(name="nuke", description="[Admin] Delete all messages in channel (clone channel)")
@@ -62,23 +62,23 @@ class ChannelAdminCog(discord.Cog):
         target = kenh or ctx.channel
         try:
             position = target.position
-            new_ch = await target.clone(reason=f"Nuke bởi {ctx.author}")
+            new_ch = await target.clone(reason=f"Nuke by {ctx.author}")
             await new_ch.edit(position=position)
-            await target.delete(reason=f"Nuke bởi {ctx.author}")
+            await target.delete(reason=f"Nuke by {ctx.author}")
             embed = discord.Embed(
-                title="💥 Kênh đã được nuke!",
-                description=f"Kênh này đã được làm sạch bởi {ctx.author.mention}.",
+                title="💥 Channel Nuked!",
+                description=f"This channel has been nuked by {ctx.author.mention}.",
                 color=0xFF4444,
                 timestamp=datetime.datetime.utcnow(),
             )
             await new_ch.send(embed=embed)
             if ctx.channel.id != target.id:
-                await ctx.respond(f"✅ Đã nuke {new_ch.mention}.", ephemeral=True)
+                await ctx.respond(f"✅ Nuked {new_ch.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Administrator`.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Administrator` permission.", ephemeral=True)
         except Exception as e:
             logger.error(f"nuke_cmd error: {e}")
-            await ctx.respond("❌ Lỗi khi nuke kênh.", ephemeral=True)
+            await ctx.respond("❌ Error nuking channel.", ephemeral=True)
 
     # ── /lock ─────────────────────────────────────────────────────────────────
     @discord.slash_command(name="lock", description="[Admin] Lock channel — block @everyone from sending")
@@ -94,20 +94,20 @@ class ChannelAdminCog(discord.Cog):
         everyone = ctx.guild.default_role
         try:
             await target.set_permissions(everyone, send_messages=False,
-                                         reason=f"Lock bởi {ctx.author}: {ly_do}")
+                                         reason=f"Lock by {ctx.author}: {ly_do}")
             embed = discord.Embed(
-                title="🔒 Kênh đã bị khóa",
-                description=f"{ctx.author.mention} đã khóa {target.mention}.\n{'> ' + ly_do if ly_do else ''}",
+                title="🔒 Channel Locked",
+                description=f"{ctx.author.mention} locked {target.mention}.\n{'> ' + ly_do if ly_do else ''}",
                 color=0xFF6B6B,
                 timestamp=datetime.datetime.utcnow(),
             )
             await target.send(embed=embed)
-            await ctx.respond(f"✅ Đã khóa {target.mention}.", ephemeral=True)
+            await ctx.respond(f"✅ Locked {target.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Channels`.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Channels` permission.", ephemeral=True)
         except Exception as e:
             logger.error(f"lock_cmd error: {e}")
-            await ctx.respond("❌ Lỗi khi khóa kênh.", ephemeral=True)
+            await ctx.respond("❌ Error locking channel.", ephemeral=True)
 
     # ── /unlock ───────────────────────────────────────────────────────────────
     @discord.slash_command(name="unlock", description="[Admin] Unlock channel")
@@ -122,20 +122,20 @@ class ChannelAdminCog(discord.Cog):
         everyone = ctx.guild.default_role
         try:
             await target.set_permissions(everyone, send_messages=None,
-                                         reason=f"Unlock bởi {ctx.author}")
+                                         reason=f"Unlock by {ctx.author}")
             embed = discord.Embed(
-                title="🔓 Kênh đã được mở khóa",
-                description=f"{ctx.author.mention} đã mở khóa {target.mention}.",
+                title="🔓 Channel Unlocked",
+                description=f"{ctx.author.mention} unlocked {target.mention}.",
                 color=0x57F287,
                 timestamp=datetime.datetime.utcnow(),
             )
             await target.send(embed=embed)
-            await ctx.respond(f"✅ Đã mở khóa {target.mention}.", ephemeral=True)
+            await ctx.respond(f"✅ Unlocked {target.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Channels`.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Channels` permission.", ephemeral=True)
         except Exception as e:
             logger.error(f"unlock_cmd error: {e}")
-            await ctx.respond("❌ Lỗi.", ephemeral=True)
+            await ctx.respond("❌ Error.", ephemeral=True)
 
     # ── /hide_channel ─────────────────────────────────────────────────────────
     @discord.slash_command(name="hide_channel", description="[Admin] Hide channel from role/user")
@@ -161,14 +161,14 @@ class ChannelAdminCog(discord.Cog):
             target = ctx.guild.default_role
         try:
             await target_ch.set_permissions(target, view_channel=False,
-                                            reason=f"Hide bởi {ctx.author}")
+                                            reason=f"Hide by {ctx.author}")
             who = target.mention if hasattr(target, "mention") else str(target)
-            await ctx.respond(f"✅ Đã ẩn {target_ch.mention} khỏi {who}.", ephemeral=True)
+            await ctx.respond(f"✅ Hidden {target_ch.mention} from {who}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Channels`.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Channels` permission.", ephemeral=True)
         except Exception as e:
             logger.error(f"hide_channel_cmd error: {e}")
-            await ctx.respond("❌ Lỗi.", ephemeral=True)
+            await ctx.respond("❌ Error.", ephemeral=True)
 
     # ── /show_channel ─────────────────────────────────────────────────────────
     @discord.slash_command(name="show_channel", description="[Admin] Show channel to role/user")
@@ -192,14 +192,14 @@ class ChannelAdminCog(discord.Cog):
             target = ctx.guild.default_role
         try:
             await target_ch.set_permissions(target, view_channel=None,
-                                            reason=f"Show channel bởi {ctx.author}")
+                                            reason=f"Show channel by {ctx.author}")
             who = target.mention if hasattr(target, "mention") else str(target)
-            await ctx.respond(f"✅ Đã hiện lại {target_ch.mention} cho {who}.", ephemeral=True)
+            await ctx.respond(f"✅ Made {target_ch.mention} visible to {who}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Channels`.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Channels` permission.", ephemeral=True)
         except Exception as e:
             logger.error(f"show_channel_cmd error: {e}")
-            await ctx.respond("❌ Lỗi.", ephemeral=True)
+            await ctx.respond("❌ Error.", ephemeral=True)
 
     # ── /block_channel ────────────────────────────────────────────────────────
     @discord.slash_command(name="block_channel", description="[Admin] Block role/user from sending messages in channel")
@@ -217,14 +217,14 @@ class ChannelAdminCog(discord.Cog):
         target = thanh_vien or role or ctx.guild.default_role
         try:
             await target_ch.set_permissions(target, send_messages=False,
-                                            reason=f"Block channel bởi {ctx.author}: {ly_do}")
+                                            reason=f"Block channel by {ctx.author}: {ly_do}")
             who = getattr(target, "mention", str(target))
-            await ctx.respond(f"🚫 Đã chặn {who} gửi tin trong {target_ch.mention}.", ephemeral=True)
+            await ctx.respond(f"🚫 Blocked {who} from sending in {target_ch.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Channels`.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Channels` permission.", ephemeral=True)
         except Exception as e:
             logger.error(f"block_channel_cmd error: {e}")
-            await ctx.respond("❌ Lỗi.", ephemeral=True)
+            await ctx.respond("❌ Error.", ephemeral=True)
 
     # ── /unblock_channel ──────────────────────────────────────────────────────
     @discord.slash_command(name="unblock_channel", description="[Admin] Unblock role/user in channel")
@@ -241,14 +241,14 @@ class ChannelAdminCog(discord.Cog):
         target = thanh_vien or role or ctx.guild.default_role
         try:
             await target_ch.set_permissions(target, send_messages=None,
-                                            reason=f"Unblock channel bởi {ctx.author}")
+                                            reason=f"Unblock channel by {ctx.author}")
             who = getattr(target, "mention", str(target))
-            await ctx.respond(f"✅ Đã bỏ chặn {who} trong {target_ch.mention}.", ephemeral=True)
+            await ctx.respond(f"✅ Unblocked {who} in {target_ch.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Channels`.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Channels` permission.", ephemeral=True)
         except Exception as e:
             logger.error(f"unblock_channel_cmd error: {e}")
-            await ctx.respond("❌ Lỗi.", ephemeral=True)
+            await ctx.respond("❌ Error.", ephemeral=True)
 
     # ── /slowmode ─────────────────────────────────────────────────────────────
     @discord.slash_command(name="slowmode", description="[Admin] Set slowmode in channel")
@@ -262,23 +262,23 @@ class ChannelAdminCog(discord.Cog):
         await ctx.defer(ephemeral=True)
         target = kenh or ctx.channel
         try:
-            await target.edit(slowmode_delay=giay, reason=f"Slowmode bởi {ctx.author}")
+            await target.edit(slowmode_delay=giay, reason=f"Slowmode by {ctx.author}")
             if giay == 0:
-                await ctx.respond(f"✅ Đã tắt slowmode trong {target.mention}.", ephemeral=True)
+                await ctx.respond(f"✅ Slowmode disabled in {target.mention}.", ephemeral=True)
             else:
-                # Format thời gian
+                # Format time
                 if giay < 60:
                     t = f"{giay}s"
                 elif giay < 3600:
                     t = f"{giay//60}m {giay%60}s" if giay % 60 else f"{giay//60}m"
                 else:
                     t = f"{giay//3600}h {(giay%3600)//60}m" if giay % 3600 else f"{giay//3600}h"
-                await ctx.respond(f"⏱️ Đã đặt slowmode **{t}** trong {target.mention}.", ephemeral=True)
+                await ctx.respond(f"⏱️ Slowmode set to **{t}** in {target.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Channels`.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Channels` permission.", ephemeral=True)
         except Exception as e:
             logger.error(f"slowmode_cmd error: {e}")
-            await ctx.respond("❌ Lỗi.", ephemeral=True)
+            await ctx.respond("❌ Error.", ephemeral=True)
 
     # ── /image_only ───────────────────────────────────────────────────────────
     @discord.slash_command(name="image_only", description="[Admin] Set channel to image/video/file only")
@@ -286,30 +286,30 @@ class ChannelAdminCog(discord.Cog):
     async def image_only_cmd(
         self,
         ctx: discord.ApplicationContext,
-        bat_tat: discord.Option(str, "Enable or disable image-only mode", choices=["bật", "tắt"]),
+        bat_tat: discord.Option(str, "Enable or disable image-only mode", choices=["on", "off"]),
         kenh: discord.Option(discord.TextChannel, "Channel (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         target = kenh or ctx.channel
-        if bat_tat == "bật":
+        if bat_tat == "on":
             self._image_only.add(target.id)
             await ctx.respond(
-                f"🖼️ Kênh {target.mention} đã bật chế độ **chỉ ảnh/video**.\n"
-                "Tin nhắn text sẽ tự động bị xóa.",
+                f"🖼️ Channel {target.mention} is now **image/video only**.\n"
+                "Text messages will be automatically deleted.",
                 ephemeral=True,
             )
         else:
             self._image_only.discard(target.id)
-            await ctx.respond(f"✅ Đã tắt chế độ chỉ ảnh trong {target.mention}.", ephemeral=True)
+            await ctx.respond(f"✅ Image-only mode disabled in {target.mention}.", ephemeral=True)
 
     @discord.Cog.listener()
     async def on_message(self, message: discord.Message):
-        """Xóa tin nhắn text trong kênh image-only."""
+        """Delete text messages in image-only channels."""
         if message.author.bot:
             return
         if message.channel.id not in self._image_only:
             return
-        # Cho phép nếu có attachment hoặc là link ảnh
+        # Allow if has attachment or is an image link
         has_media = bool(message.attachments) or any(
             ext in message.content.lower()
             for ext in (".png", ".jpg", ".jpeg", ".gif", ".webp", ".mp4", ".mov", ".webm")
@@ -319,7 +319,7 @@ class ChannelAdminCog(discord.Cog):
         try:
             await message.delete()
             warn = await message.channel.send(
-                f"{message.author.mention} Kênh này chỉ cho phép gửi ảnh/video! ❌",
+                f"{message.author.mention} This channel only allows images/videos! ❌",
                 delete_after=4,
             )
         except Exception:
@@ -338,26 +338,26 @@ class ChannelAdminCog(discord.Cog):
         try:
             msg = await ctx.channel.fetch_message(int(message_id))
         except (discord.NotFound, ValueError):
-            await ctx.respond("❌ Không tìm thấy tin nhắn với ID đó trong kênh hiện tại.", ephemeral=True)
+            await ctx.respond("❌ Message with that ID not found in this channel.", ephemeral=True)
             return
         try:
-            # Build embed chứa nội dung gốc
+            # Build embed with original content
             embed = discord.Embed(
-                description=msg.content or "*[Không có nội dung text]*",
+                description=msg.content or "*[No text content]*",
                 color=0x5865F2,
                 timestamp=msg.created_at,
             )
             embed.set_author(name=msg.author.display_name, icon_url=msg.author.display_avatar.url)
-            embed.set_footer(text=f"Chuyển từ #{ctx.channel.name} bởi {ctx.author.display_name}")
+            embed.set_footer(text=f"Moved from #{ctx.channel.name} by {ctx.author.display_name}")
             files = [await a.to_file() for a in msg.attachments[:10]]
             await kenh_dich.send(embed=embed, files=files)
             await msg.delete()
-            await ctx.respond(f"✅ Đã chuyển tin nhắn sang {kenh_dich.mention}.", ephemeral=True)
+            await ctx.respond(f"✅ Message moved to {kenh_dich.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền trong kênh đích.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks permissions in the target channel.", ephemeral=True)
         except Exception as e:
             logger.error(f"move_message_cmd error: {e}")
-            await ctx.respond("❌ Lỗi khi chuyển tin nhắn.", ephemeral=True)
+            await ctx.respond("❌ Error moving message.", ephemeral=True)
 
     # ── /clear_reactions ──────────────────────────────────────────────────────
     @discord.slash_command(name="clear_reactions", description="[Admin] Clear all reactions from a message")
@@ -371,14 +371,14 @@ class ChannelAdminCog(discord.Cog):
         try:
             msg = await ctx.channel.fetch_message(int(message_id))
             await msg.clear_reactions()
-            await ctx.respond("✅ Đã xóa tất cả reaction khỏi tin nhắn.", ephemeral=True)
+            await ctx.respond("✅ Cleared all reactions from the message.", ephemeral=True)
         except discord.NotFound:
-            await ctx.respond("❌ Không tìm thấy tin nhắn.", ephemeral=True)
+            await ctx.respond("❌ Message not found.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Messages`.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Messages` permission.", ephemeral=True)
         except Exception as e:
             logger.error(f"clear_reactions_cmd error: {e}")
-            await ctx.respond("❌ Lỗi.", ephemeral=True)
+            await ctx.respond("❌ Error.", ephemeral=True)
 
     # ── /announce ─────────────────────────────────────────────────────────────
     @discord.slash_command(name="announce", description="[Admin] Send an embed announcement to channel")
@@ -408,12 +408,12 @@ class ChannelAdminCog(discord.Cog):
         content = mention if mention else None
         try:
             await target.send(content=content, embed=embed)
-            await ctx.respond(f"✅ Đã gửi thông báo đến {target.mention}.", ephemeral=True)
+            await ctx.respond(f"✅ Announcement sent to {target.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền gửi tin trong kênh đó.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks permission to send in that channel.", ephemeral=True)
         except Exception as e:
             logger.error(f"announce_cmd error: {e}")
-            await ctx.respond("❌ Lỗi khi gửi thông báo.", ephemeral=True)
+            await ctx.respond("❌ Error sending announcement.", ephemeral=True)
 
     # ── /pin_message ──────────────────────────────────────────────────────────
     @discord.slash_command(name="pin_message", description="[Admin] Pin a message by ID")
@@ -426,15 +426,15 @@ class ChannelAdminCog(discord.Cog):
         await ctx.defer(ephemeral=True)
         try:
             msg = await ctx.channel.fetch_message(int(message_id))
-            await msg.pin(reason=f"Ghim bởi {ctx.author}")
-            await ctx.respond("📌 Đã ghim tin nhắn.", ephemeral=True)
+            await msg.pin(reason=f"Pinned by {ctx.author}")
+            await ctx.respond("📌 Message pinned.", ephemeral=True)
         except discord.NotFound:
-            await ctx.respond("❌ Không tìm thấy tin nhắn.", ephemeral=True)
+            await ctx.respond("❌ Message not found.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền ghim tin nhắn.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks permission to pin messages.", ephemeral=True)
         except Exception as e:
             logger.error(f"pin_message_cmd error: {e}")
-            await ctx.respond("❌ Lỗi.", ephemeral=True)
+            await ctx.respond("❌ Error.", ephemeral=True)
 
     # ── /unpin_message ────────────────────────────────────────────────────────
     @discord.slash_command(name="unpin_message", description="[Admin] Unpin a message by ID")
@@ -447,15 +447,15 @@ class ChannelAdminCog(discord.Cog):
         await ctx.defer(ephemeral=True)
         try:
             msg = await ctx.channel.fetch_message(int(message_id))
-            await msg.unpin(reason=f"Bỏ ghim bởi {ctx.author}")
-            await ctx.respond("✅ Đã bỏ ghim tin nhắn.", ephemeral=True)
+            await msg.unpin(reason=f"Unpinned by {ctx.author}")
+            await ctx.respond("✅ Message unpinned.", ephemeral=True)
         except discord.NotFound:
-            await ctx.respond("❌ Không tìm thấy tin nhắn.", ephemeral=True)
+            await ctx.respond("❌ Message not found.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks permission.", ephemeral=True)
         except Exception as e:
             logger.error(f"unpin_message_cmd error: {e}")
-            await ctx.respond("❌ Lỗi.", ephemeral=True)
+            await ctx.respond("❌ Error.", ephemeral=True)
 
     # ── /role_add / /role_remove ───────────────────────────────────────────────
     @discord.slash_command(name="role_add", description="[Admin] Add a role to a member")
@@ -468,12 +468,12 @@ class ChannelAdminCog(discord.Cog):
     ):
         await ctx.defer(ephemeral=True)
         try:
-            await thanh_vien.add_roles(role, reason=f"Thêm bởi {ctx.author}")
-            await ctx.respond(f"✅ Đã thêm {role.mention} cho {thanh_vien.mention}.", ephemeral=True)
+            await thanh_vien.add_roles(role, reason=f"Added by {ctx.author}")
+            await ctx.respond(f"✅ Added {role.mention} to {thanh_vien.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Roles` hoặc role cao hơn bot.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Roles` permission or role is above bot.", ephemeral=True)
         except Exception as e:
-            await ctx.respond(f"❌ Lỗi: {e}", ephemeral=True)
+            await ctx.respond(f"❌ Error: {e}", ephemeral=True)
 
     @discord.slash_command(name="role_remove", description="[Admin] Remove a role from a member")
     @discord.default_permissions(manage_roles=True)
@@ -485,12 +485,12 @@ class ChannelAdminCog(discord.Cog):
     ):
         await ctx.defer(ephemeral=True)
         try:
-            await thanh_vien.remove_roles(role, reason=f"Xóa bởi {ctx.author}")
-            await ctx.respond(f"✅ Đã xóa {role.mention} khỏi {thanh_vien.mention}.", ephemeral=True)
+            await thanh_vien.remove_roles(role, reason=f"Removed by {ctx.author}")
+            await ctx.respond(f"✅ Removed {role.mention} from {thanh_vien.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Roles`.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Roles` permission.", ephemeral=True)
         except Exception as e:
-            await ctx.respond(f"❌ Lỗi: {e}", ephemeral=True)
+            await ctx.respond(f"❌ Error: {e}", ephemeral=True)
 
     # ── /nick ─────────────────────────────────────────────────────────────────
     @discord.slash_command(name="nick", description="[Admin] Change a member's nickname")
@@ -503,15 +503,15 @@ class ChannelAdminCog(discord.Cog):
     ):
         await ctx.defer(ephemeral=True)
         try:
-            await thanh_vien.edit(nick=nickname, reason=f"Đổi nick bởi {ctx.author}")
+            await thanh_vien.edit(nick=nickname, reason=f"Nickname changed by {ctx.author}")
             if nickname:
-                await ctx.respond(f"✅ Đã đổi nickname {thanh_vien.mention} thành **{nickname}**.", ephemeral=True)
+                await ctx.respond(f"✅ Changed nickname of {thanh_vien.mention} to **{nickname}**.", ephemeral=True)
             else:
-                await ctx.respond(f"✅ Đã xóa nickname của {thanh_vien.mention}.", ephemeral=True)
+                await ctx.respond(f"✅ Cleared nickname of {thanh_vien.mention}.", ephemeral=True)
         except discord.Forbidden:
-            await ctx.respond("❌ Bot thiếu quyền `Manage Nicknames` hoặc không thể sửa nickname của owner.", ephemeral=True)
+            await ctx.respond("❌ Bot lacks `Manage Nicknames` permission or cannot edit the owner's nickname.", ephemeral=True)
         except Exception as e:
-            await ctx.respond(f"❌ Lỗi: {e}", ephemeral=True)
+            await ctx.respond(f"❌ Error: {e}", ephemeral=True)
 
 
 def setup(bot):

@@ -1,6 +1,6 @@
 # src/bot/cogs/sticky_modals.py
 """
-Sticky Message Modals — Discord UI Modals for creating/editing sticky messages.
+Sticky Message Modals — Discord UI Modals for creamessagesg/edimessagesg sticky messages.
 """
 import logging
 import discord
@@ -29,17 +29,17 @@ def _hex_to_int(color: str | None) -> int:
 
 class StickyContentModal(discord.ui.Modal):
     """Modal for plain-text sticky create/edit."""
-    def __init__(self, channel_id: str, existing: StickyMessage | None = None):
-        super().__init__(title="Tạo Sticky Message" if not existing else "Chỉnh sửa Sticky")
+    def __init__(self, channel_id: str, exismessagesg: StickyMessage | None = None):
+        super().__init__(title="Create Sticky Message" if not exismessagesg else "Edit Sticky")
         self.channel_id = channel_id
-        self.existing = existing
+        self.exismessagesg = exismessagesg
         self.add_item(discord.ui.InputText(
-            label="Nội dung",
-            placeholder="Nhập nội dung sticky...",
+            label="Content",
+            placeholder="Enter sticky content...",
             style=discord.InputTextStyle.paragraph,
             max_length=2000,
             required=True,
-            value=existing.content if existing and existing.content else "",
+            value=exismessagesg.content if exismessagesg and exismessagesg.content else "",
         ))
 
     async def callback(self, interaction: discord.Interaction):
@@ -73,49 +73,49 @@ class StickyContentModal(discord.ui.Modal):
                 await _do_resend(interaction.client, sticky, session)
 
             await interaction.response.send_message(
-                f"✅ Đã tạo sticky cho <#{self.channel_id}>.", ephemeral=True
+                f"✅ Created sticky for <#{self.channel_id}>.", ephemeral=True
             )
         except Exception as e:
             logger.error(f"StickyContentModal error: {e}")
-            await interaction.response.send_message("❌ Lỗi khi tạo sticky.", ephemeral=True)
+            await interaction.response.send_message("❌ Error creating sticky.", ephemeral=True)
         finally:
             session.close()
 
 
 class StickyEmbedModal(discord.ui.Modal):
     """Modal for embed sticky."""
-    def __init__(self, channel_id: str, existing: StickyMessage | None = None):
-        super().__init__(title="Tạo Embed Sticky")
+    def __init__(self, channel_id: str, exismessagesg: StickyMessage | None = None):
+        super().__init__(title="Create Embed Sticky")
         self.channel_id = channel_id
-        self.existing = existing
+        self.exismessagesg = exismessagesg
         self.add_item(discord.ui.InputText(
-            label="Tiêu đề (Title)",
-            placeholder="Nhập tiêu đề...",
+            label="Title",
+            placeholder="Enter title...",
             max_length=256,
             required=False,
-            value=existing.embed_title if existing and existing.embed_title else "",
+            value=exismessagesg.embed_title if exismessagesg and exismessagesg.embed_title else "",
         ))
         self.add_item(discord.ui.InputText(
-            label="Mô tả (Description)",
-            placeholder="Nhập nội dung embed...",
+            label="Description",
+            placeholder="Enter embed content...",
             style=discord.InputTextStyle.paragraph,
             max_length=4000,
             required=True,
-            value=existing.embed_description if existing and existing.embed_description else "",
+            value=exismessagesg.embed_description if exismessagesg and exismessagesg.embed_description else "",
         ))
         self.add_item(discord.ui.InputText(
             label="Footer",
-            placeholder="Nhập footer...",
+            placeholder="Enter footer...",
             max_length=2048,
             required=False,
-            value=existing.embed_footer if existing and existing.embed_footer else "",
+            value=exismessagesg.embed_footer if exismessagesg and exismessagesg.embed_footer else "",
         ))
         self.add_item(discord.ui.InputText(
-            label="Màu (hex, VD: #FF5733)",
+            label="Color (hex, e.g. #FF5733)",
             placeholder="#5865F2",
             max_length=10,
             required=False,
-            value=existing.embed_color if existing and existing.embed_color else "#5865F2",
+            value=exismessagesg.embed_color if exismessagesg and exismessagesg.embed_color else "#5865F2",
         ))
 
     async def callback(self, interaction: discord.Interaction):
@@ -155,10 +155,10 @@ class StickyEmbedModal(discord.ui.Modal):
             from src.bot.cogs.sticky import _do_resend
             await _do_resend(interaction.client, sticky, session)
             await interaction.response.send_message(
-                f"✅ Đã tạo embed sticky cho <#{self.channel_id}>.", ephemeral=True
+                f"✅ Created embed sticky for <#{self.channel_id}>.", ephemeral=True
             )
         except Exception as e:
             logger.error(f"StickyEmbedModal error: {e}")
-            await interaction.response.send_message("❌ Lỗi khi tạo embed sticky.", ephemeral=True)
+            await interaction.response.send_message("❌ Error creating embed sticky.", ephemeral=True)
         finally:
             session.close()

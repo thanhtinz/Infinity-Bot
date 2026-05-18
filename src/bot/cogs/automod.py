@@ -87,7 +87,7 @@ class AutoModCog(discord.Cog):
                 embed = build_embed("automod_mute", session, vars={
                     "user": str(member), "user.mention": member.mention,
                     "reason": reason, "channel": channel.mention,
-                    "duration": "5 phút", "content": content[:500],
+                    "duration": "5 minutes", "content": content[:500],
                 })
 
             elif action == "kick":
@@ -159,7 +159,7 @@ class AutoModCog(discord.Cog):
                     pass
                 await self._take_action(
                     cfg.anti_spam_action or "warn", member,
-                    "Spam tin nhắn", cfg, message.channel,
+                    "Spam messages", cfg, message.channel,
                     message.content or "",
                 )
                 self._spam_tracker[gid][uid] = []
@@ -183,7 +183,7 @@ class AutoModCog(discord.Cog):
                         pass
                     await self._take_action(
                         "warn", member,
-                        "Gửi link không được phép", cfg, message.channel,
+                        "Unauthorized link sent", cfg, message.channel,
                         message.content,
                     )
 
@@ -200,7 +200,7 @@ class AutoModCog(discord.Cog):
                         pass
                     await self._take_action(
                         "warn", member,
-                        f"Sử dụng từ ngữ vi phạm", cfg, message.channel,
+                        f"Using prohibited words", cfg, message.channel,
                         message.content,
                     )
                     break
@@ -222,7 +222,7 @@ class AutoModCog(discord.Cog):
                         pass
                     await self._take_action(
                         "warn", member,
-                        "Lạm dụng chữ in hoa", cfg, message.channel,
+                        "Excessive caps", cfg, message.channel,
                         message.content,
                     )
 

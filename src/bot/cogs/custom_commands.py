@@ -160,7 +160,7 @@ class CustomCommandsCog(discord.Cog):
                 if len(args) < required_args:
                     try:
                         notice = await message.channel.send(
-                            f"❌ Lệnh `!{cmd.name}` cần ít nhất **{required_args}** argument(s)."
+                            f"❌ Command `!{cmd.name}` requires at least **{required_args}** argument(s)."
                         )
                         await notice.delete(delay=4)
                     except Exception:
@@ -172,7 +172,7 @@ class CustomCommandsCog(discord.Cog):
             if remaining > 0:
                 try:
                     notice = await message.channel.send(
-                        f"⏳ Chờ **{remaining}s** trước khi dùng lại `!{cmd.name}`.",
+                        f"⏳ Wait **{remaining}s** before using `!{cmd.name}` again.",
                     )
                     await notice.delete(delay=3)
                 except Exception:

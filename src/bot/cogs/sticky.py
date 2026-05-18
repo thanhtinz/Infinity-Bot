@@ -1,7 +1,7 @@
 # src/bot/cogs/sticky.py
 """
-Sticky Message System — tin nhắn luôn ở cuối kênh.
-Resend tự động sau N tin nhắn hoặc sau X phút.
+Sticky Message System — messages that stay at the bottom of a channel.
+Auto-resend after N messages or after X minutes.
 """
 import asyncio
 import datetime
@@ -157,7 +157,7 @@ class StickyCog(discord.Cog):
                         if sticky.expires_at and sticky.expires_at < now:
                             sticky.is_enabled = False
                             session.commit()
-                            continue
+                            conmessagesue
                         last = sticky.last_sent or sticky.created_at or now
                         delta = (now - last).total_seconds() / 60
                         if delta >= sticky.interval_minutes:
@@ -195,18 +195,18 @@ class StickyCog(discord.Cog):
     ):
         ch = channel or ctx.channel
         session = get_session()
-        existing = None
+        exismessagesg = None
         try:
-            existing = session.execute(
+            exismessagesg = session.execute(
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
         finally:
             session.close()
-        await ctx.send_modal(StickyEmbedModal(channel_id=str(ch.id), existing=existing))
+        await ctx.send_modal(StickyEmbedModal(channel_id=str(ch.id), exismessagesg=exismessagesg))
 
     # ── EDIT ─────────────────────────────────────────────────────────────────
 
-    @sticky.command(name="edit", description="Edit existing sticky content")
+    @sticky.command(name="edit", description="Edit exismessagesg sticky content")
     async def sticky_edit(
         self,
         ctx: discord.ApplicationContext,
@@ -219,12 +219,12 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.respond(f"❌ Không có sticky trong <#{ch.id}>.", ephemeral=True)
+                await ctx.respond(f"❌ No sticky in <#{ch.id}>.", ephemeral=True)
                 return
             if sticky.embed_enabled:
-                await ctx.send_modal(StickyEmbedModal(str(ch.id), existing=sticky))
+                await ctx.send_modal(StickyEmbedModal(str(ch.id), exismessagesg=sticky))
             else:
-                await ctx.send_modal(StickyContentModal(str(ch.id), existing=sticky))
+                await ctx.send_modal(StickyContentModal(str(ch.id), exismessagesg=sticky))
         finally:
             session.close()
 
@@ -244,7 +244,7 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không có sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ No sticky in <#{ch.id}>.")
                 return
             # Delete the sticky message from Discord
             if sticky.last_message_id:
@@ -255,7 +255,7 @@ class StickyCog(discord.Cog):
                     pass
             session.delete(sticky)
             session.commit()
-            await ctx.followup.send(f"✅ Đã xóa sticky trong <#{ch.id}>.")
+            await ctx.followup.send(f"✅ Deleted sticky in <#{ch.id}>.")
         finally:
             session.close()
 
@@ -275,12 +275,12 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{ch.id}>.")
                 return
             sticky.is_enabled = True
             session.commit()
             await _do_resend(self.bot, sticky, session)
-            await ctx.followup.send(f"✅ Đã bật sticky <#{ch.id}>.")
+            await ctx.followup.send(f"✅ Enabled sticky <#{ch.id}>.")
         finally:
             session.close()
 
@@ -298,7 +298,7 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{ch.id}>.")
                 return
             sticky.is_enabled = False
             # Delete the pinned message
@@ -310,7 +310,7 @@ class StickyCog(discord.Cog):
                     pass
                 sticky.last_message_id = None
             session.commit()
-            await ctx.followup.send(f"⏸ Đã tắt sticky <#{ch.id}>.")
+            await ctx.followup.send(f"⏸ Disabled sticky <#{ch.id}>.")
         finally:
             session.close()
 
@@ -325,21 +325,21 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.guild_id == str(ctx.guild_id))
             ).scalars().all()
             if not stickies:
-                await ctx.followup.send("📋 Chưa có sticky nào trong server.")
+                await ctx.followup.send("📋 No stickies in this server yet.")
                 return
             embed = discord.Embed(
-                title=f"📌 Danh sách Sticky — {ctx.guild.name}",
+                title=f"📌 Sticky List — {ctx.guild.name}",
                 color=0x5865F2,
             )
             for s in stickies[:20]:
                 status = "✅" if s.is_enabled else "⏸"
                 stype = "Embed" if s.embed_enabled else "Text"
-                trigger_info = f"mỗi {s.message_count_trigger} tin"
+                trigger_info = f"every {s.message_count_trigger} messages"
                 if s.interval_minutes:
                     trigger_info += f" | {s.interval_minutes}p"
                 embed.add_field(
                     name=f"{status} <#{s.channel_id}>",
-                    value=f"`{stype}` · {trigger_info} · Đã gửi: {s.resend_count}",
+                    value=f"`{stype}` · {trigger_info} · Sent: {s.resend_count}",
                     inline=False,
                 )
             await ctx.followup.send(embed=embed)
@@ -362,24 +362,24 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không có sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ No sticky in <#{ch.id}>.")
                 return
-            status = "✅ Đang bật" if sticky.is_enabled else "⏸ Đã tắt"
+            status = "✅ Enabled" if sticky.is_enabled else "⏸ Disabled"
             stype = "Embed" if sticky.embed_enabled else "Text"
             info = discord.Embed(
                 title=f"📌 Sticky — #{ch.name}",
                 color=_hex_to_int(sticky.embed_color if sticky.embed_enabled else "#5865F2"),
             )
-            info.add_field(name="Trạng thái", value=status, inline=True)
-            info.add_field(name="Loại", value=stype, inline=True)
-            info.add_field(name="Đã gửi", value=str(sticky.resend_count), inline=True)
-            info.add_field(name="Trigger", value=f"Sau {sticky.message_count_trigger} tin nhắn", inline=True)
+            info.add_field(name="Status", value=status, inline=True)
+            info.add_field(name="Type", value=stype, inline=True)
+            info.add_field(name="Sent", value=str(sticky.resend_count), inline=True)
+            info.add_field(name="Trigger", value=f"After {sticky.message_count_trigger} messages", inline=True)
             if sticky.interval_minutes:
-                info.add_field(name="Interval", value=f"{sticky.interval_minutes} phút", inline=True)
+                info.add_field(name="Interval", value=f"{sticky.interval_minutes} minutes", inline=True)
             if sticky.expires_at:
-                info.add_field(name="Hết hạn", value=sticky.expires_at.strftime("%d/%m/%Y %H:%M"), inline=True)
+                info.add_field(name="Expires", value=sticky.expires_at.strftime("%d/%m/%Y %H:%M"), inline=True)
             if sticky.content:
-                info.add_field(name="Nội dung", value=sticky.content[:1024], inline=False)
+                info.add_field(name="Content", value=sticky.content[:1024], inline=False)
             elif sticky.embed_title:
                 info.add_field(name="Embed Title", value=sticky.embed_title, inline=False)
             await ctx.followup.send(embed=info)
@@ -409,7 +409,7 @@ class StickyCog(discord.Cog):
                             pass
                 session.delete(s)
             session.commit()
-            await ctx.followup.send(f"🗑️ Đã xóa {count} sticky.")
+            await ctx.followup.send(f"🗑️ Deleted {count} sticky.")
         finally:
             session.close()
 
@@ -430,14 +430,14 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{ch.id}>.")
                 return
             sticky.interval_minutes = minutes
             session.commit()
             if minutes:
-                await ctx.followup.send(f"✅ Sticky <#{ch.id}> sẽ gửi lại mỗi **{minutes} phút**.")
+                await ctx.followup.send(f"✅ Sticky <#{ch.id}> will resend every **{minutes} minutes**.")
             else:
-                await ctx.followup.send(f"✅ Đã tắt gửi lại theo interval cho <#{ch.id}>.")
+                await ctx.followup.send(f"✅ Disabled interval resend for <#{ch.id}>.")
         finally:
             session.close()
 
@@ -458,11 +458,11 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{ch.id}>.")
                 return
             sticky.message_count_trigger = count
             session.commit()
-            await ctx.followup.send(f"✅ Sticky <#{ch.id}> sẽ gửi lại sau mỗi **{count} tin nhắn**.")
+            await ctx.followup.send(f"✅ Sticky <#{ch.id}> will resend every **{count} messages**.")
         finally:
             session.close()
 
@@ -483,12 +483,12 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{ch.id}>.")
                 return
             sticky.embed_color = color if color.startswith("#") else f"#{color}"
             session.commit()
             await _do_resend(self.bot, sticky, session)
-            await ctx.followup.send(f"✅ Đã đổi màu sticky <#{ch.id}> thành `{color}`.")
+            await ctx.followup.send(f"✅ Changed sticky color in <#{ch.id}> to `{color}`.")
         finally:
             session.close()
 
@@ -509,12 +509,12 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{ch.id}>.")
                 return
             sticky.embed_image_url = url or None
             session.commit()
             await _do_resend(self.bot, sticky, session)
-            await ctx.followup.send("✅ Đã cập nhật ảnh sticky.")
+            await ctx.followup.send("✅ Updated sticky image.")
         finally:
             session.close()
 
@@ -535,12 +535,12 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{ch.id}>.")
                 return
             sticky.embed_thumbnail_url = url or None
             session.commit()
             await _do_resend(self.bot, sticky, session)
-            await ctx.followup.send("✅ Đã cập nhật thumbnail sticky.")
+            await ctx.followup.send("✅ Updated thumbnail sticky.")
         finally:
             session.close()
 
@@ -561,12 +561,12 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{ch.id}>.")
                 return
             sticky.embed_footer = text or None
             session.commit()
             await _do_resend(self.bot, sticky, session)
-            await ctx.followup.send("✅ Đã cập nhật footer sticky.")
+            await ctx.followup.send("✅ Updated footer sticky.")
         finally:
             session.close()
 
@@ -586,7 +586,7 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{ch.id}>.")
                 return
             sticky.is_pinned = True
             session.commit()
@@ -597,7 +597,7 @@ class StickyCog(discord.Cog):
                     await msg.pin()
                 except Exception:
                     pass
-            await ctx.followup.send(f"📌 Đã ghim sticky <#{ch.id}>.")
+            await ctx.followup.send(f"📌 Pinned sticky <#{ch.id}>.")
         finally:
             session.close()
 
@@ -615,7 +615,7 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{ch.id}>.")
                 return
             sticky.is_pinned = False
             session.commit()
@@ -625,7 +625,7 @@ class StickyCog(discord.Cog):
                     await msg.unpin()
                 except Exception:
                     pass
-            await ctx.followup.send(f"Đã bỏ ghim sticky <#{ch.id}>.")
+            await ctx.followup.send(f"Unpinned sticky <#{ch.id}>.")
         finally:
             session.close()
 
@@ -648,7 +648,7 @@ class StickyCog(discord.Cog):
                 ok = await _do_resend(self.bot, s, session)
                 if ok:
                     count += 1
-            await ctx.followup.send(f"✅ Đã gửi lại **{count}/{len(stickies)}** sticky.")
+            await ctx.followup.send(f"✅ Resent **{count}/{len(stickies)}** sticky.")
         finally:
             session.close()
 
@@ -669,14 +669,14 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(ch.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{ch.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{ch.id}>.")
                 return
             if minutes == 0:
                 sticky.expires_at = None
-                msg_text = f"✅ Đã xóa thời gian hết hạn cho sticky <#{ch.id}>."
+                msg_text = f"✅ Cleared expiration for sticky <#{ch.id}>."
             else:
                 sticky.expires_at = datetime.datetime.utcnow() + datetime.timedelta(minutes=minutes)
-                msg_text = f"⏰ Sticky <#{ch.id}> sẽ tự tắt sau **{minutes} phút**."
+                msg_text = f"⏰ Sticky <#{ch.id}> will auto-disable after **{minutes} minutes**."
             session.commit()
             await ctx.followup.send(msg_text)
         finally:
@@ -698,14 +698,14 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(source.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{source.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{source.id}>.")
                 return
             # Check target doesn't have sticky
-            existing_target = session.execute(
+            exismessagesg_target = session.execute(
                 select(StickyMessage).where(StickyMessage.channel_id == str(target.id))
             ).scalars().first()
-            if existing_target:
-                await ctx.followup.send(f"❌ <#{target.id}> đã có sticky. Dùng `/sticky remove` trước.")
+            if exismessagesg_target:
+                await ctx.followup.send(f"❌ <#{target.id}> already has a sticky. Use `/sticky remove` first.")
                 return
             # Delete old from source
             if sticky.last_message_id:
@@ -719,7 +719,7 @@ class StickyCog(discord.Cog):
             sticky.current_count = 0
             session.commit()
             await _do_resend(self.bot, sticky, session)
-            await ctx.followup.send(f"✅ Đã chuyển sticky từ <#{source.id}> sang <#{target.id}>.")
+            await ctx.followup.send(f"✅ Moved sticky from <#{source.id}> to <#{target.id}>.")
         finally:
             session.close()
 
@@ -737,13 +737,13 @@ class StickyCog(discord.Cog):
                 select(StickyMessage).where(StickyMessage.channel_id == str(source.id))
             ).scalars().first()
             if not sticky:
-                await ctx.followup.send(f"❌ Không tìm thấy sticky trong <#{source.id}>.")
+                await ctx.followup.send(f"❌ Sticky not found in <#{source.id}>.")
                 return
-            existing_target = session.execute(
+            exismessagesg_target = session.execute(
                 select(StickyMessage).where(StickyMessage.channel_id == str(target.id))
             ).scalars().first()
-            if existing_target:
-                await ctx.followup.send(f"❌ <#{target.id}> đã có sticky.")
+            if exismessagesg_target:
+                await ctx.followup.send(f"❌ <#{target.id}> already has a sticky.")
                 return
             new_sticky = StickyMessage(
                 guild_id=sticky.guild_id,
@@ -765,7 +765,7 @@ class StickyCog(discord.Cog):
             session.commit()
             session.refresh(new_sticky)
             await _do_resend(self.bot, new_sticky, session)
-            await ctx.followup.send(f"✅ Đã copy sticky từ <#{source.id}> sang <#{target.id}>.")
+            await ctx.followup.send(f"✅ Copied sticky from <#{source.id}> to <#{target.id}>.")
         finally:
             session.close()
 
@@ -785,17 +785,17 @@ class StickyCog(discord.Cog):
                     select(StickyMessage).where(StickyMessage.channel_id == str(channel.id))
                 ).scalars().first()
                 if not sticky:
-                    await ctx.followup.send(f"❌ Không có sticky trong <#{channel.id}>.")
+                    await ctx.followup.send(f"❌ No sticky in <#{channel.id}>.")
                     return
                 embed = discord.Embed(title=f"📊 Stats — #{channel.name}", color=0x5865F2)
-                embed.add_field(name="Trạng thái", value="✅ Bật" if sticky.is_enabled else "⏸ Tắt", inline=True)
-                embed.add_field(name="Đã gửi", value=str(sticky.resend_count), inline=True)
-                embed.add_field(name="Loại", value="Embed" if sticky.embed_enabled else "Text", inline=True)
-                embed.add_field(name="Trigger", value=f"Sau {sticky.message_count_trigger} tin", inline=True)
+                embed.add_field(name="Status", value="✅ On" if sticky.is_enabled else "⏸ Off", inline=True)
+                embed.add_field(name="Sent", value=str(sticky.resend_count), inline=True)
+                embed.add_field(name="Type", value="Embed" if sticky.embed_enabled else "Text", inline=True)
+                embed.add_field(name="Trigger", value=f"After {sticky.message_count_trigger} messages", inline=True)
                 if sticky.interval_minutes:
                     embed.add_field(name="Interval", value=f"{sticky.interval_minutes}p", inline=True)
                 if sticky.last_sent:
-                    embed.add_field(name="Gửi lần cuối", value=sticky.last_sent.strftime("%d/%m/%Y %H:%M"), inline=True)
+                    embed.add_field(name="Last sent", value=sticky.last_sent.strftime("%d/%m/%Y %H:%M"), inline=True)
             else:
                 stickies = session.execute(
                     select(StickyMessage).where(StickyMessage.guild_id == str(ctx.guild_id))
@@ -803,14 +803,14 @@ class StickyCog(discord.Cog):
                 active = sum(1 for s in stickies if s.is_enabled)
                 total_sends = sum(s.resend_count or 0 for s in stickies)
                 embed = discord.Embed(title=f"📊 Sticky Stats — {ctx.guild.name}", color=0x5865F2)
-                embed.add_field(name="Tổng sticky", value=str(len(stickies)), inline=True)
-                embed.add_field(name="Đang hoạt động", value=str(active), inline=True)
-                embed.add_field(name="Tổng lần gửi", value=str(total_sends), inline=True)
+                embed.add_field(name="Total stickies", value=str(len(stickies)), inline=True)
+                embed.add_field(name="Active", value=str(active), inline=True)
+                embed.add_field(name="Total sends", value=str(total_sends), inline=True)
                 top = sorted(stickies, key=lambda s: s.resend_count or 0, reverse=True)[:5]
                 if top:
                     embed.add_field(
-                        name="Top kênh",
-                        value="\n".join(f"<#{s.channel_id}> — {s.resend_count} lần" for s in top),
+                        name="Top channels",
+                        value="\n".join(f"<#{s.channel_id}> — {s.resend_count} times" for s in top),
                         inline=False,
                     )
             await ctx.followup.send(embed=embed)

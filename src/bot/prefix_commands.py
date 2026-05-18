@@ -1,7 +1,7 @@
 """Prefix bridge for user-facing commands.
 
 Admin/staff commands intentionally stay slash-only. This listener only maps public
-member commands to the existing slash command handlers.
+member commands to the exismessagesg slash command handlers.
 """
 from __future__ import annotations
 
@@ -159,7 +159,7 @@ class PrefixCommandsCog(discord.Cog):
     async def _guard(self, ctx: PrefixContext, feature: str) -> bool:
         if feature_enabled(feature):
             return True
-        await ctx.respond("❌ Tính năng này đã bị tắt.", delete_after=10)
+        await ctx.respond("❌ This feature has been disabled.", delete_after=10)
         return False
 
     def _cog(self, name: str):
@@ -213,12 +213,12 @@ class PrefixCommandsCog(discord.Cog):
                 await cog.userinfo_cmd(ctx, user=member)
             elif cmd == "qr":
                 if not args:
-                    await ctx.respond(f"Dùng: `{ctx.prefix}qr <text/url>`", delete_after=10)
+                    await ctx.respond(f"Usage: `{ctx.prefix}qr <text/url>`", delete_after=10)
                 else:
                     await cog.qr_cmd(ctx, text=" ".join(args))
             elif cmd == "poll":
                 if len(args) < 3:
-                    await ctx.respond(f"Dùng: `{ctx.prefix}poll \"Câu hỏi\" \"Option 1\" \"Option 2\" ...`", delete_after=12)
+                    await ctx.respond(f"Usage: `{ctx.prefix}poll \"Question\" \"Option 1\" \"Option 2\" ...`", delete_after=12)
                 else:
                     await cog.poll_cmd(ctx, args[0], args[1], args[2], *(args[3:7] + [None] * 4)[:4])
             return True
@@ -256,7 +256,7 @@ class PrefixCommandsCog(discord.Cog):
             elif sub in {"leaderboard", "top", "lb"}:
                 await cog.invites_leaderboard(ctx)
             else:
-                await ctx.respond(f"Dùng: `{ctx.prefix}invites me|info @user|leaderboard`", delete_after=12)
+                await ctx.respond(f"Usage: `{ctx.prefix}invites me|info @user|leaderboard`", delete_after=12)
             return True
 
         return False

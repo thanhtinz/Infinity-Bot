@@ -65,14 +65,14 @@ class ButtonRoleButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         role = interaction.guild.get_role(self.role_id)
         if not role:
-            return await interaction.response.send_message("❌ Role không tồn tại.", ephemeral=True)
+            return await interaction.response.send_message("❌ Role does not exist.", ephemeral=True)
         member = interaction.user
         if role in member.roles:
             await member.remove_roles(role, reason="Button Role toggle")
-            await interaction.response.send_message(f"➖ Đã gỡ role **{role.name}**", ephemeral=True)
+            await interaction.response.send_message(f"➖ Removed role **{role.name}**", ephemeral=True)
         else:
             await member.add_roles(role, reason="Button Role toggle")
-            await interaction.response.send_message(f"➕ Đã thêm role **{role.name}**", ephemeral=True)
+            await interaction.response.send_message(f"➕ Added role **{role.name}**", ephemeral=True)
 
 
 class SelectMenuRoleView(discord.ui.View):
@@ -92,7 +92,7 @@ class SelectMenuRoleView(discord.ui.View):
             self.add_item(SelectMenuRoleSelect(
                 panel_id=panel.id,
                 options=options,
-                placeholder=panel.placeholder or "Chọn role...",
+                placeholder=panel.placeholder or "Select role...",
                 min_values=panel.min_values or 0,
                 max_values=min(panel.max_values or 1, len(options)),
             ))
@@ -118,7 +118,7 @@ class SelectMenuRoleSelect(discord.ui.Select):
         for rid in all_role_ids:
             role = interaction.guild.get_role(rid)
             if not role:
-                continue
+                conmessagesue
             if rid in selected_role_ids and role not in member.roles:
                 await member.add_roles(role, reason="Select Menu Role")
                 added.append(role.name)
@@ -128,11 +128,11 @@ class SelectMenuRoleSelect(discord.ui.Select):
 
         parts = []
         if added:
-            parts.append(f"➕ Thêm: {', '.join(added)}")
+            parts.append(f"➕ Add: {', '.join(added)}")
         if removed:
-            parts.append(f"➖ Gỡ: {', '.join(removed)}")
+            parts.append(f"➖ Removed: {', '.join(removed)}")
         if not parts:
-            parts.append("Không có thay đổi.")
+            parts.append("No changes.")
         await interaction.response.send_message("\n".join(parts), ephemeral=True)
 
 
@@ -145,7 +145,7 @@ class RolesCog(discord.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         if not check_feature(self): return
-        """Register persistent views for all existing panels."""
+        """Register persistent views for all exismessagesg panels."""
         db = SessionLocal()
         try:
             button_panels = db.execute(select(ButtonRole)).scalars().all()
@@ -178,11 +178,11 @@ class RolesCog(discord.Cog):
         try:
             panel = db.get(ButtonRole, panel_id)
             if not panel:
-                return await ctx.respond("❌ Panel không tồn tại.", ephemeral=True)
+                return await ctx.respond("❌ Panel does not exist.", ephemeral=True)
 
             embed = discord.Embed(
-                title=panel.embed_title or "🎭 Chọn Role",
-                description=panel.embed_description or "Nhấn nút bên dưới để nhận/gỡ role.",
+                title=panel.embed_title or "🎭 Select Role",
+                description=panel.embed_description or "Press a button below to add/remove a role.",
                 color=int(panel.embed_color.lstrip("#"), 16) if panel.embed_color else 0x5865F2,
             )
             _apply_embed_extras(embed, panel)
@@ -192,7 +192,7 @@ class RolesCog(discord.Cog):
             panel.message_id = str(msg.id)
             db.commit()
             self.bot.add_view(view, message_id=msg.id)
-            await ctx.respond(f"✅ Đã deploy button role panel #{panel_id} tại {target_ch.mention}", ephemeral=True)
+            await ctx.respond(f"✅ Deployed button role panel #{panel_id} at {target_ch.mention}", ephemeral=True)
         finally:
             db.close()
 
@@ -209,11 +209,11 @@ class RolesCog(discord.Cog):
         try:
             panel = db.get(SelectMenuRole, panel_id)
             if not panel:
-                return await ctx.respond("❌ Panel không tồn tại.", ephemeral=True)
+                return await ctx.respond("❌ Panel does not exist.", ephemeral=True)
 
             embed = discord.Embed(
-                title=panel.embed_title or "🎭 Chọn Role",
-                description=panel.embed_description or "Chọn role từ menu bên dưới.",
+                title=panel.embed_title or "🎭 Select Role",
+                description=panel.embed_description or "Select a role from the menu below.",
                 color=int(panel.embed_color.lstrip("#"), 16) if panel.embed_color else 0x5865F2,
             )
             _apply_embed_extras(embed, panel)
@@ -223,6 +223,6 @@ class RolesCog(discord.Cog):
             panel.message_id = str(msg.id)
             db.commit()
             self.bot.add_view(view, message_id=msg.id)
-            await ctx.respond(f"✅ Đã deploy select role panel #{panel_id} tại {target_ch.mention}", ephemeral=True)
+            await ctx.respond(f"✅ Deployed select role panel #{panel_id} at {target_ch.mention}", ephemeral=True)
         finally:
             db.close()
