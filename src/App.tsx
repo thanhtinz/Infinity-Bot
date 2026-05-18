@@ -191,6 +191,9 @@ const navGroups: NavGroup[] = [
       { to: "/config/payments", icon: CreditCard, label: "Payments", feature: "shop" },
       { to: "/my-plan", icon: Crown, label: "My Plan" },
       { to: "/staff-permissions", icon: Shield, label: "Staff Permissions" },
+      { to: "/backup/list", icon: Database, label: "Backups" },
+      { to: "/backup/schedule", icon: Clock, label: "Backup Schedule" },
+      { to: "/backup/history", icon: ScrollText, label: "Backup History" },
     ],
   },
   {
@@ -201,9 +204,6 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/bot-status", icon: Activity, label: "nav_botStatus" },
       { to: "/config/discord", icon: Bot, label: "nav_discordBot" },
-      { to: "/backup/list", icon: Database, label: "Backups" },
-      { to: "/backup/schedule", icon: Clock, label: "Backup Schedule" },
-      { to: "/backup/history", icon: ScrollText, label: "Backup History" },
       { to: "/premium/config", icon: CreditCard, label: "Premium Payments" },
       { to: "/premium/plans", icon: Gem, label: "Premium Plans" },
       { to: "/premium/management", icon: Crown, label: "Premium Management" },
@@ -532,7 +532,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (isError) return <Navigate to="/login" replace />;
 
   // Một số route owner không cần guild
-  const guildFreeRoutes = ["/bot-status", "/backup", "/backup/list", "/backup/schedule", "/backup/history", "/config/discord", "/security-config", "/premium/config", "/premium/plans", "/premium/management"];
+  const guildFreeRoutes = ["/bot-status", "/config/discord", "/security-config", "/premium/config", "/premium/plans", "/premium/management"];
   if (!selectedGuildId && !guildFreeRoutes.includes(location.pathname)) {
     return <Navigate to="/select-guild" replace />;
   }
@@ -700,9 +700,9 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/verification/pull" element={<VerifyPull />} />
         <Route path="/verification/stats" element={<VerifyStats />} />
         <Route path="/backup" element={<Navigate to="/backup/list" replace />} />
-        <Route path="/backup/list" element={<OwnerRoute><BackupList /></OwnerRoute>} />
-        <Route path="/backup/schedule" element={<OwnerRoute><BackupSchedule /></OwnerRoute>} />
-        <Route path="/backup/history" element={<OwnerRoute><BackupHistory /></OwnerRoute>} />
+        <Route path="/backup/list" element={<BackupList />} />
+        <Route path="/backup/schedule" element={<BackupSchedule />} />
+        <Route path="/backup/history" element={<BackupHistory />} />
         <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
         <Route path="/firewall/rules" element={<FirewallRules />} />
         <Route path="/firewall/logs" element={<FirewallLogs />} />
