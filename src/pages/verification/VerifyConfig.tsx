@@ -233,109 +233,120 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
 function VerifyPreview({ config: c }: { config: VerificationConfig }) {
   const activeSocials = SOCIALS.filter(s => c.socials?.[s.key]);
   const bgEffect = c.bg_effect || "none";
+  const bgColor = c.bg_color || "#0b0d14";
+  const textColor = c.text_color || "#ffffff";
+  const btnColor = c.btn_color || "#5865F2";
+  const cardBg = c.card_bg_color || "#1a1d2e";
+  const cardBorder = c.card_border_color || "#1a1d2e";
 
   return (
     <div className="relative w-full rounded-xl overflow-hidden border border-border" style={{ minHeight: 500 }}>
-      <div
-        className="absolute inset-0"
+      {/* Background layer */}
+      <div className="absolute inset-0 z-0"
         style={{
-          backgroundColor: c.bg_color || "#0f0f17",
+          backgroundColor: bgColor,
           backgroundImage: c.page_background_url ? `url(${c.page_background_url})` : undefined,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       />
-      {c.page_background_url && <div className="absolute inset-0 bg-black/50" />}
+      {c.page_background_url && <div className="absolute inset-0 bg-black/50 z-0" />}
 
-      {/* Background Effects */}
+      {/* Background Effects (z-10) */}
       {bgEffect === "stars" && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="absolute w-0.5 bg-gradient-to-b from-white/60 to-transparent"
               style={{
                 height: `${40 + (i * 17 % 60)}px`,
                 left: `${(i * 17) % 100}%`,
                 top: `${(i * 13) % 50}%`,
-                animation: `shootingStar ${2 + (i % 3)}s linear ${i * 0.8}s infinite`,
+                animation: `pShootingStar ${2 + (i % 3)}s linear ${i * 0.8}s infinite`,
                 transform: "rotate(-45deg)",
               }}
             />
           ))}
-          <style>{`@keyframes shootingStar { 0%{transform:translateX(0) translateY(0) rotate(-45deg);opacity:1} 100%{transform:translateX(300px) translateY(300px) rotate(-45deg);opacity:0} }`}</style>
+          <style>{`@keyframes pShootingStar { 0%{transform:translateX(0) translateY(0) rotate(-45deg);opacity:1} 100%{transform:translateX(300px) translateY(300px) rotate(-45deg);opacity:0} }`}</style>
         </div>
       )}
       {bgEffect === "particles" && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
           {Array.from({ length: 20 }).map((_, i) => (
             <div key={i} className="absolute w-1 h-1 rounded-full bg-white/20"
               style={{
                 left: `${(i * 5) % 100}%`,
                 top: `${(i * 7) % 100}%`,
-                animation: `floatP ${4 + (i % 6)}s ease-in-out ${(i % 5) * 0.8}s infinite alternate`,
+                animation: `pFloatP ${4 + (i % 6)}s ease-in-out ${(i % 5) * 0.8}s infinite alternate`,
               }}
             />
           ))}
-          <style>{`@keyframes floatP { 0%{transform:translateY(0) scale(1);opacity:0.2} 100%{transform:translateY(-40px) scale(1.5);opacity:0.6} }`}</style>
+          <style>{`@keyframes pFloatP { 0%{transform:translateY(0) scale(1);opacity:0.2} 100%{transform:translateY(-40px) scale(1.5);opacity:0.6} }`}</style>
         </div>
       )}
       {bgEffect === "gradient" && (
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: `linear-gradient(45deg, ${c.btn_color || "#5865F2"}20, transparent, ${c.btn_color || "#5865F2"}10)`, animation: "gradShift 8s ease infinite" }} />
+        <div className="absolute inset-0 pointer-events-none z-10"
+          style={{ background: `linear-gradient(45deg, ${btnColor}20, transparent, ${btnColor}10)`, animation: "pGradShift 8s ease infinite" }} />
+      )}
+      {bgEffect === "rain" && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
+          {Array.from({ length: 15 }).map((_, i) => (
+            <div key={i} className="absolute w-px bg-gradient-to-b from-green-400/60 to-transparent"
+              style={{
+                height: `${20 + (i * 11 % 40)}px`,
+                left: `${(i * 7) % 100}%`,
+                top: `-${(i * 5) % 20}%`,
+                animation: `pRain ${1 + (i % 3) * 0.5}s linear ${(i % 5) * 0.3}s infinite`,
+              }}
+            />
+          ))}
+          <style>{`@keyframes pRain { 0%{transform:translateY(0);opacity:0.8} 100%{transform:translateY(600px);opacity:0} }`}</style>
+        </div>
       )}
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[500px] p-8 text-center"
-        style={{ fontFamily: c.font_family, color: c.text_color || "#ffffff" }}>
+      {/* Content (z-20) — card layout matching real verify page */}
+      <div className="relative z-20 flex flex-col items-center justify-center min-h-[500px] p-6"
+        style={{ fontFamily: c.font_family }}>
+        <div className="w-full max-w-xs rounded-2xl border p-6 text-center shadow-2xl"
+          style={{ backgroundColor: `${cardBg}e6`, borderColor: cardBorder, color: textColor }}>
 
-        {c.page_logo_url && (
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden border border-border">
-            <img src={c.page_logo_url} alt="Logo" className="h-full w-full object-cover" />
-          </div>
-        )}
+          {c.page_logo_url && (
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden border-2"
+              style={{ borderColor: `${textColor}15` }}>
+              <img src={c.page_logo_url} alt="Logo" className="h-full w-full object-cover" />
+            </div>
+          )}
 
-        <h1 className="text-2xl font-bold mb-2" style={{
-          textShadow: c.glow_effect ? `0 0 20px ${c.text_color || "#fff"}, 0 0 40px ${c.text_color || "#fff"}40` : undefined,
-        }}>
-          {c.typewriter_effect ? (c.page_title || "Verify Your Account").slice(0, Math.ceil(((c.page_title || "Verify Your Account").length) * 0.7)) + "▌" : (c.page_title || "Verify Your Account")}
-        </h1>
+          <h1 className="text-xl font-bold mb-1.5"
+            style={{ textShadow: c.glow_effect ? `0 0 16px ${textColor}, 0 0 32px ${textColor}40` : undefined }}>
+            {c.typewriter_effect
+              ? (c.page_title || "Verify Your Account").slice(0, Math.ceil(((c.page_title || "Verify Your Account").length) * 0.7)) + "▌"
+              : (c.page_title || "Verify Your Account")}
+          </h1>
 
-        {c.page_description && (
-          <p className="text-sm mb-4 opacity-70">{c.page_description}</p>
-        )}
+          {c.page_description && (
+            <p className="text-xs mb-4 opacity-60">{c.page_description}</p>
+          )}
 
-        <button
-          className="px-6 py-2.5 rounded-lg font-medium text-sm transition-all"
-          style={{
-            backgroundColor: c.btn_color || "#5865F2",
-            color: "#fff",
-            border: `1px solid ${c.btn_border_color || "transparent"}`,
-          }}
-        >
-          {c.button_text || "Verify with Discord"}
-        </button>
+          <button className="px-5 py-2 rounded-lg font-medium text-sm w-full"
+            style={{ backgroundColor: btnColor, color: "#fff", border: `1px solid ${c.btn_border_color || btnColor}` }}>
+            {c.button_text || "Verify with Discord"}
+          </button>
 
-        {activeSocials.length > 0 && (
-          <div className="flex gap-2 mt-4">
-            {activeSocials.map(s => {
-              const Icon = s.icon;
-              return (
-                <a key={s.key} href={c.socials[s.key]} target="_blank" rel="noopener noreferrer"
-                  className="w-7 h-7 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors">
-                  <Icon className="w-3.5 h-3.5" style={{ color: s.color }} />
-                </a>
-              );
-            })}
-          </div>
-        )}
+          {activeSocials.length > 0 && (
+            <div className="flex gap-1.5 justify-center mt-3">
+              {activeSocials.map(s => {
+                const Icon = s.icon;
+                return (
+                  <div key={s.key} className="w-6 h-6 rounded-full flex items-center justify-center bg-white/10">
+                    <Icon className="w-3 h-3" style={{ color: s.color }} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
-        {c.terms_url && (
-          <p className="mt-3 text-[10px] opacity-30" style={{ color: c.text_color }}>
-            By verifying you agree to the <span className="underline">Terms</span>
-          </p>
-        )}
-
-        <p className="mt-4 text-[10px] opacity-20" style={{ color: c.text_color }}>
-          {c.page_footer_text || "Powered by Infinity Bot"}
-        </p>
+          <p className="mt-3 text-[10px] opacity-20">{c.page_footer_text || "Powered by Infinity Bot"}</p>
+        </div>
       </div>
     </div>
   );

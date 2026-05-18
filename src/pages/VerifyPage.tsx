@@ -136,6 +136,29 @@ function FloatingParticles() {
   );
 }
 
+function DigitalRain() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {Array.from({ length: 20 }).map((_, i) => (
+        <div key={i} className="absolute w-px bg-gradient-to-b from-green-400/60 to-transparent"
+          style={{
+            height: `${20 + Math.random() * 50}px`,
+            left: `${Math.random() * 100}%`,
+            top: `-${Math.random() * 20}%`,
+            animation: `digitalRain ${0.8 + Math.random() * 2}s linear ${Math.random() * 3}s infinite`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes digitalRain {
+          0% { transform: translateY(0); opacity: 0.8; }
+          100% { transform: translateY(110vh); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function useTypewriter(text: string, enabled: boolean, speed = 50) {
   const [displayed, setDisplayed] = useState(enabled ? "" : text);
   useEffect(() => {
@@ -390,6 +413,7 @@ export function VerifyPage() {
 
       {bgEffect === "stars" && <div className="z-10"><ShootingStars /></div>}
       {bgEffect === "particles" && <div className="z-10"><FloatingParticles /></div>}
+      {bgEffect === "rain" && <div className="z-10"><DigitalRain /></div>}
       {bgEffect === "gradient" && (
         <div className="absolute inset-0 z-10" style={{
           background: `linear-gradient(45deg, ${btnColor}20, transparent, ${btnColor}10)`,
