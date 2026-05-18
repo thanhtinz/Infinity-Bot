@@ -151,7 +151,7 @@ const FEATURE_LABELS: Record<string, string> = {
   advanced_captcha: "Captcha nâng cao (hCaptcha / Turnstile)",
   scheduled_backup: "Sao lưu tự động theo lịch",
   backup_retention: "Lưu trữ backup lâu hơn",
-  remove_branding: "Ẩn thương hiệu Workshop",
+  remove_branding: "Ẩn thương hiệu Infinity Bot",
   priority_support: "Hỗ trợ ưu tiên",
 };
 
