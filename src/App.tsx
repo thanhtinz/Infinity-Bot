@@ -105,6 +105,7 @@ const navGroups: NavGroup[] = [
       { to: "/milestones", icon: Trophy, label: "Spending Milestones" },
       { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
       { to: "/config/shop-channels", icon: Hash, label: "nav_shopChannels", feature: "shop" },
+      { to: "/config/payments", icon: CreditCard, label: "Payments" },
     ],
   },
   {
@@ -138,6 +139,7 @@ const navGroups: NavGroup[] = [
       { to: "/verification/stats", icon: BarChart3, label: "Verify Stats" },
       { to: "/firewall/logs", icon: ShieldAlert, label: "Firewall Logs" },
       { to: "/alerts", icon: Bell, label: "Server Alerts" },
+      { to: "/staff-permissions", icon: UserCog, label: "Staff Permissions" },
     ],
   },
   {
@@ -161,18 +163,6 @@ const navGroups: NavGroup[] = [
       { to: "/scheduled-messages", icon: Clock, label: "nav_scheduledMessages", feature: "scheduler" },
       { to: "/embeds", icon: Layout, label: "nav_embeds" },
       { to: "/emojis", icon: Smile, label: "nav_emojis" },
-    ],
-  },
-  {
-    key: "settings",
-    icon: Settings,
-    label: "nav_botSettings",
-    items: [
-      { to: "/bot-settings", icon: Settings, label: "nav_botSettings" },
-      { to: "/config/payments", icon: CreditCard, label: "Payments", feature: "shop" },
-      { to: "/staff-permissions", icon: UserCog, label: "Staff Permissions" },
-      { to: "/my-plan", icon: Crown, label: "My Plan" },
-      { to: "/backup", icon: Database, label: "Backups" },
     ],
   },
   {
@@ -282,6 +272,21 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           </div>
         ) : (
         <>
+        {/* Bot Settings — standalone top link */}
+        <Link
+          to="/bot-settings"
+          onClick={onClose}
+          className={cn(
+            "flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+            location.pathname === "/bot-settings"
+              ? "bg-primary text-primary-foreground"
+              : "text-foreground/80 hover:bg-accent/40 hover:text-foreground"
+          )}
+        >
+          <Settings className="w-4 h-4 shrink-0" />
+          {t("nav_botSettings")}
+        </Link>
+
         {/* Grouped nav */}
         {filteredGroups.map((group) => {
           const isOpen = openGroups.has(group.key);
