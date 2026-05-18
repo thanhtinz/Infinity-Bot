@@ -135,6 +135,8 @@ async def init_db():
         # verification_configs
         vc = cols("verification_configs")
         for col, stmt in {
+            "page_logo_url": "ALTER TABLE verification_configs ADD COLUMN page_logo_url VARCHAR",
+            "page_background_url": "ALTER TABLE verification_configs ADD COLUMN page_background_url VARCHAR",
             "page_footer_text": "ALTER TABLE verification_configs ADD COLUMN page_footer_text VARCHAR",
             "page_theme": "ALTER TABLE verification_configs ADD COLUMN page_theme VARCHAR DEFAULT 'dark'",
             "custom_css": "ALTER TABLE verification_configs ADD COLUMN custom_css TEXT",

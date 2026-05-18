@@ -26,6 +26,8 @@ import { BackupSchedule } from "./BackupSchedule";
 import { BackupHistory } from "./BackupHistory";
 import type { ServerBackupItem } from "./shared";
 import { fetchBackups, formatDate, formatBytes } from "./shared";
+import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
+import { useEntitlements } from "@/hooks/useEntitlements";
 
 // ── Restore API call ──────────────────────────────────────────────────────
 async function restoreBackupApi(
@@ -254,6 +256,7 @@ function RestoreTab() {
 // ── Main BackupPage ───────────────────────────────────────────────────────
 export function BackupPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { hasFeature, isLoading: entLoading } = useEntitlements();
 
   const tabParam = searchParams.get("tab");
   const activeTab: TabValue = isValidTab(tabParam) ? tabParam : "backup";
@@ -263,29 +266,42 @@ export function BackupPage() {
   }
 
   return (
-    <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="backup">Backup</TabsTrigger>
-        <TabsTrigger value="restore">Restore</TabsTrigger>
-        <TabsTrigger value="schedule">Schedule</TabsTrigger>
-        <TabsTrigger value="history">History</TabsTrigger>
-      </TabsList>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <h2 className="text-lg font-semibold">Backup & Restore</h2>
+        <PremiumBadge />
+      </div>
+      <PremiumGate
+        feature="scheduled_backup"
+        featureLabel="Backup & Restore"
+        hasAccess={hasFeature("scheduled_backup")}
+        isLoading={entLoading}
+      >
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="backup">Backup</TabsTrigger>
+            <TabsTrigger value="restore">Restore</TabsTrigger>
+            <TabsTrigger value="schedule">Schedule</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
+          </TabsList>
 
-      <TabsContent value="backup">
-        <BackupList />
-      </TabsContent>
+          <TabsContent value="backup">
+            <BackupList />
+          </TabsContent>
 
-      <TabsContent value="restore">
-        <RestoreTab />
-      </TabsContent>
+          <TabsContent value="restore">
+            <RestoreTab />
+          </TabsContent>
 
-      <TabsContent value="schedule">
-        <BackupSchedule />
-      </TabsContent>
+          <TabsContent value="schedule">
+            <BackupSchedule />
+          </TabsContent>
 
-      <TabsContent value="history">
-        <BackupHistory />
-      </TabsContent>
-    </Tabs>
+          <TabsContent value="history">
+            <BackupHistory />
+          </TabsContent>
+        </Tabs>
+      </PremiumGate>
+    </div>
   );
 }
