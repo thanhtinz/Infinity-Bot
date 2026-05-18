@@ -654,34 +654,90 @@ export function VerifyPage() {
 
 function MusicPlayer({ url, color }: { url: string; color: string }) {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [muted, setMuted] = useState(true);
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.volume = 0.3;
-    audio.muted = true;
-    audio.play().catch(() => {});
+    // autoplay blocked by browsers — start paused, user clicks to play
+    audio.pause();
+    setPlaying(false);
   }, [url]);
 
   function toggle() {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.muted = !audio.muted;
-    setMuted(audio.muted);
-    if (!audio.muted) audio.play().catch(() => {});
+    if (playing) {
+      audio.pause();
+      setPlaying(false);
+    } else {
+      audio.play().then(() => setPlaying(true)).catch(() => {});
+    }
   }
 
   return (
     <>
       <audio ref={audioRef} src={url} loop />
+      <style>{`
+        @keyframes vinylSpin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+        .vinyl-disc {
+          animation: vinylSpin 3s linear infinite;
+          animation-play-state: paused;
+        }
+        .vinyl-disc.spinning {
+          animation-play-state: running;
+        }
+      `}</style>
       <button
         onClick={toggle}
-        className="fixed bottom-4 right-4 z-50 w-10 h-10 rounded-full flex items-center justify-center text-white text-lg shadow-lg transition-all hover:scale-110 active:scale-95"
-        style={{ backgroundColor: color }}
-        title={muted ? "Unmute" : "Mute"}
+        title={playing ? "Pause music" : "Play music"}
+        className="fixed bottom-4 left-4 z-50 group"
+        style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
       >
-        {muted ? "🔇" : "🔊"}
+        {/* Outer glow ring */}
+        <div
+          className="relative w-14 h-14 rounded-full shadow-2xl transition-transform duration-200 group-hover:scale-110 group-active:scale-95"
+          style={{ boxShadow: playing ? `0 0 18px ${color}80, 0 0 6px ${color}40` : "0 4px 16px rgba(0,0,0,0.5)" }}
+        >
+          {/* Vinyl record body */}
+          <div
+            className={`vinyl-disc${playing ? " spinning" : ""} w-14 h-14 rounded-full flex items-center justify-center`}
+            style={{
+              background: `conic-gradient(
+                #1a1a1a 0deg, #2a2a2a 30deg, #1a1a1a 60deg,
+                #2a2a2a 90deg, #1a1a1a 120deg, #2a2a2a 150deg,
+                #1a1a1a 180deg, #2a2a2a 210deg, #1a1a1a 240deg,
+                #2a2a2a 270deg, #1a1a1a 300deg, #2a2a2a 330deg, #1a1a1a 360deg
+              )`,
+            }}
+          >
+            {/* Groove rings */}
+            <div className="absolute w-10 h-10 rounded-full border border-white/5" />
+            <div className="absolute w-8 h-8 rounded-full border border-white/5" />
+            <div className="absolute w-6 h-6 rounded-full border border-white/5" />
+            {/* Center label */}
+            <div
+              className="relative w-5 h-5 rounded-full flex items-center justify-center shadow-md z-10"
+              style={{ backgroundColor: color }}
+            >
+              {/* Center hole */}
+              <div className="w-1.5 h-1.5 rounded-full bg-black/60" />
+            </div>
+          </div>
+
+          {/* Pause overlay (shown when paused) */}
+          {!playing && (
+            <div className="absolute inset-0 rounded-full flex items-center justify-center bg-black/40">
+              <svg width="14" height="16" viewBox="0 0 14 16" fill="white" opacity="0.9">
+                <path d="M0 0 L14 8 L0 16 Z" />
+              </svg>
+            </div>
+          )}
+        </div>
       </button>
     </>
   );
