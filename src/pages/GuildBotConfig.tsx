@@ -221,9 +221,29 @@ export function GuildBotConfig() {
           <li>Create a new application (or select existing)</li>
           <li>Copy the <strong>Application ID</strong> and <strong>Client Secret</strong> from OAuth2</li>
           <li>Go to Bot tab, copy the <strong>Bot Token</strong></li>
-          <li>In OAuth2 → Redirects, add your verify URL as redirect</li>
+          <li>In OAuth2 → Redirects, add the redirect URL below</li>
           <li>Invite the bot to your server with required permissions</li>
         </ol>
+        <div className="mt-3 space-y-1">
+          <p className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider">OAuth2 Redirect URL</p>
+          <div className="flex items-center gap-2 rounded-md bg-background/60 border border-indigo-500/20 px-3 py-2">
+            <code className="flex-1 text-xs text-indigo-200 break-all select-all">
+              {window.location.origin}/api/verify/callback
+            </code>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/api/verify/callback`);
+              }}
+              className="shrink-0 text-indigo-400 hover:text-indigo-200 transition-colors"
+              title="Copy"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Actions */}
