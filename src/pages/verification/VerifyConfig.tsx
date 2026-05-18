@@ -142,8 +142,10 @@ function MediaUpload({
       fd.append("file", file);
       setProgress(50);
       const res = await apiFetch("/api/files/upload", { method: "POST", body: fd });
+      if (!res.ok) throw new Error("Upload failed");
       setProgress(90);
-      onChange(res.url);
+      const data = await res.json();
+      onChange(data.url);
       setProgress(100);
     } catch (e: unknown) {
       toast({ title: "Upload failed", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
