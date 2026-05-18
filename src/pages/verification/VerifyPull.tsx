@@ -41,10 +41,13 @@ import {
   fetchPullHistory,
   formatDate,
 } from "./shared";
+import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
+import { useEntitlements } from "@/hooks/useEntitlements";
 
 export function VerifyPull() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { hasFeature, isLoading: entLoading } = useEntitlements();
 
   const [pullRestoreRoles, setPullRestoreRoles] = useState(true);
   const [pullDelay, setPullDelay] = useState(5);
@@ -130,9 +133,10 @@ export function VerifyPull() {
 
       {/* Start pull controls */}
       {!pullStatusQuery.data?.active && (
+        <PremiumGate feature="pull_members" featureLabel="Pull Members" hasAccess={hasFeature("pull_members")} isLoading={entLoading}>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Start Member Pull</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">Start Member Pull {!hasFeature("pull_members") && !entLoading && <PremiumBadge size="xs" />}</CardTitle>
             <CardDescription>
               Pull all verified members back into the Discord server with a join delay to avoid rate limits.
             </CardDescription>
@@ -180,6 +184,7 @@ export function VerifyPull() {
             </Button>
           </CardContent>
         </Card>
+        </PremiumGate>
       )}
 
       {/* Active pull progress */}

@@ -45,7 +45,7 @@ import type { LucideIcon } from "lucide-react";
 import { useGuild } from "@/contexts/GuildContext";
 import { deleteGuildBot, fetchConfig, fetchGuildBot, updateConfig, updateGuildBot, validateGuildBot } from "./shared";
 import type { VerificationConfig } from "./shared";
-import { PremiumBadge } from "@/components/ui/premium-gate";
+import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { apiFetch } from "@/hooks/useApi";
 import { formatDistanceToNow } from "date-fns";
@@ -313,7 +313,7 @@ export function VerifyConfig() {
   const [fwNewRule, setFwNewRule] = useState<{ rule_type: "block" | "allow"; target_type: TargetType; target_value: string; reason: string }>({
     rule_type: "block", target_type: "user_id", target_value: "", reason: "",
   });
-  const { hasFeature } = useEntitlements();
+  const { hasFeature, isLoading: entLoading } = useEntitlements();
 
   const configQuery = useQuery({ queryKey: ["verification-config"], queryFn: fetchConfig });
   const domainStatusQuery = useQuery({
@@ -422,11 +422,15 @@ export function VerifyConfig() {
         <Button
           variant="outline"
           className="h-10 gap-2 justify-start"
-          onClick={() => setDomainDialogOpen(true)}
+          onClick={() => {
+            if (!hasFeature("custom_domain")) return;
+            setDomainDialogOpen(true);
+          }}
         >
           <Globe className="h-4 w-4 text-blue-500" />
           <span className="font-medium text-sm">Custom Domain</span>
-          {domainStatus?.status === "verified" && <Badge variant="secondary" className="ml-auto text-[10px] py-0">Active</Badge>}
+          {!hasFeature("custom_domain") && !entLoading && <PremiumBadge size="xs" className="ml-auto" />}
+          {hasFeature("custom_domain") && domainStatus?.status === "verified" && <Badge variant="secondary" className="ml-auto text-[10px] py-0">Active</Badge>}
         </Button>
 
         <Button
@@ -698,20 +702,26 @@ export function VerifyConfig() {
           <div className="rounded-xl border border-border bg-card p-5 space-y-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Protection</p>
             {[
-              { key: "block_vpn" as const, label: "Block VPN networks" },
-              { key: "block_mobile" as const, label: "Block mobile/wireless networks" },
-              { key: "block_scammers" as const, label: "Block known scammers" },
-              { key: "deny_alt_role" as const, label: "Don't give role to alt accounts" },
-              { key: "auto_ban_alts" as const, label: "Auto-ban alt accounts on verify" },
-              { key: "kick_on_deauth" as const, label: "Kick when user de-authorizes bot" },
-              { key: "close_page_after_verify" as const, label: "Close page after successful verify" },
-            ].map(({ key, label }) => (
+              { key: "block_vpn" as const, label: "Block VPN networks", premiumKey: "vpn_block" },
+              { key: "block_mobile" as const, label: "Block mobile/cellular networks (LTE, 5G, 6G)", premiumKey: "vpn_block" },
+              { key: "block_scammers" as const, label: "Block known scammers", premiumKey: null },
+              { key: "deny_alt_role" as const, label: "Don't give role to alt accounts", premiumKey: "alt_detection" },
+              { key: "auto_ban_alts" as const, label: "Auto-ban alt accounts on verify", premiumKey: "alt_detection" },
+              { key: "kick_on_deauth" as const, label: "Kick when user de-authorizes bot", premiumKey: "kick_unauthorized" },
+              { key: "close_page_after_verify" as const, label: "Close page after successful verify", premiumKey: null },
+            ].map(({ key, label, premiumKey }) => (
               <div key={key} className="flex items-center justify-between">
-                <p className="text-sm font-medium">{label}</p>
-                <Switch checked={configForm[key]} onCheckedChange={v => update({ [key]: v })} />
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">{label}</p>
+                  {premiumKey && !hasFeature(premiumKey) && <PremiumBadge size="xs" />}
+                </div>
+                <PremiumGate feature={premiumKey ?? ""} hasAccess={!premiumKey || hasFeature(premiumKey)} isLoading={entLoading} mode="inline">
+                  <Switch checked={configForm[key]} onCheckedChange={v => update({ [key]: v })} />
+                </PremiumGate>
               </div>
             ))}
             {configForm.block_vpn && (
+              <PremiumGate feature="vpn_block" featureLabel="VPN/Proxy/Hosting Detection" hasAccess={hasFeature("vpn_block")} isLoading={entLoading}>
               <div className="space-y-3 pl-3 border-l-2 border-blue-500/40 mt-2">
                 <div>
                   <Label className="text-xs mb-1.5 block">VPN Detection Provider</Label>
@@ -726,19 +736,25 @@ export function VerifyConfig() {
                   <Input type="password" value={configForm.vpn_api_key || ""} onChange={e => update({ vpn_api_key: e.target.value })} placeholder="Enter API key..." />
                 </div>
               </div>
+              </PremiumGate>
             )}
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5 space-y-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Privacy & Permissions</p>
             {[
-              { key: "no_save_ip" as const, label: "Don't save IP addresses" },
-              { key: "guild_join_enabled" as const, label: "Enable \"Join servers for you\" permission" },
-              { key: "force_all_permissions" as const, label: "Force members to accept all permissions" },
-            ].map(({ key, label }) => (
+              { key: "no_save_ip" as const, label: "Don't save IP addresses", premiumKey: null },
+              { key: "guild_join_enabled" as const, label: "Enable \"Join servers for you\" permission", premiumKey: "view_discord_data" },
+              { key: "force_all_permissions" as const, label: "Force members to accept all permissions", premiumKey: "view_discord_data" },
+            ].map(({ key, label, premiumKey }) => (
               <div key={key} className="flex items-center justify-between">
-                <p className="text-sm font-medium">{label}</p>
-                <Switch checked={configForm[key]} onCheckedChange={v => update({ [key]: v })} />
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">{label}</p>
+                  {premiumKey && !hasFeature(premiumKey) && <PremiumBadge size="xs" />}
+                </div>
+                <PremiumGate feature={premiumKey ?? ""} hasAccess={!premiumKey || hasFeature(premiumKey)} isLoading={entLoading} mode="inline">
+                  <Switch checked={configForm[key]} onCheckedChange={v => update({ [key]: v })} />
+                </PremiumGate>
               </div>
             ))}
           </div>
@@ -777,10 +793,11 @@ export function VerifyConfig() {
           </div>
 
           {/* Block rules */}
+          <PremiumGate feature="advanced_blocklist" featureLabel="Advanced Blocklist (IP, Country, ASN, Email)" hasAccess={hasFeature("advanced_blocklist")} isLoading={entLoading}>
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold">Block / Allow Rules</p>
+                <p className="text-sm font-semibold flex items-center gap-2">Block / Allow Rules <PremiumBadge size="xs" /></p>
                 <p className="text-xs text-muted-foreground">Block or allow specific users, IPs, countries, email domains, or ASNs</p>
               </div>
               <Button size="sm" onClick={() => setFwAddOpen(true)} className="gap-1.5"><Plus className="h-4 w-4" />Add Rule</Button>
@@ -847,6 +864,7 @@ export function VerifyConfig() {
               </div>
             )}
           </div>
+          </PremiumGate>
         </TabsContent>
 
         {/* ─── CHANNELS ─── */}
@@ -880,9 +898,13 @@ export function VerifyConfig() {
         {/* ─── ADVANCED ─── */}
         <TabsContent value="advanced" className="space-y-4 pt-4">
           {/* Custom Bot */}
+          <PremiumGate feature="custom_bot" featureLabel="Custom Bot" hasAccess={hasFeature("custom_bot")} isLoading={entLoading}>
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <div className="flex items-start justify-between gap-3">
-              <div><p className="text-sm font-semibold">Custom Bot</p><p className="text-xs text-muted-foreground">Use a dedicated bot token and OAuth app for this guild's verification flow.</p></div>
+              <div>
+                <p className="text-sm font-semibold flex items-center gap-2">Custom Bot <PremiumBadge size="xs" /></p>
+                <p className="text-xs text-muted-foreground">Use a dedicated bot token and OAuth app for this guild's verification flow.</p>
+              </div>
               <div className="flex items-center gap-2">
                 {guildBotQuery.data?.status === "active" && <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 bg-emerald-500/10 text-[10px]"><ShieldCheck className="h-3 w-3 mr-1" />Active</Badge>}
                 {guildBotQuery.data?.status === "error" && <Badge variant="destructive" className="text-[10px]"><TriangleAlert className="h-3 w-3 mr-1" />Error</Badge>}
@@ -912,6 +934,7 @@ export function VerifyConfig() {
               </Button>
             </div>
           </div>
+          </PremiumGate>
 
           {/* Misc advanced */}
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
@@ -919,15 +942,29 @@ export function VerifyConfig() {
             <div><Label className="text-xs text-muted-foreground mb-1.5 block">Pull Cooldown (hours)</Label>
               <Input type="number" min={0} max={720} value={configForm.pull_cooldown_hours ?? 10} onChange={e => update({ pull_cooldown_hours: parseInt(e.target.value) || 0 })} />
               <p className="text-xs text-muted-foreground mt-1">0 = no cooldown</p></div>
-            <div><Label className="text-xs text-muted-foreground mb-1.5 block">Gateway Server ID</Label>
-              <Input value={configForm.gateway_guild_id} onChange={e => update({ gateway_guild_id: e.target.value })} placeholder="Add members to extra server on verify" /></div>
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <Label className="text-xs text-muted-foreground">Gateway Server ID</Label>
+                <PremiumBadge size="xs" />
+              </div>
+              <PremiumGate feature="multi_server_pull" featureLabel="Multi-Server Pulling" hasAccess={hasFeature("multi_server_pull")} isLoading={entLoading} mode="inline">
+                <Input value={configForm.gateway_guild_id} onChange={e => update({ gateway_guild_id: e.target.value })} placeholder="Add members to extra server on verify" />
+              </PremiumGate>
+            </div>
             <div><Label className="text-xs text-muted-foreground mb-1.5 block">Redirect URL (after verify)</Label>
               <Input value={configForm.redirect_url} onChange={e => update({ redirect_url: e.target.value })} placeholder="https://..." /></div>
             <div><Label className="text-xs text-muted-foreground mb-1.5 block">Terms of Service URL</Label>
               <Input value={configForm.terms_url} onChange={e => update({ terms_url: e.target.value })} placeholder="https://..." /></div>
-            <div><Label className="text-xs text-muted-foreground mb-1.5 block">Custom CSS</Label>
-              <textarea value={configForm.custom_css} onChange={e => update({ custom_css: e.target.value })} placeholder="/* Custom styles */" rows={4}
-                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-xs font-mono placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" /></div>
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <Label className="text-xs text-muted-foreground">Custom CSS</Label>
+                <PremiumBadge size="xs" />
+              </div>
+              <PremiumGate feature="custom_css_feature" featureLabel="Custom CSS" hasAccess={hasFeature("custom_css_feature")} isLoading={entLoading} mode="inline">
+                <textarea value={configForm.custom_css} onChange={e => update({ custom_css: e.target.value })} placeholder="/* Custom styles */" rows={4}
+                  className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-xs font-mono placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+              </PremiumGate>
+            </div>
           </div>
 
           <div className="flex justify-end">

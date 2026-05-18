@@ -24,6 +24,8 @@ import {
   ChevronLeft, ChevronRight, Mail, Globe, Eye,
   AlertTriangle, Hash, Users, ArrowRightLeft, Loader2,
 } from "lucide-react";
+import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import {
   fetchMembers, blacklistMember, deleteMember,
   deleteUnauthorized, transferMembers, formatDate, riskBadge,
@@ -35,6 +37,7 @@ const PER_PAGE = 20;
 export function VerifyMembers() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { hasFeature, isLoading: entLoading } = useEntitlements();
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -296,7 +299,14 @@ export function VerifyMembers() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4 text-muted-foreground" />
-                  <span className="truncate text-muted-foreground">{selectedMember.ip_address ?? "No IP"}</span>
+                  {hasFeature("view_ip") ? (
+                    <span className="truncate text-muted-foreground font-mono text-xs">{selectedMember.ip_address ?? "No IP"}</span>
+                  ) : (
+                    <PremiumGate feature="view_ip" featureLabel="View Member IP" hasAccess={false} isLoading={entLoading} mode="inline">
+                      <span className="blur-sm select-none text-muted-foreground">192.168.x.x</span>
+                    </PremiumGate>
+                  )}
+                  {!hasFeature("view_ip") && !entLoading && <PremiumBadge size="xs" />}
                 </div>
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-muted-foreground" />
