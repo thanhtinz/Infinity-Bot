@@ -35,8 +35,7 @@ import {
   Link2, Copy, Check, Globe,
   Image, Paintbrush, Palette, Sparkles, Type, Share2,
   KeyRound, Code2,
-  Send, Tv, ShoppingCart,
-  Bot, ShieldCheck, TriangleAlert, Trash2,
+  Trash2,
   Settings2, Upload, X, Music, Hash,
   Plus, XCircle, Search, User, Flag, Mail, Network,
   MessageSquare,
@@ -352,21 +351,6 @@ export function VerifyConfig() {
     if (guildBotQuery.data) setGuildBotForm({ client_id: guildBotQuery.data.client_id || "", bot_token: "", client_secret: "" });
   }, [guildBotQuery.data]);
 
-  const guildBotSaveMutation = useMutation({
-    mutationFn: () => updateGuildBot(guildBotForm),
-    onSuccess: () => { toast({ title: "Custom bot saved" }); qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] }); setGuildBotForm(p => ({ ...p, bot_token: "", client_secret: "" })); },
-    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-  });
-  const guildBotValidateMutation = useMutation({
-    mutationFn: validateGuildBot,
-    onSuccess: () => { toast({ title: "Custom bot validated" }); qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] }); },
-    onError: (err) => toast({ title: "Validation failed", description: err.message, variant: "destructive" }),
-  });
-  const guildBotDeleteMutation = useMutation({
-    mutationFn: deleteGuildBot,
-    onSuccess: () => { toast({ title: "Reverted to main bot" }); qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] }); setGuildBotForm({ client_id: "", bot_token: "", client_secret: "" }); },
-    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-  });
   const configMutation = useMutation({
     mutationFn: updateConfig,
     onSuccess: () => {
