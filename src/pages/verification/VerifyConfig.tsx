@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RoleSelect } from "@/components/RoleSelect";
+import { ChannelSelect } from "@/components/ChannelSelect";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -877,32 +879,32 @@ export function VerifyConfig() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs text-muted-foreground mb-1.5 block">Verified Role ID</Label>
-                <Input value={configForm.verified_role_id} onChange={e => update({ verified_role_id: e.target.value })} placeholder="Role ID" />
+                <RoleSelect value={configForm.verified_role_id ?? ""} onChange={val => update({ verified_role_id: val })} placeholder="Select verified role" />
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground mb-1.5 block">Unverified Role ID</Label>
-                <Input value={configForm.unverified_role_id} onChange={e => update({ unverified_role_id: e.target.value })} placeholder="Optional" />
+                <RoleSelect value={configForm.unverified_role_id ?? ""} onChange={val => update({ unverified_role_id: val })} placeholder="Select unverified role" />
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground mb-1.5 block">Verify Channel ID</Label>
-                <Input value={configForm.verify_channel_id} onChange={e => update({ verify_channel_id: e.target.value })} placeholder="Channel ID" />
+                <ChannelSelect value={configForm.verify_channel_id ?? ""} onChange={val => update({ verify_channel_id: val })} placeholder="Select channel" filter="text" />
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground mb-1.5 block">Log Channel ID</Label>
-                <Input value={configForm.log_channel_id} onChange={e => update({ log_channel_id: e.target.value })} placeholder="Channel ID" />
+                <ChannelSelect value={configForm.log_channel_id ?? ""} onChange={val => update({ log_channel_id: val })} placeholder="Select channel" filter="text" />
               </div>
             </div>
             <Separator className="opacity-10" />
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Notify Roles</p>
             <div>
               <Label className="text-xs text-muted-foreground mb-1.5 block">Notify role for successful verifications</Label>
-              <Input value={configForm.notify_success_role_id} onChange={e => update({ notify_success_role_id: e.target.value })}
-                placeholder="Role ID — pinged when member verifies" />
+              <RoleSelect value={configForm.notify_success_role_id ?? ""} onChange={val => update({ notify_success_role_id: val })}
+                placeholder="Select role — pinged when member verifies" />
             </div>
             <div>
               <Label className="text-xs text-muted-foreground mb-1.5 block">Notify role for blocked events</Label>
-              <Input value={configForm.notify_blocked_role_id} onChange={e => update({ notify_blocked_role_id: e.target.value })}
-                placeholder="Role ID — pinged when member is blocked" />
+              <RoleSelect value={configForm.notify_blocked_role_id ?? ""} onChange={val => update({ notify_blocked_role_id: val })}
+                placeholder="Select role — pinged when member is blocked" />
             </div>
           </Section>
 

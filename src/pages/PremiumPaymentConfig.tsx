@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ChannelSelect } from "@/components/ChannelSelect";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -292,13 +293,13 @@ export function PremiumPaymentConfig() {
                   <Label htmlFor="premium-renewal-channel">
                     Kênh nhắc nhở gia hạn
                   </Label>
-                  <Input
-                    id="premium-renewal-channel"
-                    value={form.premium_renewal_channel_id}
-                    onChange={(e) =>
-                      updateField("premium_renewal_channel_id", e.target.value)
+                  <ChannelSelect
+                    value={form.premium_renewal_channel_id ?? ""}
+                    onChange={(val) =>
+                      updateField("premium_renewal_channel_id", val)
                     }
-                    placeholder="Channel ID"
+                    placeholder="Select channel"
+                    filter="text"
                   />
                 </div>
               </div>

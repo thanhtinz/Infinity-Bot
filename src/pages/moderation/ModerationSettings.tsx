@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RoleSelect, MultiRoleSelect } from "@/components/RoleSelect";
+import { ChannelSelect, MultiChannelSelect } from "@/components/ChannelSelect";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
@@ -87,28 +89,30 @@ export function ModerationSettings() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>{t("mod_muteRoleId")}</Label>
-              <Input
+              <RoleSelect
+                value={configForm.mute_role_id ?? ""}
+                onChange={(val) => updateConfig("mute_role_id", val)}
                 placeholder={t("mod_roleId")}
-                value={configForm.mute_role_id}
-                onChange={(e) => handleConfigInput("mute_role_id", e)}
               />
             </div>
             <div className="space-y-1.5">
               <Label>{t("mod_modLogChannelId")}</Label>
-              <Input
+              <ChannelSelect
+                value={configForm.mod_log_channel_id ?? ""}
+                onChange={(val) => updateConfig("mod_log_channel_id", val)}
                 placeholder={t("mod_channelId")}
-                value={configForm.mod_log_channel_id}
-                onChange={(e) => handleConfigInput("mod_log_channel_id", e)}
+                filter="text"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
             <Label>{t("mod_lockdownChannels")}</Label>
-            <Input
+            <MultiChannelSelect
+              value={(configForm.lockdown_channels ?? "").split(",").filter(Boolean)}
+              onChange={(vals) => updateConfig("lockdown_channels", vals.join(","))}
               placeholder={t("mod_commaSeparatedChannelIds")}
-              value={configForm.lockdown_channels}
-              onChange={(e) => handleConfigInput("lockdown_channels", e)}
+              filter="text"
             />
             <p className="text-[11px] text-muted-foreground">
               {t("mod_channelIdsComma")}
@@ -126,18 +130,19 @@ export function ModerationSettings() {
             </div>
             <div className="space-y-1.5">
               <Label>{t("mod_ignoredRolesLabel")}</Label>
-              <Input
+              <MultiRoleSelect
+                value={(configForm.ignored_roles ?? "").split(",").filter(Boolean)}
+                onChange={(vals) => updateConfig("ignored_roles", vals.join(","))}
                 placeholder={t("mod_commaSeparatedRoleIds")}
-                value={configForm.ignored_roles}
-                onChange={(e) => handleConfigInput("ignored_roles", e)}
               />
             </div>
             <div className="space-y-1.5">
               <Label>{t("mod_ignoredChannelsLabel")}</Label>
-              <Input
+              <MultiChannelSelect
+                value={(configForm.ignored_channels ?? "").split(",").filter(Boolean)}
+                onChange={(vals) => updateConfig("ignored_channels", vals.join(","))}
                 placeholder={t("mod_commaSeparatedChannelIds")}
-                value={configForm.ignored_channels}
-                onChange={(e) => handleConfigInput("ignored_channels", e)}
+                filter="text"
               />
             </div>
           </div>
