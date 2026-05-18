@@ -661,6 +661,7 @@ export function VerifyPage() {
 function MusicPlayer({ url, color }: { url: string; color: string }) {
   const audioRef  = useRef<HTMLAudioElement>(null);
   const [audioState, setAudioState] = useState<"idle" | "loading" | "playing" | "error">("idle");
+  const [muted, setMuted]           = useState(false);
   const [hovered, setHovered]       = useState(false);
   const [pos, setPos]               = useState({ x: 16, y: window.innerHeight / 2 - 28 });
   const posRef    = useRef(pos);
@@ -684,9 +685,18 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
     a.addEventListener("waiting", onWaiting);
     a.addEventListener("playing", onPlaying);
     a.addEventListener("error",   onError);
-    // Attempt autoplay — browser may block it (autoplay policy), that's fine
+
+    // Autoplay: try unmuted first (Chrome/Firefox after interaction),
+    // fallback to muted (Safari allows muted autoplay always)
     setAudioState("loading");
-    a.play().catch(() => setAudioState("idle"));
+    a.muted = false;
+    a.play().catch(() => {
+      // Unmuted blocked → try muted (Safari trick)
+      a.muted = true;
+      setMuted(true);
+      a.play().catch(() => setAudioState("idle"));
+    });
+
     return () => {
       a.removeEventListener("play",    onPlay);
       a.removeEventListener("pause",   onPause);
@@ -695,6 +705,25 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
       a.removeEventListener("error",   onError);
     };
   }, [url]);
+
+  /* ── Unmute on first user interaction anywhere on page ── */
+  useEffect(() => {
+    if (!muted) return;
+    function unmute() {
+      const a = audioRef.current;
+      if (!a) return;
+      a.muted = false;
+      setMuted(false);
+    }
+    window.addEventListener("click",      unmute, { once: true });
+    window.addEventListener("touchstart", unmute, { once: true });
+    window.addEventListener("keydown",    unmute, { once: true });
+    return () => {
+      window.removeEventListener("click",      unmute);
+      window.removeEventListener("touchstart", unmute);
+      window.removeEventListener("keydown",    unmute);
+    };
+  }, [muted]);
 
   /* ── Drag handlers — empty deps, read pos via ref ── */
   function startDrag(clientX: number, clientY: number) {
@@ -808,7 +837,10 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
               zIndex: 2, position: "relative",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(0,0,0,0.75)" }} />
+              {muted
+                ? <div style={{ fontSize: 8, lineHeight: 1 }}>🔇</div>
+                : <div style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(0,0,0,0.75)" }} />
+              }
             </div>
           </div>
 
@@ -848,7 +880,7 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
             color: hasError ? "rgba(252,165,165,0.9)" : "rgba(255,255,255,0.45)",
             background: hasError ? "rgba(80,0,0,0.6)" : "rgba(0,0,0,0.48)",
           }}>
-            {hasError ? "⚠ audio error" : playing ? "🎵 playing" : "🎵 click to play"}
+            {hasError ? "⚠ audio error" : muted ? "🔇 tap anywhere to unmute" : playing ? "🎵 playing" : "🎵 click to play"}
           </div>
         )}
       </div>
