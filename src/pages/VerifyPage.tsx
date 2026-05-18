@@ -345,7 +345,7 @@ export function VerifyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: bgColor }}>
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: bgColor }}>
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin" style={{ color: `${textColor}60` }} />
           <p style={{ color: `${textColor}50` }} className="text-sm">Loading...</p>
@@ -356,7 +356,7 @@ export function VerifyPage() {
 
   if (error && !config) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0b0d14] p-4">
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#0b0d14", padding: "1rem" }}>
         <div className="w-full max-w-md rounded-2xl bg-[#1a1d2e] border border-white/10 p-8 text-center shadow-2xl">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10">
             <XCircle className="h-8 w-8 text-red-400" />
@@ -370,7 +370,7 @@ export function VerifyPage() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: bgColor, fontFamily }}>
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem", backgroundColor: bgColor, fontFamily }}>
         {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />}
         {bgImage && <div className="absolute inset-0 bg-black/60" />}
         <div className="relative w-full max-w-md rounded-2xl backdrop-blur-xl border p-8 text-center shadow-2xl"
@@ -395,7 +395,7 @@ export function VerifyPage() {
       : urlError === "captcha_failed" ? "CAPTCHA verification failed."
       : `An error occurred: ${urlError}`;
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: bgColor, fontFamily }}>
+      <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem", backgroundColor: bgColor, fontFamily }}>
         {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />}
         {bgImage && <div className="absolute inset-0 bg-black/60" />}
         <div className="relative w-full max-w-md rounded-2xl backdrop-blur-xl border p-8 text-center shadow-2xl"
@@ -417,8 +417,10 @@ export function VerifyPage() {
 
   return (
     <div
-      className="h-screen w-screen flex items-center justify-center p-4 relative overflow-hidden"
+      className="flex items-center justify-center p-4 relative overflow-hidden"
       style={{
+        width: "100vw",
+        height: "100dvh",
         backgroundColor: bgColor,
         fontFamily,
         cursor: config?.cursor_url ? `url(${config.cursor_url}), auto` : undefined,
