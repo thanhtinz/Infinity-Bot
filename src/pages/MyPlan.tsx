@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
@@ -33,6 +33,8 @@ import {
   CalendarClock,
   Users,
   Info,
+  X,
+  Sparkles,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -145,13 +147,23 @@ const PAYMENT_STATUS_BADGES: Record<string, { label: string; className: string }
 };
 
 const FEATURE_LABELS: Record<string, string> = {
-  custom_bot: "Custom Bot",
-  advanced_captcha: "Advanced Captcha",
-  scheduled_backup: "Scheduled Backup",
-  backup_retention: "Backup Retention",
-  remove_branding: "Remove Branding",
-  priority_support: "Priority Support",
+  custom_bot: "Bot riêng (tên, avatar tùy chỉnh)",
+  advanced_captcha: "Captcha nâng cao (hCaptcha / Turnstile)",
+  scheduled_backup: "Sao lưu tự động theo lịch",
+  backup_retention: "Lưu trữ backup lâu hơn",
+  remove_branding: "Ẩn thương hiệu Workshop",
+  priority_support: "Hỗ trợ ưu tiên",
 };
+
+/** Ordered feature keys for the comparison table */
+const COMPARISON_FEATURE_KEYS = [
+  "custom_bot",
+  "advanced_captcha",
+  "scheduled_backup",
+  "backup_retention",
+  "remove_branding",
+  "priority_support",
+] as const;
 
 function formatDate(dateStr?: string): string {
   if (!dateStr) return "—";
@@ -316,8 +328,13 @@ export function MyPlan() {
   // ── No active subscription ────────────────────────────────────────────
 
   if (!subscription || isExpired) {
+    const publicPlans = plans
+      .filter((p) => p.active && p.is_public)
+      .sort((a, b) => a.sort_order - b.sort_order);
+
     return (
-      <div className="space-y-6 max-w-4xl">
+      <div className="space-y-8 max-w-5xl">
+        {/* Header */}
         <div>
           <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
             <Crown className="h-6 w-6 text-primary" />
@@ -356,94 +373,195 @@ export function MyPlan() {
           </div>
         )}
 
-        {/* Available Plans */}
+        {/* ── Feature Comparison Table ──────────────────────────────────── */}
+        {publicPlans.length > 0 && (
+          <div>
+            <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              So sánh tính năng
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Xem nhanh những gì bạn nhận được ở mỗi gói.
+            </p>
+
+            <div className="overflow-x-auto rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="min-w-[200px] sticky left-0 bg-muted/50 z-10">
+                      Tính năng
+                    </TableHead>
+                    <TableHead className="text-center min-w-[100px]">
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="font-semibold text-muted-foreground">Free</span>
+                        <span className="text-xs text-muted-foreground">Miễn phí</span>
+                      </div>
+                    </TableHead>
+                    {publicPlans.map((plan) => (
+                      <TableHead key={plan.id} className="text-center min-w-[130px]">
+                        <div className="flex flex-col items-center gap-1.5">
+                          <div
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ backgroundColor: plan.color || "#6366f1" }}
+                          />
+                          <span className="font-semibold" style={{ color: plan.color || undefined }}>
+                            {plan.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatPrice(plan.price, plan.currency)} / {INTERVAL_LABELS[plan.interval] || plan.interval}
+                          </span>
+                          {plan.badge_text && (
+                            <Badge
+                              className="text-[10px] px-1.5 py-0 leading-4"
+                              style={{
+                                backgroundColor: plan.color || "#6366f1",
+                                color: "#fff",
+                              }}
+                            >
+                              {plan.badge_text}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {COMPARISON_FEATURE_KEYS.map((key) => (
+                    <TableRow key={key}>
+                      <TableCell className="font-medium text-sm sticky left-0 bg-background z-10">
+                        {FEATURE_LABELS[key] || key}
+                      </TableCell>
+                      {/* Free column */}
+                      <TableCell className="text-center">
+                        {key === "backup_retention" ? (
+                          <span className="text-xs text-muted-foreground">7 ngày</span>
+                        ) : (
+                          <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                        )}
+                      </TableCell>
+                      {/* Premium plan columns */}
+                      {publicPlans.map((plan) => {
+                        const value = plan.features?.[key];
+                        return (
+                          <TableCell key={plan.id} className="text-center">
+                            {typeof value === "number" && value > 0 ? (
+                              <span className="text-sm font-medium" style={{ color: plan.color || undefined }}>
+                                {value} ngày
+                              </span>
+                            ) : value === true ? (
+                              <CheckCircle2
+                                className="h-4 w-4 mx-auto"
+                                style={{ color: plan.color || "#22c55e" }}
+                              />
+                            ) : (
+                              <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
+
+        {/* ── Plan Cards ────────────────────────────────────────────────── */}
         <div>
           <h2 className="text-lg font-semibold mb-1">Các gói Premium</h2>
           <p className="text-sm text-muted-foreground mb-4">Chọn gói phù hợp — liên hệ admin để kích hoạt cho server của bạn.</p>
-          {plans.length === 0 ? (
+          {publicPlans.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
                 Chưa có gói Premium nào.
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {plans
-                .filter((p) => p.active && p.is_public)
-                .sort((a, b) => a.sort_order - b.sort_order)
-                .map((plan) => (
-                  <Card
-                    key={plan.id}
-                    className="relative overflow-hidden"
-                  >
-                    {plan.badge_text && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {publicPlans.map((plan) => (
+                <Card
+                  key={plan.id}
+                  className="relative overflow-hidden group hover:shadow-md transition-shadow"
+                >
+                  {/* Top color accent bar */}
+                  <div
+                    className="absolute top-0 left-0 right-0 h-1"
+                    style={{ backgroundColor: plan.color || "#6366f1" }}
+                  />
+                  {plan.badge_text && (
+                    <div
+                      className="absolute top-3 right-0 px-3 py-1 text-xs font-bold text-white rounded-l-lg"
+                      style={{
+                        backgroundColor: plan.color || "#6366f1",
+                      }}
+                    >
+                      {plan.badge_text}
+                    </div>
+                  )}
+                  <CardHeader className="pt-5">
+                    <div className="flex items-center gap-2.5">
                       <div
-                        className="absolute top-0 right-0 px-3 py-1 text-xs font-bold text-white rounded-bl-lg"
-                        style={{
-                          backgroundColor: plan.color || "#6366f1",
-                        }}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: `${plan.color || "#6366f1"}18` }}
                       >
-                        {plan.badge_text}
-                      </div>
-                    )}
-                    <CardHeader>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{
-                            backgroundColor: plan.color || "#6366f1",
-                          }}
+                        <Crown
+                          className="h-4 w-4"
+                          style={{ color: plan.color || "#6366f1" }}
                         />
-                        <CardTitle className="text-lg">
-                          {plan.name}
-                        </CardTitle>
                       </div>
-                      {plan.description && (
-                        <CardDescription>
-                          {plan.description}
-                        </CardDescription>
-                      )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <span className="text-2xl font-bold">
-                          {formatPrice(plan.price, plan.currency)}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {" / "}
-                          {INTERVAL_LABELS[plan.interval] || plan.interval}
-                        </span>
-                      </div>
+                      <CardTitle className="text-lg">{plan.name}</CardTitle>
+                    </div>
+                    {plan.description && (
+                      <CardDescription className="mt-1.5">
+                        {plan.description}
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <span className="text-2xl font-bold">
+                        {formatPrice(plan.price, plan.currency)}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {" / "}
+                        {INTERVAL_LABELS[plan.interval] || plan.interval}
+                      </span>
+                    </div>
 
-                      {/* Features */}
-                      <div className="space-y-1.5">
-                        {Object.entries(plan.features || {})
-                          .filter(([, v]) =>
-                            typeof v === "boolean" ? v : Number(v) > 0
-                          )
-                          .map(([key, value]) => (
-                            <div
-                              key={key}
-                              className="flex items-center gap-2 text-sm"
-                            >
-                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                              <span>
-                                {FEATURE_LABELS[key] || key}
-                                {typeof value === "number" && value > 0
-                                  ? `: ${value} ngày`
-                                  : ""}
-                              </span>
-                            </div>
-                          ))}
-                      </div>
+                    {/* Features */}
+                    <div className="space-y-2">
+                      {Object.entries(plan.features || {})
+                        .filter(([, v]) =>
+                          typeof v === "boolean" ? v : Number(v) > 0
+                        )
+                        .map(([key, value]) => (
+                          <div
+                            key={key}
+                            className="flex items-center gap-2 text-sm"
+                          >
+                            <CheckCircle2
+                              className="h-3.5 w-3.5 shrink-0"
+                              style={{ color: plan.color || "#22c55e" }}
+                            />
+                            <span>
+                              {FEATURE_LABELS[key] || key}
+                              {typeof value === "number" && value > 0
+                                ? `: ${value} ngày`
+                                : ""}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
 
-                      <Button className="w-full" variant="outline">
-                        <Gem className="h-4 w-4 mr-2" />
-                        Liên hệ admin để kích hoạt
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
+                    <Button className="w-full" variant="outline">
+                      <Gem className="h-4 w-4 mr-2" />
+                      Liên hệ admin để kích hoạt
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </div>
@@ -492,8 +610,13 @@ export function MyPlan() {
 
   const statusInfo = STATUS_BADGES[subscription.status] ?? STATUS_BADGES.active;
 
+  const publicPlans = plans
+    .filter((p) => p.active && p.is_public)
+    .sort((a, b) => a.sort_order - b.sort_order);
+
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-8 max-w-5xl">
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
           <Crown className="h-6 w-6 text-primary" />
@@ -512,8 +635,8 @@ export function MyPlan() {
         </p>
       </div>
 
-      {/* Renewal warning banner */}
-      {daysRemaining !== null && daysRemaining <= 7 && daysRemaining > 0 && (
+      {/* Renewal warning banner — yellow when ≤14 days */}
+      {isExpiringSoon && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 px-4 py-3 flex items-center gap-3">
           <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
           <div>
@@ -528,17 +651,27 @@ export function MyPlan() {
       )}
 
       {/* Current Plan Card */}
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        {/* Top accent bar */}
+        {currentPlan && (
+          <div
+            className="h-1.5"
+            style={{ backgroundColor: currentPlan.color || "#6366f1" }}
+          />
+        )}
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {currentPlan && (
                 <div
-                  className="w-4 h-4 rounded-full"
-                  style={{
-                    backgroundColor: currentPlan.color || "#6366f1",
-                  }}
-                />
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: `${currentPlan.color || "#6366f1"}18` }}
+                >
+                  <Crown
+                    className="h-5 w-5"
+                    style={{ color: currentPlan.color || "#6366f1" }}
+                  />
+                </div>
               )}
               <div>
                 <CardTitle className="text-lg">
@@ -564,25 +697,33 @@ export function MyPlan() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div>
+            <div className="rounded-lg bg-muted/50 px-3 py-2">
               <p className="text-xs text-muted-foreground">Ngày bắt đầu</p>
               <p className="text-sm font-medium">
                 {formatDate(subscription.current_period_start)}
               </p>
             </div>
-            <div>
+            <div className="rounded-lg bg-muted/50 px-3 py-2">
               <p className="text-xs text-muted-foreground">Ngày hết hạn</p>
               <p className="text-sm font-medium">
                 {formatDate(subscription.current_period_end)}
               </p>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Còn lại</p>
-              <p className="text-sm font-medium">
+            <div
+              className={`rounded-lg px-3 py-2 ${
+                isExpiringSoon
+                  ? "bg-amber-50 dark:bg-amber-950/30"
+                  : "bg-muted/50"
+              }`}
+            >
+              <p className={`text-xs ${isExpiringSoon ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
+                Còn lại
+              </p>
+              <p className={`text-sm font-medium ${isExpiringSoon ? "text-amber-700 dark:text-amber-300" : ""}`}>
                 {daysRemaining !== null ? `${daysRemaining} ngày` : "—"}
               </p>
             </div>
-            <div>
+            <div className="rounded-lg bg-muted/50 px-3 py-2">
               <p className="text-xs text-muted-foreground">Phương thức</p>
               <p className="text-sm font-medium">
                 {subscription.payment_provider}
@@ -600,6 +741,9 @@ export function MyPlan() {
                 disabled={updateSubMutation.isPending}
               />
               <Label className="text-sm">Tự động gia hạn</Label>
+              {updateSubMutation.isPending && (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+              )}
             </div>
             {needsRenewal && (
               <Button size="sm">
@@ -611,29 +755,138 @@ export function MyPlan() {
         </CardContent>
       </Card>
 
+      {/* ── Feature Comparison Table (active sub) ──────────────────────── */}
+      {publicPlans.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            So sánh tính năng
+          </h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Xem nhanh những gì bạn nhận được ở mỗi gói.
+          </p>
+
+          <div className="overflow-x-auto rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="min-w-[200px] sticky left-0 bg-muted/50 z-10">
+                    Tính năng
+                  </TableHead>
+                  <TableHead className="text-center min-w-[100px]">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="font-semibold text-muted-foreground">Free</span>
+                      <span className="text-xs text-muted-foreground">Miễn phí</span>
+                    </div>
+                  </TableHead>
+                  {publicPlans.map((plan) => {
+                    const isCurrentPlan = plan.id === subscription.plan_id;
+                    return (
+                      <TableHead key={plan.id} className="text-center min-w-[130px]">
+                        <div className="flex flex-col items-center gap-1.5">
+                          <div
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ backgroundColor: plan.color || "#6366f1" }}
+                          />
+                          <span className="font-semibold" style={{ color: plan.color || undefined }}>
+                            {plan.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatPrice(plan.price, plan.currency)} / {INTERVAL_LABELS[plan.interval] || plan.interval}
+                          </span>
+                          {plan.badge_text && (
+                            <Badge
+                              className="text-[10px] px-1.5 py-0 leading-4"
+                              style={{
+                                backgroundColor: plan.color || "#6366f1",
+                                color: "#fff",
+                              }}
+                            >
+                              {plan.badge_text}
+                            </Badge>
+                          )}
+                          {isCurrentPlan && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 leading-4">
+                              Hiện tại
+                            </Badge>
+                          )}
+                        </div>
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {COMPARISON_FEATURE_KEYS.map((key) => (
+                  <TableRow key={key}>
+                    <TableCell className="font-medium text-sm sticky left-0 bg-background z-10">
+                      {FEATURE_LABELS[key] || key}
+                    </TableCell>
+                    {/* Free column */}
+                    <TableCell className="text-center">
+                      {key === "backup_retention" ? (
+                        <span className="text-xs text-muted-foreground">7 ngày</span>
+                      ) : (
+                        <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                      )}
+                    </TableCell>
+                    {/* Premium plan columns */}
+                    {publicPlans.map((plan) => {
+                      const value = plan.features?.[key];
+                      const isCurrentPlan = plan.id === subscription.plan_id;
+                      return (
+                        <TableCell
+                          key={plan.id}
+                          className={`text-center ${isCurrentPlan ? "bg-primary/5" : ""}`}
+                        >
+                          {typeof value === "number" && value > 0 ? (
+                            <span className="text-sm font-medium" style={{ color: plan.color || undefined }}>
+                              {value} ngày
+                            </span>
+                          ) : value === true ? (
+                            <CheckCircle2
+                              className="h-4 w-4 mx-auto"
+                              style={{ color: plan.color || "#22c55e" }}
+                            />
+                          ) : (
+                            <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                          )}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+
       {/* Available Plans */}
       <div>
         <h2 className="text-lg font-semibold mb-1">Các gói Premium</h2>
         <p className="text-sm text-muted-foreground mb-4">Nâng cấp hoặc thay đổi gói cho server.</p>
-        {plans.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {plans
-              .filter((p) => p.active && p.is_public)
-              .sort((a, b) => a.sort_order - b.sort_order)
-              .map((plan) => {
+        {publicPlans.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {publicPlans.map((plan) => {
                 const isCurrentPlan = plan.id === subscription.plan_id;
                 return (
                   <Card
                     key={plan.id}
-                    className={`relative overflow-hidden ${
+                    className={`relative overflow-hidden group hover:shadow-md transition-shadow ${
                       isCurrentPlan
                         ? "ring-2 ring-primary"
                         : ""
                     }`}
                   >
+                    {/* Top color accent bar */}
+                    <div
+                      className="absolute top-0 left-0 right-0 h-1"
+                      style={{ backgroundColor: plan.color || "#6366f1" }}
+                    />
                     {plan.badge_text && (
                       <div
-                        className="absolute top-0 right-0 px-3 py-1 text-xs font-bold text-white rounded-bl-lg"
+                        className="absolute top-3 right-0 px-3 py-1 text-xs font-bold text-white rounded-l-lg"
                         style={{
                           backgroundColor: plan.color || "#6366f1",
                         }}
@@ -641,14 +894,17 @@ export function MyPlan() {
                         {plan.badge_text}
                       </div>
                     )}
-                    <CardHeader>
-                      <div className="flex items-center gap-2">
+                    <CardHeader className="pt-5">
+                      <div className="flex items-center gap-2.5">
                         <div
-                          className="w-3 h-3 rounded-full"
-                          style={{
-                            backgroundColor: plan.color || "#6366f1",
-                          }}
-                        />
+                          className="w-8 h-8 rounded-lg flex items-center justify-center"
+                          style={{ backgroundColor: `${plan.color || "#6366f1"}18` }}
+                        >
+                          <Crown
+                            className="h-4 w-4"
+                            style={{ color: plan.color || "#6366f1" }}
+                          />
+                        </div>
                         <CardTitle className="text-lg">
                           {plan.name}
                         </CardTitle>
@@ -675,7 +931,7 @@ export function MyPlan() {
                         </span>
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {Object.entries(plan.features || {})
                           .filter(([, v]) =>
                             typeof v === "boolean" ? v : Number(v) > 0
@@ -685,7 +941,10 @@ export function MyPlan() {
                               key={key}
                               className="flex items-center gap-2 text-sm"
                             >
-                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                              <CheckCircle2
+                                className="h-3.5 w-3.5 shrink-0"
+                                style={{ color: plan.color || "#22c55e" }}
+                              />
                               <span>
                                 {FEATURE_LABELS[key] || key}
                                 {typeof value === "number" && value > 0
