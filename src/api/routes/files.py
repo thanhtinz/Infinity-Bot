@@ -1,5 +1,6 @@
 """Serve and upload files stored in Neon DB."""
 import uuid
+import urllib.parse
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header, Request
 from fastapi.responses import Response, StreamingResponse
 from sqlalchemy import select
@@ -84,7 +85,7 @@ def serve_file(file_id: str, request: Request, db=Depends(get_db)):
     media_type = f.content_type
     base_headers = {
         "Cache-Control": "public, max-age=31536000, immutable",
-        "Content-Disposition": f'inline; filename="{f.filename}"',
+        "Content-Disposition": f"inline; filename*=UTF-8''{urllib.parse.quote(f.filename, safe='')}",
         "Accept-Ranges": "bytes",
     }
 
