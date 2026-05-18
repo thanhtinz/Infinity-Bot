@@ -187,7 +187,7 @@ export function VerifyMembersPage() {
 
       {/* ── Action buttons ── */}
       <button
-        className="w-full flex items-center justify-center gap-3 bg-[#0f1117] hover:bg-[#181b25] border border-white/10 rounded-xl h-14 text-base font-semibold transition-colors"
+        className="w-full flex items-center justify-center gap-3 bg-card hover:bg-muted/50 border border-border rounded-xl h-14 text-base font-semibold transition-colors"
         onClick={() => setDeleteUnauthorizedOpen(true)}
       >
         <Trash2 className="h-5 w-5" />
@@ -195,7 +195,7 @@ export function VerifyMembersPage() {
       </button>
 
       <button
-        className="w-full flex items-center justify-center gap-3 bg-[#0f1117] hover:bg-[#181b25] border border-white/10 rounded-xl h-14 text-base font-semibold transition-colors"
+        className="w-full flex items-center justify-center gap-3 bg-card hover:bg-muted/50 border border-border rounded-xl h-14 text-base font-semibold transition-colors"
         onClick={() => setTransferDialogOpen(true)}
       >
         <ArrowRightLeft className="h-5 w-5" />
@@ -203,7 +203,7 @@ export function VerifyMembersPage() {
       </button>
 
       {/* ── Stats card ── */}
-      <div className="bg-[#0f1117] border border-white/10 rounded-xl p-5 space-y-2">
+      <div className="bg-card border border-border rounded-xl p-5 space-y-2">
         <div className="flex items-start justify-between">
           <div className="space-y-1.5 text-sm">
             {statsQuery.isLoading ? (
@@ -239,13 +239,13 @@ export function VerifyMembersPage() {
       </div>
 
       {/* ── Search ── */}
-      <div className="bg-[#0f1117] border border-white/10 rounded-xl p-4 space-y-2">
+      <div className="bg-card border border-border rounded-xl p-4 space-y-2">
         <div className="flex gap-2">
           <Input
             placeholder="Enter Discord ID, username, IP address, or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-transparent border-white/15"
+            className="flex-1 bg-transparent"
             onKeyDown={(e) => e.key === "Enter" && setDebouncedSearch(search)}
           />
           <Button
@@ -281,7 +281,7 @@ export function VerifyMembersPage() {
 
       {/* ── Members table ── */}
       {membersQuery.isLoading ? (
-        <div className="bg-[#0f1117] border border-white/10 rounded-xl overflow-hidden">
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="border-white/10">
@@ -302,7 +302,7 @@ export function VerifyMembersPage() {
           </Table>
         </div>
       ) : !membersQuery.data?.members.length ? (
-        <div className="bg-[#0f1117] border border-white/10 rounded-xl flex flex-col items-center justify-center py-16 text-center">
+        <div className="bg-card border border-border rounded-xl flex flex-col items-center justify-center py-16 text-center">
           <Users className="h-10 w-10 text-muted-foreground/40 mb-3" />
           <p className="font-medium">No members found</p>
           <p className="text-sm text-muted-foreground mt-1">
@@ -310,7 +310,7 @@ export function VerifyMembersPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-[#0f1117] border border-white/10 rounded-xl overflow-hidden">
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="border-white/10">
@@ -364,7 +364,7 @@ export function VerifyMembersPage() {
 
       {/* ── Pull Members Dialog ── */}
       <Dialog open={pullDialogOpen} onOpenChange={setPullDialogOpen}>
-        <DialogContent className="max-w-sm bg-[#0f1117] border-white/15">
+        <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-center text-lg">Pull Members</DialogTitle>
           </DialogHeader>
@@ -380,13 +380,13 @@ export function VerifyMembersPage() {
             </a>
 
             {/* Select a server */}
-            <div className="border border-blue-500 rounded-lg px-4 py-3 flex items-center justify-between bg-transparent cursor-pointer hover:bg-white/5 transition-colors">
+            <div className="border border-blue-500 rounded-lg px-4 py-3 flex items-center justify-between bg-transparent cursor-pointer hover:bg-muted/30 transition-colors">
               <span className="text-sm text-muted-foreground">Select a server</span>
               <ChevronLeft className="h-4 w-4 text-muted-foreground rotate-[-90deg]" />
             </div>
 
             {/* Select roles */}
-            <div className="border border-white/15 rounded-lg px-4 py-3 flex items-center justify-between bg-transparent cursor-pointer hover:bg-white/5 transition-colors">
+            <div className="border border-border rounded-lg px-4 py-3 flex items-center justify-between bg-transparent cursor-pointer hover:bg-muted/30 transition-colors">
               <span className="text-sm text-muted-foreground">Select role(s) to give</span>
               <div className="flex gap-0.5">
                 <ChevronLeft className="h-3 w-3 text-muted-foreground rotate-90" />
@@ -397,7 +397,7 @@ export function VerifyMembersPage() {
             {/* Number of members */}
             <Input
               placeholder="Number of members (Leave blank = all)"
-              className="bg-transparent border-white/15"
+              className="bg-transparent"
             />
 
             {/* Join Delay */}
@@ -407,7 +407,7 @@ export function VerifyMembersPage() {
                 <Info className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="flex items-center gap-3">
-                <div className="border border-white/15 rounded-lg px-3 py-1.5 w-16 text-center text-sm bg-transparent">
+                <div className="border border-border rounded-lg px-3 py-1.5 w-16 text-center text-sm bg-transparent">
                   {pullDelay}
                 </div>
                 <span className="text-sm text-muted-foreground">seconds</span>
@@ -460,7 +460,7 @@ export function VerifyMembersPage() {
             )}
 
             {/* Invite Discord bot */}
-            <button className="w-full flex items-center justify-center gap-2 bg-[#1a1d2e] hover:bg-[#22253a] border border-white/10 rounded-lg h-10 text-sm font-medium transition-colors">
+            <button className="w-full flex items-center justify-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-lg h-10 text-sm font-medium transition-colors">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.11 18.102.128 18.116a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z" />
               </svg>
@@ -469,11 +469,11 @@ export function VerifyMembersPage() {
 
             {/* Refresh buttons */}
             <div className="grid grid-cols-2 gap-2">
-              <button className="flex items-center justify-center gap-2 bg-[#1a1d2e] hover:bg-[#22253a] border border-white/10 rounded-lg h-9 text-sm font-medium transition-colors">
+              <button className="flex items-center justify-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-lg h-9 text-sm font-medium transition-colors">
                 <RotateCcw className="h-3.5 w-3.5" />
                 Refresh servers
               </button>
-              <button className="flex items-center justify-center gap-2 bg-[#1a1d2e] hover:bg-[#22253a] border border-white/10 rounded-lg h-9 text-sm font-medium transition-colors">
+              <button className="flex items-center justify-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-lg h-9 text-sm font-medium transition-colors">
                 <RotateCcw className="h-3.5 w-3.5" />
                 Refresh roles
               </button>
@@ -533,7 +533,7 @@ export function VerifyMembersPage() {
 
       {/* ── Deauthorized Users Dialog ── */}
       <Dialog open={deauthDialogOpen} onOpenChange={setDeauthDialogOpen}>
-        <DialogContent className="max-w-sm bg-[#0f1117] border-white/15">
+        <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-center text-base">Deauthorized Users</DialogTitle>
             <DialogDescription className="text-center text-xs">
@@ -557,7 +557,7 @@ export function VerifyMembersPage() {
                 {deauthQuery.data.members.map((m) => (
                   <div
                     key={m.id}
-                    className="flex items-start justify-between bg-[#181b25] rounded-xl px-4 py-3"
+                    className="flex items-start justify-between bg-muted/40 rounded-xl px-4 py-3"
                   >
                     <div>
                       <p className="text-sm font-semibold">{m.username}</p>
