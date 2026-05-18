@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, Home, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, UserCog, Lock } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, UserCog, Lock } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense, Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
+import { GuildSelector } from "@/components/GuildSelector";
 import { I18nProvider, useT } from "@/i18n";
 
 // ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
@@ -89,14 +90,6 @@ interface NavGroup {
 }
 
 const navGroups: NavGroup[] = [
-  {
-    key: "server",
-    icon: Home,
-    label: "Server",
-    items: [
-      { to: "/dashboard", icon: Home, label: "Overview" },
-    ],
-  },
   {
     key: "shop",
     icon: Package,
@@ -280,6 +273,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         <h1 className="font-bold text-lg">Infinity Bot</h1>
       </div>
 
+      <GuildSelector />
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {!selectedGuildId ? (
           <div className="text-center py-8">

@@ -11,18 +11,21 @@ import { cn } from "@/lib/utils";
 import type { Product } from "../types";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
+import { useGuild } from "@/contexts/GuildContext";
 
 export function ProductsManager() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useT();
   const queryClient = useQueryClient();
+  const { selectedGuildId } = useGuild();
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
   const { data: products = [], isLoading } = useQuery<Product[]>({
-    queryKey: ["products"],
+    queryKey: ["products", selectedGuildId],
     queryFn: () => apiFetch("/api/products").then((r) => r.json()),
     staleTime: 30_000,
+    enabled: !!selectedGuildId,
   });
 
   // ── Toggle product active ───────────────────────────────────
