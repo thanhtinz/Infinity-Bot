@@ -918,3 +918,32 @@ class SubscriptionPayment(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     subscription = relationship("GuildSubscription", foreign_keys=[subscription_id])
     plan = relationship("PremiumPlan", foreign_keys=[plan_id])
+
+
+class PremiumCoupon(Base):
+    """Coupon codes that grant a guild a premium subscription for a fixed duration."""
+    __tablename__ = "premium_coupons"
+    id            = Column(Integer, primary_key=True)
+    code          = Column(String, unique=True, nullable=False, index=True)
+    plan_id       = Column(Integer, ForeignKey("premium_plans.id"), nullable=False)
+    duration_days = Column(Integer, nullable=False)         # days of premium granted on redemption
+    max_uses      = Column(Integer, default=1)              # 0 = unlimited
+    used_count    = Column(Integer, default=0)
+    expires_at    = Column(DateTime, nullable=True)         # null = never expires
+    active        = Column(Boolean, default=True)
+    note          = Column(Text, nullable=True)
+    created_by    = Column(String, nullable=True)           # discord user id of owner who created it
+    created_at    = Column(DateTime, default=datetime.datetime.utcnow)
+    plan          = relationship("PremiumPlan", foreign_keys=[plan_id])
+
+
+class CouponRedemption(Base):
+    """Records each time a guild redeems a coupon code."""
+    __tablename__ = "coupon_redemptions"
+    id              = Column(Integer, primary_key=True)
+    coupon_id       = Column(Integer, ForeignKey("premium_coupons.id"), nullable=False)
+    guild_id        = Column(String, index=True, nullable=False)
+    redeemed_by     = Column(String, nullable=True)         # discord user id
+    subscription_id = Column(Integer, ForeignKey("guild_subscriptions.id"), nullable=True)
+    redeemed_at     = Column(DateTime, default=datetime.datetime.utcnow)
+    coupon          = relationship("PremiumCoupon", foreign_keys=[coupon_id])

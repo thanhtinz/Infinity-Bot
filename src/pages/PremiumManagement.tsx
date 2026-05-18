@@ -46,6 +46,9 @@ import {
   Search,
   CreditCard,
   Users,
+  Ticket,
+  RefreshCw,
+  Eye,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -104,6 +107,31 @@ interface SubscriptionPayment {
   notes?: string;
   paid_at?: string;
   created_at?: string;
+}
+
+interface PremiumCoupon {
+  id: number;
+  code: string;
+  plan_id: number;
+  plan_name?: string;
+  plan_color?: string;
+  duration_days: number;
+  max_uses: number;
+  used_count: number;
+  expires_at?: string;
+  active: boolean;
+  note?: string;
+  created_by?: string;
+  created_at?: string;
+}
+
+interface CouponRedemption {
+  id: number;
+  coupon_id: number;
+  guild_id: string;
+  redeemed_by?: string;
+  subscription_id?: number;
+  redeemed_at?: string;
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -245,6 +273,43 @@ async function scanReminders(): Promise<void> {
   if (!res.ok) throw new Error("Failed to scan reminders");
 }
 
+async function fetchCoupons(): Promise<PremiumCoupon[]> {
+  const res = await apiFetch("/api/premium/coupons");
+  if (!res.ok) throw new Error("Failed to load coupons");
+  return res.json();
+}
+
+async function fetchCouponDetail(id: number): Promise<PremiumCoupon & { redemptions: CouponRedemption[] }> {
+  const res = await apiFetch(`/api/premium/coupons/${id}`);
+  if (!res.ok) throw new Error("Failed to load coupon");
+  return res.json();
+}
+
+async function createCoupon(data: Record<string, unknown>): Promise<PremiumCoupon> {
+  const res = await apiFetch("/api/premium/coupons", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error((e as { detail?: string }).detail ?? "Failed"); }
+  return res.json();
+}
+
+async function updateCoupon(id: number, data: Record<string, unknown>): Promise<PremiumCoupon> {
+  const res = await apiFetch(`/api/premium/coupons/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error((e as { detail?: string }).detail ?? "Failed"); }
+  return res.json();
+}
+
+async function deactivateCoupon(id: number): Promise<void> {
+  const res = await apiFetch(`/api/premium/coupons/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to deactivate");
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function PremiumManagement() {
@@ -273,6 +338,18 @@ export function PremiumManagement() {
   const [payMethod, setPayMethod] = useState("manual");
   const [payStatus, setPayStatus] = useState("completed");
   const [payNotes, setPayNotes] = useState("");
+
+  // Coupon dialog state
+  const [couponDialogOpen, setCouponDialogOpen] = useState(false);
+  const [editCoupon, setEditCoupon] = useState<PremiumCoupon | null>(null);
+  const [detailCoupon, setDetailCoupon] = useState<number | null>(null);
+  // Coupon form fields
+  const [cpCode, setCpCode] = useState("");
+  const [cpPlanId, setCpPlanId] = useState("");
+  const [cpDays, setCpDays] = useState("30");
+  const [cpMaxUses, setCpMaxUses] = useState("1");
+  const [cpExpiresAt, setCpExpiresAt] = useState("");
+  const [cpNote, setCpNote] = useState("");
 
   const subsQuery = useQuery({
     queryKey: ["premium-subscriptions"],
@@ -351,6 +428,31 @@ export function PremiumManagement() {
     },
   });
 
+  const couponsQuery = useQuery({ queryKey: ["premium-coupons"], queryFn: fetchCoupons });
+  const detailQuery = useQuery({
+    queryKey: ["premium-coupon-detail", detailCoupon],
+    queryFn: () => fetchCouponDetail(detailCoupon!),
+    enabled: detailCoupon !== null,
+  });
+
+  const createCouponMutation = useMutation({
+    mutationFn: createCoupon,
+    onSuccess: () => { toast({ title: "Đã tạo coupon" }); qc.invalidateQueries({ queryKey: ["premium-coupons"] }); setCouponDialogOpen(false); },
+    onError: (e: Error) => toast({ title: "Lỗi", description: e.message, variant: "destructive" }),
+  });
+
+  const updateCouponMutation = useMutation({
+    mutationFn: (args: { id: number; data: Record<string, unknown> }) => updateCoupon(args.id, args.data),
+    onSuccess: () => { toast({ title: "Đã cập nhật" }); qc.invalidateQueries({ queryKey: ["premium-coupons"] }); setCouponDialogOpen(false); },
+    onError: (e: Error) => toast({ title: "Lỗi", description: e.message, variant: "destructive" }),
+  });
+
+  const deactivateCouponMutation = useMutation({
+    mutationFn: deactivateCoupon,
+    onSuccess: () => { toast({ title: "Đã vô hiệu hóa coupon" }); qc.invalidateQueries({ queryKey: ["premium-coupons"] }); },
+    onError: (e: Error) => toast({ title: "Lỗi", description: e.message, variant: "destructive" }),
+  });
+
   const resetPaymentForm = () => {
     setPayGuildId("");
     setPayPlanId("");
@@ -399,6 +501,49 @@ export function PremiumManagement() {
       notes: payNotes || undefined,
     });
   };
+
+  function openCreateCoupon() {
+    setEditCoupon(null);
+    setCpCode("");
+    setCpPlanId(plans[0] ? String(plans[0].id) : "");
+    setCpDays("30");
+    setCpMaxUses("1");
+    setCpExpiresAt("");
+    setCpNote("");
+    setCouponDialogOpen(true);
+  }
+
+  function openEditCoupon(c: PremiumCoupon) {
+    setEditCoupon(c);
+    setCpCode(c.code);
+    setCpPlanId(String(c.plan_id));
+    setCpDays(String(c.duration_days));
+    setCpMaxUses(String(c.max_uses));
+    setCpExpiresAt(c.expires_at ? c.expires_at.slice(0, 16) : "");
+    setCpNote(c.note ?? "");
+    setCouponDialogOpen(true);
+  }
+
+  function handleSaveCoupon() {
+    const data: Record<string, unknown> = {
+      plan_id: Number(cpPlanId),
+      duration_days: Number(cpDays),
+      max_uses: Number(cpMaxUses),
+      expires_at: cpExpiresAt || null,
+      note: cpNote || null,
+    };
+    if (!editCoupon) {
+      data.code = cpCode;
+      createCouponMutation.mutate(data);
+    } else {
+      updateCouponMutation.mutate({ id: editCoupon.id, data });
+    }
+  }
+
+  function randomCode() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  }
 
   const plans = plansQuery.data ?? [];
   const planMap = new Map(plans.map((p) => [p.id, p]));
@@ -452,6 +597,10 @@ export function PremiumManagement() {
           <TabsTrigger value="payments" className="gap-1.5">
             <CreditCard className="h-4 w-4" />
             Thanh toán
+          </TabsTrigger>
+          <TabsTrigger value="coupons" className="gap-1.5">
+            <Ticket className="h-4 w-4" />
+            Coupons
           </TabsTrigger>
         </TabsList>
 
@@ -663,6 +812,96 @@ export function PremiumManagement() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* ── Coupons Tab ─────────────────────────────────────────────────── */}
+        <TabsContent value="coupons" className="space-y-4 mt-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Tạo mã coupon để cấp Premium theo gói + số ngày cho server.
+            </p>
+            <Button size="sm" className="gap-1.5" onClick={openCreateCoupon}>
+              <Plus className="h-4 w-4" /> Tạo coupon
+            </Button>
+          </div>
+
+          {couponsQuery.isLoading ? (
+            <div className="space-y-2">{Array.from({length:3}).map((_,i)=><Skeleton key={i} className="h-12 w-full"/>)}</div>
+          ) : (
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Code</TableHead>
+                      <TableHead>Gói</TableHead>
+                      <TableHead>Thời hạn</TableHead>
+                      <TableHead>Đã dùng / Tối đa</TableHead>
+                      <TableHead>Hết hạn</TableHead>
+                      <TableHead>Trạng thái</TableHead>
+                      <TableHead className="w-24"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(couponsQuery.data ?? []).length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          Chưa có coupon nào.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      (couponsQuery.data ?? []).map(c => (
+                        <TableRow key={c.id}>
+                          <TableCell>
+                            <code className="font-mono text-sm font-bold tracking-wider">{c.code}</code>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              {c.plan_color && <div className="w-2 h-2 rounded-full" style={{backgroundColor: c.plan_color}} />}
+                              <span className="text-sm">{c.plan_name ?? `Plan #${c.plan_id}`}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm">{c.duration_days} ngày</TableCell>
+                          <TableCell className="text-sm">
+                            {c.used_count} / {c.max_uses === 0 ? "∞" : c.max_uses}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {c.expires_at ? new Date(c.expires_at).toLocaleDateString("vi-VN") : "—"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={c.active
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0"
+                              : "bg-gray-100 text-gray-500 dark:bg-gray-800/30 dark:text-gray-400 border-0"
+                            }>
+                              {c.active ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button size="icon" variant="ghost" className="h-7 w-7"
+                                onClick={() => setDetailCoupon(c.id)} title="Xem lịch sử">
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7"
+                                onClick={() => openEditCoupon(c)} title="Sửa">
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              {c.active && (
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive"
+                                  onClick={() => deactivateCouponMutation.mutate(c.id)} title="Vô hiệu hóa">
+                                  <XCircle className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
 
@@ -980,6 +1219,148 @@ export function PremiumManagement() {
               Ghi nhận
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Coupon Create/Edit Dialog ────────────────────────────────────── */}
+      <Dialog open={couponDialogOpen} onOpenChange={setCouponDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editCoupon ? "Sửa coupon" : "Tạo coupon mới"}</DialogTitle>
+            <DialogDescription>
+              Coupon sẽ cấp Premium theo gói + số ngày khi guild nhập vào trang Gói Server.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {/* Code */}
+            {!editCoupon && (
+              <div className="space-y-1.5">
+                <Label>Mã coupon <span className="text-destructive">*</span></Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={cpCode}
+                    onChange={e => setCpCode(e.target.value.toUpperCase())}
+                    onBlur={e => setCpCode(e.target.value.toUpperCase().replace(/[^A-Z0-9_\-]/g,""))}
+                    placeholder="VIP30FREE"
+                    className="font-mono tracking-wider uppercase"
+                    maxLength={32}
+                  />
+                  <Button variant="outline" size="sm" onClick={() => setCpCode(randomCode())} title="Tạo ngẫu nhiên">
+                    <RefreshCw className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">Chỉ chứa A-Z, 0-9, gạch dưới, gạch ngang</p>
+              </div>
+            )}
+            {editCoupon && (
+              <div className="space-y-1.5">
+                <Label>Mã coupon</Label>
+                <code className="block font-mono text-lg font-bold tracking-widest px-3 py-2 bg-muted rounded-md">{editCoupon.code}</code>
+              </div>
+            )}
+            {/* Plan */}
+            <div className="space-y-1.5">
+              <Label>Gói áp dụng <span className="text-destructive">*</span></Label>
+              <select
+                value={cpPlanId}
+                onChange={e => setCpPlanId(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+              >
+                {plans.map(p => (
+                  <option key={p.id} value={String(p.id)} className="bg-background">{p.name}</option>
+                ))}
+              </select>
+            </div>
+            {/* Duration */}
+            <div className="space-y-1.5">
+              <Label>Thời hạn (ngày) <span className="text-destructive">*</span></Label>
+              <Input
+                type="number" min={1} max={3650}
+                value={cpDays}
+                onChange={e => setCpDays(e.target.value)}
+              />
+              {Number(cpDays) > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  ≈ {Math.floor(Number(cpDays)/30)} tháng {Number(cpDays)%30 > 0 ? `${Number(cpDays)%30} ngày` : ""}
+                </p>
+              )}
+            </div>
+            {/* Max uses */}
+            <div className="space-y-1.5">
+              <Label>Số lần sử dụng tối đa</Label>
+              <Input
+                type="number" min={0}
+                value={cpMaxUses}
+                onChange={e => setCpMaxUses(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">0 = không giới hạn</p>
+            </div>
+            {/* Expires */}
+            <div className="space-y-1.5">
+              <Label>Hết hạn (tùy chọn)</Label>
+              <Input
+                type="datetime-local"
+                value={cpExpiresAt}
+                onChange={e => setCpExpiresAt(e.target.value)}
+              />
+            </div>
+            {/* Note */}
+            <div className="space-y-1.5">
+              <Label>Ghi chú nội bộ</Label>
+              <Input value={cpNote} onChange={e => setCpNote(e.target.value)} placeholder="Dành cho event tháng 6..." />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCouponDialogOpen(false)}>Hủy</Button>
+            <Button
+              onClick={handleSaveCoupon}
+              disabled={createCouponMutation.isPending || updateCouponMutation.isPending || !cpPlanId || !cpDays}
+            >
+              {(createCouponMutation.isPending || updateCouponMutation.isPending) && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+              {editCoupon ? "Lưu thay đổi" : "Tạo coupon"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Coupon Detail/Redemption History Dialog ──────────────────────── */}
+      <Dialog open={detailCoupon !== null} onOpenChange={open => { if (!open) setDetailCoupon(null); }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Lịch sử sử dụng</DialogTitle>
+            {detailQuery.data && (
+              <DialogDescription>
+                <code className="font-mono font-bold">{detailQuery.data.code}</code>
+                {" — "}{detailQuery.data.used_count}/{detailQuery.data.max_uses === 0 ? "∞" : detailQuery.data.max_uses} lần dùng
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          {detailQuery.isLoading ? (
+            <div className="space-y-2 py-4">{Array.from({length:3}).map((_,i)=><Skeleton key={i} className="h-10 w-full"/>)}</div>
+          ) : (detailQuery.data?.redemptions ?? []).length === 0 ? (
+            <p className="text-center text-muted-foreground py-8 text-sm">Chưa có server nào sử dụng mã này.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Guild ID</TableHead>
+                  <TableHead>Người dùng</TableHead>
+                  <TableHead>Thời gian</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(detailQuery.data?.redemptions ?? []).map(r => (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-mono text-xs">{r.guild_id}</TableCell>
+                    <TableCell className="text-xs">{r.redeemed_by ?? "—"}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {r.redeemed_at ? new Date(r.redeemed_at).toLocaleString("vi-VN") : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </DialogContent>
       </Dialog>
     </div>

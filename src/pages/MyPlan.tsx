@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -35,6 +36,7 @@ import {
   Info,
   X,
   Sparkles,
+  Ticket,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -239,6 +241,19 @@ async function updateSubscription(
   return res.json();
 }
 
+async function redeemCoupon(guildId: string, code: string) {
+  const res = await apiFetch("/api/premium/coupons/redeem", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Guild-ID": guildId },
+    body: JSON.stringify({ code }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { detail?: string }).detail ?? "Không thể kích hoạt coupon");
+  }
+  return res.json() as Promise<{ days_granted: number; plan_name?: string; period_end: string }>;
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function MyPlan() {
@@ -292,6 +307,32 @@ export function MyPlan() {
       toast({ title: "Cập nhật thất bại", variant: "destructive" });
     },
   });
+
+  const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState("");
+
+  const redeemMutation = useMutation({
+    mutationFn: (code: string) => redeemCoupon(selectedGuildId!, code),
+    onSuccess: (data) => {
+      toast({
+        title: "🎉 Kích hoạt thành công!",
+        description: `Nhận ${data.days_granted} ngày ${data.plan_name ?? "Premium"} cho server.`,
+      });
+      setCouponCode("");
+      setCouponError("");
+      qc.invalidateQueries({ queryKey: ["premium-subscription-guild", selectedGuildId] });
+      qc.invalidateQueries({ queryKey: ["premium-payments-guild", selectedGuildId] });
+    },
+    onError: (e: Error) => {
+      setCouponError(e.message);
+    },
+  });
+
+  function handleRedeem() {
+    if (!couponCode.trim() || !selectedGuildId) return;
+    setCouponError("");
+    redeemMutation.mutate(couponCode.trim().toUpperCase());
+  }
 
   const subscription = subQuery.data;
   const plans = plansQuery.data ?? [];
@@ -372,6 +413,38 @@ export function MyPlan() {
             </div>
           </div>
         )}
+
+        {/* Coupon box */}
+        <Card className="border-dashed">
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Ticket className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Nhập mã coupon</span>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Nhập mã coupon..."
+                value={couponCode}
+                onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(""); }}
+                onKeyDown={e => e.key === "Enter" && handleRedeem()}
+                className="font-mono tracking-wider uppercase"
+                maxLength={32}
+              />
+              <Button
+                onClick={handleRedeem}
+                disabled={redeemMutation.isPending || !couponCode.trim() || !selectedGuildId}
+                className="shrink-0"
+              >
+                {redeemMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Kích hoạt"}
+              </Button>
+            </div>
+            {couponError && (
+              <p className="text-xs text-destructive mt-2 flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3 shrink-0" />{couponError}
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* ── Feature Comparison Table ──────────────────────────────────── */}
         {publicPlans.length > 0 && (
@@ -752,6 +825,38 @@ export function MyPlan() {
               </Button>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Coupon box */}
+      <Card className="border-dashed">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Ticket className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">Nhập mã coupon</span>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Nhập mã coupon..."
+              value={couponCode}
+              onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(""); }}
+              onKeyDown={e => e.key === "Enter" && handleRedeem()}
+              className="font-mono tracking-wider uppercase"
+              maxLength={32}
+            />
+            <Button
+              onClick={handleRedeem}
+              disabled={redeemMutation.isPending || !couponCode.trim() || !selectedGuildId}
+              className="shrink-0"
+            >
+              {redeemMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Kích hoạt"}
+            </Button>
+          </div>
+          {couponError && (
+            <p className="text-xs text-destructive mt-2 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3 shrink-0" />{couponError}
+            </p>
+          )}
         </CardContent>
       </Card>
 

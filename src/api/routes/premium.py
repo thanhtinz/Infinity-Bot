@@ -14,6 +14,8 @@ from src.models.models import (
     GuildSubscription,
     SubscriptionPayment,
     SystemConfig,
+    PremiumCoupon,
+    CouponRedemption,
 )
 from src.api.deps import get_guild_id, require_auth, require_owner
 
@@ -712,3 +714,250 @@ def scan_renewal_reminders(
 
     db.commit()
     return {"scanned": len(subs), "reminders_due": due}
+
+
+# ── Coupon helpers ─────────────────────────────────────────────────────────────
+
+import re as _re
+
+_COUPON_RE = _re.compile(r'^[A-Z0-9_\-]{3,32}$')
+
+
+def _coupon_dict(c: PremiumCoupon) -> dict:
+    return {
+        "id": c.id,
+        "code": c.code,
+        "plan_id": c.plan_id,
+        "plan_name": c.plan.name if c.plan else None,
+        "plan_color": c.plan.color if c.plan else None,
+        "duration_days": c.duration_days,
+        "max_uses": c.max_uses,
+        "used_count": c.used_count,
+        "expires_at": c.expires_at.isoformat() if c.expires_at else None,
+        "active": c.active,
+        "note": c.note,
+        "created_by": c.created_by,
+        "created_at": c.created_at.isoformat() if c.created_at else None,
+    }
+
+
+def _redemption_dict(r: CouponRedemption) -> dict:
+    return {
+        "id": r.id,
+        "coupon_id": r.coupon_id,
+        "guild_id": r.guild_id,
+        "redeemed_by": r.redeemed_by,
+        "subscription_id": r.subscription_id,
+        "redeemed_at": r.redeemed_at.isoformat() if r.redeemed_at else None,
+    }
+
+
+# ── Coupon CRUD (owner) ────────────────────────────────────────────────────────
+
+@router.post("/premium/coupons")
+async def create_coupon(request: Request, db=Depends(get_db), _owner=Depends(require_owner)):
+    body = await request.json()
+
+    raw_code = _validate_str(body.get("code"), "code", 32)
+    if not raw_code:
+        raise HTTPException(400, "code is required")
+    code = raw_code.upper().strip()
+    if not _COUPON_RE.match(code):
+        raise HTTPException(400, "code must be 3-32 alphanumeric chars (A-Z 0-9 _ -)")
+
+    plan_id = body.get("plan_id")
+    if not plan_id:
+        raise HTTPException(400, "plan_id is required")
+    plan = db.get(PremiumPlan, int(plan_id))
+    if not plan:
+        raise HTTPException(404, "Plan not found")
+
+    duration_days = body.get("duration_days")
+    if not duration_days or not (1 <= int(duration_days) <= 3650):
+        raise HTTPException(400, "duration_days must be 1–3650")
+
+    max_uses = int(body.get("max_uses", 1))
+    if max_uses < 0:
+        raise HTTPException(400, "max_uses must be >= 0")
+
+    coupon = PremiumCoupon(
+        code=code,
+        plan_id=int(plan_id),
+        duration_days=int(duration_days),
+        max_uses=max_uses,
+        expires_at=_parse_dt(body.get("expires_at"), "expires_at"),
+        note=_validate_str(body.get("note"), "note"),
+        created_by=_owner.get("user_id"),
+    )
+    db.add(coupon)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(409, f"Coupon code '{code}' already exists")
+    db.refresh(coupon)
+    coupon = db.execute(
+        select(PremiumCoupon).options(joinedload(PremiumCoupon.plan)).where(PremiumCoupon.id == coupon.id)
+    ).scalars().first()
+    return _coupon_dict(coupon)
+
+
+@router.get("/premium/coupons")
+def list_coupons(db=Depends(get_db), _owner=Depends(require_owner)):
+    coupons = db.execute(
+        select(PremiumCoupon).options(joinedload(PremiumCoupon.plan)).order_by(PremiumCoupon.created_at.desc())
+    ).scalars().all()
+    return [_coupon_dict(c) for c in coupons]
+
+
+@router.get("/premium/coupons/{coupon_id}")
+def get_coupon(coupon_id: int, db=Depends(get_db), _owner=Depends(require_owner)):
+    coupon = db.execute(
+        select(PremiumCoupon).options(joinedload(PremiumCoupon.plan)).where(PremiumCoupon.id == coupon_id)
+    ).scalars().first()
+    if not coupon:
+        raise HTTPException(404, "Coupon not found")
+    redemptions = db.execute(
+        select(CouponRedemption).where(CouponRedemption.coupon_id == coupon_id).order_by(CouponRedemption.redeemed_at.desc())
+    ).scalars().all()
+    return {**_coupon_dict(coupon), "redemptions": [_redemption_dict(r) for r in redemptions]}
+
+
+@router.put("/premium/coupons/{coupon_id}")
+async def update_coupon(coupon_id: int, request: Request, db=Depends(get_db), _owner=Depends(require_owner)):
+    coupon = db.get(PremiumCoupon, coupon_id)
+    if not coupon:
+        raise HTTPException(404, "Coupon not found")
+    body = await request.json()
+    now = datetime.datetime.utcnow()
+
+    if "max_uses" in body:
+        v = int(body["max_uses"])
+        if v < 0:
+            raise HTTPException(400, "max_uses must be >= 0")
+        coupon.max_uses = v
+    if "duration_days" in body:
+        v = int(body["duration_days"])
+        if not (1 <= v <= 3650):
+            raise HTTPException(400, "duration_days must be 1–3650")
+        coupon.duration_days = v
+    if "expires_at" in body:
+        coupon.expires_at = _parse_dt(body["expires_at"], "expires_at")
+    if "note" in body:
+        coupon.note = _validate_str(body["note"], "note")
+    if "active" in body:
+        coupon.active = bool(body["active"])
+
+    db.commit()
+    coupon = db.execute(
+        select(PremiumCoupon).options(joinedload(PremiumCoupon.plan)).where(PremiumCoupon.id == coupon_id)
+    ).scalars().first()
+    return _coupon_dict(coupon)
+
+
+@router.delete("/premium/coupons/{coupon_id}")
+def deactivate_coupon(coupon_id: int, db=Depends(get_db), _owner=Depends(require_owner)):
+    coupon = db.get(PremiumCoupon, coupon_id)
+    if not coupon:
+        raise HTTPException(404, "Coupon not found")
+    coupon.active = False
+    db.commit()
+    return {"ok": True}
+
+
+# ── Coupon redemption (guild) ──────────────────────────────────────────────────
+
+@router.post("/premium/coupons/redeem")
+async def redeem_coupon(request: Request, db=Depends(get_db), _user=Depends(require_auth)):
+    guild_id = get_guild_id(request)
+    body = await request.json()
+    raw_code = (body.get("code") or "").strip().upper()
+    if not raw_code:
+        raise HTTPException(400, "code is required")
+
+    # 1. Find coupon
+    coupon = db.execute(
+        select(PremiumCoupon).options(joinedload(PremiumCoupon.plan)).where(PremiumCoupon.code == raw_code)
+    ).scalars().first()
+    if not coupon:
+        raise HTTPException(404, "Mã coupon không tồn tại")
+
+    # 2. Validate
+    now = datetime.datetime.utcnow()
+    if not coupon.active:
+        raise HTTPException(400, "Mã coupon đã bị vô hiệu hóa")
+    if coupon.expires_at and coupon.expires_at < now:
+        raise HTTPException(400, "Mã coupon đã hết hạn")
+    if coupon.max_uses > 0 and coupon.used_count >= coupon.max_uses:
+        raise HTTPException(400, "Mã coupon đã hết lượt sử dụng")
+
+    # 3. Check guild hasn't used this coupon before
+    existing_redemption = db.execute(
+        select(CouponRedemption).where(
+            CouponRedemption.coupon_id == coupon.id,
+            CouponRedemption.guild_id == guild_id,
+        )
+    ).scalars().first()
+    if existing_redemption:
+        raise HTTPException(400, "Server này đã sử dụng mã coupon này rồi")
+
+    # 4. Find or create subscription
+    existing_sub = db.execute(
+        select(GuildSubscription).where(
+            GuildSubscription.guild_id == guild_id,
+            GuildSubscription.status.in_(["active", "trial"]),
+        ).order_by(GuildSubscription.id.desc())
+    ).scalars().first()
+
+    period_end = (
+        max(existing_sub.current_period_end or now, now) + datetime.timedelta(days=coupon.duration_days)
+        if existing_sub
+        else now + datetime.timedelta(days=coupon.duration_days)
+    )
+
+    if existing_sub:
+        existing_sub.plan_id = coupon.plan_id
+        existing_sub.current_period_end = period_end
+        existing_sub.status = "active"
+        existing_sub.updated_at = now
+        sub = existing_sub
+    else:
+        sub = GuildSubscription(
+            guild_id=guild_id,
+            plan_id=coupon.plan_id,
+            status="active",
+            started_at=now,
+            current_period_start=now,
+            current_period_end=period_end,
+            payment_provider="coupon",
+            created_by=_user.get("user_id"),
+        )
+        db.add(sub)
+        db.flush()
+
+    # 5. Record redemption
+    redemption = CouponRedemption(
+        coupon_id=coupon.id,
+        guild_id=guild_id,
+        redeemed_by=_user.get("user_id"),
+        subscription_id=sub.id,
+    )
+    db.add(redemption)
+
+    # 6. Increment used_count
+    coupon.used_count += 1
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(409, "Lỗi khi kích hoạt coupon, vui lòng thử lại")
+
+    db.refresh(sub)
+    return {
+        "ok": True,
+        "days_granted": coupon.duration_days,
+        "plan_name": coupon.plan.name if coupon.plan else None,
+        "period_end": period_end.isoformat(),
+        "subscription": _sub_dict(sub),
+    }
