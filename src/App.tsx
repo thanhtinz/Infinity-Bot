@@ -136,7 +136,7 @@ const navGroups: NavGroup[] = [
     label: "nav_security",
     items: [
       { to: "/verification", icon: CheckCircle, label: "Verification" },
-      { to: "/verification/members", icon: Users, label: "Verify Members" },
+      { to: "/verification/members", icon: Users, label: "Verify Menber" },
       { to: "/verification/stats", icon: BarChart3, label: "Verify Stats" },
       { to: "/firewall/logs", icon: ShieldAlert, label: "Firewall Logs" },
       { to: "/alerts", icon: Bell, label: "Server Alerts" },

@@ -88,7 +88,7 @@ const en = {
   nav_products: "Products",
   nav_orders: "Orders",
   nav_coupons: "Coupons",
-  nav_users: "Users",
+  nav_users: "Buyer",
   nav_leaderboard: "Leaderboard",
   nav_feedback: "Feedback",
   nav_shopStats: "Shop Stats",
