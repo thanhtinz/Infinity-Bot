@@ -42,6 +42,12 @@ import {
   MessageSquare,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import {
+  FaXTwitter, FaGithub, FaTelegram, FaTwitch,
+  FaYoutube, FaInstagram, FaTiktok, FaDiscord,
+  FaGlobe,
+} from "react-icons/fa6";
+import type { IconType } from "react-icons";
 import { useGuild } from "@/contexts/GuildContext";
 import { deleteGuildBot, fetchConfig, fetchGuildBot, updateConfig, updateGuildBot, validateGuildBot } from "./shared";
 import type { VerificationConfig } from "./shared";
@@ -80,16 +86,17 @@ const CAPTCHA_DIFFICULTIES = [
   { value: "hard", label: "Hard" },
 ] as const;
 
-const SOCIALS: { key: string; label: string; icon: LucideIcon; placeholder: string; color: string }[] = [
-  { key: "twitter", label: "Twitter", icon: Globe, placeholder: "https://twitter.com/username", color: "#1DA1F2" },
-  { key: "github", label: "GitHub", icon: Globe, placeholder: "https://github.com/username", color: "#8b949e" },
-  { key: "telegram", label: "Telegram", icon: Send, placeholder: "https://t.me/username", color: "#26A5E4" },
-  { key: "twitch", label: "Twitch", icon: Tv, placeholder: "https://twitch.tv/username", color: "#9146FF" },
-  { key: "youtube", label: "YouTube", icon: Globe, placeholder: "https://youtube.com/@channel", color: "#FF0000" },
-  { key: "instagram", label: "Instagram", icon: Globe, placeholder: "https://instagram.com/username", color: "#E4405F" },
-  { key: "tiktok", label: "TikTok", icon: Share2, placeholder: "https://tiktok.com/@username", color: "#ffffff" },
-  { key: "shop", label: "Shop", icon: ShoppingCart, placeholder: "https://shop.example.com", color: "#10b981" },
-  { key: "website", label: "Website", icon: Globe, placeholder: "https://example.com", color: "#6366f1" },
+const SOCIALS: { key: string; label: string; icon: IconType; placeholder: string; color: string }[] = [
+  { key: "twitter",   label: "X / Twitter", icon: FaXTwitter,  placeholder: "https://x.com/username",         color: "#e7e9ea" },
+  { key: "github",    label: "GitHub",       icon: FaGithub,    placeholder: "https://github.com/username",    color: "#8b949e" },
+  { key: "telegram",  label: "Telegram",     icon: FaTelegram,  placeholder: "https://t.me/username",          color: "#26A5E4" },
+  { key: "twitch",    label: "Twitch",       icon: FaTwitch,    placeholder: "https://twitch.tv/username",     color: "#9146FF" },
+  { key: "youtube",   label: "YouTube",      icon: FaYoutube,   placeholder: "https://youtube.com/@channel",   color: "#FF0000" },
+  { key: "instagram", label: "Instagram",    icon: FaInstagram, placeholder: "https://instagram.com/username", color: "#E4405F" },
+  { key: "tiktok",    label: "TikTok",       icon: FaTiktok,    placeholder: "https://tiktok.com/@username",   color: "#ffffff" },
+  { key: "discord",   label: "Discord",      icon: FaDiscord,   placeholder: "https://discord.gg/invite",      color: "#5865F2" },
+  { key: "website",   label: "Website",      icon: FaGlobe,     placeholder: "https://example.com",            color: "#6366f1" },
+  { key: "shop",      label: "Shop",         icon: FaGlobe,     placeholder: "https://shop.example.com",       color: "#10b981" },
 ];
 
 type FirewallRule = {
@@ -671,7 +678,15 @@ export function VerifyConfig() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><Label className="text-xs text-muted-foreground mb-1.5 block">Button Text</Label><Input value={configForm.button_text} onChange={e => update({ button_text: e.target.value })} placeholder="Verify with Discord" /></div>
-                  <div><Label className="text-xs text-muted-foreground mb-1.5 block">Footer Text</Label><Input value={configForm.page_footer_text} onChange={e => update({ page_footer_text: e.target.value })} placeholder="Powered by Infinity Bot" /></div>
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Label className="text-xs text-muted-foreground">Footer Text</Label>
+                      <PremiumBadge size="xs" />
+                    </div>
+                    <PremiumGate feature="custom_footer" featureLabel="Custom Footer Text" hasAccess={hasFeature("custom_footer")} isLoading={entLoading} mode="inline">
+                      <Input value={configForm.page_footer_text} onChange={e => update({ page_footer_text: e.target.value })} placeholder="Powered by Infinity Bot" />
+                    </PremiumGate>
+                  </div>
                 </div>
                 <div><Label className="text-xs text-muted-foreground mb-1.5 block">Success Message</Label><Input value={configForm.success_message} onChange={e => update({ success_message: e.target.value })} placeholder="Verified successfully!" /></div>
               </div>
