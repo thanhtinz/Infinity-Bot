@@ -5,7 +5,6 @@ import discord
 from discord.ext import commands
 
 from src.bot.embed_utils import build_embed
-from src.bot.i18n import get_lang
 from src.database.config import SessionLocal
 
 # ── Help data ────────────────────────────────────────────────────────────────
@@ -494,27 +493,26 @@ def _visible_commands(cat: dict, is_admin: bool) -> list:
     return cat["commands"]
 
 
-def _desc(cmd: dict, lang: str) -> str:
+def _desc(cmd: dict) -> str:
     """Get command description."""
     return cmd["desc"]
 
 
-def _cat_name(cat: dict, lang: str) -> str:
+def _cat_name(cat: dict) -> str:
     return cat["name"]
 
 
-def _commands_list_text(cat: dict, is_admin: bool = True, lang: str = "en") -> str:
+def _commands_list_text(cat: dict, is_admin: bool = True) -> str:
     cmds = _visible_commands(cat, is_admin)
     return "\n".join(
-        f"**`/{cmd['name']}`** — {_desc(cmd, lang)}{' *(admin)*' if cmd.get('admin') else ''}"
+        f"**`/{cmd['name']}`** — {_desc(cmd)}{' *(admin)*' if cmd.get('admin') else ''}"
         for cmd in cmds
     )
 
 
 class CategorySelect(discord.ui.Select):
-    def __init__(self, is_admin: bool = False, lang: str = "en"):
+    def __init__(self, is_admin: bool = False):
         self.is_admin = is_admin
-        self.lang = lang
         # Only show categories with at least 1 visible command
         visible_cats = [
             cat for cat in HELP_CATEGORIES
@@ -522,7 +520,7 @@ class CategorySelect(discord.ui.Select):
         ]
         options = [
             discord.SelectOption(
-                label=_cat_name(cat, lang),
+                label=_cat_name(cat),
                 value=cat["key"],
                 emoji=cat["emoji"],
             )
@@ -543,33 +541,31 @@ class CategorySelect(discord.ui.Select):
             return
 
         is_admin = _is_admin(interaction.user)
-        lang = get_lang(str(interaction.guild.id)) if interaction.guild else "en"
         session = _get_session()
         try:
             embed = build_embed("help_category", session, vars={
                 "category_emoji": cat["emoji"],
-                "category_name": _cat_name(cat, lang),
-                "commands_list": _commands_list_text(cat, is_admin, lang),
+                "category_name": _cat_name(cat),
+                "commands_list": _commands_list_text(cat, is_admin),
                 "bot_name": interaction.client.user.display_name if interaction.client.user else "Bot",
             })
         finally:
             session.close()
 
-        view = CommandSelectView(cat, is_admin, lang)
+        view = CommandSelectView(cat, is_admin)
         await interaction.response.edit_message(embed=embed, view=view)
 
 
 class CommandSelect(discord.ui.Select):
-    def __init__(self, cat: dict, is_admin: bool = False, lang: str = "en"):
+    def __init__(self, cat: dict, is_admin: bool = False):
         self.cat = cat
         self.is_admin = is_admin
-        self.lang = lang
         cmds = _visible_commands(cat, is_admin)
         options = [
             discord.SelectOption(
                 label=f"/{cmd['name']}" + (" (admin)" if cmd.get("admin") else ""),
                 value=f"{cat['key']}:{cmd['name']}",
-                description=_desc(cmd, lang)[:100],
+                description=_desc(cmd)[:100],
             )
             for cmd in cmds
         ]
@@ -593,51 +589,48 @@ class CommandSelect(discord.ui.Select):
             embed = build_embed("help_command", session, vars={
                 "command_emoji": "",
                 "command_name": cmd_info["name"],
-                "command_desc": _desc(cmd_info, lang),
+                "command_desc": _desc(cmd_info),
                 "command_usage": cmd_info["usage"],
                 "bot_name": interaction.client.user.display_name if interaction.client.user else "Bot",
             })
         finally:
             session.close()
 
-        view = CommandDetailView(self.cat, self.is_admin, lang)
+        view = CommandDetailView(self.cat, self.is_admin)
         await interaction.response.edit_message(embed=embed, view=view)
 
 
 # ── Views ────────────────────────────────────────────────────────────────────
 
 class HelpMenuView(discord.ui.View):
-    def __init__(self, is_admin: bool = False, lang: str = "en"):
+    def __init__(self, is_admin: bool = False):
         super().__init__(timeout=120)
-        self.add_item(CategorySelect(is_admin, lang))
+        self.add_item(CategorySelect(is_admin))
 
 
 class CommandSelectView(discord.ui.View):
-    def __init__(self, cat: dict, is_admin: bool = False, lang: str = "en"):
+    def __init__(self, cat: dict, is_admin: bool = False):
         super().__init__(timeout=120)
-        self.add_item(CommandSelect(cat, is_admin, lang))
-        self.add_item(BackToCategoriesButton(is_admin, lang))
+        self.add_item(CommandSelect(cat, is_admin))
+        self.add_item(BackToCategoriesButton(is_admin))
 
 
 class CommandDetailView(discord.ui.View):
-    def __init__(self, cat: dict, is_admin: bool = False, lang: str = "en"):
+    def __init__(self, cat: dict, is_admin: bool = False):
         super().__init__(timeout=120)
         self.cat = cat
         self.is_admin = is_admin
-        self.lang = lang
-        self.add_item(BackToCategoryButton(cat, is_admin, lang))
-        self.add_item(BackToCategoriesButton(is_admin, lang))
+        self.add_item(BackToCategoryButton(cat, is_admin))
+        self.add_item(BackToCategoriesButton(is_admin))
 
 
 class BackToCategoriesButton(discord.ui.Button):
-    def __init__(self, is_admin: bool = False, lang: str = "en"):
+    def __init__(self, is_admin: bool = False):
         super().__init__(label="← Categories", style=discord.ButtonStyle.secondary, custom_id="help_back_categories")
         self.is_admin = is_admin
-        self.lang = lang
 
     async def callback(self, interaction: discord.Interaction):
         is_admin = _is_admin(interaction.user)
-        lang = get_lang(str(interaction.guild.id)) if interaction.guild else "en"
         session = _get_session()
         try:
             embed = build_embed("help_menu", session, vars={
@@ -646,31 +639,29 @@ class BackToCategoriesButton(discord.ui.Button):
             })
         finally:
             session.close()
-        await interaction.response.edit_message(embed=embed, view=HelpMenuView(is_admin, lang))
+        await interaction.response.edit_message(embed=embed, view=HelpMenuView(is_admin))
 
 
 class BackToCategoryButton(discord.ui.Button):
-    def __init__(self, cat: dict, is_admin: bool = False, lang: str = "en"):
+    def __init__(self, cat: dict, is_admin: bool = False):
         super().__init__(label=f"← {cat['name']}", style=discord.ButtonStyle.secondary, custom_id="help_back_category")
         self.cat = cat
         self.is_admin = is_admin
-        self.lang = lang
 
     async def callback(self, interaction: discord.Interaction):
         cat = self.cat
         is_admin = _is_admin(interaction.user)
-        lang = get_lang(str(interaction.guild.id)) if interaction.guild else "en"
         session = _get_session()
         try:
             embed = build_embed("help_category", session, vars={
                 "category_emoji": cat["emoji"],
-                "category_name": _cat_name(cat, lang),
-                "commands_list": _commands_list_text(cat, is_admin, lang),
+                "category_name": _cat_name(cat),
+                "commands_list": _commands_list_text(cat, is_admin),
                 "bot_name": interaction.client.user.display_name if interaction.client.user else "Bot",
             })
         finally:
             session.close()
-        await interaction.response.edit_message(embed=embed, view=CommandSelectView(cat, is_admin, lang))
+        await interaction.response.edit_message(embed=embed, view=CommandSelectView(cat, is_admin))
 
 
 # ── Cog ──────────────────────────────────────────────────────────────────────
@@ -682,7 +673,6 @@ class HelpCog(commands.Cog):
     @discord.slash_command(name="help", description="View bot command list")
     async def help_cmd(self, ctx: discord.ApplicationContext):
         is_admin = _is_admin(ctx.author)
-        lang = get_lang(str(ctx.guild.id)) if ctx.guild else "en"
         session = _get_session()
         try:
             embed = build_embed("help_menu", session, vars={
@@ -691,7 +681,7 @@ class HelpCog(commands.Cog):
             })
         finally:
             session.close()
-        await ctx.respond(embed=embed, view=HelpMenuView(is_admin, lang))
+        await ctx.respond(embed=embed, view=HelpMenuView(is_admin))
 
 
 def setup(bot: discord.Bot):
