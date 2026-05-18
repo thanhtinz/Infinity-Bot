@@ -9,7 +9,7 @@ from sqlalchemy import select
 from src.database.config import get_db
 from src.api.deps import get_guild_id
 from src.models.models import (
-    SystemConfig, AutoModConfig, StarboardConfig, ReactionRole,
+    SystemConfig, AutoModConfig, ReactionRole,
     CustomCommand, ScheduledMessage, StickyMessage, EmbedTemplate,
     ButtonRole, SelectMenuRole,
     LoggingConfig,
@@ -21,7 +21,7 @@ router = APIRouter()
 # Tables to backup (table_name, model, has_guild_id)
 BACKUP_TABLES = [
     ("automod_config", AutoModConfig, True),
-    ("starboard_config", StarboardConfig, True),
+    ("starboard_config", True),
     ("reaction_roles", ReactionRole, True),
     ("custom_commands", CustomCommand, True),
     ("scheduled_messages", ScheduledMessage, True),

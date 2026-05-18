@@ -12,7 +12,7 @@ from src.api.deps import get_guild_id
 from src.models.models import (
     ServerBackup, BackupSchedule, VerifiedMember,
     # Bot config tables for comprehensive backup
-    AutoModConfig, StarboardConfig, ReactionRole,
+    AutoModConfig, ReactionRole,
     CustomCommand, ScheduledMessage, StickyMessage, EmbedTemplate,
     ButtonRole, SelectMenuRole,
     LoggingConfig,
@@ -28,9 +28,7 @@ EXCLUDE_FIELDS = {"id", "_sa_instance_state"}
 
 # All bot config tables to backup
 BOT_CONFIG_TABLES = [
-    ("automod_config", AutoModConfig),
-    ("starboard_config", StarboardConfig),
-    ("reaction_roles", ReactionRole),
+    ("automod_config", AutoModConfig),    ("reaction_roles", ReactionRole),
     ("custom_commands", CustomCommand),
     ("scheduled_messages", ScheduledMessage),
     ("sticky_messages", StickyMessage),

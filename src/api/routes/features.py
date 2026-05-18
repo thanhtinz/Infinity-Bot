@@ -18,7 +18,6 @@ FEATURE_DEFS: list[dict] = [
     {"key": "giveaway",        "label": "Giveaway",            "desc": "Create and manage giveaways",               "icon": "Gift",          "cogs": ["GiveawayCog"]},
     {"key": "invite_tracking", "label": "Invite Tracking",     "desc": "Track invites, invite leaderboard",         "icon": "Link2",         "cogs": ["InviteTrackingCog"]},
     {"key": "moderation",      "label": "Moderation",          "desc": "Ban, kick, warn, automod, logging",         "icon": "Shield",        "cogs": ["ModerationCog", "AutoModCog", "LoggingCog"]},
-    {"key": "starboard",       "label": "Starboard",           "desc": "Pin messages with many reactions",          "icon": "Star",          "cogs": ["StarboardCog"]},
     {"key": "sticky",          "label": "Sticky Message",      "desc": "Auto-pinned sticky messages",               "icon": "Pin",           "cogs": ["StickyCog"]},
     {"key": "utility",         "label": "Utility",             "desc": "Avatar, serverinfo, poll, QR, AFK",         "icon": "Wrench",        "cogs": ["UtilityCog", "AFKCog"]},
     {"key": "custom_commands", "label": "Custom Commands",     "desc": "Create custom commands",                    "icon": "Terminal",      "cogs": ["CustomCommandsCog"]},

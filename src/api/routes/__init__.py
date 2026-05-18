@@ -8,7 +8,6 @@ from src.api.routes.shop import router as shop_router
 from src.api.routes.embeds import router as embeds_router
 from src.api.routes.community import router as community_router
 from src.api.routes.logging import router as logging_router
-from src.api.routes.starboard import router as starboard_router
 from src.api.routes.automod import router as automod_router
 from src.api.routes.reaction_roles import router as reaction_roles_router
 from src.api.routes.custom_commands import router as custom_commands_router
@@ -38,7 +37,6 @@ router.include_router(shop_router, tags=["shop"])
 router.include_router(embeds_router, tags=["embeds"])
 router.include_router(community_router, tags=["community"])
 router.include_router(logging_router, tags=["logging"])
-router.include_router(starboard_router, tags=["starboard"])
 router.include_router(automod_router, tags=["automod"])
 router.include_router(reaction_roles_router, tags=["reaction-roles"])
 router.include_router(custom_commands_router, tags=["custom-commands"])

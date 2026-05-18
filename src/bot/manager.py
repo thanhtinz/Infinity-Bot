@@ -140,7 +140,7 @@ def create_bot():
         "src.bot.cogs.moderation", "src.bot.cogs.invite_tracking",
         "src.bot.cogs.sticky", "src.bot.cogs.utility",
         "src.bot.cogs.roles", "src.bot.cogs.logging_cog",
-        "src.bot.cogs.afk", "src.bot.cogs.starboard", "src.bot.cogs.automod",
+        "src.bot.cogs.afk", "src.bot.cogs.automod",
         "src.bot.cogs.custom_commands", "src.bot.cogs.reaction_roles",
         "src.bot.cogs.scheduler", "src.bot.cogs.autoresponder",
         "src.bot.cogs.interactions", "src.bot.cogs.help_cog",
@@ -165,7 +165,6 @@ def create_bot():
     from src.bot.cogs.roles import RolesCog
     from src.bot.cogs.logging_cog import LoggingCog
     from src.bot.cogs.afk import AFKCog
-    from src.bot.cogs.starboard import StarboardCog
     from src.bot.cogs.automod import AutoModCog
     from src.bot.cogs.custom_commands import CustomCommandsCog
     from src.bot.cogs.reaction_roles import ReactionRolesCog
@@ -188,9 +187,7 @@ def create_bot():
         "StickyCog": "sticky",
         "UtilityCog": "utility", "AFKCog": "utility",
         "RolesCog": None, "ReactionRolesCog": None,
-        "StarboardCog": "starboard",
-        "CustomCommandsCog": "custom_commands",
-        "SchedulerCog": "scheduler",
+        "CustomCommandsCog": "custom_commands",        "SchedulerCog": "scheduler",
         "AutoResponderCog": "autoresponder",
         "InteractionCog": "interactions",
         "ChannelAdminCog": "moderation",
@@ -206,7 +203,7 @@ def create_bot():
         StickyCog(bot_client),
         UtilityCog(bot_client),
         RolesCog(bot_client), LoggingCog(bot_client),
-        AFKCog(bot_client), StarboardCog(bot_client),
+        AFKCog(bot_client),
         AutoModCog(bot_client), CustomCommandsCog(bot_client),
         ReactionRolesCog(bot_client), SchedulerCog(bot_client),
         AutoResponderCog(bot_client),

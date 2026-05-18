@@ -388,7 +388,6 @@ HELP_CATEGORIES = [
         "commands": [
             _help_cmd("modstats", "Moderation statistics.", "`/modstats [@mod]`", True),
             _help_cmd("lockdown", "Lock/unlock channels.", "`/lockdown <start|end>`", True),
-            _help_cmd("star", "Starboard stats.", "`/star <message_id>`", True),
             _help_cmd("ignored", "List ignored targets.", "`/ignored`", True),
             _help_cmd("diagnose", "Diagnose permissions.", "`/diagnose [target]`", True),
             _help_cmd("snipe", "View deleted message.", "`/snipe`", True),

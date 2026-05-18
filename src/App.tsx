@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, Home, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, UserCog, Lock } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, Home, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, UserCog, Lock } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
@@ -25,7 +25,6 @@ const CouponEditPage = lazy(() => import("./pages/coupons/CouponEditPage").then(
 const ProductEditPage = lazy(() => import("./pages/products/ProductEditPage").then(m => ({ default: m.ProductEditPage })));
 const ButtonRoles = lazy(() => import("./pages/ButtonRoles").then(m => ({ default: m.ButtonRoles })));
 const SelectMenuRoles = lazy(() => import("./pages/SelectMenuRoles").then(m => ({ default: m.SelectMenuRoles })));
-const StarboardConfig = lazy(() => import("./pages/StarboardConfig").then(m => ({ default: m.StarboardConfig })));
 const AutoModConfig = lazy(() => import("./pages/AutoModConfig").then(m => ({ default: m.AutoModConfig })));
 const ReactionRoles = lazy(() => import("./pages/ReactionRoles").then(m => ({ default: m.ReactionRoles })));
 const CustomCommands = lazy(() => import("./pages/CustomCommands").then(m => ({ default: m.CustomCommands })));
@@ -121,7 +120,6 @@ const navGroups: NavGroup[] = [
       { to: "/giveaways", icon: Gift, label: "nav_giveaway", feature: "giveaway" },
       { to: "/invites", icon: UserPlus, label: "Invites", feature: "invite_tracking" },
       { to: "/warnings", icon: AlertTriangle, label: "nav_warnings", feature: "moderation" },
-      { to: "/starboard", icon: Star, label: "nav_starboard", feature: "starboard" },
     ],
   },
   {
@@ -651,7 +649,6 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/moderation" element={<ModerationPage />} />
         <Route path="/giveaways" element={<GiveawaysManager />} />
         <Route path="/invites" element={<InvitesPage />} />
-        <Route path="/starboard" element={<StarboardConfig />} />
         {/* Roles */}
         <Route path="/button-roles" element={<ButtonRoles />} />
         <Route path="/button-roles/new" element={<ButtonRoleEditPage />} />
