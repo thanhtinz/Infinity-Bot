@@ -366,6 +366,20 @@ def get_stats(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_d
             VerifiedMember.guild_id == guild_id,
             VerifiedMember.is_blacklisted == False,
             VerifiedMember.access_token.isnot(None),
+            # Token still valid (not expired or no expiry set)
+            (VerifiedMember.token_expires_at.is_(None)) |
+            (VerifiedMember.token_expires_at > datetime.utcnow()),
+        )
+    ).scalar() or 0
+
+    # Deauthorized = has record but token is gone/expired (user revoked app access)
+    deauthorized = db.execute(
+        select(func.count()).select_from(VerifiedMember)
+        .where(
+            VerifiedMember.guild_id == guild_id,
+            VerifiedMember.is_blacklisted == False,
+            (VerifiedMember.access_token.is_(None)) |
+            (VerifiedMember.token_expires_at <= datetime.utcnow()),
         )
     ).scalar() or 0
 
@@ -375,7 +389,7 @@ def get_stats(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_d
         "this_week": this_week,
         "blacklisted": blacklisted,
         "pullable": pullable,
-        "deauthorized": total - pullable - blacklisted,
+        "deauthorized": deauthorized,
     }
 
 
@@ -383,12 +397,13 @@ def get_stats(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_d
 
 @router.post("/verification/delete-unauthorized")
 def delete_unauthorized(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
-    """Delete members who have deauthorized (no valid access token)."""
+    """Delete members who have deauthorized (revoked access or expired token)."""
     deauthed = db.execute(
         select(VerifiedMember).where(
             VerifiedMember.guild_id == guild_id,
             VerifiedMember.is_blacklisted == False,
-            VerifiedMember.access_token.is_(None),
+            (VerifiedMember.access_token.is_(None)) |
+            (VerifiedMember.token_expires_at <= datetime.utcnow()),
         )
     ).scalars().all()
     count = len(deauthed)
@@ -434,14 +449,20 @@ def transfer_members(body: dict, guild_id: str = Depends(get_guild_id), db: Sess
 
         new_member = VerifiedMember(
             guild_id=guild_id,
+            source_guild_name=member.source_guild_name,
             discord_id=member.discord_id,
             username=member.username,
+            discriminator=member.discriminator,
             avatar=member.avatar,
             email=member.email,
             ip_address=member.ip_address,
             access_token=member.access_token,
             refresh_token=member.refresh_token,
-            roles=[],
+            token_expires_at=member.token_expires_at,
+            roles=member.roles or [],
+            risk_score=member.risk_score,
+            verified_at=member.verified_at,
+            metadata_=member.metadata_ or {},
             is_blacklisted=False,
         )
         db.add(new_member)

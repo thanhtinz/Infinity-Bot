@@ -15,12 +15,20 @@ router = APIRouter()
 
 @router.get("/member-pull/source-guilds")
 def get_source_guilds(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
-    """Return distinct guilds that have verified members stored in this system."""
+    """Return distinct guilds that have pullable members (valid token, not blacklisted)."""
+    now = datetime.utcnow()
     rows = db.execute(
         select(
             VerifiedMember.guild_id,
             VerifiedMember.source_guild_name,
             func.count(VerifiedMember.id).label("member_count"),
+        )
+        .where(
+            VerifiedMember.is_blacklisted == False,
+            VerifiedMember.access_token.isnot(None),
+            # Token not expired
+            (VerifiedMember.token_expires_at.is_(None)) |
+            (VerifiedMember.token_expires_at > now),
         )
         .group_by(VerifiedMember.guild_id, VerifiedMember.source_guild_name)
         .order_by(func.count(VerifiedMember.id).desc())
@@ -79,6 +87,8 @@ def start_pull(
             VerifiedMember.guild_id == target_guild_id,
             VerifiedMember.is_blacklisted == False,
             VerifiedMember.access_token.isnot(None),
+            (VerifiedMember.token_expires_at.is_(None)) |
+            (VerifiedMember.token_expires_at > datetime.utcnow()),
         )
     ).scalar() or 0
 

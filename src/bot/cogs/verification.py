@@ -62,6 +62,40 @@ class VerificationCog(commands.Cog):
         # Register persistent views
         self._register_views()
 
+    async def _refresh_access_token(self, vm: VerifiedMember, client_id: str, client_secret: str, session) -> str | None:
+        """Attempt to refresh a member's Discord OAuth2 access token. Returns new token or None."""
+        if not vm.refresh_token:
+            return None
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.post(
+                    "https://discord.com/api/oauth2/token",
+                    data={
+                        "client_id": client_id,
+                        "client_secret": client_secret,
+                        "grant_type": "refresh_token",
+                        "refresh_token": vm.refresh_token,
+                    },
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                )
+            if res.status_code == 200:
+                data = res.json()
+                vm.access_token = data["access_token"]
+                vm.refresh_token = data.get("refresh_token", vm.refresh_token)
+                expires_in = data.get("expires_in", 604800)
+                vm.token_expires_at = datetime.datetime.utcnow() + datetime.timedelta(seconds=expires_in)
+                session.commit()
+                return vm.access_token
+            else:
+                # Token permanently revoked — mark as deauthorized
+                vm.access_token = None
+                vm.refresh_token = None
+                session.commit()
+                return None
+        except Exception as e:
+            logger.warning(f"Token refresh failed for {vm.discord_id}: {e}")
+            return None
+
     def _register_views(self):
         """Register persistent verify buttons for all guilds."""
         session = SessionLocal()
@@ -133,6 +167,8 @@ class VerificationCog(commands.Cog):
                     VerifiedMember.guild_id == guild_id,
                     VerifiedMember.is_blacklisted == False,
                     VerifiedMember.access_token.isnot(None),
+                    (VerifiedMember.token_expires_at.is_(None)) |
+                    (VerifiedMember.token_expires_at > datetime.datetime.utcnow()),
                 )
             ).scalar() or 0
 
@@ -222,6 +258,8 @@ class VerificationCog(commands.Cog):
                     VerifiedMember.guild_id == guild_id,
                     VerifiedMember.is_blacklisted == False,
                     VerifiedMember.access_token.isnot(None),
+                    (VerifiedMember.token_expires_at.is_(None)) |
+                    (VerifiedMember.token_expires_at > datetime.datetime.utcnow()),
                 )
             ).scalar() or 0
 
@@ -530,9 +568,11 @@ class VerificationCog(commands.Cog):
                 session.commit()
                 return
 
-            # Get bot token
+            # Get bot token + OAuth client creds for token refresh
             sys_cfg = session.execute(select(SystemConfig).limit(1)).scalars().first()
             bot_token = sys_cfg.discord_token if sys_cfg else None
+            client_id = sys_cfg.discord_client_id if sys_cfg else None
+            client_secret = sys_cfg.discord_client_secret if sys_cfg else None
             if not bot_token:
                 pull.status = "failed"
                 pull.error = "Bot token not configured"
@@ -549,6 +589,8 @@ class VerificationCog(commands.Cog):
                     VerifiedMember.guild_id == source_guild_id,
                     VerifiedMember.is_blacklisted == False,
                     VerifiedMember.access_token.isnot(None),
+                    (VerifiedMember.token_expires_at.is_(None)) |
+                    (VerifiedMember.token_expires_at > datetime.datetime.utcnow()),
                 )
             ).scalars().all()
 
@@ -589,6 +631,17 @@ class VerificationCog(commands.Cog):
                             json=join_data,
                             headers={"Authorization": f"Bot {bot_token}"},
                         )
+
+                        # 401 = token expired → try refresh then retry once
+                        if res.status_code == 401 and client_id and client_secret:
+                            new_token = await self._refresh_access_token(vm, client_id, client_secret, session)
+                            if new_token:
+                                join_data["access_token"] = new_token
+                                res = await client.put(
+                                    f"https://discord.com/api/guilds/{guild_id}/members/{vm.discord_id}",
+                                    json=join_data,
+                                    headers={"Authorization": f"Bot {bot_token}"},
+                                )
 
                         if res.status_code in (200, 201):
                             pull.pulled_members += 1
