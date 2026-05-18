@@ -337,7 +337,7 @@ export function VerifyConfig() {
   });
   const firewallQuery = useQuery<FirewallRule[]>({
     queryKey: ["firewall-rules", selectedGuildId],
-    queryFn: () => apiFetch("/api/firewall/rules").then(r => r.json()),
+    queryFn: () => apiFetch("/api/firewall/rules").then(r => r.json()).then(d => Array.isArray(d) ? d : []),
     enabled: !!selectedGuildId,
   });
 
