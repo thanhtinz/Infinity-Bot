@@ -351,7 +351,7 @@ export function MyPlan() {
 
   const handleAutoRenewToggle = (autoRenew: boolean) => {
     if (!subscription) return;
-    updateSubMutation.mutate({ id: subscription.id, data: { auto_renew } });
+    updateSubMutation.mutate({ id: subscription.id, data: { auto_renew: autoRenew } });
   };
 
   // ── Loading ────────────────────────────────────────────────────────────

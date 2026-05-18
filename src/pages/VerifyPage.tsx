@@ -1,15 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { apiFetch } from "@/hooks/useApi";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   CheckCircle2,
   XCircle,
   Loader2,
   Shield,
   ExternalLink,
-  Twitter, Github, Send, Tv, Youtube, Instagram, Globe, ShoppingCart, Share2,
+  Send, Tv, Globe, ShoppingCart, Share2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -59,12 +57,12 @@ interface CaptchaChallenge {
 }
 
 const SOCIAL_ICONS: Record<string, { icon: LucideIcon; color: string }> = {
-  twitter: { icon: Twitter, color: "#1DA1F2" },
-  github: { icon: Github, color: "#8b949e" },
+  twitter: { icon: Globe, color: "#1DA1F2" },
+  github: { icon: Globe, color: "#8b949e" },
   telegram: { icon: Send, color: "#26A5E4" },
   twitch: { icon: Tv, color: "#9146FF" },
-  youtube: { icon: Youtube, color: "#FF0000" },
-  instagram: { icon: Instagram, color: "#E4405F" },
+  youtube: { icon: Globe, color: "#FF0000" },
+  instagram: { icon: Globe, color: "#E4405F" },
   tiktok: { icon: Share2, color: "#ffffff" },
   shop: { icon: ShoppingCart, color: "#10b981" },
   website: { icon: Globe, color: "#6366f1" },

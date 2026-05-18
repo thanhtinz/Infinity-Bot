@@ -12,13 +12,13 @@ import {
   Link2, Copy, Check, ChevronDown,
   Image, Paintbrush, Palette, Sparkles, Type, Share2,
   Lock, Code2, KeyRound, XCircle, Plus,
-  Twitter, Github, Send, Tv, Youtube, Instagram, Globe, ShoppingCart,
+  Send, Tv, Globe, ShoppingCart,
   Bot, ShieldCheck, TriangleAlert, Trash2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useGuild } from "@/contexts/GuildContext";
 import { deleteGuildBot, fetchConfig, fetchGuildBot, updateConfig, updateGuildBot, validateGuildBot } from "./shared";
-import type { GuildBotConfig, VerificationConfig } from "./shared";
+import type { VerificationConfig } from "./shared";
 import { PremiumBadge } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
 
@@ -53,12 +53,12 @@ const CAPTCHA_DIFFICULTIES = [
 ] as const;
 
 const SOCIALS: { key: string; label: string; icon: LucideIcon; placeholder: string; color: string }[] = [
-  { key: "twitter", label: "Twitter", icon: Twitter, placeholder: "https://twitter.com/username", color: "#1DA1F2" },
-  { key: "github", label: "GitHub", icon: Github, placeholder: "https://github.com/username", color: "#8b949e" },
+  { key: "twitter", label: "Twitter", icon: Globe, placeholder: "https://twitter.com/username", color: "#1DA1F2" },
+  { key: "github", label: "GitHub", icon: Globe, placeholder: "https://github.com/username", color: "#8b949e" },
   { key: "telegram", label: "Telegram", icon: Send, placeholder: "https://t.me/username", color: "#26A5E4" },
   { key: "twitch", label: "Twitch", icon: Tv, placeholder: "https://twitch.tv/username", color: "#9146FF" },
-  { key: "youtube", label: "YouTube", icon: Youtube, placeholder: "https://youtube.com/@channel", color: "#FF0000" },
-  { key: "instagram", label: "Instagram", icon: Instagram, placeholder: "https://instagram.com/username", color: "#E4405F" },
+  { key: "youtube", label: "YouTube", icon: Globe, placeholder: "https://youtube.com/@channel", color: "#FF0000" },
+  { key: "instagram", label: "Instagram", icon: Globe, placeholder: "https://instagram.com/username", color: "#E4405F" },
   { key: "tiktok", label: "TikTok", icon: Share2, placeholder: "https://tiktok.com/@username", color: "#ffffff" },
   { key: "shop", label: "Shop", icon: ShoppingCart, placeholder: "https://shop.example.com", color: "#10b981" },
   { key: "website", label: "Website", icon: Globe, placeholder: "https://example.com", color: "#6366f1" },
@@ -226,7 +226,7 @@ export function VerifyConfig() {
   const [copied, setCopied] = useState(false);
   const [configForm, setConfigForm] = useState<VerificationConfig | null>(null);
   const [guildBotForm, setGuildBotForm] = useState({ client_id: "", bot_token: "", client_secret: "" });
-  const { hasFeature, isLoading: entLoading } = useEntitlements();
+  const { hasFeature } = useEntitlements();
 
   const configQuery = useQuery({
     queryKey: ["verification-config"],
