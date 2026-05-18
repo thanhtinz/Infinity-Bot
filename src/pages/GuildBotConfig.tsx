@@ -122,7 +122,6 @@ export function GuildBotConfig() {
         <p className="text-sm text-muted-foreground mt-1">
           Use your own Discord bot for this guild instead of the main bot. The verification flow will use this bot's OAuth credentials.
         </p>
-      </div>
 
       {/* Current status */}
       {data?.configured && (
