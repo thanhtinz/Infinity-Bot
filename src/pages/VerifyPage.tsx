@@ -411,9 +411,9 @@ export function VerifyPage() {
       {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover z-0" />}
       {bgImage && <div className="absolute inset-0 bg-black/50 z-0" />}
 
-      {bgEffect === "stars" && <div className="z-10"><ShootingStars /></div>}
-      {bgEffect === "particles" && <div className="z-10"><FloatingParticles /></div>}
-      {bgEffect === "rain" && <div className="z-10"><DigitalRain /></div>}
+      {bgEffect === "stars" && <div className="absolute inset-0 z-10 pointer-events-none"><ShootingStars /></div>}
+      {bgEffect === "particles" && <div className="absolute inset-0 z-10 pointer-events-none"><FloatingParticles /></div>}
+      {bgEffect === "rain" && <div className="absolute inset-0 z-10 pointer-events-none"><DigitalRain /></div>}
       {bgEffect === "gradient" && (
         <div className="absolute inset-0 z-10" style={{
           background: `linear-gradient(45deg, ${btnColor}20, transparent, ${btnColor}10)`,
