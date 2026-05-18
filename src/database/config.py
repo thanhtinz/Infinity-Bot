@@ -92,6 +92,38 @@ async def init_db():
             all_stmts.append("ALTER TABLE system_config ADD COLUMN vpn_api_key VARCHAR")
         if "vpn_api_provider" not in sc:
             all_stmts.append("ALTER TABLE system_config ADD COLUMN vpn_api_provider VARCHAR DEFAULT 'proxycheck'")
+        if "currency" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN currency VARCHAR DEFAULT 'VND'")
+        if "currency_symbol" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN currency_symbol VARCHAR DEFAULT '₫'")
+        if "payment_methods" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN payment_methods JSON")
+        if "paypal_client_id" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN paypal_client_id VARCHAR")
+        if "paypal_client_secret" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN paypal_client_secret VARCHAR")
+        if "paypal_mode" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN paypal_mode VARCHAR DEFAULT 'sandbox'")
+        if "crypto_api_key" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN crypto_api_key VARCHAR")
+        if "crypto_provider" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN crypto_provider VARCHAR DEFAULT 'nowpayments'")
+        if "manual_qr_image_id" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN manual_qr_image_id VARCHAR")
+        if "manual_bank_name" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN manual_bank_name VARCHAR")
+        if "manual_account_holder" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN manual_account_holder VARCHAR")
+        if "manual_account_number" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN manual_account_number VARCHAR")
+        if "manual_instructions" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN manual_instructions TEXT")
+        if "premium_payment_instructions" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN premium_payment_instructions TEXT")
+        if "premium_default_renewal_days" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN premium_default_renewal_days INTEGER DEFAULT 7")
+        if "premium_renewal_channel_id" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN premium_renewal_channel_id VARCHAR")
 
         # embed_templates
         et = cols("embed_templates")
