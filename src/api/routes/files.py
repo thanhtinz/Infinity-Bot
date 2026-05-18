@@ -1,7 +1,7 @@
 """Serve and upload files stored in Neon DB."""
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header
-from fastapi.responses import Response
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header, Request
+from fastapi.responses import Response, StreamingResponse
 from sqlalchemy import select
 
 from src.database.config import get_db
@@ -73,16 +73,50 @@ async def upload_file(
 
 
 @router.get("/files/{file_id}")
-def serve_file(file_id: str, db=Depends(get_db)):
-    """Serve an uploaded file by its UUID."""
+def serve_file(file_id: str, request: Request, db=Depends(get_db)):
+    """Serve an uploaded file with HTTP Range support (required for audio playback)."""
     f = db.execute(select(UploadedFile).where(UploadedFile.id == file_id)).scalars().first()
     if not f:
         raise HTTPException(404, "File not found")
+
+    data: bytes = f.data
+    total = len(data)
+    media_type = f.content_type
+    base_headers = {
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Disposition": f'inline; filename="{f.filename}"',
+        "Accept-Ranges": "bytes",
+    }
+
+    # Handle Range request (browser audio player requires this)
+    range_header = request.headers.get("Range")
+    if range_header:
+        try:
+            range_val = range_header.strip().replace("bytes=", "")
+            start_str, end_str = range_val.split("-")
+            start = int(start_str) if start_str else 0
+            end   = int(end_str)   if end_str   else total - 1
+            end   = min(end, total - 1)
+            chunk = data[start:end + 1]
+            return Response(
+                content=chunk,
+                status_code=206,
+                media_type=media_type,
+                headers={
+                    **base_headers,
+                    "Content-Range": f"bytes {start}-{end}/{total}",
+                    "Content-Length": str(len(chunk)),
+                },
+            )
+        except Exception:
+            pass  # fall through to full response
+
+    # Full response (images or first request without Range)
     return Response(
-        content=f.data,
-        media_type=f.content_type,
+        content=data,
+        media_type=media_type,
         headers={
-            "Cache-Control": "public, max-age=31536000, immutable",
-            "Content-Disposition": f'inline; filename="{f.filename}"',
+            **base_headers,
+            "Content-Length": str(total),
         },
     )
