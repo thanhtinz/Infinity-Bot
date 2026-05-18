@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useGuild } from "@/contexts/GuildContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ export function AutoResponder() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const { t } = useT();
+  const { selectedGuildId } = useGuild();
 
   // ── State ──
   const [deleteTarget, setDeleteTarget] = useState<AutoResponderRule | null>(null);
@@ -36,13 +38,14 @@ export function AutoResponder() {
   // ── Queries ──────────────────────────────────────────────────────────────
 
   const { data: rules = [], isLoading } = useQuery<AutoResponderRule[]>({
-    queryKey: ["auto-responders"],
+    queryKey: ["auto-responders", selectedGuildId],
     queryFn: () =>
       apiFetch("/api/auto-responders").then((r) => {
         if (!r.ok) throw new Error("Failed to fetch");
         return r.json();
       }),
     staleTime: 60_000,
+    enabled: !!selectedGuildId,
   });
 
   // ── Mutations ────────────────────────────────────────────────────────────
@@ -56,7 +59,7 @@ export function AutoResponder() {
         if (!r.ok) throw new Error(await r.text());
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["auto-responders"] });
+      qc.invalidateQueries({ queryKey: ["auto-responders", selectedGuildId] });
       setDeleteTarget(null);
       toast({ title: t("toast_ruleDeleted") });
     },
@@ -78,7 +81,7 @@ export function AutoResponder() {
         return r.json();
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["auto-responders"] });
+      qc.invalidateQueries({ queryKey: ["auto-responders", selectedGuildId] });
     },
     onError: (e: Error) =>
       toast({

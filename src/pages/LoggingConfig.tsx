@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useGuild } from "@/contexts/GuildContext";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -81,11 +82,13 @@ export function LoggingConfig() {
   const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { selectedGuildId } = useGuild();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["logging-config"],
+    queryKey: ["logging-config", selectedGuildId],
     queryFn: fetchLoggingConfig,
     staleTime: 60_000,
+    enabled: !!selectedGuildId,
   });
 
   const [messageLog, setMessageLog] = useState("");
@@ -118,7 +121,7 @@ export function LoggingConfig() {
         ignored_roles: ignoredRoles,
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["logging-config"] });
+      qc.invalidateQueries({ queryKey: ["logging-config", selectedGuildId] });
       toast({ title: t("toast_saved"), description: t("toast_loggingSaved") });
     },
     onError: () => {

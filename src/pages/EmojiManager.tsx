@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useGuild } from "@/contexts/GuildContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,7 @@ export function EmojiManager() {
   const { t } = useT();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { selectedGuildId } = useGuild();
   const [tab, setTab] = useState<Tab>("emoji");
 
   const [emojiUploadOpen, setEmojiUploadOpen] = useState(false);
@@ -65,24 +67,26 @@ export function EmojiManager() {
 
   // ── Fetch emojis ──
   const { data: emojis = [], isLoading: emojisLoading } = useQuery<Emoji[]>({
-    queryKey: ["discord-emojis"],
+    queryKey: ["discord-emojis", selectedGuildId],
     queryFn: () =>
       apiFetch("/api/discord/emojis").then((r) => {
         if (!r.ok) throw new Error("Failed to load emojis");
         return r.json();
       }),
     staleTime: 30_000,
+    enabled: !!selectedGuildId,
   });
 
   // ── Fetch stickers ──
   const { data: stickers = [], isLoading: stickersLoading } = useQuery<StickerItem[]>({
-    queryKey: ["discord-stickers"],
+    queryKey: ["discord-stickers", selectedGuildId],
     queryFn: () =>
       apiFetch("/api/discord/stickers").then((r) => {
         if (!r.ok) throw new Error("Failed to load stickers");
         return r.json();
       }),
     staleTime: 30_000,
+    enabled: !!selectedGuildId,
   });
 
   const totalCount = emojis.length;
@@ -100,7 +104,7 @@ export function EmojiManager() {
     },
     onSuccess: () => {
       toast({ title: t("toast_emojiDeleted"), description: t("success") });
-      queryClient.invalidateQueries({ queryKey: ["discord-emojis"] });
+      queryClient.invalidateQueries({ queryKey: ["discord-emojis", selectedGuildId] });
       queryClient.invalidateQueries({ queryKey: ["managed-emojis"] });
       setDeleteTarget(null);
     },
@@ -120,7 +124,7 @@ export function EmojiManager() {
     },
     onSuccess: () => {
       toast({ title: t("toast_stickerDeleted"), description: t("success") });
-      queryClient.invalidateQueries({ queryKey: ["discord-stickers"] });
+      queryClient.invalidateQueries({ queryKey: ["discord-stickers", selectedGuildId] });
       setStickerDeleteTarget(null);
     },
     onError: () => {
@@ -143,7 +147,7 @@ export function EmojiManager() {
         title: t("toast_syncSuccess"),
         description: t("emoji_syncAdded") + ` ${data.added} ` + t("emoji_syncAddedEmoji"),
       });
-      queryClient.invalidateQueries({ queryKey: ["discord-emojis"] });
+      queryClient.invalidateQueries({ queryKey: ["discord-emojis", selectedGuildId] });
       queryClient.invalidateQueries({ queryKey: ["managed-emojis"] });
     },
     onError: () => {
@@ -380,7 +384,7 @@ export function EmojiManager() {
         open={emojiUploadOpen}
         onOpenChange={setEmojiUploadOpen}
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ["discord-emojis"] });
+          queryClient.invalidateQueries({ queryKey: ["discord-emojis", selectedGuildId] });
           queryClient.invalidateQueries({ queryKey: ["managed-emojis"] });
         }}
       />
@@ -390,7 +394,7 @@ export function EmojiManager() {
         open={stickerUploadOpen}
         onOpenChange={setStickerUploadOpen}
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ["discord-stickers"] });
+          queryClient.invalidateQueries({ queryKey: ["discord-stickers", selectedGuildId] });
         }}
       />
 

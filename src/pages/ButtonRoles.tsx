@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useGuild } from "@/contexts/GuildContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -222,6 +223,7 @@ export function ButtonRoles() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const { t } = useT();
+  const { selectedGuildId } = useGuild();
 
   // ── State ──
   const [deleteTarget, setDeleteTarget] = useState<ButtonRolePanel | null>(null);
@@ -229,12 +231,13 @@ export function ButtonRoles() {
   // ── Queries ──────────────────────────────────────────────────────────────
 
   const { data: panels = [], isLoading } = useQuery<ButtonRolePanel[]>({
-    queryKey: ["button-roles"],
+    queryKey: ["button-roles", selectedGuildId],
     queryFn: () =>
       apiFetch("/api/welcome/button-roles").then((r) =>
         r.json()
       ),
     staleTime: 60_000,
+    enabled: !!selectedGuildId,
   });
 
   // ── Mutations ────────────────────────────────────────────────────────────
@@ -248,7 +251,7 @@ export function ButtonRoles() {
         if (!r.ok) throw new Error(await r.text());
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["button-roles"] });
+      qc.invalidateQueries({ queryKey: ["button-roles", selectedGuildId] });
       setDeleteTarget(null);
       toast({ title: t("btnRoles_deletedPanel") });
     },

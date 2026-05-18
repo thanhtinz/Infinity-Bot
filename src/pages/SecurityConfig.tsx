@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { ChangeEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useGuild } from "@/contexts/GuildContext";
 import {
   Card,
   CardContent,
@@ -66,14 +67,16 @@ async function updateConfig(data: SecurityConfigData): Promise<void> {
 export function SecurityConfig() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { selectedGuildId } = useGuild();
 
   const [form, setForm] = useState<SecurityConfigData | null>(null);
   const [showApiKey, setShowApiKey] = useState(false);
   const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
 
   const configQuery = useQuery({
-    queryKey: ["security-config"],
+    queryKey: ["security-config", selectedGuildId],
     queryFn: fetchConfig,
+    enabled: !!selectedGuildId,
   });
 
   useEffect(() => {
@@ -86,7 +89,7 @@ export function SecurityConfig() {
     mutationFn: updateConfig,
     onSuccess: () => {
       toast({ title: "Security configuration saved" });
-      qc.invalidateQueries({ queryKey: ["security-config"] });
+      qc.invalidateQueries({ queryKey: ["security-config", selectedGuildId] });
     },
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });

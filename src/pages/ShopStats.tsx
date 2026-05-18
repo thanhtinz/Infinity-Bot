@@ -1,5 +1,6 @@
 import { useT } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
+import { useGuild } from "@/contexts/GuildContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AreaChart, Area, BarChart, Bar,
@@ -44,11 +45,13 @@ function StatCard({
 
 export function ShopStats() {
   const { t } = useT();
+  const { selectedGuildId } = useGuild();
   const { data: stats, isLoading } = useQuery<Stats>({
-    queryKey: ["stats"],
+    queryKey: ["stats", selectedGuildId],
     queryFn: () => apiFetch("/api/stats").then((r) => r.json()),
     refetchInterval: 60_000,
     staleTime: 60_000,
+    enabled: !!selectedGuildId,
   });
 
   const fmtMoney = (n: number) =>

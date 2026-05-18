@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useGuild } from "@/contexts/GuildContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -104,17 +105,19 @@ export function ScheduledMessages() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const { selectedGuildId } = useGuild();
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   // ── Queries ──────────────────────────────────────────────────────────────
 
   const { data: messages = [], isLoading } = useQuery<ScheduledMessage[]>({
-    queryKey: ["scheduled-messages"],
+    queryKey: ["scheduled-messages", selectedGuildId],
     queryFn: () =>
       apiFetch("/api/scheduled-messages").then((r) =>
         r.json()
       ),
+    enabled: !!selectedGuildId,
   });
 
   // ── Mutations ────────────────────────────────────────────────────────────
@@ -128,7 +131,7 @@ export function ScheduledMessages() {
         if (!r.ok) throw new Error(await r.text());
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["scheduled-messages"] });
+      qc.invalidateQueries({ queryKey: ["scheduled-messages", selectedGuildId] });
       setConfirmDeleteId(null);
       toast({ title: "Schedule deleted." });
     },
@@ -148,19 +151,19 @@ export function ScheduledMessages() {
         return r.json();
       }),
     onMutate: async ({ id, enabled }) => {
-      await qc.cancelQueries({ queryKey: ["scheduled-messages"] });
-      const prev = qc.getQueryData<ScheduledMessage[]>(["scheduled-messages"]);
-      qc.setQueryData<ScheduledMessage[]>(["scheduled-messages"], (old) =>
+      await qc.cancelQueries({ queryKey: ["scheduled-messages", selectedGuildId] });
+      const prev = qc.getQueryData<ScheduledMessage[]>(["scheduled-messages", selectedGuildId]);
+      qc.setQueryData<ScheduledMessage[]>(["scheduled-messages", selectedGuildId], (old) =>
         old?.map((m) => (m.id === id ? { ...m, enabled } : m))
       );
       return { prev };
     },
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) qc.setQueryData(["scheduled-messages"], ctx.prev);
+      if (ctx?.prev) qc.setQueryData(["scheduled-messages", selectedGuildId], ctx.prev);
       toast({ variant: "destructive", title: "Error toggling status." });
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ["scheduled-messages"] });
+      qc.invalidateQueries({ queryKey: ["scheduled-messages", selectedGuildId] });
     },
   });
 

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useGuild } from "@/contexts/GuildContext";
 import { useState, useEffect } from "react";
 import {
   Card,
@@ -108,11 +109,13 @@ export function AutoModConfig() {
   const { t } = useT();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { selectedGuildId } = useGuild();
 
   const { data: config } = useQuery({
-    queryKey: ["automod_config"],
+    queryKey: ["automod_config", selectedGuildId],
     queryFn: fetchAutoModConfig,
     staleTime: 60_000,
+    enabled: !!selectedGuildId,
   });
 
   // Anti-spam
@@ -203,7 +206,7 @@ export function AutoModConfig() {
       }),
     onSuccess: () => {
       toast({ title: t("savedSuccess"), description: t("toast_autoModSaved") });
-      qc.invalidateQueries({ queryKey: ["automod_config"] });
+      qc.invalidateQueries({ queryKey: ["automod_config", selectedGuildId] });
     },
     onError: (err: Error) => {
       toast({ title: t("error"), description: err.message, variant: "destructive" });
