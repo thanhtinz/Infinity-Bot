@@ -157,6 +157,7 @@ async def init_db():
             "card_border_color": "ALTER TABLE verification_configs ADD COLUMN card_border_color VARCHAR DEFAULT '#1a1d2e'",
             "card_bg_color": "ALTER TABLE verification_configs ADD COLUMN card_bg_color VARCHAR DEFAULT '#1a1d2e'",
             "card_opacity": "ALTER TABLE verification_configs ADD COLUMN card_opacity INTEGER DEFAULT 95",
+            "content_opacity": "ALTER TABLE verification_configs ADD COLUMN content_opacity INTEGER DEFAULT 100",
             "typewriter_effect": "ALTER TABLE verification_configs ADD COLUMN typewriter_effect BOOLEAN DEFAULT FALSE",
             "typewriter_desc_effect": "ALTER TABLE verification_configs ADD COLUMN typewriter_desc_effect BOOLEAN DEFAULT FALSE",
             "glow_effect": "ALTER TABLE verification_configs ADD COLUMN glow_effect BOOLEAN DEFAULT FALSE",

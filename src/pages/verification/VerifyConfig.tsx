@@ -245,6 +245,7 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
   const cardBg = c.card_bg_color || "#1a1d2e";
   const cardBorder = c.card_border_color || "#2a2d3e";
   const cardOpacity = (c.card_opacity ?? 95) / 100;
+  const contentOpacity = (c.content_opacity ?? 100) / 100;
 
   return (
     <div className="relative w-full rounded-xl overflow-hidden border border-border"
@@ -312,7 +313,8 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
       <div className="relative z-20 flex flex-col items-center justify-center min-h-[500px] p-6"
         style={{ fontFamily: c.font_family }}>
         <div className="w-full max-w-xs rounded-2xl border p-6 text-center shadow-2xl"
-          style={{ backgroundColor: cardBg, borderColor: cardBorder, color: textColor, opacity: cardOpacity }}>
+          style={{ backgroundColor: cardBg, borderColor: cardBorder, color: textColor }}>
+          <div style={{ opacity: contentOpacity }}>
 
           {c.page_logo_url && (
             <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden border-2"
@@ -355,6 +357,7 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
           )}
 
           <p className="mt-3 text-[10px] opacity-20">{c.page_footer_text || "Powered by Infinity Bot"}</p>
+          </div>
         </div>
       </div>
 
@@ -729,7 +732,7 @@ export function VerifyConfig() {
                 {/* Card Opacity slider — full width below the grid */}
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1.5 flex items-center justify-between">
-                    <span>Card Opacity</span>
+                    <span>Card Background Opacity</span>
                     <span className="font-mono">{configForm.card_opacity ?? 95}%</span>
                   </Label>
                   <input
@@ -738,6 +741,20 @@ export function VerifyConfig() {
                     max={100}
                     value={configForm.card_opacity ?? 95}
                     onChange={e => update({ card_opacity: Number(e.target.value) })}
+                    className="w-full accent-primary"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 flex items-center justify-between">
+                    <span>Inner Content Opacity</span>
+                    <span className="font-mono">{configForm.content_opacity ?? 100}%</span>
+                  </Label>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={configForm.content_opacity ?? 100}
+                    onChange={e => update({ content_opacity: Number(e.target.value) })}
                     className="w-full accent-primary"
                   />
                 </div>

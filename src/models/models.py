@@ -723,6 +723,7 @@ class VerificationConfig(Base):
     card_border_color = Column(String, default="#1a1d2e")
     card_bg_color = Column(String, default="#1a1d2e")
     card_opacity = Column(Integer, default=95)         # 0–100 percent
+    content_opacity = Column(Integer, default=100)     # 0–100 percent
     # Effects
     typewriter_effect = Column(Boolean, default=False)
     typewriter_desc_effect = Column(Boolean, default=False)
