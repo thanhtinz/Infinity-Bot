@@ -5,7 +5,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +28,6 @@ import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
 import { cn } from "@/lib/utils";
 import {
-  CreditCard,
   Save,
   Loader2,
   ChevronDown,
@@ -74,17 +72,6 @@ const CURRENCIES = [
 const CURRENCY_MAP = Object.fromEntries(
   CURRENCIES.map((c) => [c.code, c.symbol])
 );
-
-const _EMPTY_FORM: FormState = {
-  currency: "VND",
-  currency_symbol: "₫",
-  premium_default_renewal_days: 30,
-  premium_renewal_channel_id: "",
-  manual_bank_name: "",
-  manual_account_holder: "",
-  manual_account_number: "",
-  premium_payment_instructions: "",
-};
 
 // ── API ────────────────────────────────────────────────────────────────────
 

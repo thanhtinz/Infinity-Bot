@@ -106,28 +106,6 @@ const CURRENCY_MAP = Object.fromEntries(
   CURRENCIES.filter((c) => c.code !== "custom").map((c) => [c.code, c.symbol])
 );
 
-const _EMPTY_FORM: FormState = {
-  currency: "USD",
-  currency_symbol: "$",
-  payos_enabled: false,
-  payos_client_id: "",
-  payos_api_key: "",
-  payos_checksum_key: "",
-  paypal_enabled: false,
-  paypal_client_id: "",
-  paypal_client_secret: "",
-  paypal_mode: "sandbox",
-  crypto_enabled: false,
-  crypto_api_key: "",
-  crypto_provider: "nowpayments",
-  manual_enabled: false,
-  manual_qr_image_id: "",
-  manual_bank_name: "",
-  manual_account_holder: "",
-  manual_account_number: "",
-  manual_instructions: "",
-};
-
 // ── API ────────────────────────────────────────────────────────────────────
 
 async function fetchConfig(): Promise<PaymentConfigData> {
