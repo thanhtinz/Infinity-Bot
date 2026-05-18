@@ -132,11 +132,7 @@ async def public_status():
 @router.get("/commands")
 async def public_commands():
     """Full public slash-command catalog for the landing page."""
-    # Force re-import to pick up latest data (no module cache)
-    import importlib
-    import src.bot.cogs.help_cog as _hc
-    importlib.reload(_hc)
-    HELP_CATEGORIES = _hc.HELP_CATEGORIES
+    from src.bot.cogs.help_cog import HELP_CATEGORIES
 
     # Display-name overrides for Vietnamese bot command names
     DISPLAY_NAMES: dict[str, str] = {
