@@ -1,6 +1,6 @@
 import { useT } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
-import { Bot, Gift, Hash, Heart, Info, Package, Pin, Search, Shield, Smile, Tags, TerminalSquare, Wrench, Zap } from "lucide-react";
+import { Bot, Gift, Hash, Heart, HelpCircle, Info, MessageCircle, MoreHorizontal, Mic2, Package, Pin, Search, Settings2, Shield, ShoppingBag, Smile, Tags, TerminalSquare, Trophy, UserPlus, UserCog, Users, Wrench, Zap } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 interface Command { name: string; description: string; usage?: string; admin?: boolean; }
@@ -8,23 +8,34 @@ interface Category { key?: string; name: string; count?: number; commands: Comma
 
 type FilterKey = "all" | string;
 
-const categoryIcons = {
+const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   interaction: Heart,
+  interactions: Heart,
   expression: Smile,
+  expressions: Smile,
   fun: Zap,
-  shop: Package,
+  shop: ShoppingBag,
   info: Info,
   giveaway: Gift,
-  misc: Wrench,
+  misc: MoreHorizontal,
   sticky: Pin,
   moderator: Shield,
-  modtools: Hash,
-  role: Tags,
+  moderation: Shield,
+  modtools: Wrench,
+  channel_admin: Settings2,
+  role: UserCog,
+  roles: UserCog,
+  community: Users,
+  utility: TerminalSquare,
+  invites: UserPlus,
+  voice: Mic2,
+  level: Trophy,
   other: Bot,
-} as const;
+};
 
 function getCategoryIcon(key?: string) {
-  return categoryIcons[key as keyof typeof categoryIcons] || TerminalSquare;
+  if (!key) return HelpCircle;
+  return categoryIcons[key] || HelpCircle;
 }
 
 function getCommandIcon(catKey?: string, admin?: boolean) {

@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { Star } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { PremiumGate } from "@/components/ui/premium-gate";
+import { useEntitlements } from "@/hooks/useEntitlements";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -47,6 +49,7 @@ export function StarboardConfig() {
   const { t } = useT();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { hasFeature, isLoading: entLoading } = useEntitlements();
 
   const { data, isLoading } = useQuery({
     queryKey: ["starboard-config"],
@@ -97,6 +100,7 @@ export function StarboardConfig() {
   }
 
   return (
+    <PremiumGate feature="starboard" featureLabel="Starboard" hasAccess={hasFeature("starboard")} isLoading={entLoading}>
     <div className="mx-auto max-w-2xl space-y-6 p-6">
       {/* Header */}
       <div className="space-y-1">
@@ -196,5 +200,6 @@ export function StarboardConfig() {
         {saveMutation.isPending ? t("saving") : t("save")}
       </Button>
     </div>
+    </PremiumGate>
   );
 }

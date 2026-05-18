@@ -11,6 +11,8 @@ import {
   ShieldCheck, Save, FlaskConical, Loader2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { PremiumGate } from "@/components/ui/premium-gate";
+import { useEntitlements } from "@/hooks/useEntitlements";
 
 /* ── Types ──────────────────────────────────────────── */
 interface AlertConfig {
@@ -58,6 +60,7 @@ function formatDate(iso: string | null) {
 export function AlertsConfig() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { hasFeature, isLoading: entLoading } = useEntitlements();
   const [webhookUrl, setWebhookUrl] = useState("");
   const [alerts, setAlerts] = useState<AlertConfig[]>([]);
   const [dirty, setDirty] = useState(false);
@@ -131,6 +134,7 @@ export function AlertsConfig() {
   }
 
   return (
+    <PremiumGate feature="alerts" featureLabel="Server Alerts" hasAccess={hasFeature("alerts")} isLoading={entLoading}>
     <div className="space-y-6 p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -267,5 +271,6 @@ export function AlertsConfig() {
         </CardContent>
       </Card>
     </div>
+    </PremiumGate>
   );
 }

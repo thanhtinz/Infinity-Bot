@@ -18,6 +18,8 @@ import { useGuild } from "@/contexts/GuildContext";
 import { RoleSelect } from "@/components/RoleSelect";
 import { Trophy, Plus, Pencil, Trash2, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PremiumGate } from "@/components/ui/premium-gate";
+import { useEntitlements } from "@/hooks/useEntitlements";
 
 interface Milestone {
   id: number;
@@ -34,6 +36,7 @@ export default function SpendingMilestones() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const { selectedGuildId } = useGuild();
+  const { hasFeature, isLoading: entLoading } = useEntitlements();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);

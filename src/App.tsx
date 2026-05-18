@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, Palette, MessageSquare, Trophy, ShieldAlert, Pin, ShoppingBag, Wrench, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserPlus, ToggleLeft, ListChecks, ScrollText, Loader2, Shield, Clock, Terminal, Database, ToggleRight, MessageCircleReply, Gavel, FileText, Bell, Flame, Crown, Gem } from "lucide-react";
+import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, Star, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, Home, BarChart, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, UserCog, Lock } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
@@ -19,21 +19,13 @@ const EmojiManager = lazy(() => import("./pages/EmojiManager").then(m => ({ defa
 const FeedbackManager = lazy(() => import("./pages/FeedbackManager").then(m => ({ default: m.FeedbackManager })));
 const UsersManager = lazy(() => import("./pages/UsersManager").then(m => ({ default: m.UsersManager })));
 const GiveawaysManager = lazy(() => import("./pages/GiveawaysManager").then(m => ({ default: m.GiveawaysManager })));
-const InviteLeaderboard = lazy(() => import("./pages/invites/InviteLeaderboard").then(m => ({ default: m.InviteLeaderboard })));
-const InviteLog = lazy(() => import("./pages/invites/InviteLog").then(m => ({ default: m.InviteLog })));
 const WarningsManager = lazy(() => import("./pages/WarningsManager").then(m => ({ default: m.WarningsManager })));
-const ModerationCases = lazy(() => import("./pages/moderation/ModerationCases").then(m => ({ default: m.ModerationCases })));
-const ModerationNotes = lazy(() => import("./pages/moderation/ModerationNotes").then(m => ({ default: m.ModerationNotes })));
-const ModerationActive = lazy(() => import("./pages/moderation/ModerationActive").then(m => ({ default: m.ModerationActive })));
-const ModerationSettings = lazy(() => import("./pages/moderation/ModerationSettings").then(m => ({ default: m.ModerationSettings })));
 const StickyManager = lazy(() => import("./pages/StickyManager").then(m => ({ default: m.StickyManager })));
 const StickyEditPage = lazy(() => import("./pages/sticky/StickyEditPage").then(m => ({ default: m.StickyEditPage })));
 const CouponEditPage = lazy(() => import("./pages/coupons/CouponEditPage").then(m => ({ default: m.CouponEditPage })));
 const ProductEditPage = lazy(() => import("./pages/products/ProductEditPage").then(m => ({ default: m.ProductEditPage })));
 const ButtonRoles = lazy(() => import("./pages/ButtonRoles").then(m => ({ default: m.ButtonRoles })));
 const SelectMenuRoles = lazy(() => import("./pages/SelectMenuRoles").then(m => ({ default: m.SelectMenuRoles })));
-const LoggingConfig = lazy(() => import("./pages/LoggingConfig").then(m => ({ default: m.LoggingConfig })));
-const LogViewer = lazy(() => import("./pages/LogViewer").then(m => ({ default: m.LogViewer })));
 const StarboardConfig = lazy(() => import("./pages/StarboardConfig").then(m => ({ default: m.StarboardConfig })));
 const AutoModConfig = lazy(() => import("./pages/AutoModConfig").then(m => ({ default: m.AutoModConfig })));
 const ReactionRoles = lazy(() => import("./pages/ReactionRoles").then(m => ({ default: m.ReactionRoles })));
@@ -46,20 +38,17 @@ const ReactionRoleEditPage = lazy(() => import("./pages/reaction-roles/ReactionR
 const SelectMenuRoleEditPage = lazy(() => import("./pages/select-roles/SelectMenuRoleEditPage").then(m => ({ default: m.SelectMenuRoleEditPage })));
 const AutoResponder = lazy(() => import("./pages/AutoResponder").then(m => ({ default: m.AutoResponder })));
 const AutoResponderEditPage = lazy(() => import("./pages/auto-responder/AutoResponderEditPage").then(m => ({ default: m.AutoResponderEditPage })));
-const BackupList = lazy(() => import("./pages/backup/BackupList").then(m => ({ default: m.BackupList })));
-const BackupSchedule = lazy(() => import("./pages/backup/BackupSchedule").then(m => ({ default: m.BackupSchedule })));
-const BackupHistory = lazy(() => import("./pages/backup/BackupHistory").then(m => ({ default: m.BackupHistory })));
-const VerifyMembers = lazy(() => import("./pages/verification/VerifyMembers").then(m => ({ default: m.VerifyMembers })));
-const VerifyConfig = lazy(() => import("./pages/verification/VerifyConfig").then(m => ({ default: m.VerifyConfig })));
-const VerifyPull = lazy(() => import("./pages/verification/VerifyPull").then(m => ({ default: m.VerifyPull })));
-const VerifyStats = lazy(() => import("./pages/verification/VerifyStats").then(m => ({ default: m.VerifyStats })));
 const SecurityConfig = lazy(() => import("./pages/SecurityConfig").then(m => ({ default: m.SecurityConfig })));
 const FirewallRules = lazy(() => import("./pages/firewall/FirewallRules").then(m => ({ default: m.FirewallRules })));
 const FirewallLogs = lazy(() => import("./pages/firewall/FirewallLogs").then(m => ({ default: m.FirewallLogs })));
 const AlertsConfig = lazy(() => import("./pages/AlertsConfig").then(m => ({ default: m.AlertsConfig })));
+const VerificationPage = lazy(() => import("./pages/verification/VerificationPage"));
+const ModerationPage = lazy(() => import("./pages/moderation/ModerationPage"));
+const LoggingPage = lazy(() => import("./pages/LoggingPage"));
+const InvitesPage = lazy(() => import("./pages/invites/InvitesPage"));
+const BackupPage = lazy(() => import("./pages/backup/BackupPage").then(m => ({ default: m.BackupPage })));
 const VerifyPage = lazy(() => import("./pages/VerifyPage").then(m => ({ default: m.VerifyPage })));
 const SelectGuildPage = lazy(() => import("./pages/SelectGuildPage").then(m => ({ default: m.SelectGuildPage })));
-const Features = lazy(() => import("./pages/Features"));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const InitialSetup = lazy(() => import("./pages/InitialSetup").then(m => ({ default: m.InitialSetup })));
 const BotStatus = lazy(() => import("./pages/BotStatus").then(m => ({ default: m.BotStatus })));
@@ -101,8 +90,16 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
+    key: "server",
+    icon: Home,
+    label: "Server",
+    items: [
+      { to: "/dashboard", icon: Home, label: "Overview" },
+    ],
+  },
+  {
     key: "shop",
-    icon: ShoppingBag,
+    icon: Package,
     label: "Shop",
     feature: "shop",
     items: [
@@ -110,20 +107,10 @@ const navGroups: NavGroup[] = [
       { to: "/orders", icon: ShoppingCart, label: "nav_orders" },
       { to: "/coupons", icon: Tag, label: "nav_coupons" },
       { to: "/users", icon: Users, label: "nav_users" },
-      { to: "/shop-stats", icon: Activity, label: "nav_shopStats" },
+      { to: "/shop-stats", icon: BarChart, label: "nav_shopStats" },
       { to: "/milestones", icon: Trophy, label: "Spending Milestones" },
       { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
       { to: "/config/shop-channels", icon: Hash, label: "nav_shopChannels", feature: "shop" },
-    ],
-  },
-  {
-    key: "ticket",
-    icon: Users,
-    label: "Roles",
-    items: [
-      { to: "/button-roles", icon: ToggleLeft, label: "nav_panels" },
-      { to: "/select-roles", icon: ListChecks, label: "Select Menu Roles" },
-      { to: "/reaction-roles", icon: Smile, label: "nav_rr" },
     ],
   },
   {
@@ -132,9 +119,8 @@ const navGroups: NavGroup[] = [
     label: "nav_community",
     items: [
       { to: "/giveaways", icon: Gift, label: "nav_giveaway", feature: "giveaway" },
-      { to: "/invites/leaderboard", icon: Trophy, label: "Invite Leaderboard", feature: "invite_tracking" },
-      { to: "/invites/log", icon: ScrollText, label: "Invite Log", feature: "invite_tracking" },
-      { to: "/warnings", icon: ShieldAlert, label: "nav_warnings", feature: "moderation" },
+      { to: "/invites", icon: UserPlus, label: "Invites", feature: "invite_tracking" },
+      { to: "/warnings", icon: AlertTriangle, label: "nav_warnings", feature: "moderation" },
       { to: "/starboard", icon: Star, label: "nav_starboard", feature: "starboard" },
     ],
   },
@@ -144,13 +130,9 @@ const navGroups: NavGroup[] = [
     label: "nav_moderation",
     feature: "moderation",
     items: [
-      { to: "/moderation/cases", icon: Gavel, label: "Cases" },
-      { to: "/moderation/notes", icon: FileText, label: "Notes" },
-      { to: "/moderation/active", icon: Clock, label: "Active Punishments" },
-      { to: "/moderation/settings", icon: Settings, label: "Mod Settings" },
-      { to: "/automod", icon: Shield, label: "nav_automod" },
-      { to: "/logging", icon: ScrollText, label: "nav_loggingConfig" },
-      { to: "/logs", icon: Activity, label: "nav_logging" },
+      { to: "/moderation", icon: Shield, label: "Moderation" },
+      { to: "/automod", icon: Bot, label: "nav_automod" },
+      { to: "/logging", icon: FileText, label: "Logging" },
     ],
   },
   {
@@ -158,42 +140,45 @@ const navGroups: NavGroup[] = [
     icon: ShieldAlert,
     label: "nav_security",
     items: [
-      { to: "/verification/members", icon: Users, label: "Thành viên" },
-      { to: "/verification/config", icon: Settings, label: "Cấu hình xác minh" },
-      { to: "/verification/pull", icon: UserPlus, label: "Kéo thành viên" },
-      { to: "/verification/stats", icon: Activity, label: "Thống kê xác minh" },
-      { to: "/security-config", icon: Shield, label: "nav_securityConfig" },
-      { to: "/firewall/rules", icon: Flame, label: "Firewall Rules" },
-      { to: "/firewall/logs", icon: ScrollText, label: "Firewall Logs" },
+      { to: "/verification", icon: CheckCircle, label: "Verification" },
+      { to: "/firewall/rules", icon: ShieldAlert, label: "Firewall" },
       { to: "/alerts", icon: Bell, label: "Server Alerts" },
     ],
   },
   {
+    key: "roles",
+    icon: ToggleLeft,
+    label: "Roles",
+    items: [
+      { to: "/button-roles", icon: MousePointer, label: "nav_panels" },
+      { to: "/select-roles", icon: List, label: "Select Menu Roles" },
+      { to: "/reaction-roles", icon: Smile, label: "nav_rr" },
+    ],
+  },
+  {
     key: "utilities",
-    icon: Wrench,
+    icon: Terminal,
     label: "nav_utilities",
     items: [
       { to: "/sticky", icon: Pin, label: "nav_sticky", feature: "sticky" },
       { to: "/custom-commands", icon: Terminal, label: "nav_customCommands", feature: "custom_commands" },
-      { to: "/autoresponder", icon: MessageCircleReply, label: "nav_autoResponder", feature: "autoresponder" },
+      { to: "/autoresponder", icon: MessageCircle, label: "nav_autoResponder", feature: "autoresponder" },
       { to: "/scheduled-messages", icon: Clock, label: "nav_scheduledMessages", feature: "scheduler" },
-      { to: "/embeds", icon: Palette, label: "nav_embeds" },
+      { to: "/embeds", icon: Layout, label: "nav_embeds" },
       { to: "/emojis", icon: Smile, label: "nav_emojis" },
     ],
   },
   {
-    key: "config",
+    key: "settings",
     icon: Settings,
     label: "nav_botSettings",
     items: [
       { to: "/bot-settings", icon: Settings, label: "nav_botSettings" },
       { to: "/guild-bot", icon: Bot, label: "Custom Bot" },
       { to: "/config/payments", icon: CreditCard, label: "Payments", feature: "shop" },
+      { to: "/staff-permissions", icon: UserCog, label: "Staff Permissions" },
       { to: "/my-plan", icon: Crown, label: "My Plan" },
-      { to: "/staff-permissions", icon: Shield, label: "Staff Permissions" },
-      { to: "/backup/list", icon: Database, label: "Backups" },
-      { to: "/backup/schedule", icon: Clock, label: "Backup Schedule" },
-      { to: "/backup/history", icon: ScrollText, label: "Backup History" },
+      { to: "/backup", icon: Database, label: "Backups" },
     ],
   },
   {
@@ -204,15 +189,12 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/bot-status", icon: Activity, label: "nav_botStatus" },
       { to: "/config/discord", icon: Bot, label: "nav_discordBot" },
-      { to: "/premium/config", icon: CreditCard, label: "Premium Payments" },
+      { to: "/security-config", icon: Lock, label: "Security Config" },
       { to: "/premium/plans", icon: Gem, label: "Premium Plans" },
       { to: "/premium/management", icon: Crown, label: "Premium Management" },
+      { to: "/premium/config", icon: CreditCard, label: "Premium Payments" },
     ],
   },
-];
-
-const standaloneItems = [
-  { to: "/features", icon: ToggleRight, label: "nav_features" as const },
 ];
 
 const queryClient = new QueryClient();
@@ -369,25 +351,6 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           );
         })}
 
-        {/* Standalone: Features */}
-        {standaloneItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={onClose}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors",
-                location.pathname === item.to && "bg-accent text-accent-foreground font-medium"
-              )}
-            >
-              <Icon className="w-4 h-4" />
-              {t(item.label)}
-            </Link>
-          );
-        })}
-
         {/* Owner-only: Bot Management — always at bottom, visually separated */}
         {ownerGroups.length > 0 && (
           <div className="mt-4 pt-3 border-t-2 border-dashed border-amber-500/40">
@@ -517,6 +480,7 @@ function MobileNav() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isLoading, isError } = useQuery({
     queryKey: ["auth_me"],
     queryFn: () => fetch("/api/auth/me", { credentials: "include" }).then(res => {
@@ -531,18 +495,35 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (isLoading || guildLoading) return <div className="h-screen flex items-center justify-center">Loading...</div>;
   if (isError) return <Navigate to="/login" replace />;
 
-  // Một số route owner không cần guild
-  const guildFreeRoutes = ["/bot-status", "/config/discord", "/security-config", "/premium/config", "/premium/plans", "/premium/management"];
-  if (!selectedGuildId && !guildFreeRoutes.includes(location.pathname)) {
+  // Only redirect to /select-guild when on the root "/" path
+  const isRootRedirect = location.pathname === "/";
+  const needsGuild = !selectedGuildId && !isRootRedirect;
+
+  // For root path with no guild, redirect to select-guild
+  if (!selectedGuildId && isRootRedirect) {
     return <Navigate to="/select-guild" replace />;
   }
+
   return (
     <div className="flex min-h-screen bg-background text-foreground flex-col md:flex-row overflow-x-hidden">
       <MobileNav />
       <Sidebar />
-      <main className="flex-1 md:ml-64 p-4 md:p-8 min-w-0 overflow-x-hidden">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col md:ml-64 min-w-0 overflow-x-hidden">
+        {needsGuild && (
+          <div className="sticky top-0 z-50 flex items-center justify-between gap-3 bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-sm text-amber-600 dark:text-amber-400">
+            <span>No server selected</span>
+            <button
+              onClick={() => navigate("/select-guild")}
+              className="shrink-0 rounded-md bg-amber-500 px-3 py-1 text-xs font-medium text-white hover:bg-amber-600 transition-colors"
+            >
+              Select Server
+            </button>
+          </div>
+        )}
+        <main className={`flex-1 p-4 md:p-8 ${needsGuild ? "pointer-events-none opacity-60" : ""}`}>
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
@@ -645,7 +626,6 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/select-guild" element={<SelectGuildPage />} />
         <Route path="/" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/bot-status" element={<OwnerRoute><BotStatus /></OwnerRoute>} />
-        <Route path="/features" element={<Features />} />
         <Route path="/config" element={<Navigate to="/config/discord" replace />} />
         <Route path="/config/prefix" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/config/channels" element={<Navigate to="/bot-settings" replace />} />
@@ -669,15 +649,9 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/milestones" element={<SpendingMilestones />} />
         {/* Community */}
         <Route path="/warnings" element={<WarningsManager />} />
-        <Route path="/moderation" element={<Navigate to="/moderation/cases" replace />} />
-        <Route path="/moderation/cases" element={<ModerationCases />} />
-        <Route path="/moderation/notes" element={<ModerationNotes />} />
-        <Route path="/moderation/active" element={<ModerationActive />} />
-        <Route path="/moderation/settings" element={<ModerationSettings />} />
+        <Route path="/moderation" element={<ModerationPage />} />
         <Route path="/giveaways" element={<GiveawaysManager />} />
-        <Route path="/invites" element={<Navigate to="/invites/leaderboard" replace />} />
-        <Route path="/invites/leaderboard" element={<InviteLeaderboard />} />
-        <Route path="/invites/log" element={<InviteLog />} />
+        <Route path="/invites" element={<InvitesPage />} />
         <Route path="/starboard" element={<StarboardConfig />} />
         {/* Roles */}
         <Route path="/button-roles" element={<ButtonRoles />} />
@@ -691,18 +665,10 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/reaction-roles/:id/edit" element={<ReactionRoleEditPage />} />
         {/* Moderation */}
         <Route path="/automod" element={<AutoModConfig />} />
-        <Route path="/logging" element={<LoggingConfig />} />
-        <Route path="/logs" element={<LogViewer />} />
+        <Route path="/logging" element={<LoggingPage />} />
         {/* Security */}
-        <Route path="/verification" element={<Navigate to="/verification/members" replace />} />
-        <Route path="/verification/members" element={<VerifyMembers />} />
-        <Route path="/verification/config" element={<VerifyConfig />} />
-        <Route path="/verification/pull" element={<VerifyPull />} />
-        <Route path="/verification/stats" element={<VerifyStats />} />
-        <Route path="/backup" element={<Navigate to="/backup/list" replace />} />
-        <Route path="/backup/list" element={<BackupList />} />
-        <Route path="/backup/schedule" element={<BackupSchedule />} />
-        <Route path="/backup/history" element={<BackupHistory />} />
+        <Route path="/verification" element={<VerificationPage />} />
+        <Route path="/backup" element={<BackupPage />} />
         <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
         <Route path="/firewall/rules" element={<FirewallRules />} />
         <Route path="/firewall/logs" element={<FirewallLogs />} />

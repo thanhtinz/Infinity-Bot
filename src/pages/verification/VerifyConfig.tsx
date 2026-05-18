@@ -72,19 +72,19 @@ function Section({ title, icon: Icon, children, defaultOpen = false }: {
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border border-white/10 bg-[#0f1118] overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       <button
         onClick={() => setOpen(v => !v)}
-        className="flex items-center justify-between w-full px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
+        className="flex items-center justify-between w-full px-5 py-4 text-left hover:bg-muted/30 transition-colors"
       >
         <div className="flex items-center gap-2.5">
           <Icon className="w-4 h-4 text-muted-foreground" />
-          <span className="font-semibold text-sm text-white">{title}</span>
+          <span className="font-semibold text-sm text-foreground">{title}</span>
         </div>
         <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="px-5 pb-5 space-y-4 border-t border-white/5 pt-4">
+        <div className="px-5 pb-5 space-y-4 border-t border-border pt-4">
           {children}
         </div>
       )}
@@ -97,9 +97,9 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
   return (
     <div>
       <Label className="text-xs text-muted-foreground mb-1.5 block">{label}</Label>
-      <div className="rounded-lg overflow-hidden border border-white/10">
+      <div className="rounded-lg overflow-hidden border border-border">
         <div className="h-12 w-full" style={{ backgroundColor: value }} />
-        <div className="flex items-center gap-2 px-3 py-2 bg-[#0a0c10]">
+        <div className="flex items-center gap-2 px-3 py-2 bg-muted/50">
           <input type="color" value={value} onChange={e => onChange(e.target.value)}
             className="w-6 h-6 rounded border-0 cursor-pointer bg-transparent" />
           <Input value={value} onChange={e => onChange(e.target.value)}
@@ -114,7 +114,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
 function VerifyPreview({ config: c }: { config: VerificationConfig }) {
   const activeSocials = SOCIALS.filter(s => c.socials?.[s.key]);
   return (
-    <div className="relative w-full rounded-xl overflow-hidden border border-white/10" style={{ minHeight: 500 }}>
+    <div className="relative w-full rounded-xl overflow-hidden border border-border" style={{ minHeight: 500 }}>
       {/* Background */}
       <div className="absolute inset-0" style={{ backgroundColor: c.bg_color || "#0b0d14" }}>
         {c.page_background_url && (
@@ -148,7 +148,7 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
           )}
 
           {/* Logo */}
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden border border-white/10">
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden border border-border">
             {c.page_logo_url ? (
               <img src={c.page_logo_url} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -373,7 +373,7 @@ export function VerifyConfig() {
 
       {/* Verify Link */}
       {verifyUrl && (
-        <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#0f1118] px-4 py-3">
+        <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3">
           <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
           <Input value={verifyUrl} readOnly className="text-xs font-mono border-0 bg-transparent h-7" />
           <Button variant="ghost" size="icon" className="shrink-0 h-7 w-7" onClick={copyUrl}>
@@ -383,7 +383,7 @@ export function VerifyConfig() {
       )}
 
       {/* Enable toggle */}
-      <div className="flex items-center justify-between rounded-xl border border-white/10 bg-[#0f1118] px-5 py-4">
+      <div className="flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4">
         <div>
           <p className="font-semibold text-sm">Enable Verification</p>
           <p className="text-xs text-muted-foreground">Require members to verify via OAuth2</p>
@@ -437,7 +437,7 @@ export function VerifyConfig() {
                 onChange={e => update({ font_family: e.target.value })}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                {FONTS.map(f => <option key={f} value={f} className="bg-[#0a0c10]">{f}</option>)}
+                {FONTS.map(f => <option key={f} value={f} className="bg-popover">{f}</option>)}
               </select>
             </div>
             <div>
@@ -447,7 +447,7 @@ export function VerifyConfig() {
                 onChange={e => update({ bg_effect: e.target.value })}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                {BG_EFFECTS.map(e => <option key={e.value} value={e.value} className="bg-[#0a0c10]">{e.label}</option>)}
+                {BG_EFFECTS.map(e => <option key={e.value} value={e.value} className="bg-popover">{e.label}</option>)}
               </select>
             </div>
           </Section>
@@ -537,7 +537,7 @@ export function VerifyConfig() {
           {/* Socials */}
           <Section title="Socials" icon={Share2}>
             <p className="text-xs text-muted-foreground">{activeSocialCount} of {SOCIALS.length} active</p>
-            <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-white/10 bg-white/[0.02]">
+            <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-muted/20">
               {SOCIALS.map(s => {
                 const active = !!configForm.socials?.[s.key];
                 const Icon = s.icon;
@@ -549,7 +549,7 @@ export function VerifyConfig() {
                       else updateSocial(s.key, s.placeholder);
                     }}
                     className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-                      active ? "bg-white/15 border border-white/20" : "bg-white/5 border border-transparent hover:bg-white/10"
+                      active ? "bg-primary/15 border border-primary/20" : "bg-muted/30 border border-transparent hover:bg-muted/50"
                     }`}
                   >
                     <Icon className="w-4 h-4" style={{ color: active ? s.color : "#6b7280" }} />
@@ -578,7 +578,7 @@ export function VerifyConfig() {
 
           {/* Custom Bot */}
           <Section title="Custom Bot" icon={Bot}>
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-4">
+            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-medium">Per-guild Discord bot</p>
@@ -587,12 +587,12 @@ export function VerifyConfig() {
                 <div className="flex items-center gap-2">
                   {guildBotQuery.data?.status === "active" && <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[10px] text-emerald-400"><ShieldCheck className="h-3 w-3" />Active</span>}
                   {guildBotQuery.data?.status === "error" && <span className="inline-flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/10 px-2 py-1 text-[10px] text-red-400"><TriangleAlert className="h-3 w-3" />Error</span>}
-                  {(!guildBotQuery.data || guildBotQuery.data.status === "inactive") && <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-muted-foreground">Main bot</span>}
+                  {(!guildBotQuery.data || guildBotQuery.data.status === "inactive") && <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/30 px-2 py-1 text-[10px] text-muted-foreground">Main bot</span>}
                 </div>
               </div>
 
               {guildBotQuery.data?.bot_name && (
-                <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-[#0a0c10] px-3 py-2">
+                <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2">
                   {guildBotQuery.data.bot_avatar_url ? (
                     <img src={guildBotQuery.data.bot_avatar_url} alt="Bot avatar" className="h-10 w-10 rounded-full object-cover" />
                   ) : (
@@ -714,7 +714,7 @@ export function VerifyConfig() {
                       <option
                         key={type.value}
                         value={type.value}
-                        className="bg-[#0a0c10]"
+                        className="bg-popover"
                         disabled={type.premium && !hasFeature("advanced_captcha")}
                       >
                         {type.label}{type.premium && !hasFeature("advanced_captcha") ? " 🔒" : ""}
@@ -730,7 +730,7 @@ export function VerifyConfig() {
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   >
                     {CAPTCHA_DIFFICULTIES.map(level => (
-                      <option key={level.value} value={level.value} className="bg-[#0a0c10]">{level.label}</option>
+                      <option key={level.value} value={level.value} className="bg-popover">{level.label}</option>
                     ))}
                   </select>
                 </div>
@@ -923,10 +923,10 @@ export function VerifyConfig() {
 
               {/* CNAME instruction */}
               {domainStatusQuery.data?.cname_target && (
-                <div className="mt-2 rounded-lg bg-white/5 border border-white/10 p-3 space-y-2">
+                <div className="mt-2 rounded-lg bg-muted/30 border border-border p-3 space-y-2">
                   <p className="text-xs text-muted-foreground font-medium">Point a CNAME record to:</p>
                   <div className="flex items-center gap-2">
-                    <code className="flex-1 text-xs text-indigo-300 bg-black/30 rounded px-2 py-1.5 font-mono truncate">
+                    <code className="flex-1 text-xs text-primary bg-muted/40 rounded px-2 py-1.5 font-mono truncate">
                       {domainStatusQuery.data.cname_target}
                     </code>
                     <button
