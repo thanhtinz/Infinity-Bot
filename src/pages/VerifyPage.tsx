@@ -662,7 +662,6 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
   const audioRef   = useRef<HTMLAudioElement>(null);
   const [audioState, setAudioState] = useState<"idle" | "loading" | "playing" | "error">("idle");
   const [muted, setMuted]           = useState(false);
-  const [hovered, setHovered]       = useState(false);
   const [pos, setPos]               = useState({
     x: window.innerWidth  - 68,
     y: window.innerHeight - 68,
@@ -788,8 +787,6 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
         onMouseDown={e  => { e.preventDefault(); startDrag(e.clientX, e.clientY); }}
         onTouchStart={e => startDrag(e.touches[0].clientX, e.touches[0].clientY)}
         onClick={handleClick}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
         title={hasError ? "Audio error" : muted ? "Tap anywhere to unmute" : playing ? "Click to pause" : "Click to play"}
         style={{
           position: "fixed",
@@ -811,7 +808,6 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
           alignItems: "center",
           justifyContent: "center",
           transition: "transform .18s, box-shadow .25s, border-color .25s",
-          transform: hovered ? "scale(1.12)" : "scale(1)",
           boxShadow: hasError
             ? "0 0 12px rgba(239,68,68,0.55), 0 4px 16px rgba(0,0,0,0.5)"
             : playing && !muted
@@ -857,25 +853,9 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
             width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke={muted ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.75)"}
             strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            style={{ opacity: hovered ? 0 : 1, transition: "opacity .15s", position: "absolute" }}
           >
             <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
           </svg>
-        )}
-
-        {/* Hover overlay: play/pause icon */}
-        {!loading && !hasError && hovered && (
-          <div style={{ position: "absolute", inset: 0, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {playing ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)">
-                <rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>
-              </svg>
-            ) : (
-              <svg width="13" height="14" viewBox="0 0 13 14" fill="rgba(255,255,255,0.9)" style={{ marginLeft: 2 }}>
-                <path d="M0 0 L13 7 L0 14 Z"/>
-              </svg>
-            )}
-          </div>
         )}
 
         {/* Muted dot indicator */}
