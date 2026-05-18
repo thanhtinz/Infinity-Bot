@@ -28,12 +28,16 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import {
   Save,
   Loader2,
   ChevronDown,
   Settings,
   Building2,
+  CreditCard,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -42,6 +46,9 @@ interface PremiumConfig {
   currency: string;
   currency_symbol: string;
   payment_methods: string[];
+  paypal_client_id?: string;
+  paypal_client_secret?: string;
+  paypal_mode?: string;
   manual_bank_name?: string;
   manual_account_holder?: string;
   manual_account_number?: string;
@@ -56,6 +63,12 @@ interface FormState {
   currency_symbol: string;
   premium_default_renewal_days: number;
   premium_renewal_channel_id: string;
+  // PayPal
+  paypal_client_id: string;
+  paypal_client_secret: string;
+  paypal_mode: string;
+  paypal_enabled: boolean;
+  // Manual bank transfer
   manual_bank_name: string;
   manual_account_holder: string;
   manual_account_number: string;
@@ -91,6 +104,38 @@ async function saveConfig(payload: Record<string, unknown>): Promise<void> {
   if (!res.ok) throw new Error("Failed to save premium config");
 }
 
+// ── PayPal Secret Input ────────────────────────────────────────────────────
+
+function PayPalSecretInput({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <Input
+        id="paypal-client-secret"
+        type={show ? "text" : "password"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="EXxx..."
+        className="pr-10"
+      />
+      <button
+        type="button"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        onClick={() => setShow((s) => !s)}
+        tabIndex={-1}
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function PremiumPaymentConfig() {
@@ -100,6 +145,7 @@ export function PremiumPaymentConfig() {
   const [form, setForm] = useState<FormState | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     general: true,
+    paypal: true,
     manual: false,
   });
 
@@ -112,18 +158,25 @@ export function PremiumPaymentConfig() {
     if (configQuery.data && !form) {
       const d = configQuery.data;
       setForm({
-        currency: d.currency || "VND",
-        currency_symbol: d.currency_symbol || CURRENCY_MAP[d.currency] || "₫",
+        currency: d.currency || "USD",
+        currency_symbol: d.currency_symbol || CURRENCY_MAP[d.currency] || "$",
         premium_default_renewal_days: d.premium_default_renewal_days || 30,
         premium_renewal_channel_id: d.premium_renewal_channel_id ?? "",
+        paypal_client_id: d.paypal_client_id ?? "",
+        paypal_client_secret: d.paypal_client_secret ?? "",
+        paypal_mode: d.paypal_mode ?? "live",
+        paypal_enabled: (d.payment_methods ?? []).includes("paypal"),
         manual_bank_name: d.manual_bank_name ?? "",
         manual_account_holder: d.manual_account_holder ?? "",
         manual_account_number: d.manual_account_number ?? "",
         premium_payment_instructions: d.premium_payment_instructions ?? "",
       });
-      if (d.manual_bank_name) {
-        setOpenSections((prev) => ({ ...prev, manual: true }));
-      }
+      const hasMethods = d.payment_methods ?? [];
+      setOpenSections((prev) => ({
+        ...prev,
+        paypal: hasMethods.includes("paypal"),
+        manual: !!d.manual_bank_name,
+      }));
     }
   }, [configQuery.data, form]);
 
@@ -147,21 +200,28 @@ export function PremiumPaymentConfig() {
   const saveMutation = useMutation({
     mutationFn: saveConfig,
     onSuccess: () => {
-      toast({ title: "Đã lưu cấu hình Premium" });
+      toast({ title: "Premium config saved" });
       qc.invalidateQueries({ queryKey: ["premium-config"] });
     },
     onError: () => {
-      toast({ title: "Lưu thất bại", variant: "destructive" });
+      toast({ title: "Failed to save", variant: "destructive" });
     },
   });
 
   const handleSave = () => {
     if (!form) return;
+    const payment_methods: string[] = [];
+    if (form.paypal_enabled) payment_methods.push("paypal");
+    if (form.manual_bank_name) payment_methods.push("manual");
     saveMutation.mutate({
       currency: form.currency,
       currency_symbol: form.currency_symbol,
       premium_default_renewal_days: form.premium_default_renewal_days,
       premium_renewal_channel_id: form.premium_renewal_channel_id || null,
+      payment_methods,
+      paypal_client_id: form.paypal_client_id || null,
+      paypal_client_secret: form.paypal_client_secret || null,
+      paypal_mode: form.paypal_mode,
       manual_bank_name: form.manual_bank_name,
       manual_account_holder: form.manual_account_holder,
       manual_account_number: form.manual_account_number,
@@ -200,10 +260,10 @@ export function PremiumPaymentConfig() {
       {/* Page header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          Cấu hình Premium
+          Premium Payment Config
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Cấu hình thanh toán và gia hạn cho gói Premium.
+          Configure payment methods and renewal settings for Premium.
         </p>
       </div>
 
@@ -223,9 +283,9 @@ export function PremiumPaymentConfig() {
                   <Settings className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <CardTitle className="text-base">Cài đặt chung</CardTitle>
+                  <CardTitle className="text-base">General Settings</CardTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Tiền tệ, ngày gia hạn, kênh nhắc nhở
+                    Currency, renewal days, reminder channel
                   </p>
                 </div>
                 <ChevronDown
@@ -242,13 +302,13 @@ export function PremiumPaymentConfig() {
               <Separator />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="premium-currency">Tiền tệ</Label>
+                  <Label htmlFor="premium-currency">Currency</Label>
                   <Select
                     value={form.currency}
                     onValueChange={handleCurrencyChange}
                   >
                     <SelectTrigger id="premium-currency">
-                      <SelectValue placeholder="Chọn tiền tệ" />
+                      <SelectValue placeholder="Select currency" />
                     </SelectTrigger>
                     <SelectContent>
                       {CURRENCIES.map((c) => (
@@ -260,21 +320,21 @@ export function PremiumPaymentConfig() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="premium-currency-symbol">Ký hiệu</Label>
+                  <Label htmlFor="premium-currency-symbol">Symbol</Label>
                   <Input
                     id="premium-currency-symbol"
                     value={form.currency_symbol}
                     onChange={(e) =>
                       updateField("currency_symbol", e.target.value)
                     }
-                    placeholder="₫"
+                    placeholder="$"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="premium-renewal-days">
-                    Số ngày gia hạn mặc định
+                    Default renewal days
                   </Label>
                   <Input
                     id="premium-renewal-days"
@@ -291,7 +351,7 @@ export function PremiumPaymentConfig() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="premium-renewal-channel">
-                    Kênh nhắc nhở gia hạn
+                    Renewal reminder channel
                   </Label>
                   <ChannelSelect
                     value={form.premium_renewal_channel_id ?? ""}
@@ -308,7 +368,93 @@ export function PremiumPaymentConfig() {
         </Card>
       </Collapsible>
 
-      {/* ── Section 2: Manual / Bank Transfer ───────────────────────────── */}
+      {/* ── Section 2: PayPal ───────────────────────────────────────────── */}
+      <Collapsible
+        open={openSections.paypal}
+        onOpenChange={(open) => toggleSection("paypal", open)}
+      >
+        <Card>
+          <CardHeader className="pb-3">
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-3 text-left w-full"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
+                  <CreditCard className="h-5 w-5 text-blue-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-base">PayPal (Auto)</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Automated payment via PayPal REST API
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 mr-2" onClick={(e) => e.stopPropagation()}>
+                  <Switch
+                    checked={form.paypal_enabled}
+                    onCheckedChange={(v) => updateField("paypal_enabled", v)}
+                  />
+                </div>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 text-muted-foreground transition-transform shrink-0",
+                    openSections.paypal && "rotate-180"
+                  )}
+                />
+              </button>
+            </CollapsibleTrigger>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent className="pt-0 space-y-4">
+              <Separator />
+              {!form.paypal_enabled && (
+                <p className="text-sm text-muted-foreground">
+                  Enable PayPal above to configure credentials.
+                </p>
+              )}
+              {form.paypal_enabled && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="paypal-client-id">Client ID</Label>
+                    <Input
+                      id="paypal-client-id"
+                      value={form.paypal_client_id}
+                      onChange={(e) =>
+                        updateField("paypal_client_id", e.target.value)
+                      }
+                      placeholder="AXxx..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="paypal-client-secret">Client Secret</Label>
+                    <PayPalSecretInput
+                      value={form.paypal_client_secret}
+                      onChange={(v) => updateField("paypal_client_secret", v)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="paypal-mode">Mode</Label>
+                    <Select
+                      value={form.paypal_mode}
+                      onValueChange={(v) => updateField("paypal_mode", v)}
+                    >
+                      <SelectTrigger id="paypal-mode">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="live">Live</SelectItem>
+                        <SelectItem value="sandbox">Sandbox (testing)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* ── Section 3: Manual / Bank Transfer ───────────────────────────── */}
       <Collapsible
         open={openSections.manual}
         onOpenChange={(open) => toggleSection("manual", open)}
@@ -320,15 +466,13 @@ export function PremiumPaymentConfig() {
                 type="button"
                 className="flex items-center gap-3 text-left w-full"
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
-                  <Building2 className="h-5 w-5 text-blue-500" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/10">
+                  <Building2 className="h-5 w-5 text-orange-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <CardTitle className="text-base">
-                    Chuyển khoản / Bank Transfer
-                  </CardTitle>
+                  <CardTitle className="text-base">Bank Transfer (Manual)</CardTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Thông tin tài khoản nhận thanh toán
+                    Manual bank transfer payment details
                   </p>
                 </div>
                 <ChevronDown
@@ -345,19 +489,19 @@ export function PremiumPaymentConfig() {
               <Separator />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="premium-bank-name">Tên ngân hàng</Label>
+                  <Label htmlFor="premium-bank-name">Bank name</Label>
                   <Input
                     id="premium-bank-name"
                     value={form.manual_bank_name}
                     onChange={(e) =>
                       updateField("manual_bank_name", e.target.value)
                     }
-                    placeholder="Vietcombank"
+                    placeholder="e.g. Chase, Wells Fargo"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="premium-account-holder">
-                    Chủ tài khoản
+                    Account holder
                   </Label>
                   <Input
                     id="premium-account-holder"
@@ -365,12 +509,12 @@ export function PremiumPaymentConfig() {
                     onChange={(e) =>
                       updateField("manual_account_holder", e.target.value)
                     }
-                    placeholder="NGUYEN VAN A"
+                    placeholder="JOHN DOE"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="premium-account-number">Số tài khoản</Label>
+                <Label htmlFor="premium-account-number">Account number</Label>
                 <Input
                   id="premium-account-number"
                   value={form.manual_account_number}
@@ -382,7 +526,7 @@ export function PremiumPaymentConfig() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="premium-payment-instructions">
-                  Hướng dẫn thanh toán
+                  Payment instructions
                 </Label>
                 <Textarea
                   id="premium-payment-instructions"
@@ -390,7 +534,7 @@ export function PremiumPaymentConfig() {
                   onChange={(e) =>
                     updateField("premium_payment_instructions", e.target.value)
                   }
-                  placeholder="Chuyển khoản với nội dung: PREMIUM [Guild ID]..."
+                  placeholder="Transfer with note: PREMIUM [Guild ID]..."
                   rows={4}
                 />
               </div>
@@ -407,7 +551,7 @@ export function PremiumPaymentConfig() {
           ) : (
             <Save className="h-4 w-4 mr-2" />
           )}
-          Lưu cấu hình
+          Save config
         </Button>
       </div>
     </div>

@@ -134,6 +134,9 @@ def get_premium_config(
         "currency": cfg.currency,
         "currency_symbol": cfg.currency_symbol,
         "payment_methods": cfg.payment_methods or [],
+        "paypal_client_id": cfg.paypal_client_id,
+        "paypal_client_secret": cfg.paypal_client_secret,
+        "paypal_mode": cfg.paypal_mode or "live",
         "manual_bank_name": cfg.manual_bank_name,
         "manual_account_holder": cfg.manual_account_holder,
         "manual_account_number": cfg.manual_account_number,
@@ -151,23 +154,29 @@ def save_premium_config(
     _owner=Depends(require_owner),    # OWNER ONLY
 ):
     cfg = _get_config(db)
-    allowed = {
+    allowed_str = {
         "premium_payment_instructions",
-        "premium_default_renewal_days",
         "premium_renewal_channel_id",
         "manual_bank_name",
         "manual_account_holder",
         "manual_account_number",
+        "paypal_client_id",
+        "paypal_client_secret",
+        "currency",
+        "currency_symbol",
+        "paypal_mode",
     }
     for key, val in body.items():
-        if key in allowed:
-            if key == "premium_default_renewal_days":
-                days = int(val) if val is not None else 7
-                if days < 0 or days > 365:
-                    raise HTTPException(400, "premium_default_renewal_days must be 0–365")
-                setattr(cfg, key, days)
-            else:
-                setattr(cfg, key, _validate_str(val, key, max_len=2000))
+        if key == "premium_default_renewal_days":
+            days = int(val) if val is not None else 7
+            if days < 0 or days > 365:
+                raise HTTPException(400, "premium_default_renewal_days must be 0–365")
+            cfg.premium_default_renewal_days = days
+        elif key == "payment_methods":
+            if isinstance(val, list):
+                cfg.payment_methods = val
+        elif key in allowed_str:
+            setattr(cfg, key, _validate_str(val, key, max_len=2000) if val is not None else None)
     db.commit()
     return {"ok": True}
 
