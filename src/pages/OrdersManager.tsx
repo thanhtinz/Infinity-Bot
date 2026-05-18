@@ -17,10 +17,13 @@ import { cn } from "@/lib/utils";
 import type { Order, Product } from "../types";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
+import { useGuild } from "@/contexts/GuildContext";
+
 
 export function OrdersManager() {
   const { t } = useT();
   const { toast } = useToast();
+  const { selectedGuildId } = useGuild();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string>("ALL");
   const [createOpen, setCreateOpen] = useState(false);
@@ -56,13 +59,13 @@ export function OrdersManager() {
   const [sendQrChannelId, setSendQrChannelId] = useState("");
 
   const { data: orders = [], isLoading, refetch } = useQuery<Order[]>({
-    queryKey: ["orders"],
+    queryKey: ["orders", selectedGuildId],
     queryFn: () => apiFetch("/api/orders").then((r) => r.json()),
     refetchInterval: 15000,
   });
 
   const { data: products = [] } = useQuery<Product[]>({
-    queryKey: ["products"],
+    queryKey: ["products", selectedGuildId],
     queryFn: () => apiFetch("/api/products").then((r) => r.json()),
   });
 
@@ -75,7 +78,7 @@ export function OrdersManager() {
         body: JSON.stringify({ status }),
       }).then((r) => { if (!r.ok) throw new Error(); return r.json(); }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orders", selectedGuildId] });
       toast({ title: t("toast_statusUpdated") });
     },
     onError: () => toast({ variant: "destructive", title: t("error") }),
@@ -90,7 +93,7 @@ export function OrdersManager() {
         body: JSON.stringify(body),
       }).then(async (r) => { if (!r.ok) throw new Error(await r.text()); return r.json(); }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orders", selectedGuildId] });
       setCreateOpen(false);
       resetCreateForm();
       toast({ title: t("toast_orderCreated") });
@@ -107,7 +110,7 @@ export function OrdersManager() {
         body: JSON.stringify({ dm_content }),
       }).then(async (r) => { if (!r.ok) throw new Error(await r.text()); return r.json(); }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orders", selectedGuildId] });
       setDeliverTarget(null);
       setDmContent("");
       toast({ title: t("toast_deliveredSuccess") });
@@ -147,9 +150,9 @@ export function OrdersManager() {
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
+      <div className="space-y-3">
         <h1 className="text-xl font-semibold">{t("orders_title")}</h1>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4" />
           </Button>

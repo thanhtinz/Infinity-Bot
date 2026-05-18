@@ -68,8 +68,9 @@ export function StaffPermissions() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const { data: staffPerms = [], isLoading } = useQuery<StaffPerm[]>({
-    queryKey: ["staff-permissions"],
+    queryKey: ["staff-permissions", selectedGuildId],
     queryFn: () => apiFetch("/api/staff-permissions").then((r) => r.json()),
+    enabled: !!selectedGuildId,
   });
 
   const save = useMutation({

@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
+import { useGuild } from "@/contexts/GuildContext";
+
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -82,6 +84,7 @@ function truncate(s?: string, len = 80) {
 
 export function StickyManager() {
   const { toast } = useToast();
+  const { selectedGuildId } = useGuild();
   const qc = useQueryClient();
   const navigate = useNavigate();
 
@@ -99,14 +102,14 @@ export function StickyManager() {
   const { data: stickies = [], isLoading: loadingStickies } = useQuery<
     StickyMessage[]
   >({
-    queryKey: ["sticky"],
+    queryKey: ["sticky", selectedGuildId],
     queryFn: () =>
       apiFetch("/api/sticky").then((r) => r.json()),
     staleTime: 60_000,
   });
 
   const { data: stats, isLoading: loadingStats } = useQuery<StickyStats>({
-    queryKey: ["sticky-stats"],
+    queryKey: ["sticky-stats", selectedGuildId],
     queryFn: () =>
       apiFetch("/api/sticky/stats").then((r) =>
         r.json()
@@ -144,8 +147,8 @@ export function StickyManager() {
         if (!r.ok) throw new Error(await r.text());
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["sticky"] });
-      qc.invalidateQueries({ queryKey: ["sticky-stats"] });
+      qc.invalidateQueries({ queryKey: ["sticky", selectedGuildId] });
+      qc.invalidateQueries({ queryKey: ["sticky-stats", selectedGuildId] });
       setConfirmDeleteId(null);
       toast({ title: "Sticky deleted." });
     },
@@ -165,7 +168,7 @@ export function StickyManager() {
         return r.json();
       }),
     onMutate: async ({ id, is_enabled }) => {
-      await qc.cancelQueries({ queryKey: ["sticky"] });
+      await qc.cancelQueries({ queryKey: ["sticky", selectedGuildId] });
       const prev = qc.getQueryData<StickyMessage[]>(["sticky"]);
       qc.setQueryData<StickyMessage[]>(["sticky"], (old) =>
         old?.map((s) => (s.id === id ? { ...s, is_enabled } : s))
@@ -177,8 +180,8 @@ export function StickyManager() {
       toast({ variant: "destructive", title: "Failed to toggle status." });
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ["sticky"] });
-      qc.invalidateQueries({ queryKey: ["sticky-stats"] });
+      qc.invalidateQueries({ queryKey: ["sticky", selectedGuildId] });
+      qc.invalidateQueries({ queryKey: ["sticky-stats", selectedGuildId] });
     },
   });
 
@@ -191,8 +194,8 @@ export function StickyManager() {
         if (!r.ok) throw new Error(await r.text());
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["sticky"] });
-      qc.invalidateQueries({ queryKey: ["sticky-stats"] });
+      qc.invalidateQueries({ queryKey: ["sticky", selectedGuildId] });
+      qc.invalidateQueries({ queryKey: ["sticky-stats", selectedGuildId] });
       toast({ title: "Sticky resent." });
     },
     onError: () =>
@@ -254,15 +257,17 @@ export function StickyManager() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Pin className="h-5 w-5 text-primary" />
           <h2 className="text-2xl font-bold">Sticky Messages</h2>
         </div>
-        <Button onClick={openCreate} size="sm">
-          <Plus className="mr-1.5 h-4 w-4" />
-          Add Sticky
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={openCreate} size="sm">
+            <Plus className="mr-1.5 h-4 w-4" />
+            Add Sticky
+          </Button>
+        </div>
       </div>
 
       {/* Stat cards */}

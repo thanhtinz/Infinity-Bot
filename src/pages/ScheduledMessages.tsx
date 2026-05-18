@@ -172,7 +172,7 @@ export function ScheduledMessages() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-primary" />
           <div>
@@ -184,10 +184,12 @@ export function ScheduledMessages() {
             </p>
           </div>
         </div>
-        <Button onClick={() => navigate('/scheduled-messages/new')} size="sm">
-          <Plus className="mr-1.5 h-4 w-4" />
-          New Schedule
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={() => navigate('/scheduled-messages/new')} size="sm">
+            <Plus className="mr-1.5 h-4 w-4" />
+            New Schedule
+          </Button>
+        </div>
       </div>
 
       {/* Message list */}

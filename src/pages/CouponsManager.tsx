@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Copy, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
+import { useGuild } from "@/contexts/GuildContext";
+
 
 interface Coupon {
   id: number;
@@ -24,16 +26,17 @@ interface Coupon {
 export function CouponsManager() {
   const { t } = useT();
   const navigate = useNavigate();
+  const { selectedGuildId } = useGuild();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<Coupon | null>(null);
 
   const { data: coupons = [], isLoading } = useQuery<Coupon[]>({
-    queryKey: ["coupons"],
+    queryKey: ["coupons", selectedGuildId],
     queryFn: () => apiFetch("/api/coupons").then((r) => r.json()),
   });
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["coupons"] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["coupons", selectedGuildId] });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
@@ -57,11 +60,13 @@ export function CouponsManager() {
 
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="space-y-3">
         <h1 className="text-xl font-semibold">{t("coupons_title")}</h1>
-        <Button size="sm" onClick={() => navigate('/coupons/new')}>
-          <Plus className="mr-2 h-4 w-4" /> {t("coupons_add")}
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button size="sm" onClick={() => navigate('/coupons/new')}>
+            <Plus className="mr-2 h-4 w-4" /> {t("coupons_add")}
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

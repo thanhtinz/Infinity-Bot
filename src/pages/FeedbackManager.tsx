@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, Trash2, Search, Star, StarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
+import { useGuild } from "@/contexts/GuildContext";
+
 
 interface FeedbackRow {
   id: number;
@@ -67,12 +69,13 @@ function AvatarInitial({ username }: { username: string }) {
 export function FeedbackManager() {
   const { t } = useT();
   const { toast } = useToast();
+  const { selectedGuildId } = useGuild();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<FeedbackRow | null>(null);
 
   const { data: feedbacks = [], isLoading } = useQuery<FeedbackRow[]>({
-    queryKey: ["feedback"],
+    queryKey: ["feedback", selectedGuildId],
     queryFn: () => apiFetch("/api/feedback").then((r) => r.json()),
   });
 
@@ -82,7 +85,7 @@ export function FeedbackManager() {
         if (!r.ok) throw new Error(await r.text());
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["feedback"] });
+      qc.invalidateQueries({ queryKey: ["feedback", selectedGuildId] });
       setDeleteTarget(null);
       toast({ title: t("toast_feedbackDeleted") });
     },

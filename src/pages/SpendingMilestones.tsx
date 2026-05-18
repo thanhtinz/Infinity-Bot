@@ -41,8 +41,9 @@ export default function SpendingMilestones() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const { data: milestones = [], isLoading } = useQuery<Milestone[]>({
-    queryKey: ["milestones"],
+    queryKey: ["milestones", selectedGuildId],
     queryFn: () => apiFetch("/api/shop/milestones").then((r) => r.json()),
+    enabled: !!selectedGuildId,
   });
 
   const save = useMutation({

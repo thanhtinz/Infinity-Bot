@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Gift, Trophy, Clock, Users, Trash2, Info } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
+import { useGuild } from "@/contexts/GuildContext";
+
 
 interface Giveaway {
   id: number;
@@ -36,12 +38,13 @@ function formatDate(s: string) {
 export function GiveawaysManager() {
   const { t } = useT();
   const { toast } = useToast();
+  const { selectedGuildId } = useGuild();
   const qc = useQueryClient();
   const [filter, setFilter] = useState<"all" | "active" | "ended">("all");
   const [deleteTarget, setDeleteTarget] = useState<Giveaway | null>(null);
 
   const { data: giveaways = [], isLoading } = useQuery<Giveaway[]>({
-    queryKey: ["giveaways"],
+    queryKey: ["giveaways", selectedGuildId],
     queryFn: () => apiFetch("/api/giveaways").then((r) => r.json()),
   });
 
@@ -50,7 +53,7 @@ export function GiveawaysManager() {
       apiFetch(`/api/giveaways/${id}`, { method: "DELETE", credentials: "include" })
         .then(async (r) => { if (!r.ok) throw new Error(await r.text()); }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["giveaways"] });
+      qc.invalidateQueries({ queryKey: ["giveaways", selectedGuildId] });
       setDeleteTarget(null);
       toast({ title: t("toast_giveawayDeleted") });
     },
@@ -74,9 +77,11 @@ export function GiveawaysManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Gift className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">{t("giveaway_title")}</h2>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Gift className="h-5 w-5 text-primary" />
+          <h2 className="text-2xl font-bold">{t("giveaway_title")}</h2>
+        </div>
       </div>
 
       {/* ── Note ── */}

@@ -55,11 +55,13 @@ export function ProductsManager() {
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-3">
         <h1 className="text-xl font-semibold">{t("products_title")}</h1>
-        <Button size="sm" onClick={() => navigate('/products/new')}>
-          <Plus className="mr-2 h-4 w-4" /> {t("products_add")}
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button size="sm" onClick={() => navigate('/products/new')}>
+            <Plus className="mr-2 h-4 w-4" /> {t("products_add")}
+          </Button>
+        </div>
       </div>
 
       {/* Product cards grid */}

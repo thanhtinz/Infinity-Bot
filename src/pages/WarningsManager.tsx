@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useToast } from "@/hooks/use-toast";
 import { Shield, ShieldAlert, ShieldCheck, Trash2, Search, Users, UserCheck } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { useGuild } from "@/contexts/GuildContext";
+
 
 interface WarningRow {
   id: number;
@@ -21,12 +23,13 @@ interface WarningRow {
 export function WarningsManager() {
   const { t } = useT();
   const { toast } = useToast();
+  const { selectedGuildId } = useGuild();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<WarningRow | null>(null);
 
   const { data: warnings = [], isLoading } = useQuery<WarningRow[]>({
-    queryKey: ["warnings"],
+    queryKey: ["warnings", selectedGuildId],
     queryFn: () => apiFetch("/api/warnings").then((r) => r.json()),
   });
 
@@ -36,7 +39,7 @@ export function WarningsManager() {
         if (!r.ok) throw new Error("Delete failed");
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["warnings"] });
+      qc.invalidateQueries({ queryKey: ["warnings", selectedGuildId] });
       setDeleteTarget(null);
       toast({ title: t("toast_warningDeleted") });
     },
@@ -59,14 +62,16 @@ export function WarningsManager() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ShieldAlert className="h-6 w-6 text-orange-500" />
-          {t("warnings_title")}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t("warnings_title")} <code className="bg-muted px-1 rounded text-xs">/warn</code>. Deleting here does not DM the user.
-        </p>
+      <div className="space-y-3">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <ShieldAlert className="h-6 w-6 text-orange-500" />
+            {t("warnings_title")}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("warnings_title")} <code className="bg-muted px-1 rounded text-xs">/warn</code>. Deleting here does not DM the user.
+          </p>
+        </div>
       </div>
 
       {/* ── Stat Cards ── */}

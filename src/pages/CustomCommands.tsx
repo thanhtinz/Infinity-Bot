@@ -101,7 +101,7 @@ export function CustomCommands() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="space-y-3">
         <div>
           <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <Terminal className="w-6 h-6" />
@@ -111,10 +111,12 @@ export function CustomCommands() {
             {t("cc_desc")}
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4 mr-1.5" />
-          {t("cc_addCommand")}
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={openCreate}>
+            <Plus className="h-4 w-4 mr-1.5" />
+            {t("cc_addCommand")}
+          </Button>
+        </div>
       </div>
 
       {/* Loading */}

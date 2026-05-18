@@ -168,14 +168,14 @@ export function EmojiManager() {
   return (
     <div className="space-y-6 p-4 lg:p-6 max-w-6xl mx-auto">
       {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+      <div className="space-y-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("emoji_title")}</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {t("emoji_desc")}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {tab === "emoji" && (
             <>
               <Button variant="outline" onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}>

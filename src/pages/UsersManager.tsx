@@ -14,6 +14,8 @@ import { Users, UserCheck, Ban, DollarSign, Search, FileText, ShieldBan } from "
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
+import { useGuild } from "@/contexts/GuildContext";
+
 
 interface UserRecord {
   id: number;
@@ -38,6 +40,7 @@ interface UserOrder {
 export function UsersManager() {
   const { t } = useT();
   const { toast } = useToast();
+  const { selectedGuildId } = useGuild();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [orderSheetUser, setOrderSheetUser] = useState<UserRecord | null>(null);
@@ -71,7 +74,7 @@ export function UsersManager() {
   }
 
   const { data: users = [], isLoading } = useQuery<UserRecord[]>({
-    queryKey: ["users"],
+    queryKey: ["users", selectedGuildId],
     queryFn: () => apiFetch("/api/users").then((r) => r.json()),
   });
 
@@ -90,7 +93,7 @@ export function UsersManager() {
         body: JSON.stringify({ reason }),
       }).then(async (r) => { if (!r.ok) throw new Error(await r.text()); return r.json(); }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["users"] });
+      qc.invalidateQueries({ queryKey: ["users", selectedGuildId] });
       setBanTarget(null);
       setBanReason("");
       toast({ title: t("toast_userBanned") });
@@ -105,7 +108,7 @@ export function UsersManager() {
         credentials: "include",
       }).then(async (r) => { if (!r.ok) throw new Error(await r.text()); return r.json(); }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["users"] });
+      qc.invalidateQueries({ queryKey: ["users", selectedGuildId] });
       toast({ title: t("toast_userUnbanned") });
     },
     onError: (e: Error) => toast({ variant: "destructive", title: t("error"), description: e.message }),
