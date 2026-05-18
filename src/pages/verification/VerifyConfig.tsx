@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { RoleSelect, MultiRoleSelect } from "@/components/RoleSelect";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
