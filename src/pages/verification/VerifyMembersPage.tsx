@@ -32,7 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   ArrowDownToLine, Trash2, Search, Ban, ShieldCheck,
   ChevronLeft, ChevronRight, ArrowRightLeft, Loader2,
-  RefreshCw, Play, Square, Eye, Info, Share2, RotateCcw,
+  RefreshCw, Play, Square, Eye, Info, RotateCcw,
   Users,
 } from "lucide-react";
 import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
@@ -370,15 +370,6 @@ export function VerifyMembersPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Tutorial link */}
-            <a
-              href="#"
-              className="flex items-center gap-1.5 text-blue-500 text-sm hover:underline"
-            >
-              Need help? Tutorial video here
-              <Share2 className="h-3.5 w-3.5" />
-            </a>
-
             {/* Select a server */}
             <div className="border border-blue-500 rounded-lg px-4 py-3 flex items-center justify-between bg-transparent cursor-pointer hover:bg-muted/30 transition-colors">
               <span className="text-sm text-muted-foreground">Select a server</span>
