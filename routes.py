@@ -91,6 +91,9 @@ def create_app(static_dir: str) -> FastAPI:
 
         @app.get("/{path:path}")
         async def spa_fallback(request: Request, path: str):
+            if path.startswith("api/"):
+                from fastapi.responses import JSONResponse
+                return JSONResponse(status_code=404, content={"detail": "Not found"})
             file_path = os.path.join(static_dir, path)
             if path and os.path.isfile(file_path):
                 return FileResponse(file_path)

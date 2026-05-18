@@ -470,7 +470,7 @@ export function VerifyConfig() {
         <Button
           variant="outline"
           className="h-10 gap-2 justify-start"
-          onClick={() => navigate("/embeds?event=welcome")}
+          onClick={() => navigate("/embeds?event=verify_panel")}
         >
           <MessageSquare className="h-4 w-4 text-indigo-500" />
           <span className="font-medium text-sm">Verify Message</span>
