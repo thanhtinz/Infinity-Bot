@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from src.database.config import get_db
 from src.models.models import SystemConfig, VerificationConfig, VerifiedMember, FirewallRule, FirewallLog, GuildBot
-from src.api.auth import get_public_base_url
+from src.api.auth import get_public_base_url, get_discord_oauth_config
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -291,7 +291,19 @@ def start_verification(guild_id: str, request: Request, fp: str = "", captcha_to
         if not captcha_token or not _validate_captcha_token(captcha_token):
             raise HTTPException(403, "Captcha required")
 
-    client_id, client_secret, _, public_app_url = _get_oauth_config(db, guild_id)
+    # Get OAuth credentials — guild-specific bot first, fallback to main bot
+    # Use get_discord_oauth_config for public_app_url with full fallback chain (DB → env → request)
+    gbot = db.execute(
+        select(GuildBot).where(GuildBot.guild_id == guild_id, GuildBot.status == "active")
+    ).scalars().first()
+
+    if gbot and gbot.client_id and gbot.client_secret:
+        # Custom bot — use their client creds but get public_app_url from main config
+        _, _, _, _, public_app_url = get_discord_oauth_config(db, request)
+        client_id, client_secret = gbot.client_id, gbot.client_secret
+    else:
+        _, client_id, client_secret, _, public_app_url = get_discord_oauth_config(db, request)
+
     if not client_id or not client_secret:
         raise HTTPException(500, "Discord OAuth not configured")
     if not public_app_url:
@@ -336,7 +348,18 @@ async def verify_callback(
     if not cfg or not cfg.enabled:
         raise HTTPException(404, "Verification not enabled")
 
-    client_id, client_secret, bot_token, public_app_url = _get_oauth_config(db, guild_id)
+    # Get OAuth credentials — same logic as start_verification
+    gbot = db.execute(
+        select(GuildBot).where(GuildBot.guild_id == guild_id, GuildBot.status == "active")
+    ).scalars().first()
+
+    if gbot and gbot.client_id and gbot.client_secret:
+        _, _, _, _, public_app_url = get_discord_oauth_config(db, request)
+        client_id, client_secret = gbot.client_id, gbot.client_secret
+        bot_token = gbot.bot_token
+    else:
+        _, client_id, client_secret, bot_token, public_app_url = get_discord_oauth_config(db, request)
+
     if not client_id or not client_secret:
         raise HTTPException(500, "Discord OAuth not configured")
     if not public_app_url:
