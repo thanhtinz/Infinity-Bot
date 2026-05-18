@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, Home, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, UserCog, Lock } from "lucide-react";
-import { useState, useMemo, useEffect, lazy, Suspense } from "react";
+import { useState, useMemo, useEffect, lazy, Suspense, Component } from "react";
+import type { ReactNode, ErrorInfo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
 import { I18nProvider, useT } from "@/i18n";
@@ -607,6 +608,29 @@ function RouteLoader() {
   );
 }
 
+interface EBState { hasError: boolean; error?: Error }
+class PageErrorBoundary extends Component<{ children: ReactNode }, EBState> {
+  state: EBState = { hasError: false };
+  static getDerivedStateFromError(error: Error): EBState { return { hasError: true, error }; }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error("[PageErrorBoundary]", error, info); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+          <AlertTriangle className="w-8 h-8 text-destructive" />
+          <p className="font-semibold text-foreground">Page crashed</p>
+          <p className="text-xs text-muted-foreground max-w-xs">{this.state.error?.message}</p>
+          <button
+            className="text-xs underline text-primary mt-1"
+            onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+          >Reload</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function ProtectedAppRoutes({ root }: { root?: boolean }) {
   if (root) {
     // /dashboard → redirect sang bot-settings
@@ -618,6 +642,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
   }
   return (
     <ProtectedRoute>
+      <PageErrorBoundary>
       <Suspense fallback={<RouteLoader />}>
         <Routes>
         <Route path="/select-guild" element={<SelectGuildPage />} />
@@ -694,6 +719,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         {/* Owner */}
       </Routes>
       </Suspense>
+      </PageErrorBoundary>
     </ProtectedRoute>
   );
 }

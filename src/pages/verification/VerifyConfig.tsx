@@ -322,7 +322,7 @@ export function VerifyConfig() {
   });
   const { hasFeature, isLoading: entLoading } = useEntitlements();
 
-  const configQuery = useQuery({ queryKey: ["verification-config"], queryFn: fetchConfig });
+  const configQuery = useQuery({ queryKey: ["verification-config", selectedGuildId], queryFn: fetchConfig, enabled: !!selectedGuildId });
   const domainStatusQuery = useQuery({
     queryKey: ["verification-domain-status", selectedGuildId],
     queryFn: async () => {
