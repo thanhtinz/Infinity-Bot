@@ -385,13 +385,13 @@ export function VerifyPage() {
         cursor: config?.cursor_url ? `url(${config.cursor_url}), auto` : undefined,
       }}
     >
-      {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />}
-      {bgImage && <div className="absolute inset-0 bg-black/50" />}
+      {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover z-0" />}
+      {bgImage && <div className="absolute inset-0 bg-black/50 z-0" />}
 
-      {bgEffect === "stars" && <ShootingStars />}
-      {bgEffect === "particles" && <FloatingParticles />}
+      {bgEffect === "stars" && <div className="z-10"><ShootingStars /></div>}
+      {bgEffect === "particles" && <div className="z-10"><FloatingParticles /></div>}
       {bgEffect === "gradient" && (
-        <div className="absolute inset-0" style={{
+        <div className="absolute inset-0 z-10" style={{
           background: `linear-gradient(45deg, ${btnColor}20, transparent, ${btnColor}10)`,
           animation: "gradientShift 8s ease infinite",
         }} />
@@ -401,7 +401,7 @@ export function VerifyPage() {
 
       <div
         ref={tiltRef}
-        className="relative w-full max-w-md rounded-2xl backdrop-blur-xl border p-8 text-center shadow-2xl transition-transform duration-200"
+        className="relative z-20 w-full max-w-md rounded-2xl backdrop-blur-xl border p-8 text-center shadow-2xl transition-transform duration-200"
         style={{ backgroundColor: `${cardBg}e6`, borderColor: cardBorder }}
       >
         {config?.banner_url && (

@@ -232,6 +232,8 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
 /* ── Live Preview ───────────────────────────────────── */
 function VerifyPreview({ config: c }: { config: VerificationConfig }) {
   const activeSocials = SOCIALS.filter(s => c.socials?.[s.key]);
+  const bgEffect = c.bg_effect || "none";
+
   return (
     <div className="relative w-full rounded-xl overflow-hidden border border-border" style={{ minHeight: 500 }}>
       <div
@@ -245,6 +247,42 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
       />
       {c.page_background_url && <div className="absolute inset-0 bg-black/50" />}
 
+      {/* Background Effects */}
+      {bgEffect === "stars" && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="absolute w-0.5 bg-gradient-to-b from-white/60 to-transparent"
+              style={{
+                height: `${40 + (i * 17 % 60)}px`,
+                left: `${(i * 17) % 100}%`,
+                top: `${(i * 13) % 50}%`,
+                animation: `shootingStar ${2 + (i % 3)}s linear ${i * 0.8}s infinite`,
+                transform: "rotate(-45deg)",
+              }}
+            />
+          ))}
+          <style>{`@keyframes shootingStar { 0%{transform:translateX(0) translateY(0) rotate(-45deg);opacity:1} 100%{transform:translateX(300px) translateY(300px) rotate(-45deg);opacity:0} }`}</style>
+        </div>
+      )}
+      {bgEffect === "particles" && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div key={i} className="absolute w-1 h-1 rounded-full bg-white/20"
+              style={{
+                left: `${(i * 5) % 100}%`,
+                top: `${(i * 7) % 100}%`,
+                animation: `floatP ${4 + (i % 6)}s ease-in-out ${(i % 5) * 0.8}s infinite alternate`,
+              }}
+            />
+          ))}
+          <style>{`@keyframes floatP { 0%{transform:translateY(0) scale(1);opacity:0.2} 100%{transform:translateY(-40px) scale(1.5);opacity:0.6} }`}</style>
+        </div>
+      )}
+      {bgEffect === "gradient" && (
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: `linear-gradient(45deg, ${c.btn_color || "#5865F2"}20, transparent, ${c.btn_color || "#5865F2"}10)`, animation: "gradShift 8s ease infinite" }} />
+      )}
+
       <div className="relative z-10 flex flex-col items-center justify-center min-h-[500px] p-8 text-center"
         style={{ fontFamily: c.font_family, color: c.text_color || "#ffffff" }}>
 
@@ -255,9 +293,9 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
         )}
 
         <h1 className="text-2xl font-bold mb-2" style={{
-          textShadow: c.glow_effect ? `0 0 20px ${c.text_color || "#fff"}` : undefined,
+          textShadow: c.glow_effect ? `0 0 20px ${c.text_color || "#fff"}, 0 0 40px ${c.text_color || "#fff"}40` : undefined,
         }}>
-          {c.page_title || "Verify Your Account"}
+          {c.typewriter_effect ? (c.page_title || "Verify Your Account").slice(0, Math.ceil(((c.page_title || "Verify Your Account").length) * 0.7)) + "▌" : (c.page_title || "Verify Your Account")}
         </h1>
 
         {c.page_description && (
