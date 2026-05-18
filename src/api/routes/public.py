@@ -132,7 +132,11 @@ async def public_status():
 @router.get("/commands")
 async def public_commands():
     """Full public slash-command catalog for the landing page."""
-    from src.bot.cogs.help_cog import HELP_CATEGORIES
+    # Force re-import to pick up latest data (no module cache)
+    import importlib
+    import src.bot.cogs.help_cog as _hc
+    importlib.reload(_hc)
+    HELP_CATEGORIES = _hc.HELP_CATEGORIES
 
     # Display-name overrides for Vietnamese bot command names
     DISPLAY_NAMES: dict[str, str] = {
@@ -172,10 +176,16 @@ async def public_commands():
             total += 1
             raw_name = cmd["name"]
             display = DISPLAY_NAMES.get(raw_name, raw_name)
+            # If the name was remapped, also rewrite the usage string
+            raw_usage = cmd.get("usage") or f"`/{raw_name}`"
+            if raw_name in DISPLAY_NAMES:
+                display_usage = raw_usage.replace(f"/{raw_name}", f"/{display}")
+            else:
+                display_usage = raw_usage
             commands.append({
                 "name": f"/{display}",
                 "description": cmd.get("desc", f"Run the /{display} command."),
-                "usage": cmd.get("usage", f"`/{raw_name}`"),
+                "usage": display_usage,
                 "admin": bool(cmd.get("admin")),
             })
         categories.append({
