@@ -95,6 +95,19 @@ def get_guild_by_domain(host: str, db: Session = Depends(get_db)):
     return {"guild_id": cfg.guild_id}
 
 
+@router.get("/api/verify/by-slug/{slug}")
+def get_guild_by_slug(slug: str, db: Session = Depends(get_db)):
+    """Resolve a custom slug (e.g. /verify/myserver) to a guild_id."""
+    cfg = db.execute(
+        select(VerificationConfig).where(
+            func.lower(VerificationConfig.verify_slug) == slug.strip().lower()
+        )
+    ).scalars().first()
+    if not cfg:
+        raise HTTPException(404, "No guild configured for this slug")
+    return {"guild_id": cfg.guild_id}
+
+
 # ── Public config for verify page branding (no auth) ──
 @router.get("/api/verify/{guild_id}/config")
 def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):

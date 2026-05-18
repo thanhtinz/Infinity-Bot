@@ -755,6 +755,8 @@ class VerificationConfig(Base):
     music_url = Column(String, nullable=True)  # Background audio URL for verify page
     # ── Pull Cooldown ──
     pull_cooldown_hours = Column(Integer, default=10)  # Cooldown between pulls (0 = no cooldown)
+    # ── Custom Slug ──
+    verify_slug = Column(String, nullable=True, unique=True)  # e.g. "myserver" → /verify/myserver
     # ── Captcha ──
     captcha_type = Column(String, default="none")  # none | button | emoji | math | slider
     captcha_difficulty = Column(String, default="medium")  # easy | medium | hard

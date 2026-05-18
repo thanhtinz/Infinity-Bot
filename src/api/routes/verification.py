@@ -93,6 +93,7 @@ def get_config(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_
         "custom_domain": getattr(cfg, "custom_domain", "") or "",
         "music_url": getattr(cfg, "music_url", "") or "",
         "pull_cooldown_hours": getattr(cfg, "pull_cooldown_hours", 10),
+        "verify_slug": getattr(cfg, "verify_slug", "") or "",
         # Captcha
         "captcha_type": getattr(cfg, "captcha_type", "none") or "none",
         "captcha_difficulty": getattr(cfg, "captcha_difficulty", "medium") or "medium",
@@ -101,6 +102,7 @@ def get_config(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_
 
 @router.put("/verification/config")
 async def update_config(body: dict, guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
+    import re
     cfg = _get_or_create_config(db, guild_id)
     allowed = [
         "enabled", "verified_role_id", "unverified_role_id", "verify_channel_id",
@@ -121,8 +123,27 @@ async def update_config(body: dict, guild_id: str = Depends(get_guild_id), db: S
         "vpn_api_key", "vpn_api_provider",
         "custom_domain",
         "music_url", "pull_cooldown_hours",
+        "verify_slug",
         "captcha_type", "captcha_difficulty",
     ]
+
+    # Validate + sanitize slug
+    if "verify_slug" in body:
+        raw_slug = (body.get("verify_slug") or "").strip().lower()
+        if raw_slug:
+            # Only alphanumeric + hyphens, 3-32 chars
+            if not re.match(r'^[a-z0-9][a-z0-9\-]{1,30}[a-z0-9]$', raw_slug):
+                raise HTTPException(400, "Slug must be 3–32 chars, lowercase letters, numbers, hyphens only (no start/end with hyphen)")
+            # Check uniqueness (exclude own guild)
+            conflict = db.execute(
+                select(VerificationConfig).where(
+                    func.lower(VerificationConfig.verify_slug) == raw_slug,
+                    VerificationConfig.guild_id != guild_id,
+                )
+            ).scalars().first()
+            if conflict:
+                raise HTTPException(409, "This slug is already taken. Please choose a different one.")
+        body["verify_slug"] = raw_slug or None
 
     # Track custom_domain change for Railway API
     old_domain = (getattr(cfg, "custom_domain", "") or "").strip()
@@ -178,6 +199,22 @@ async def domain_status(guild_id: str = Depends(get_guild_id), db: Session = Dep
         "railway_configured": True,
         "error": result.get("error"),
     }
+
+
+@router.get("/verification/slug/check")
+def check_slug(slug: str, guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
+    """Check if a slug is available (not taken by another guild)."""
+    import re
+    slug = slug.strip().lower()
+    if not re.match(r'^[a-z0-9][a-z0-9\-]{1,30}[a-z0-9]$', slug):
+        return {"available": False, "reason": "Invalid format"}
+    conflict = db.execute(
+        select(VerificationConfig).where(
+            func.lower(VerificationConfig.verify_slug) == slug,
+            VerificationConfig.guild_id != guild_id,
+        )
+    ).scalars().first()
+    return {"available": conflict is None}
 
 
 # ── Verified Members ──

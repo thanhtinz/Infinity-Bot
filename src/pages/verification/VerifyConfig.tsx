@@ -307,6 +307,8 @@ export function VerifyConfig() {
   const [guildBotForm, setGuildBotForm] = useState({ client_id: "", bot_token: "", client_secret: "" });
   const [domainDialogOpen, setDomainDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+  const [slugInput, setSlugInput] = useState("");
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid">("idle");
   const [fwSearch, setFwSearch] = useState("");
   const [fwFilterType, setFwFilterType] = useState("all");
   const [fwAddOpen, setFwAddOpen] = useState(false);
@@ -338,6 +340,7 @@ export function VerifyConfig() {
   });
 
   useEffect(() => { if (configQuery.data && !configForm) setConfigForm(configQuery.data); }, [configQuery.data, configForm]);
+  useEffect(() => { if (configQuery.data?.verify_slug && !slugInput) setSlugInput(configQuery.data.verify_slug); }, [configQuery.data?.verify_slug]);
   useEffect(() => {
     if (guildBotQuery.data) setGuildBotForm({ client_id: guildBotQuery.data.client_id || "", bot_token: "", client_secret: "" });
   }, [guildBotQuery.data]);
@@ -386,12 +389,39 @@ export function VerifyConfig() {
     if (!configForm) return;
     setConfigForm({ ...configForm, ...patch });
   }
-  function updateSocial(key: string, value: string) {
+
+  const slugCheckRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function handleSlugChange(val: string) {
+    const s = val.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setSlugInput(s);
+    setSlugStatus("idle");
+    if (slugCheckRef.current) clearTimeout(slugCheckRef.current);
+    if (!s || s === configForm?.verify_slug) return;
+    if (!/^[a-z0-9][a-z0-9\-]{1,30}[a-z0-9]$/.test(s)) { setSlugStatus("invalid"); return; }
+    setSlugStatus("checking");
+    slugCheckRef.current = setTimeout(async () => {
+      try {
+        const res = await apiFetch(`/api/verification/slug/check?slug=${encodeURIComponent(s)}`);
+        const data = await res.json() as { available: boolean };
+        setSlugStatus(data.available ? "available" : "taken");
+      } catch { setSlugStatus("idle"); }
+    }, 600);
+  }
+  function applySlug() {
+    if (slugStatus === "available" || (slugInput === configForm?.verify_slug)) {
+      update({ verify_slug: slugInput || "" });
+      configMutation.mutate({ ...configForm!, verify_slug: slugInput || "" });
+    }
+  }
+
+  function updateSocial(key: string, value: string) {(key: string, value: string) {
     if (!configForm) return;
     setConfigForm({ ...configForm, socials: { ...configForm.socials, [key]: value } });
   }
 
-  const verifyUrl = selectedGuildId ? `${window.location.origin}/verify/${selectedGuildId}` : "";
+  const verifyUrl = selectedGuildId
+    ? `${window.location.origin}/verify/${configForm?.verify_slug || selectedGuildId}`
+    : "";
   function copyUrl() { navigator.clipboard.writeText(verifyUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }
 
   const activeSocialCount = configForm ? SOCIALS.filter(s => configForm.socials?.[s.key]).length : 0;
@@ -486,6 +516,48 @@ export function VerifyConfig() {
               <p className="text-xs text-muted-foreground">Require members to verify via OAuth2</p>
             </div>
             <Switch checked={configForm.enabled} onCheckedChange={v => update({ enabled: v })} />
+          </div>
+
+          {/* Custom Slug */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Verify Link Slug</p>
+              <p className="text-xs text-muted-foreground">Set a custom name for your verify URL instead of the guild ID.</p>
+            </div>
+            <div className="flex items-center gap-0 rounded-lg border border-input bg-muted/30 overflow-hidden">
+              <span className="px-3 text-xs text-muted-foreground whitespace-nowrap bg-muted/50 border-r border-input py-2.5">infinitybot.website/verify/</span>
+              <Input
+                value={slugInput}
+                onChange={e => handleSlugChange(e.target.value)}
+                placeholder="myserver"
+                className="border-0 rounded-none bg-transparent focus-visible:ring-0 text-sm font-mono"
+                maxLength={32}
+              />
+              <Button
+                size="sm"
+                variant="ghost"
+                className="rounded-none border-l border-input px-3 shrink-0"
+                disabled={slugStatus !== "available" && slugInput !== configForm.verify_slug}
+                onClick={applySlug}
+              >
+                {configMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              </Button>
+            </div>
+            {slugInput && (
+              <p className={`text-xs flex items-center gap-1.5 ${
+                slugStatus === "available" ? "text-emerald-500" :
+                slugStatus === "taken" ? "text-destructive" :
+                slugStatus === "invalid" ? "text-amber-500" :
+                slugStatus === "checking" ? "text-muted-foreground" :
+                slugInput === configForm.verify_slug ? "text-emerald-500" : "text-muted-foreground"
+              }`}>
+                {slugStatus === "checking" && <Loader2 className="h-3 w-3 animate-spin" />}
+                {slugStatus === "available" && "✓ Available"}
+                {slugStatus === "taken" && "✗ Already taken"}
+                {slugStatus === "invalid" && "Invalid — 3–32 chars, lowercase, no start/end hyphen"}
+                {slugStatus === "idle" && slugInput === configForm.verify_slug && "✓ Current slug"}
+              </p>
+            )}
           </div>
 
           <div className="space-y-4 rounded-xl border border-border bg-card p-5">
@@ -897,45 +969,6 @@ export function VerifyConfig() {
 
         {/* ─── ADVANCED ─── */}
         <TabsContent value="advanced" className="space-y-4 pt-4">
-          {/* Custom Bot */}
-          <PremiumGate feature="custom_bot" featureLabel="Custom Bot" hasAccess={hasFeature("custom_bot")} isLoading={entLoading}>
-          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-semibold flex items-center gap-2">Custom Bot <PremiumBadge size="xs" /></p>
-                <p className="text-xs text-muted-foreground">Use a dedicated bot token and OAuth app for this guild's verification flow.</p>
-              </div>
-              <div className="flex items-center gap-2">
-                {guildBotQuery.data?.status === "active" && <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 bg-emerald-500/10 text-[10px]"><ShieldCheck className="h-3 w-3 mr-1" />Active</Badge>}
-                {guildBotQuery.data?.status === "error" && <Badge variant="destructive" className="text-[10px]"><TriangleAlert className="h-3 w-3 mr-1" />Error</Badge>}
-              </div>
-            </div>
-            {guildBotQuery.data?.bot_name && (
-              <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2">
-                {guildBotQuery.data.bot_avatar_url ? <img src={guildBotQuery.data.bot_avatar_url} alt="Bot" className="h-10 w-10 rounded-full object-cover" /> : <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 border border-border"><Bot className="h-5 w-5 text-primary" /></div>}
-                <div><p className="text-sm font-medium">{guildBotQuery.data.bot_name}</p><p className="text-xs text-muted-foreground">Client ID: {guildBotQuery.data.client_id || "—"}</p></div>
-              </div>
-            )}
-            {guildBotQuery.data?.error_message && <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">{guildBotQuery.data.error_message}</div>}
-            <div className="grid gap-3">
-              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Client ID</Label><Input value={guildBotForm.client_id} onChange={e => setGuildBotForm(p => ({ ...p, client_id: e.target.value }))} placeholder="Discord application client ID" /></div>
-              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Bot Token</Label><Input type="password" value={guildBotForm.bot_token} onChange={e => setGuildBotForm(p => ({ ...p, bot_token: e.target.value }))} placeholder={guildBotQuery.data?.has_token ? "Saved — enter new token to replace" : "Discord bot token"} /></div>
-              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Client Secret</Label><Input type="password" value={guildBotForm.client_secret} onChange={e => setGuildBotForm(p => ({ ...p, client_secret: e.target.value }))} placeholder={guildBotQuery.data?.has_secret ? "Saved — enter new secret to replace" : "Discord OAuth client secret"} /></div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" onClick={() => guildBotSaveMutation.mutate()} disabled={guildBotSaveMutation.isPending}>
-                {guildBotSaveMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Save className="mr-1.5 h-4 w-4" />}Save bot
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => guildBotValidateMutation.mutate()} disabled={guildBotValidateMutation.isPending || !guildBotQuery.data?.configured}>
-                {guildBotValidateMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-1.5 h-4 w-4" />}Validate
-              </Button>
-              <Button size="sm" variant="outline" className="text-destructive border-destructive/20 hover:bg-destructive/10" onClick={() => guildBotDeleteMutation.mutate()} disabled={guildBotDeleteMutation.isPending || !guildBotQuery.data?.configured}>
-                {guildBotDeleteMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Trash2 className="mr-1.5 h-4 w-4" />}Revert to main
-              </Button>
-            </div>
-          </div>
-          </PremiumGate>
-
           {/* Misc advanced */}
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Misc</p>

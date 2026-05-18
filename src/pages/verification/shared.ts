@@ -86,6 +86,7 @@ export interface VerificationConfig {
   custom_domain: string;
   music_url: string;
   pull_cooldown_hours: number;
+  verify_slug: string;
 }
 
 export interface GuildBotConfig {
