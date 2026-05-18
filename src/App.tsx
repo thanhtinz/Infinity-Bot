@@ -71,6 +71,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useEntitlements } from "@/hooks/useEntitlements";
 
 import type { LucideIcon } from "lucide-react";
 
@@ -194,6 +195,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     }),
     retry: false
   });
+
+  const { hasFeature } = useEntitlements();
 
   const { data: features } = useQuery<{ key: string; enabled: boolean }[]>({
     queryKey: ["features"],
@@ -430,6 +433,20 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 <Link to="/my-plan" className="flex items-center gap-2 cursor-pointer">
                   <Crown className="h-4 w-4 text-yellow-500" />
                   My Plan
+                </Link>
+              </DropdownMenuItem>
+              {hasFeature("custom_bot") && (
+                <DropdownMenuItem asChild>
+                  <Link to="/guild-bot" className="flex items-center gap-2 cursor-pointer">
+                    <Bot className="h-4 w-4 text-primary" />
+                    Custom Bot
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem asChild>
+                <Link to="/backup" className="flex items-center gap-2 cursor-pointer">
+                  <Database className="h-4 w-4" />
+                  Backup
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
