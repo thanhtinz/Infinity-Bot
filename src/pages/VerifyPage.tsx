@@ -659,18 +659,21 @@ export function VerifyPage() {
 }
 
 function MusicPlayer({ url, color }: { url: string; color: string }) {
-  const audioRef  = useRef<HTMLAudioElement>(null);
+  const audioRef   = useRef<HTMLAudioElement>(null);
   const [audioState, setAudioState] = useState<"idle" | "loading" | "playing" | "error">("idle");
   const [muted, setMuted]           = useState(false);
   const [hovered, setHovered]       = useState(false);
-  const [pos, setPos]               = useState({ x: 16, y: window.innerHeight / 2 - 28 });
-  const posRef    = useRef(pos);
-  posRef.current  = pos;
-  const dragging  = useRef(false);
+  const [pos, setPos]               = useState({
+    x: window.innerWidth  - 68,
+    y: window.innerHeight - 68,
+  });
+  const posRef     = useRef(pos);
+  posRef.current   = pos;
+  const dragging   = useRef(false);
   const dragOffset = useRef({ dx: 0, dy: 0 });
-  const didDrag   = useRef(false);
+  const didDrag    = useRef(false);
 
-  /* ── Audio event sync ── */
+  /* ── Audio events ── */
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
@@ -679,24 +682,19 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
     const onPause   = () => setAudioState("idle");
     const onWaiting = () => setAudioState("loading");
     const onPlaying = () => setAudioState("playing");
-    const onError   = () => { console.error("[MusicPlayer] audio error", a.error); setAudioState("error"); };
+    const onError   = () => { console.error("[MusicPlayer]", a.error); setAudioState("error"); };
     a.addEventListener("play",    onPlay);
     a.addEventListener("pause",   onPause);
     a.addEventListener("waiting", onWaiting);
     a.addEventListener("playing", onPlaying);
     a.addEventListener("error",   onError);
-
-    // Autoplay: try unmuted first (Chrome/Firefox after interaction),
-    // fallback to muted (Safari allows muted autoplay always)
     setAudioState("loading");
     a.muted = false;
     a.play().catch(() => {
-      // Unmuted blocked → try muted (Safari trick)
       a.muted = true;
       setMuted(true);
       a.play().catch(() => setAudioState("idle"));
     });
-
     return () => {
       a.removeEventListener("play",    onPlay);
       a.removeEventListener("pause",   onPause);
@@ -706,15 +704,10 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
     };
   }, [url]);
 
-  /* ── Unmute on first user interaction anywhere on page ── */
+  /* ── Unmute on first interaction ── */
   useEffect(() => {
     if (!muted) return;
-    function unmute() {
-      const a = audioRef.current;
-      if (!a) return;
-      a.muted = false;
-      setMuted(false);
-    }
+    const unmute = () => { const a = audioRef.current; if (a) { a.muted = false; setMuted(false); } };
     window.addEventListener("click",      unmute, { once: true });
     window.addEventListener("touchstart", unmute, { once: true });
     window.addEventListener("keydown",    unmute, { once: true });
@@ -725,10 +718,10 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
     };
   }, [muted]);
 
-  /* ── Drag handlers — empty deps, read pos via ref ── */
+  /* ── Drag ── */
   function startDrag(clientX: number, clientY: number) {
-    dragging.current  = true;
-    didDrag.current   = false;
+    dragging.current   = true;
+    didDrag.current    = false;
     dragOffset.current = { dx: clientX - posRef.current.x, dy: clientY - posRef.current.y };
     document.body.style.overflow = "hidden";
   }
@@ -739,14 +732,11 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
       const { clientX, clientY } = "touches" in e ? e.touches[0] : e;
       didDrag.current = true;
       setPos({
-        x: Math.max(0, Math.min(window.innerWidth  - 56, clientX - dragOffset.current.dx)),
-        y: Math.max(0, Math.min(window.innerHeight - 56, clientY - dragOffset.current.dy)),
+        x: Math.max(0, Math.min(window.innerWidth  - 44, clientX - dragOffset.current.dx)),
+        y: Math.max(0, Math.min(window.innerHeight - 44, clientY - dragOffset.current.dy)),
       });
     }
-    function onUp() {
-      dragging.current = false;
-      document.body.style.overflow = "";
-    }
+    function onUp() { dragging.current = false; document.body.style.overflow = ""; }
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup",   onUp);
     window.addEventListener("touchmove", onMove, { passive: false });
@@ -757,37 +747,41 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
       window.removeEventListener("touchmove", onMove);
       window.removeEventListener("touchend",  onUp);
     };
-  }, []); // ← mount/unmount only; pos read via posRef
+  }, []);
 
-  /* ── Toggle play / pause ── */
+  /* ── Click to toggle ── */
   function handleClick() {
     if (didDrag.current) return;
     const a = audioRef.current;
     if (!a) return;
-    if (!a.paused) {
-      a.pause();
-    } else {
-      setAudioState("loading");
-      a.play().catch((err) => {
-        console.error("[MusicPlayer] play() rejected:", err);
-        setAudioState("error");
-      });
-    }
+    if (!a.paused) { a.pause(); }
+    else { setAudioState("loading"); a.play().catch(() => setAudioState("error")); }
   }
 
-  const playing = audioState === "playing";
-  const loading = audioState === "loading";
+  const playing  = audioState === "playing";
+  const loading  = audioState === "loading";
   const hasError = audioState === "error";
+
+  /* Waveform bar heights cycle */
+  const BAR_DELAYS = ["0s", "0.15s", "0.3s", "0.15s"];
+  const BAR_HEIGHTS = [10, 16, 12, 18];
 
   return (
     <>
       <audio ref={audioRef} src={url} loop preload="auto" />
       <style>{`
-        @keyframes vSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes vPulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
-        .v-spin  { animation: vSpin 3s linear infinite; }
-        .v-pause { animation: vSpin 3s linear infinite; animation-play-state:paused; }
-        .v-load  { animation: vSpin 1s linear infinite; }
+        @keyframes mpWave {
+          0%,100% { transform: scaleY(0.4); }
+          50%      { transform: scaleY(1); }
+        }
+        @keyframes mpSpin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+        @keyframes mpPulse {
+          0%,100% { box-shadow: 0 0 0 0 ${color}40; }
+          50%     { box-shadow: 0 0 0 6px ${color}00; }
+        }
       `}</style>
 
       <div
@@ -796,96 +790,107 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
         onClick={handleClick}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
+        title={hasError ? "Audio error" : muted ? "Tap anywhere to unmute" : playing ? "Click to pause" : "Click to play"}
         style={{
-          position: "fixed", left: pos.x, top: pos.y, zIndex: 9999,
+          position: "fixed",
+          left: pos.x,
+          top: pos.y,
+          zIndex: 9999,
+          width: 44,
+          height: 44,
+          borderRadius: "50%",
           cursor: "grab",
-          userSelect: "none", WebkitUserSelect: "none",
-        }}
-      >
-        {/* Glow + scale wrapper */}
-        <div style={{
-          width: 56, height: 56, borderRadius: "50%",
-          transition: "box-shadow .3s, transform .2s",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          /* glassmorphism */
+          background: "rgba(255,255,255,0.08)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: `1.5px solid ${hasError ? "rgba(239,68,68,0.5)" : playing && !muted ? `${color}60` : "rgba(255,255,255,0.14)"}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "transform .18s, box-shadow .25s, border-color .25s",
           transform: hovered ? "scale(1.12)" : "scale(1)",
           boxShadow: hasError
-            ? "0 0 16px rgba(239,68,68,0.7), 0 4px 14px rgba(0,0,0,0.6)"
-            : playing
-              ? `0 0 22px ${color}80, 0 0 8px ${color}50, 0 4px 14px rgba(0,0,0,0.6)`
-              : "0 4px 14px rgba(0,0,0,0.55)",
-          position: "relative",
-        }}>
-          {/* Vinyl disc */}
-          <div
-            className={loading ? "v-load" : playing ? "v-spin" : "v-pause"}
-            style={{
-              width: 56, height: 56, borderRadius: "50%", position: "absolute",
-              background: hasError
-                ? "conic-gradient(#3f0000 0deg,#5c0a0a 30deg,#3f0000 60deg,#4a0808 90deg,#3f0000 120deg,#5c0a0a 150deg,#3f0000 180deg,#4a0808 210deg,#3f0000 240deg,#5c0a0a 270deg,#3f0000 300deg,#4a0808 330deg,#3f0000 360deg)"
-                : `conic-gradient(#111 0deg,#1d1d1d 20deg,#111 40deg,#1a1a1a 60deg,#111 80deg,#1d1d1d 100deg,#111 120deg,#1a1a1a 140deg,#111 160deg,#1d1d1d 180deg,#111 200deg,#1a1a1a 220deg,#111 240deg,#1d1d1d 260deg,#111 280deg,#1a1a1a 300deg,#111 320deg,#1d1d1d 340deg,#111 360deg)`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >
-            {/* Groove rings */}
-            {[46, 36, 26].map(s => (
-              <div key={s} style={{ position: "absolute", width: s, height: s, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.07)" }} />
-            ))}
-            {/* Center label */}
-            <div style={{
-              width: 18, height: 18, borderRadius: "50%",
-              backgroundColor: hasError ? "#ef4444" : color,
-              boxShadow: `0 0 8px ${hasError ? "#ef444470" : color + "70"}`,
-              zIndex: 2, position: "relative",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              {muted
-                ? <div style={{ fontSize: 8, lineHeight: 1 }}>🔇</div>
-                : <div style={{ width: 5, height: 5, borderRadius: "50%", background: "rgba(0,0,0,0.75)" }} />
-              }
-            </div>
-          </div>
+            ? "0 0 12px rgba(239,68,68,0.55), 0 4px 16px rgba(0,0,0,0.5)"
+            : playing && !muted
+              ? `0 0 18px ${color}55, 0 0 6px ${color}30, 0 4px 16px rgba(0,0,0,0.45)`
+              : "0 4px 16px rgba(0,0,0,0.4)",
+          animation: playing && !muted ? "mpPulse 2s ease infinite" : "none",
+        }}
+      >
+        {/* ── Content ── */}
+        {loading && (
+          <svg width="18" height="18" viewBox="0 0 18 18" style={{ animation: "mpSpin 0.9s linear infinite", opacity: 0.7 }}>
+            <circle cx="9" cy="9" r="7" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeDasharray="22 10" />
+          </svg>
+        )}
 
-          {/* Hover overlay — play/pause icon */}
-          <div style={{
-            position: "absolute", inset: 0, borderRadius: "50%",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            background: hovered ? "rgba(0,0,0,0.42)" : "transparent",
-            transition: "background .2s",
-          }}>
-            {hovered && !loading && (playing ? (
-              <div style={{ display: "flex", gap: 4 }}>
-                <div style={{ width: 4, height: 14, borderRadius: 2, background: "rgba(255,255,255,0.92)" }} />
-                <div style={{ width: 4, height: 14, borderRadius: 2, background: "rgba(255,255,255,0.92)" }} />
-              </div>
-            ) : (
-              <svg width="13" height="15" viewBox="0 0 13 15" fill="rgba(255,255,255,0.92)" style={{ marginLeft: 2 }}>
-                <path d="M0 0 L13 7.5 L0 15 Z" />
-              </svg>
+        {!loading && hasError && (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.9)" strokeWidth="2" strokeLinecap="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        )}
+
+        {/* Waveform bars when playing */}
+        {!loading && !hasError && playing && (
+          <div style={{ display: "flex", alignItems: "center", gap: 3, height: 20 }}>
+            {BAR_HEIGHTS.map((h, i) => (
+              <div key={i} style={{
+                width: 3,
+                height: h,
+                borderRadius: 2,
+                background: muted ? "rgba(255,255,255,0.35)" : color,
+                transformOrigin: "bottom",
+                animation: playing && !muted ? `mpWave ${0.6 + i * 0.1}s ease-in-out ${BAR_DELAYS[i]} infinite` : "none",
+                transform: playing && !muted ? undefined : "scaleY(0.4)",
+                opacity: muted ? 0.45 : 0.9,
+              }} />
             ))}
-            {/* Loading spinner overlay */}
-            {loading && (
-              <svg width="20" height="20" viewBox="0 0 20 20" style={{ animation: "vSpin 0.8s linear infinite" }}>
-                <circle cx="10" cy="10" r="8" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeDasharray="25 15" />
+          </div>
+        )}
+
+        {/* Music note icon when idle/muted-playing */}
+        {!loading && !hasError && (!playing || muted) && (
+          <svg
+            width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke={muted ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.75)"}
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ opacity: hovered ? 0 : 1, transition: "opacity .15s", position: "absolute" }}
+          >
+            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+          </svg>
+        )}
+
+        {/* Hover overlay: play/pause icon */}
+        {!loading && !hasError && hovered && (
+          <div style={{ position: "absolute", inset: 0, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {playing ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)">
+                <rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>
+              </svg>
+            ) : (
+              <svg width="13" height="14" viewBox="0 0 13 14" fill="rgba(255,255,255,0.9)" style={{ marginLeft: 2 }}>
+                <path d="M0 0 L13 7 L0 14 Z"/>
               </svg>
             )}
           </div>
-        </div>
+        )}
 
-        {/* Tooltip */}
-        {!hovered && (
+        {/* Muted dot indicator */}
+        {muted && playing && (
           <div style={{
-            position: "absolute", top: "50%", left: "calc(100% + 8px)",
-            transform: "translateY(-50%)", whiteSpace: "nowrap",
-            fontSize: 10, borderRadius: 4, padding: "2px 7px",
-            pointerEvents: "none",
-            color: hasError ? "rgba(252,165,165,0.9)" : "rgba(255,255,255,0.45)",
-            background: hasError ? "rgba(80,0,0,0.6)" : "rgba(0,0,0,0.48)",
-          }}>
-            {hasError ? "⚠ audio error" : muted ? "🔇 tap anywhere to unmute" : playing ? "🎵 playing" : "🎵 click to play"}
-          </div>
+            position: "absolute", top: 2, right: 2,
+            width: 8, height: 8, borderRadius: "50%",
+            background: "rgba(250,204,21,0.9)",
+            boxShadow: "0 0 4px rgba(250,204,21,0.6)",
+          }} />
         )}
       </div>
     </>
   );
 }
+
 
 
