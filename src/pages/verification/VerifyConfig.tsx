@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RoleSelect } from "@/components/RoleSelect";
+import { RoleSelect, MultiRoleSelect } from "@/components/RoleSelect";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -897,14 +897,20 @@ export function VerifyConfig() {
             <Separator className="opacity-10" />
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Notify Roles</p>
             <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Notify role for successful verifications</Label>
-              <RoleSelect value={configForm.notify_success_role_id ?? ""} onChange={val => update({ notify_success_role_id: val })}
-                placeholder="Select role — pinged when member verifies" />
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Notify roles for successful verifications</Label>
+              <MultiRoleSelect
+                value={(configForm.notify_success_role_id ?? "").split(",").filter(Boolean)}
+                onChange={vals => update({ notify_success_role_id: vals.join(",") })}
+                placeholder="Select roles — pinged when member verifies"
+              />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Notify role for blocked events</Label>
-              <RoleSelect value={configForm.notify_blocked_role_id ?? ""} onChange={val => update({ notify_blocked_role_id: val })}
-                placeholder="Select role — pinged when member is blocked" />
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Notify roles for blocked events</Label>
+              <MultiRoleSelect
+                value={(configForm.notify_blocked_role_id ?? "").split(",").filter(Boolean)}
+                onChange={vals => update({ notify_blocked_role_id: vals.join(",") })}
+                placeholder="Select roles — pinged when member is blocked"
+              />
             </div>
           </Section>
 

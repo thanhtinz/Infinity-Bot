@@ -44,6 +44,7 @@ import {
   ChevronDown,
   Upload,
   X,
+  Zap,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -190,10 +191,44 @@ function SecretInput({
   );
 }
 
+// ── TestConnectionButton ───────────────────────────────────────────────────
+
+function TestConnectionButton({ endpoint, label }: { endpoint: string; label: string }) {
+  const { toast } = useToast();
+  const [testing, setTesting] = useState(false);
+
+  const handleTest = async () => {
+    setTesting(true);
+    try {
+      const res = await apiFetch(endpoint, { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        toast({ title: data.message || `${label} connection successful` });
+      } else {
+        toast({ title: data.detail || `${label} test failed`, variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Connection error", variant: "destructive" });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <Button type="button" variant="outline" size="sm" disabled={testing} onClick={handleTest}>
+      {testing ? (
+        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+      ) : (
+        <Zap className="mr-1.5 h-3.5 w-3.5" />
+      )}
+      {testing ? "Testing..." : label}
+    </Button>
+  );
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function PaymentConfig() {
-  const { toast } = useToast();
   const qc = useQueryClient();
 
   const [form, setForm] = useState<FormState | null>(null);
@@ -542,6 +577,12 @@ export function PaymentConfig() {
                       placeholder="Enter Checksum Key"
                     />
                   </div>
+                  {payosConfigured && (
+                    <TestConnectionButton
+                      endpoint="/api/payos/test"
+                      label="Test PayOS"
+                    />
+                  )}
                 </div>
               </CardContent>
             </CollapsibleContent>
@@ -646,6 +687,12 @@ export function PaymentConfig() {
                       Use Sandbox for testing, Live for production.
                     </p>
                   </div>
+                  {paypalConfigured && (
+                    <TestConnectionButton
+                      endpoint="/api/paypal/test"
+                      label="Test PayPal"
+                    />
+                  )}
                 </div>
               </CardContent>
             </CollapsibleContent>

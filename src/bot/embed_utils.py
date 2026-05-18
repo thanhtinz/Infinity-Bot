@@ -221,16 +221,6 @@ DEFAULTS: dict[str, dict] = {
         ],
     },
     # ── Product ───────────────────────────────────────────────────────────────
-    "san_pham": {
-        "title": "🛍️ {product.name}",
-        "description": "{product.description}",
-        "color": "#5865F2",
-        "thumbnail_url": "{product.image_url}",
-        "fields": [
-            {"name": "💰 Giá", "value": "{product.price} VNĐ", "inline": True},
-            {"name": "📦 Tồn kho", "value": "{product.stock}", "inline": True},
-        ],
-    },
     # ── Coupon ────────────────────────────────────────────────────────────────
     "coupon": {
         "title": "🏷️ Mã giảm giá",
@@ -532,13 +522,6 @@ DEFAULTS: dict[str, dict] = {
         "description": "Chọn sản phẩm từ menu bên dưới để xem chi tiết và giá các gói.",
         "color": "#5865F2",
         "footer": "Bấm vào tên sản phẩm bên dưới để xem chi tiết",
-        "fields": [],
-    },
-    "san_pham_detail": {
-        "title": "📦 {product.name}",
-        "description": "{product.description}",
-        "color": "#57F287",
-        "footer": "Chỉ bạn mới thấy thông tin này • Liên hệ admin để đặt hàng",
         "fields": [],
     },
     # ── Extended Moderation ───────────────────────────────────────────────────

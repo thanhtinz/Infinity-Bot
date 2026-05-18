@@ -380,6 +380,7 @@ const en = {
   botStatus_online: "Online",
   botStatus_offline: "Offline",
   botStatus_start: "Start Bot",
+  botStatus_invite: "Invite Bot",
   botStatus_stop: "Stop Bot",
   botStatus_restart: "Restart",
   botStatus_uptime: "Uptime",

@@ -635,6 +635,36 @@ def test_payos_connection(db=Depends(get_db), guild_id: str = Depends(get_guild_
         raise HTTPException(status_code=400, detail=f"Lỗi kết nối: {err_msg}")
 
 
+@router.post("/paypal/test")
+async def test_paypal_connection(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    config = db.execute(
+        select(SystemConfig).where(SystemConfig.guild_id == guild_id)
+    ).scalars().first()
+    if not config or not config.paypal_client_id or not config.paypal_client_secret:
+        raise HTTPException(status_code=400, detail="PayPal credentials not configured")
+    mode = config.paypal_mode or "live"
+    base = "https://api-m.sandbox.paypal.com" if mode == "sandbox" else "https://api-m.paypal.com"
+    try:
+        import httpx, base64 as _b64
+        creds = _b64.b64encode(f"{config.paypal_client_id}:{config.paypal_client_secret}".encode()).decode()
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.post(
+                f"{base}/v1/oauth2/token",
+                headers={"Authorization": f"Basic {creds}", "Content-Type": "application/x-www-form-urlencoded"},
+                data="grant_type=client_credentials",
+            )
+        if r.status_code == 200:
+            return {"ok": True, "message": f"PayPal connection successful ({mode} mode)"}
+        elif r.status_code == 401:
+            raise HTTPException(status_code=400, detail="Invalid Client ID or Secret")
+        else:
+            raise HTTPException(status_code=400, detail=f"PayPal error: {r.status_code}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Connection error: {str(e)}")
+
+
 @router.post("/payos/webhook")
 async def payos_webhook(request: Request, db=Depends(get_db)):
     body = await request.json()

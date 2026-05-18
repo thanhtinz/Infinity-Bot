@@ -339,7 +339,7 @@ export function BotStatus() {
               {inviteUrl && (
                 <Button size="sm" variant="secondary" asChild>
                   <a href={inviteUrl} target="_blank" rel="noopener noreferrer">
-                    <UserPlus className="mr-1 h-3.5 w-3.5" /> {t("botStatus_start")}
+                    <UserPlus className="mr-1 h-3.5 w-3.5" /> {t("botStatus_invite")}
                   </a>
                 </Button>
               )}
