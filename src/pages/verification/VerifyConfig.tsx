@@ -122,12 +122,14 @@ function MediaUpload({
   onChange,
   accept = "image/*",
   placeholder = "https://example.com/image.png",
+  allowGif = false,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   accept?: string;
   placeholder?: string;
+  allowGif?: boolean;
 }) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -135,6 +137,10 @@ function MediaUpload({
   const { toast } = useToast();
 
   async function handleFile(file: File) {
+    if (file.type === "image/gif" && !allowGif) {
+      toast({ title: "Premium required", description: "Uploading GIF images requires a premium plan.", variant: "destructive" });
+      return;
+    }
     setUploading(true);
     setProgress(20);
     try {
@@ -665,11 +671,11 @@ export function VerifyConfig() {
             <div className="space-y-4">
               {/* Media */}
               <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Image className="h-3.5 w-3.5" />Media</p>
-                <MediaUpload label="Profile Image" value={configForm.page_logo_url} onChange={v => update({ page_logo_url: v })} />
-                <MediaUpload label="Banner Image" value={configForm.banner_url} onChange={v => update({ banner_url: v })} />
-                <MediaUpload label="Background Image" value={configForm.page_background_url} onChange={v => update({ page_background_url: v })} />
-                <MediaUpload label="Mouse Cursor" value={configForm.cursor_url} onChange={v => update({ cursor_url: v })} placeholder="Cursor image URL" />
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Image className="h-3.5 w-3.5" />Media <PremiumBadge size="xs" /> <span className="normal-case font-normal text-muted-foreground">(GIF requires premium)</span></p>
+                <MediaUpload label="Profile Image" value={configForm.page_logo_url} onChange={v => update({ page_logo_url: v })} allowGif={hasFeature("animated_gif")} />
+                <MediaUpload label="Banner Image" value={configForm.banner_url} onChange={v => update({ banner_url: v })} allowGif={hasFeature("animated_gif")} />
+                <MediaUpload label="Background Image" value={configForm.page_background_url} onChange={v => update({ page_background_url: v })} allowGif={hasFeature("animated_gif")} />
+                <MediaUpload label="Mouse Cursor" value={configForm.cursor_url} onChange={v => update({ cursor_url: v })} placeholder="Cursor image URL" allowGif={hasFeature("animated_gif")} />
                 <MediaUpload label="Background Music" value={configForm.music_url || ""} onChange={v => update({ music_url: v })} accept="audio/*" placeholder="Audio URL (mp3, ogg, wav)" />
               </div>
 
