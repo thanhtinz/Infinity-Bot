@@ -233,6 +233,20 @@ export function VerifyConfig() {
     queryFn: fetchConfig,
   });
 
+  const domainStatusQuery = useQuery({
+    queryKey: ["verification-domain-status", selectedGuildId],
+    queryFn: async () => {
+      const r = await fetch(`/api/verification/domain-status?guild_id=${selectedGuildId}`, { credentials: "include" });
+      if (!r.ok) throw new Error("Failed");
+      return r.json() as Promise<{
+        domain: string; status: string; cname_target: string | null;
+        railway_configured: boolean; dns_records?: unknown[]; error?: string;
+      }>;
+    },
+    enabled: !!selectedGuildId,
+    refetchInterval: false,
+  });
+
   const guildBotQuery = useQuery({
     queryKey: ["verification-guild-bot", selectedGuildId],
     queryFn: fetchGuildBot,
@@ -289,6 +303,8 @@ export function VerifyConfig() {
     onSuccess: () => {
       toast({ title: "Configuration saved" });
       qc.invalidateQueries({ queryKey: ["verification-config"] });
+      // Re-check domain status after saving
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["verification-domain-status", selectedGuildId] }), 1500);
     },
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
@@ -896,7 +912,54 @@ export function VerifyConfig() {
               <Label className="text-xs text-muted-foreground mb-1.5 block">Custom Domain</Label>
               <Input value={configForm.custom_domain || ""} onChange={e => update({ custom_domain: e.target.value })}
                 placeholder="verify.yourdomain.com" />
-              <p className="text-xs text-muted-foreground mt-1">Point a CNAME to your app URL. Members verify at https://your-domain.com/verify/{"{guild_id}"}</p>
+
+              {/* CNAME instruction */}
+              {domainStatusQuery.data?.cname_target && (
+                <div className="mt-2 rounded-lg bg-white/5 border border-white/10 p-3 space-y-2">
+                  <p className="text-xs text-muted-foreground font-medium">Point a CNAME record to:</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-xs text-indigo-300 bg-black/30 rounded px-2 py-1.5 font-mono truncate">
+                      {domainStatusQuery.data.cname_target}
+                    </code>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(domainStatusQuery.data!.cname_target!); }}
+                      className="p-1.5 rounded hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Status badge */}
+                  {configForm.custom_domain && (() => {
+                    const s = domainStatusQuery.data?.status;
+                    const statusMap: Record<string, { label: string; cls: string }> = {
+                      verified: { label: "✓ Active", cls: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
+                      pending:  { label: "⏳ Pending DNS", cls: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
+                      not_found: { label: "Not registered", cls: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
+                      unknown:  { label: "Unknown", cls: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
+                      none:     { label: "No domain set", cls: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
+                    };
+                    const info = statusMap[s ?? "unknown"] ?? statusMap.unknown;
+                    return (
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${info.cls}`}>{info.label}</span>
+                        <button
+                          onClick={() => qc.invalidateQueries({ queryKey: ["verification-domain-status", selectedGuildId] })}
+                          className="text-xs text-muted-foreground hover:text-white underline underline-offset-2 transition-colors"
+                        >
+                          {domainStatusQuery.isFetching ? "Checking…" : "Check DNS"}
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {!domainStatusQuery.data?.cname_target && configForm.custom_domain && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Point a CNAME to your Railway app URL, then save to register automatically.
+                </p>
+              )}
             </div>
             <Separator className="opacity-10" />
             <div>

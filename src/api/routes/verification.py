@@ -1,4 +1,5 @@
 """Verification System routes — config, verified members, stats."""
+import asyncio
 import logging
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
@@ -8,6 +9,7 @@ from sqlalchemy.orm import Session
 from src.database.config import get_db
 from src.api.deps import get_guild_id
 from src.models.models import VerificationConfig, VerifiedMember, GuildBot
+from src.api import railway as _railway
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -98,7 +100,7 @@ def get_config(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_
 
 
 @router.put("/verification/config")
-def update_config(body: dict, guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
+async def update_config(body: dict, guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
     cfg = _get_or_create_config(db, guild_id)
     allowed = [
         "enabled", "verified_role_id", "unverified_role_id", "verify_channel_id",
@@ -121,11 +123,61 @@ def update_config(body: dict, guild_id: str = Depends(get_guild_id), db: Session
         "music_url", "pull_cooldown_hours",
         "captcha_type", "captcha_difficulty",
     ]
+
+    # Track custom_domain change for Railway API
+    old_domain = (getattr(cfg, "custom_domain", "") or "").strip()
+    new_domain = (body.get("custom_domain") or "").strip() if "custom_domain" in body else old_domain
+
     for field in allowed:
         if field in body:
             setattr(cfg, field, body[field])
     db.commit()
+
+    # Sync domain changes with Railway (fire-and-forget, don't block response)
+    if old_domain != new_domain and _railway.is_configured():
+        async def _sync_domain():
+            if old_domain:
+                await _railway.remove_custom_domain(old_domain)
+            if new_domain:
+                await _railway.add_custom_domain(new_domain)
+        asyncio.create_task(_sync_domain())
+
     return {"ok": True}
+
+
+@router.get("/verification/domain-status")
+async def domain_status(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
+    """Check custom domain DNS/verification status and return CNAME target."""
+    cfg = _get_or_create_config(db, guild_id)
+    domain = (getattr(cfg, "custom_domain", "") or "").strip()
+
+    cname_target = await _railway.get_cname_target()
+
+    if not domain:
+        return {
+            "domain": "",
+            "status": "none",
+            "cname_target": cname_target,
+            "railway_configured": _railway.is_configured(),
+        }
+
+    if not _railway.is_configured():
+        return {
+            "domain": domain,
+            "status": "unknown",
+            "cname_target": cname_target,
+            "railway_configured": False,
+        }
+
+    result = await _railway.check_domain_status(domain)
+    return {
+        "domain": domain,
+        "status": result.get("status", "unknown"),
+        "dns_records": result.get("dns_records"),
+        "cname_target": cname_target,
+        "railway_configured": True,
+        "error": result.get("error"),
+    }
 
 
 # ── Verified Members ──

@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse, JSONResponse
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
@@ -78,6 +78,21 @@ def _get_vpn_api_key(db: Session, guild_id: str) -> tuple[str | None, str]:
     if sc and sc.vpn_api_key:
         return sc.vpn_api_key, getattr(sc, "vpn_api_provider", "proxycheck") or "proxycheck"
     return None, "proxycheck"
+
+
+# ── Custom domain → guild_id lookup (no auth) ──
+@router.get("/api/verify/by-domain")
+def get_guild_by_domain(host: str, db: Session = Depends(get_db)):
+    """Resolve a custom domain to a guild_id. Used by the frontend for custom-domain verify pages."""
+    host = host.strip().lower().removeprefix("https://").removeprefix("http://").split("/")[0]
+    cfg = db.execute(
+        select(VerificationConfig).where(
+            func.lower(VerificationConfig.custom_domain) == host
+        )
+    ).scalars().first()
+    if not cfg:
+        raise HTTPException(404, "No guild configured for this domain")
+    return {"guild_id": cfg.guild_id}
 
 
 # ── Public config for verify page branding (no auth) ──
