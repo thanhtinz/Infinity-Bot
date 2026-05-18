@@ -2,15 +2,37 @@
 import logging
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
 from src.api.deps import get_guild_id
-from src.models.models import MemberPull, VerificationConfig
+from src.models.models import MemberPull, VerificationConfig, VerifiedMember
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+@router.get("/member-pull/source-guilds")
+def get_source_guilds(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
+    """Return distinct guilds that have verified members stored in this system."""
+    rows = db.execute(
+        select(
+            VerifiedMember.guild_id,
+            VerifiedMember.source_guild_name,
+            func.count(VerifiedMember.id).label("member_count"),
+        )
+        .group_by(VerifiedMember.guild_id, VerifiedMember.source_guild_name)
+        .order_by(func.count(VerifiedMember.id).desc())
+    ).all()
+    return [
+        {
+            "guild_id": r.guild_id,
+            "name": r.source_guild_name or r.guild_id,
+            "member_count": r.member_count,
+        }
+        for r in rows
+    ]
 
 
 @router.post("/member-pull/start")

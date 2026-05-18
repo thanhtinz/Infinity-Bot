@@ -292,3 +292,9 @@ export async function fetchPullHistory(): Promise<PullHistoryItem[]> {
   if (!res.ok) throw new Error("Failed to load pull history");
   return res.json();
 }
+
+export async function fetchSourceGuilds(): Promise<{ guild_id: string; name: string; member_count: number }[]> {
+  const res = await apiFetch("/api/member-pull/source-guilds");
+  if (!res.ok) return [];
+  return res.json();
+}

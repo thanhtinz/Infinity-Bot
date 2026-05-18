@@ -639,6 +639,7 @@ class VerifiedMember(Base):
     __tablename__ = "verified_members"
     id = Column(Integer, primary_key=True)
     guild_id = Column(String, index=True)
+    source_guild_name = Column(String, nullable=True)   # guild name at time of verify
     discord_id = Column(String, index=True)
     username = Column(String, nullable=True)
     discriminator = Column(String, nullable=True)

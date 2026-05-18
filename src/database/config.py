@@ -250,6 +250,11 @@ async def init_db():
         if "role_ids" not in mp:
             all_stmts.append("ALTER TABLE member_pulls ADD COLUMN role_ids JSON DEFAULT '[]'")
 
+        # verified_members
+        vm = cols("verified_members")
+        if "source_guild_name" not in vm:
+            all_stmts.append("ALTER TABLE verified_members ADD COLUMN source_guild_name VARCHAR")
+
         # ── Thực thi tất cả ALTER trong 1 transaction ──
         if all_stmts:
             logger.info(f"[init_db] Running {len(all_stmts)} migration(s): {all_stmts}")

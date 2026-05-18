@@ -44,7 +44,7 @@ import { apiFetch } from "@/hooks/useApi";
 import {
   fetchMembers, fetchStats, blacklistMember, deleteMember,
   deleteUnauthorized, transferMembers, formatDate, riskBadge,
-  startPull, stopPull, fetchPullStatus, fetchPullHistory,
+  startPull, stopPull, fetchPullStatus, fetchPullHistory, fetchSourceGuilds,
 } from "./shared";
 import type { VerifiedMember } from "./shared";
 
@@ -86,9 +86,9 @@ export function VerifyMembersPage() {
   // ── Queries ──
   const statsQuery = useQuery({ queryKey: ["verification-stats"], queryFn: fetchStats });
 
-  const guildsQuery = useQuery<{ id: string; name: string }[]>({
-    queryKey: ["discord_guilds_pull"],
-    queryFn: () => apiFetch("/api/discord/guilds").then((r) => r.ok ? r.json() : []),
+  const guildsQuery = useQuery<{ guild_id: string; name: string; member_count: number }[]>({
+    queryKey: ["member_pull_source_guilds"],
+    queryFn: fetchSourceGuilds,
     enabled: pullDialogOpen,
     staleTime: 60_000,
   });
@@ -402,7 +402,10 @@ export function VerifyMembersPage() {
                 ) : !guildsQuery.data?.length ? (
                   <SelectItem value="__empty" disabled>No servers found</SelectItem>
                 ) : guildsQuery.data.map((g) => (
-                  <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                  <SelectItem key={g.guild_id} value={g.guild_id}>
+                    <span>{g.name}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">({g.member_count} members)</span>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -548,7 +551,7 @@ export function VerifyMembersPage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 className="flex items-center justify-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-lg h-9 text-sm font-medium transition-colors"
-                onClick={() => qc.invalidateQueries({ queryKey: ["discord_guilds_pull"] })}
+                onClick={() => qc.invalidateQueries({ queryKey: ["member_pull_source_guilds"] })}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 Refresh servers

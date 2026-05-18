@@ -619,8 +619,11 @@ async def verify_callback(
                 meta["country"] = ip_country
             if ip_asn:
                 meta["asn"] = ip_asn
+            _sys_cfg = db.execute(select(SystemConfig).limit(1)).scalars().first()
+            _guild_name = (_sys_cfg.guild_name if _sys_cfg else None) or cfg.page_title or guild_id
             member = VerifiedMember(
                 guild_id=guild_id,
+                source_guild_name=_guild_name,
                 discord_id=discord_id,
                 username=user_info.get("username"),
                 discriminator=user_info.get("discriminator"),
