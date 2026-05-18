@@ -712,7 +712,7 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         title={playing ? "Pause" : "Play"}
-        className="fixed bottom-4 left-4 z-50"
+        className="fixed top-4 left-4 z-50"
         style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
       >
         <div
@@ -783,7 +783,7 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
         {/* Tooltip label */}
         {!playing && !hovered && (
           <div style={{
-            position: "absolute", bottom: "calc(100% + 6px)", left: "50%",
+            position: "absolute", top: "calc(100% + 6px)", left: "50%",
             transform: "translateX(-50%)", whiteSpace: "nowrap",
             fontSize: 10, color: "rgba(255,255,255,0.5)",
             background: "rgba(0,0,0,0.5)", borderRadius: 4, padding: "2px 6px",
