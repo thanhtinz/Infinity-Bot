@@ -178,7 +178,7 @@ export function PremiumPaymentConfig() {
         manual: !!d.manual_bank_name,
       }));
     }
-  }, [configQuery.data, form]);
+  }, [configQuery.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateField = useCallback(
     <K extends keyof FormState>(key: K, value: FormState[K]) => {

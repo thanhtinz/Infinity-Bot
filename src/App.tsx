@@ -4,7 +4,6 @@ import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, M
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
-import { GuildSelector } from "@/components/GuildSelector";
 import { I18nProvider, useT } from "@/i18n";
 
 // ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
@@ -42,6 +41,7 @@ const SecurityConfig = lazy(() => import("./pages/SecurityConfig").then(m => ({ 
 const FirewallLogs = lazy(() => import("./pages/firewall/FirewallLogs").then(m => ({ default: m.FirewallLogs })));
 const AlertsConfig = lazy(() => import("./pages/AlertsConfig").then(m => ({ default: m.AlertsConfig })));
 const VerificationPage = lazy(() => import("./pages/verification/VerificationPage"));
+const VerifyMembersStandalonePage = lazy(() => import("./pages/verification/VerifyMembersPage").then(m => ({ default: m.VerifyMembersPage })));
 const VerifyStatsPage = lazy(() => import("./pages/verification/VerifyStatsPage"));
 const ModerationPage = lazy(() => import("./pages/moderation/ModerationPage"));
 const LoggingPage = lazy(() => import("./pages/LoggingPage"));
@@ -141,6 +141,7 @@ const navGroups: NavGroup[] = [
     label: "nav_security",
     items: [
       { to: "/verification", icon: CheckCircle, label: "Verification" },
+      { to: "/verification/members", icon: Users, label: "Verify Members" },
       { to: "/verification/stats", icon: BarChart3, label: "Verify Stats" },
       { to: "/firewall/logs", icon: ShieldAlert, label: "Firewall Logs" },
       { to: "/alerts", icon: Bell, label: "Server Alerts" },
@@ -280,8 +281,6 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         <h1 className="font-bold text-lg">Infinity Bot</h1>
       </div>
 
-      <GuildSelector />
-      
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {!selectedGuildId ? (
           <div className="text-center py-8">
@@ -668,6 +667,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/logging" element={<LoggingPage />} />
         {/* Security */}
         <Route path="/verification" element={<VerificationPage />} />
+        <Route path="/verification/members" element={<VerifyMembersStandalonePage />} />
         <Route path="/verification/stats" element={<VerifyStatsPage />} />
         <Route path="/backup" element={<BackupPage />} />
         <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />

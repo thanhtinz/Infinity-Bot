@@ -80,7 +80,7 @@ export function SecurityConfig() {
     if (configQuery.data && !form) {
       setForm(configQuery.data);
     }
-  }, [configQuery.data, form]);
+  }, [configQuery.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const saveMutation = useMutation({
     mutationFn: updateConfig,

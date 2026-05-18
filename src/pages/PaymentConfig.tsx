@@ -278,7 +278,7 @@ export function PaymentConfig() {
       if (methods.includes("manual")) open.manual = true;
       setOpenSections(open);
     }
-  }, [configQuery.data, form]);
+  }, [configQuery.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateField = useCallback(
     <K extends keyof FormState>(key: K, value: FormState[K]) => {

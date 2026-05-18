@@ -339,7 +339,7 @@ export function VerifyConfig() {
     enabled: !!selectedGuildId,
   });
 
-  useEffect(() => { if (configQuery.data && !configForm) setConfigForm(configQuery.data); }, [configQuery.data, configForm]);
+  useEffect(() => { if (configQuery.data && !configForm) setConfigForm(configQuery.data); }, [configQuery.data]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (configQuery.data?.verify_slug && !slugInput) setSlugInput(configQuery.data.verify_slug); }, [configQuery.data?.verify_slug]);
 
   const configMutation = useMutation({
