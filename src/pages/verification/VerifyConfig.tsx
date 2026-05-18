@@ -243,19 +243,17 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
   const textColor = c.text_color || "#ffffff";
   const btnColor = c.btn_color || "#5865F2";
   const cardBg = c.card_bg_color || "#1a1d2e";
-  const cardBorder = c.card_border_color || "#1a1d2e";
+  const cardBorder = c.card_border_color || "#2a2d3e";
 
   return (
-    <div className="relative w-full rounded-xl overflow-hidden border border-border" style={{ minHeight: 500 }}>
-      {/* Background layer */}
-      <div className="absolute inset-0 z-0"
-        style={{
-          backgroundColor: bgColor,
-          backgroundImage: c.page_background_url ? `url(${c.page_background_url})` : undefined,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
+    <div className="relative w-full rounded-xl overflow-hidden border border-border"
+      style={{
+        minHeight: 500,
+        backgroundColor: bgColor,
+        backgroundImage: c.page_background_url ? `url(${c.page_background_url})` : undefined,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}>
       {c.page_background_url && <div className="absolute inset-0 bg-black/50 z-0" />}
 
       {/* Background Effects (z-10) */}
@@ -313,7 +311,7 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
       <div className="relative z-20 flex flex-col items-center justify-center min-h-[500px] p-6"
         style={{ fontFamily: c.font_family }}>
         <div className="w-full max-w-xs rounded-2xl border p-6 text-center shadow-2xl"
-          style={{ backgroundColor: `${cardBg}e6`, borderColor: cardBorder, color: textColor }}>
+          style={{ backgroundColor: cardBg, borderColor: cardBorder, color: textColor }}>
 
           {c.page_logo_url && (
             <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden border-2"
@@ -353,6 +351,21 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
 
           <p className="mt-3 text-[10px] opacity-20">{c.page_footer_text || "Powered by Infinity Bot"}</p>
         </div>
+      </div>
+
+      {/* Color swatches strip — shows active colors for quick feedback */}
+      <div className="absolute bottom-2 left-2 right-2 z-30 flex items-center gap-1 rounded-lg px-2 py-1.5 bg-black/40 backdrop-blur-sm">
+        {[
+          { color: bgColor, label: "BG" },
+          { color: cardBg, label: "Card" },
+          { color: textColor, label: "Text" },
+          { color: btnColor, label: "Btn" },
+        ].map(({ color, label }) => (
+          <div key={label} className="flex items-center gap-1">
+            <div className="w-3 h-3 rounded-sm border border-white/20 shrink-0" style={{ backgroundColor: color }} />
+            <span className="text-[9px] text-white/50 font-mono">{label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
