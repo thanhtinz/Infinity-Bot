@@ -657,35 +657,37 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
   const [playing, setPlaying] = useState(false);
   const [hovered, setHovered] = useState(false);
 
-  // Sync state when audio ends or is externally paused
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.volume = 0.3;
     const onPause = () => setPlaying(false);
     const onPlay  = () => setPlaying(true);
+    const onEnded = () => setPlaying(false);
     audio.addEventListener("pause", onPause);
     audio.addEventListener("play",  onPlay);
+    audio.addEventListener("ended", onEnded);
     return () => {
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("play",  onPlay);
+      audio.removeEventListener("ended", onEnded);
     };
   }, [url]);
 
   async function toggle() {
     const audio = audioRef.current;
     if (!audio) return;
-    if (playing) {
+    // Use audio.paused directly — never stale unlike React state
+    if (!audio.paused) {
       audio.pause();
     } else {
-      // Reset src if ended
-      if (audio.ended) { audio.currentTime = 0; }
+      if (audio.ended || audio.currentTime === 0) {
+        audio.load(); // reload src in case it wasn't loaded
+      }
       try {
         await audio.play();
       } catch {
-        // autoplay blocked — try again after user gesture (this IS the user gesture)
-        audio.muted = false;
-        await audio.play().catch(() => {});
+        /* autoplay policy — this click IS a user gesture so should work; ignore */
       }
     }
   }
@@ -712,8 +714,8 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         title={playing ? "Pause" : "Play"}
-        className="fixed top-4 left-4 z-50"
-        style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+        className="fixed left-4 z-50"
+        style={{ top: "50%", transform: "translateY(-50%)", background: "none", border: "none", padding: 0, cursor: "pointer" }}
       >
         <div
           className="relative w-14 h-14 rounded-full transition-transform duration-200"
@@ -783,8 +785,8 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
         {/* Tooltip label */}
         {!playing && !hovered && (
           <div style={{
-            position: "absolute", top: "calc(100% + 6px)", left: "50%",
-            transform: "translateX(-50%)", whiteSpace: "nowrap",
+            position: "absolute", top: "50%", left: "calc(100% + 8px)",
+            transform: "translateY(-50%)", whiteSpace: "nowrap",
             fontSize: 10, color: "rgba(255,255,255,0.5)",
             background: "rgba(0,0,0,0.5)", borderRadius: 4, padding: "2px 6px",
             pointerEvents: "none",
