@@ -177,6 +177,7 @@ def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):
         "card_bg_color": getattr(cfg, "card_bg_color", "#1a1d2e") or "#1a1d2e",
         "card_opacity": getattr(cfg, "card_opacity", 95) if getattr(cfg, "card_opacity", None) is not None else 95,
         "typewriter_effect": getattr(cfg, "typewriter_effect", False),
+        "typewriter_desc_effect": getattr(cfg, "typewriter_desc_effect", False),
         "glow_effect": getattr(cfg, "glow_effect", False),
         "tilt_effect": getattr(cfg, "tilt_effect", False),
         "bio_description": getattr(cfg, "bio_description", "") or "",

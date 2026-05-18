@@ -61,6 +61,7 @@ export interface VerificationConfig {
   card_bg_color: string;
   card_opacity: number;
   typewriter_effect: boolean;
+  typewriter_desc_effect: boolean;
   glow_effect: boolean;
   tilt_effect: boolean;
   bio_description: string;

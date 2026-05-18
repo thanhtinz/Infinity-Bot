@@ -725,6 +725,7 @@ class VerificationConfig(Base):
     card_opacity = Column(Integer, default=95)         # 0–100 percent
     # Effects
     typewriter_effect = Column(Boolean, default=False)
+    typewriter_desc_effect = Column(Boolean, default=False)
     glow_effect = Column(Boolean, default=False)
     tilt_effect = Column(Boolean, default=False)
     # Content

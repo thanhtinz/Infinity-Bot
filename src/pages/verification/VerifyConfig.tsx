@@ -329,7 +329,11 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
           </h1>
 
           {c.page_description && (
-            <p className="text-xs mb-4 opacity-60">{c.page_description}</p>
+            <p className="text-xs mb-4 opacity-60">
+              {c.typewriter_desc_effect
+                ? c.page_description.slice(0, Math.ceil(c.page_description.length * 0.6)) + "▌"
+                : c.page_description}
+            </p>
           )}
 
           <button className="px-5 py-2 rounded-lg font-medium text-sm w-full"
@@ -743,7 +747,8 @@ export function VerifyConfig() {
               <div className="rounded-xl border border-border bg-card p-5 space-y-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" />Effects</p>
                 {[
-                  { key: "typewriter_effect" as const, label: "Typewriter text effect", desc: "Animate title with typing effect" },
+                  { key: "typewriter_effect" as const, label: "Typewriter — Title", desc: "Gõ từng ký tự cho tiêu đề" },
+                  { key: "typewriter_desc_effect" as const, label: "Typewriter — Description", desc: "Gõ từng ký tự cho mô tả" },
                   { key: "glow_effect" as const, label: "Glowing text effect", desc: "Add glow shadow to title" },
                   { key: "tilt_effect" as const, label: "Card tilting effect", desc: "3D tilt on mouse hover" },
                 ].map(({ key, label, desc }) => (

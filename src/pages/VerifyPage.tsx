@@ -37,6 +37,7 @@ interface VerifyConfig {
   card_bg_color?: string;
   card_opacity?: number;
   typewriter_effect?: boolean;
+  typewriter_desc_effect?: boolean;
   glow_effect?: boolean;
   tilt_effect?: boolean;
   bio_description?: string;
@@ -340,9 +341,9 @@ export function VerifyPage() {
   );
   const descText = useTypewriter(
     config?.page_description || "Please verify your Discord account to gain access to the server.",
-    config?.typewriter_effect ?? false,
-    30, // faster speed for description
-    config?.typewriter_effect ? ((config?.page_title || "Verify Your Account").length * 50 + 300) : 0,
+    config?.typewriter_desc_effect ?? false,
+    30,
+    config?.typewriter_desc_effect ? 300 : 0,
   );
   const tiltRef = useTilt(config?.tilt_effect ?? false);
 
@@ -498,7 +499,7 @@ export function VerifyPage() {
 
         <p className="text-sm mb-6 leading-relaxed" style={{ color: `${textColor}50` }}>
           {descText}
-          {config?.typewriter_effect && descText.length < (config?.page_description || "Please verify your Discord account to gain access to the server.").length && (
+          {config?.typewriter_desc_effect && descText.length < (config?.page_description || "Please verify your Discord account to gain access to the server.").length && (
             <span className="inline-block w-0.5 h-3.5 ml-0.5 align-middle animate-pulse" style={{ backgroundColor: btnColor }} />
           )}
         </p>
