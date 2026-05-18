@@ -36,7 +36,7 @@ import {
   Image, Paintbrush, Palette, Sparkles, Type, Share2,
   KeyRound, Code2,
   Trash2,
-  Settings2, Upload, X, Music, Hash,
+  Settings2, Upload, X, Music,
   Plus, XCircle, Search, User, Flag, Mail, Network,
   MessageSquare,
 } from "lucide-react";
@@ -496,13 +496,12 @@ export function VerifyConfig() {
 
       {/* ── 6-tab icon bar ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-6 h-11">
+        <TabsList className="grid grid-cols-5 h-11">
           {[
             { value: "general", icon: Settings2, title: "General" },
             { value: "custom", icon: Paintbrush, title: "Customize" },
             { value: "security", icon: Shield, title: "Security" },
             { value: "firewall", icon: KeyRound, title: "Firewall" },
-            { value: "channels", icon: Hash, title: "Roles & Channels" },
             { value: "advanced", icon: Code2, title: "Advanced" },
           ].map(({ value, icon: Icon, title }) => (
             <TabsTrigger key={value} value={value} title={title} className="flex flex-col gap-0.5 px-1 py-1.5 text-[10px] h-full">
@@ -593,6 +592,14 @@ export function VerifyConfig() {
                 <ChannelSelect value={configForm.log_channel_id ?? ""} onChange={val => update({ log_channel_id: val })} placeholder="Select channel" filter="text" />
               </div>
             </div>
+          </div>
+
+          <div className="space-y-3 rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notify Roles</p>
+            <div><Label className="text-xs text-muted-foreground mb-1.5 block">On successful verification</Label>
+              <MultiRoleSelect value={(configForm.notify_success_role_id ?? "").split(",").filter(Boolean)} onChange={vals => update({ notify_success_role_id: vals.join(",") })} placeholder="Select roles to ping" /></div>
+            <div><Label className="text-xs text-muted-foreground mb-1.5 block">On blocked event</Label>
+              <MultiRoleSelect value={(configForm.notify_blocked_role_id ?? "").split(",").filter(Boolean)} onChange={vals => update({ notify_blocked_role_id: vals.join(",") })} placeholder="Select roles to ping" /></div>
           </div>
 
           <div className="flex justify-end">
@@ -950,34 +957,6 @@ export function VerifyConfig() {
             )}
           </div>
           </PremiumGate>
-        </TabsContent>
-
-        {/* ─── CHANNELS ─── */}
-        <TabsContent value="channels" className="space-y-4 pt-4">
-          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Roles</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Verified Role</Label><RoleSelect value={configForm.verified_role_id ?? ""} onChange={val => update({ verified_role_id: val })} placeholder="Select role" /></div>
-              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Unverified Role</Label><RoleSelect value={configForm.unverified_role_id ?? ""} onChange={val => update({ unverified_role_id: val })} placeholder="Select role" /></div>
-            </div>
-            <Separator />
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Channels</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Verify Channel</Label><ChannelSelect value={configForm.verify_channel_id ?? ""} onChange={val => update({ verify_channel_id: val })} placeholder="Select channel" filter="text" /></div>
-              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Log Channel</Label><ChannelSelect value={configForm.log_channel_id ?? ""} onChange={val => update({ log_channel_id: val })} placeholder="Select channel" filter="text" /></div>
-            </div>
-            <Separator />
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notify Roles</p>
-            <div><Label className="text-xs text-muted-foreground mb-1.5 block">On successful verification</Label>
-              <MultiRoleSelect value={(configForm.notify_success_role_id ?? "").split(",").filter(Boolean)} onChange={vals => update({ notify_success_role_id: vals.join(",") })} placeholder="Select roles to ping" /></div>
-            <div><Label className="text-xs text-muted-foreground mb-1.5 block">On blocked event</Label>
-              <MultiRoleSelect value={(configForm.notify_blocked_role_id ?? "").split(",").filter(Boolean)} onChange={vals => update({ notify_blocked_role_id: vals.join(",") })} placeholder="Select roles to ping" /></div>
-          </div>
-          <div className="flex justify-end">
-            <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
-              {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}Save
-            </Button>
-          </div>
         </TabsContent>
 
         {/* ─── ADVANCED ─── */}

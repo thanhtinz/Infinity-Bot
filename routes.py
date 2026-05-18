@@ -42,6 +42,7 @@ def create_app(static_dir: str) -> FastAPI:
             "/api/public/status",
             "/api/public/commands",
             "/api/public/invite",
+            "/api/verify/",
         ]
         
         if path.startswith("/static/") or path.startswith("/api/files/"):
