@@ -111,7 +111,7 @@ const navGroups: NavGroup[] = [
       { to: "/coupons", icon: Tag, label: "nav_coupons" },
       { to: "/users", icon: Users, label: "nav_users" },
       { to: "/shop-stats", icon: Activity, label: "nav_shopStats" },
-      { to: "/milestones", icon: Trophy, label: "Mốc chi tiêu" },
+      { to: "/milestones", icon: Trophy, label: "Spending Milestones" },
       { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
       { to: "/config/shop-channels", icon: Hash, label: "nav_shopChannels", feature: "shop" },
     ],
@@ -132,8 +132,8 @@ const navGroups: NavGroup[] = [
     label: "nav_community",
     items: [
       { to: "/giveaways", icon: Gift, label: "nav_giveaway", feature: "giveaway" },
-      { to: "/invites/leaderboard", icon: Trophy, label: "BXH mời", feature: "invite_tracking" },
-      { to: "/invites/log", icon: ScrollText, label: "Nhật ký mời", feature: "invite_tracking" },
+      { to: "/invites/leaderboard", icon: Trophy, label: "Invite Leaderboard", feature: "invite_tracking" },
+      { to: "/invites/log", icon: ScrollText, label: "Invite Log", feature: "invite_tracking" },
       { to: "/warnings", icon: ShieldAlert, label: "nav_warnings", feature: "moderation" },
       { to: "/starboard", icon: Star, label: "nav_starboard", feature: "starboard" },
     ],
@@ -144,10 +144,10 @@ const navGroups: NavGroup[] = [
     label: "nav_moderation",
     feature: "moderation",
     items: [
-      { to: "/moderation/cases", icon: Gavel, label: "Vụ vi phạm" },
-      { to: "/moderation/notes", icon: FileText, label: "Ghi chú" },
-      { to: "/moderation/active", icon: Clock, label: "Đang phạt" },
-      { to: "/moderation/settings", icon: Settings, label: "Cài đặt KD" },
+      { to: "/moderation/cases", icon: Gavel, label: "Cases" },
+      { to: "/moderation/notes", icon: FileText, label: "Notes" },
+      { to: "/moderation/active", icon: Clock, label: "Active Punishments" },
+      { to: "/moderation/settings", icon: Settings, label: "Mod Settings" },
       { to: "/automod", icon: Shield, label: "nav_automod" },
       { to: "/logging", icon: ScrollText, label: "nav_loggingConfig" },
       { to: "/logs", icon: Activity, label: "nav_logging" },
@@ -189,7 +189,7 @@ const navGroups: NavGroup[] = [
       { to: "/bot-settings", icon: Settings, label: "nav_botSettings" },
       { to: "/guild-bot", icon: Bot, label: "Custom Bot" },
       { to: "/config/payments", icon: CreditCard, label: "Payments", feature: "shop" },
-      { to: "/my-plan", icon: Crown, label: "Gói Server" },
+      { to: "/my-plan", icon: Crown, label: "My Plan" },
       { to: "/staff-permissions", icon: Shield, label: "Staff Permissions" },
     ],
   },
@@ -201,9 +201,9 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/bot-status", icon: Activity, label: "nav_botStatus" },
       { to: "/config/discord", icon: Bot, label: "nav_discordBot" },
-      { to: "/backup/list", icon: Database, label: "Sao lưu" },
-      { to: "/backup/schedule", icon: Clock, label: "Lịch sao lưu" },
-      { to: "/backup/history", icon: ScrollText, label: "Lịch sử sao lưu" },
+      { to: "/backup/list", icon: Database, label: "Backups" },
+      { to: "/backup/schedule", icon: Clock, label: "Backup Schedule" },
+      { to: "/backup/history", icon: ScrollText, label: "Backup History" },
       { to: "/premium/config", icon: CreditCard, label: "Premium Payments" },
       { to: "/premium/plans", icon: Gem, label: "Premium Plans" },
       { to: "/premium/management", icon: Crown, label: "Premium Management" },
@@ -307,6 +307,14 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           </div>
         ) : (
         <>
+        {/* User area label */}
+        <div className="flex items-center gap-2 px-3 mb-1 mt-1">
+          <div className="h-px flex-1 bg-border/60" />
+          <span className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/50 select-none">
+            Server
+          </span>
+          <div className="h-px flex-1 bg-border/60" />
+        </div>
         {/* Grouped nav */}
         {filteredGroups.map((group) => {
           const isOpen = openGroups.has(group.key);
@@ -380,7 +388,18 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           );
         })}
 
-        {/* Owner-only: Bot Management — always at bottom */}
+        {/* Owner-only: Bot Management — always at bottom, visually separated */}
+        {ownerGroups.length > 0 && (
+          <div className="mt-4 pt-3 border-t-2 border-dashed border-amber-500/40">
+            <div className="flex items-center gap-2 px-3 mb-2">
+              <div className="h-px flex-1 bg-amber-500/30" />
+              <span className="text-[10px] font-semibold tracking-widest uppercase text-amber-500/70 select-none">
+                Owner
+              </span>
+              <div className="h-px flex-1 bg-amber-500/30" />
+            </div>
+          </div>
+        )}
         {ownerGroups.map((group) => {
           const isOpen = openGroups.has(group.key);
           const isActive = group.items.some((item) => item.to === location.pathname);
@@ -392,8 +411,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 className={cn(
                   "flex items-center justify-between w-full px-3 py-2 text-sm font-medium cursor-pointer rounded-md transition-colors",
                   isActive
-                    ? "bg-accent/60 text-foreground"
-                    : "text-foreground/80 hover:bg-accent/40 hover:text-foreground"
+                    ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                    : "text-amber-700/70 dark:text-amber-400/60 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400"
                 )}
               >
                 <span className="flex items-center gap-2.5">
@@ -407,7 +426,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 )}
               </button>
               {isOpen && (
-                <div className="mt-0.5 ml-3 pl-3 border-l border-border space-y-0.5">
+                <div className="mt-0.5 ml-3 pl-3 border-l border-amber-500/30 space-y-0.5">
                   {group.items.map((item) => {
                     const ItemIcon = item.icon;
                     const isItemActive = location.pathname === item.to;
@@ -419,8 +438,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                         className={cn(
                           "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm transition-colors",
                           isItemActive
-                            ? "bg-primary text-primary-foreground font-medium"
-                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                            ? "bg-amber-500 text-white font-medium"
+                            : "text-muted-foreground hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400"
                         )}
                       >
                         <ItemIcon className="w-3.5 h-3.5 shrink-0" />
@@ -455,7 +474,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             });
           }}>
             <LogOut className="w-4 h-4 mr-2" />
-            Đăng xuất
+            Log out
           </Button>
         </div>
       )}
