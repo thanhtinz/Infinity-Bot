@@ -654,41 +654,63 @@ export function VerifyPage() {
 
 function MusicPlayer({ url, color }: { url: string; color: string }) {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(false);
-  const [hovered, setHovered] = useState(false);
+  const [playing, setPlaying]   = useState(false);
+  const [hovered, setHovered]   = useState(false);
+  const [pos, setPos]           = useState({ x: 16, y: window.innerHeight / 2 - 28 });
+  const dragging                = useRef(false);
+  const dragOffset              = useRef({ dx: 0, dy: 0 });
+  const didDrag                 = useRef(false);
 
+  /* ── Audio event sync ── */
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.volume = 0.3;
-    const onPause = () => setPlaying(false);
+    const a = audioRef.current;
+    if (!a) return;
+    a.volume = 0.3;
     const onPlay  = () => setPlaying(true);
-    const onEnded = () => setPlaying(false);
-    audio.addEventListener("pause", onPause);
-    audio.addEventListener("play",  onPlay);
-    audio.addEventListener("ended", onEnded);
-    return () => {
-      audio.removeEventListener("pause", onPause);
-      audio.removeEventListener("play",  onPlay);
-      audio.removeEventListener("ended", onEnded);
-    };
+    const onPause = () => setPlaying(false);
+    a.addEventListener("play",  onPlay);
+    a.addEventListener("pause", onPause);
+    return () => { a.removeEventListener("play", onPlay); a.removeEventListener("pause", onPause); };
   }, [url]);
 
-  async function toggle() {
-    const audio = audioRef.current;
-    if (!audio) return;
-    // Use audio.paused directly — never stale unlike React state
-    if (!audio.paused) {
-      audio.pause();
+  /* ── Drag handlers (mouse + touch) ── */
+  function startDrag(clientX: number, clientY: number) {
+    dragging.current = true;
+    didDrag.current  = false;
+    dragOffset.current = { dx: clientX - pos.x, dy: clientY - pos.y };
+  }
+  useEffect(() => {
+    function onMove(e: MouseEvent | TouchEvent) {
+      if (!dragging.current) return;
+      const { clientX, clientY } = "touches" in e ? e.touches[0] : e;
+      didDrag.current = true;
+      setPos({
+        x: Math.max(0, Math.min(window.innerWidth  - 56, clientX - dragOffset.current.dx)),
+        y: Math.max(0, Math.min(window.innerHeight - 56, clientY - dragOffset.current.dy)),
+      });
+    }
+    function onUp() { dragging.current = false; }
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup",   onUp);
+    window.addEventListener("touchmove", onMove, { passive: true });
+    window.addEventListener("touchend",  onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup",   onUp);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend",  onUp);
+    };
+  }, [pos.x, pos.y]);
+
+  /* ── Toggle play / pause ── */
+  function handleClick() {
+    if (didDrag.current) return; // ignore click after drag
+    const a = audioRef.current;
+    if (!a) return;
+    if (!a.paused) {
+      a.pause();
     } else {
-      if (audio.ended || audio.currentTime === 0) {
-        audio.load(); // reload src in case it wasn't loaded
-      }
-      try {
-        await audio.play();
-      } catch {
-        /* autoplay policy — this click IS a user gesture so should work; ignore */
-      }
+      a.play().catch(() => {});
     }
   }
 
@@ -696,105 +718,90 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
     <>
       <audio ref={audioRef} src={url} loop preload="auto" />
       <style>{`
-        @keyframes vinylSpin {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-        .vinyl-spinning {
-          animation: vinylSpin 3s linear infinite;
-        }
-        .vinyl-paused {
-          animation: vinylSpin 3s linear infinite;
-          animation-play-state: paused;
-        }
+        @keyframes vSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .v-spin  { animation: vSpin 3s linear infinite; }
+        .v-pause { animation: vSpin 3s linear infinite; animation-play-state:paused; }
       `}</style>
 
-      <button
-        onClick={toggle}
+      <div
+        onMouseDown={e  => { e.preventDefault(); startDrag(e.clientX, e.clientY); }}
+        onTouchStart={e => startDrag(e.touches[0].clientX, e.touches[0].clientY)}
+        onClick={handleClick}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        title={playing ? "Pause" : "Play"}
-        className="fixed left-4 z-50"
-        style={{ top: "50%", transform: "translateY(-50%)", background: "none", border: "none", padding: 0, cursor: "pointer" }}
+        style={{
+          position: "fixed", left: pos.x, top: pos.y, zIndex: 50,
+          cursor: dragging.current ? "grabbing" : "grab",
+          userSelect: "none", WebkitUserSelect: "none",
+        }}
       >
-        <div
-          className="relative w-14 h-14 rounded-full transition-transform duration-200"
-          style={{
-            transform: hovered ? "scale(1.1)" : "scale(1)",
-            boxShadow: playing
-              ? `0 0 20px ${color}70, 0 0 8px ${color}40, 0 4px 16px rgba(0,0,0,0.6)`
-              : "0 4px 16px rgba(0,0,0,0.5)",
-          }}
-        >
-          {/* Vinyl record — always visible, spins when playing */}
-          <div
-            className={playing ? "vinyl-spinning" : "vinyl-paused"}
-            style={{
-              width: 56, height: 56, borderRadius: "50%",
-              background: `conic-gradient(
-                #111 0deg,#222 25deg,#111 50deg,#1e1e1e 75deg,
-                #111 100deg,#222 125deg,#111 150deg,#1e1e1e 175deg,
-                #111 200deg,#222 225deg,#111 250deg,#1e1e1e 275deg,
-                #111 300deg,#222 325deg,#111 350deg,#1e1e1e 360deg
-              )`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              position: "relative",
-            }}
-          >
+        {/* Glow + scale wrapper */}
+        <div style={{
+          width: 56, height: 56, borderRadius: "50%",
+          transition: "box-shadow .3s, transform .2s",
+          transform: hovered ? "scale(1.12)" : "scale(1)",
+          boxShadow: playing
+            ? `0 0 22px ${color}80, 0 0 8px ${color}50, 0 4px 14px rgba(0,0,0,0.6)`
+            : "0 4px 14px rgba(0,0,0,0.55)",
+          position: "relative",
+        }}>
+          {/* Vinyl disc */}
+          <div className={playing ? "v-spin" : "v-pause"} style={{
+            width: 56, height: 56, borderRadius: "50%", position: "absolute",
+            background: `conic-gradient(
+              #111 0deg,#1d1d1d 20deg,#111 40deg,#1a1a1a 60deg,
+              #111 80deg,#1d1d1d 100deg,#111 120deg,#1a1a1a 140deg,
+              #111 160deg,#1d1d1d 180deg,#111 200deg,#1a1a1a 220deg,
+              #111 240deg,#1d1d1d 260deg,#111 280deg,#1a1a1a 300deg,
+              #111 320deg,#1d1d1d 340deg,#111 360deg
+            )`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
             {/* Groove rings */}
-            <div style={{ position:"absolute", width:44, height:44, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.06)" }} />
-            <div style={{ position:"absolute", width:34, height:34, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.06)" }} />
-            <div style={{ position:"absolute", width:24, height:24, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.08)" }} />
+            {[46,36,26].map(s => (
+              <div key={s} style={{ position:"absolute", width:s, height:s, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.07)" }} />
+            ))}
             {/* Center label */}
             <div style={{
-              width: 18, height: 18, borderRadius: "50%",
-              backgroundColor: color, position: "relative", zIndex: 2,
-              boxShadow: `0 0 6px ${color}60`,
-              display: "flex", alignItems: "center", justifyContent: "center",
+              width:18, height:18, borderRadius:"50%", backgroundColor:color,
+              boxShadow:`0 0 8px ${color}70`, zIndex:2, position:"relative",
+              display:"flex", alignItems:"center", justifyContent:"center",
             }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: "rgba(0,0,0,0.7)" }} />
+              <div style={{ width:5, height:5, borderRadius:"50%", background:"rgba(0,0,0,0.75)" }} />
             </div>
           </div>
 
-          {/* Hover overlay — show ▶/⏸ icon subtly blended over the disc */}
-          <div
-            style={{
-              position: "absolute", inset: 0, borderRadius: "50%",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              background: hovered ? "rgba(0,0,0,0.35)" : "transparent",
-              transition: "background 0.2s",
-            }}
-          >
-            {hovered && (
-              playing ? (
-                /* Pause icon — two rounded bars */
-                <div style={{ display: "flex", gap: 4 }}>
-                  <div style={{ width: 4, height: 14, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.9)" }} />
-                  <div style={{ width: 4, height: 14, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.9)" }} />
-                </div>
-              ) : (
-                /* Play icon — filled triangle */
-                <svg width="13" height="15" viewBox="0 0 13 15" fill="rgba(255,255,255,0.9)" style={{ marginLeft: 2 }}>
-                  <path d="M0 0 L13 7.5 L0 15 Z" />
-                </svg>
-              )
-            )}
+          {/* Hover icon overlay */}
+          <div style={{
+            position:"absolute", inset:0, borderRadius:"50%",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            background: hovered ? "rgba(0,0,0,0.38)" : "transparent",
+            transition:"background .2s",
+          }}>
+            {hovered && (playing ? (
+              <div style={{ display:"flex", gap:4 }}>
+                <div style={{ width:4, height:14, borderRadius:2, background:"rgba(255,255,255,0.92)" }} />
+                <div style={{ width:4, height:14, borderRadius:2, background:"rgba(255,255,255,0.92)" }} />
+              </div>
+            ) : (
+              <svg width="13" height="15" viewBox="0 0 13 15" fill="rgba(255,255,255,0.92)" style={{marginLeft:2}}>
+                <path d="M0 0 L13 7.5 L0 15 Z" />
+              </svg>
+            ))}
           </div>
         </div>
 
-        {/* Tooltip label */}
+        {/* Hint tooltip — only when stopped & not hovered */}
         {!playing && !hovered && (
           <div style={{
-            position: "absolute", top: "50%", left: "calc(100% + 8px)",
-            transform: "translateY(-50%)", whiteSpace: "nowrap",
-            fontSize: 10, color: "rgba(255,255,255,0.5)",
-            background: "rgba(0,0,0,0.5)", borderRadius: 4, padding: "2px 6px",
-            pointerEvents: "none",
-          }}>
-            🎵 click to play
-          </div>
+            position:"absolute", top:"50%", left:"calc(100% + 8px)",
+            transform:"translateY(-50%)", whiteSpace:"nowrap",
+            fontSize:10, color:"rgba(255,255,255,0.45)",
+            background:"rgba(0,0,0,0.48)", borderRadius:4, padding:"2px 7px",
+            pointerEvents:"none",
+          }}>🎵 click to play</div>
         )}
-      </button>
+      </div>
     </>
   );
 }
