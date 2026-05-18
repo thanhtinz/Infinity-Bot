@@ -268,7 +268,7 @@ export function ButtonRoles() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <MousePointerClick className="w-6 h-6" />
@@ -278,7 +278,7 @@ export function ButtonRoles() {
             {t("btnRoles_desc")}
           </p>
         </div>
-        <Button onClick={() => navigate('/button-roles/new')}>
+        <Button className="self-start" onClick={() => navigate('/button-roles/new')}>
           <Plus className="h-4 w-4 mr-1.5" />
           {t("btnRoles_createPanel")}
         </Button>

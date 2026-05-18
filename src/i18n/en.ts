@@ -93,6 +93,7 @@ const en = {
   nav_feedback: "Feedback",
   nav_shopStats: "Shop Stats",
   nav_panels: "Panels",
+  nav_rr: "Reaction Roles",
   nav_forms: "Forms",
   nav_teams: "Teams",
   nav_transcripts: "Transcripts",

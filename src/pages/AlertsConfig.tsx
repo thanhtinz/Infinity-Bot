@@ -69,7 +69,7 @@ export function AlertsConfig() {
   const [dirty, setDirty] = useState(false);
 
   /* Fetch config */
-  const { isLoading } = useQuery({
+  const { isLoading, isError } = useQuery({
     queryKey: ["alerts-config", selectedGuildId],
     queryFn: async () => {
       const res = await apiFetch("/api/alerts/config");
@@ -133,6 +133,14 @@ export function AlertsConfig() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+        <p className="text-sm">Failed to load alert configuration.</p>
       </div>
     );
   }

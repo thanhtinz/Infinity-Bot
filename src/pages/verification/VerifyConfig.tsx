@@ -429,6 +429,14 @@ export function VerifyConfig() {
   });
 
   if (configQuery.isLoading || !configForm) {
+    if (configQuery.isError) {
+      return (
+        <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+          <p className="text-sm">Failed to load configuration.</p>
+          <button onClick={() => configQuery.refetch()} className="text-xs underline">Retry</button>
+        </div>
+      );
+    }
     return <div className="space-y-4 p-6"><Skeleton className="h-10 w-full" /><Skeleton className="h-64 w-full" /></div>;
   }
 

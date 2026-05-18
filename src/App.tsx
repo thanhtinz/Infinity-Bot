@@ -281,14 +281,6 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           </div>
         ) : (
         <>
-        {/* User area label */}
-        <div className="flex items-center gap-2 px-3 mb-1 mt-1">
-          <div className="h-px flex-1 bg-border/60" />
-          <span className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/50 select-none">
-            Server
-          </span>
-          <div className="h-px flex-1 bg-border/60" />
-        </div>
         {/* Grouped nav */}
         {filteredGroups.map((group) => {
           const isOpen = openGroups.has(group.key);
