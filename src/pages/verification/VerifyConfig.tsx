@@ -689,7 +689,7 @@ export function VerifyConfig() {
                 <MediaUpload label="Banner Image" value={configForm.banner_url} onChange={v => update({ banner_url: v })} allowGif={hasFeature("animated_gif")} />
                 <MediaUpload label="Background Image" value={configForm.page_background_url} onChange={v => update({ page_background_url: v })} allowGif={hasFeature("animated_gif")} />
                 <MediaUpload label="Mouse Cursor" value={configForm.cursor_url} onChange={v => update({ cursor_url: v })} placeholder="Cursor image URL" allowGif={hasFeature("animated_gif")} />
-                <MediaUpload label="Background Music" value={configForm.music_url || ""} onChange={v => update({ music_url: v })} accept="audio/*" placeholder="Audio URL (mp3, ogg, wav)" />
+                <MediaUpload label="Background Music" value={configForm.music_url || ""} onChange={v => update({ music_url: v })} accept="audio/mpeg,audio/mp3,audio/ogg,audio/wav,audio/webm,audio/aac,audio/flac,audio/*" placeholder="Audio URL (mp3, ogg, wav)" />
               </div>
 
               {/* Appearance */}

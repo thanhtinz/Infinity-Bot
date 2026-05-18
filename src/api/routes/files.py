@@ -14,7 +14,9 @@ MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 
 ALLOWED_TYPES = {
     "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
-    "audio/mpeg", "audio/ogg", "audio/wav", "audio/webm",
+    "audio/mpeg", "audio/mp3", "audio/ogg", "audio/wav", "audio/wave",
+    "audio/x-wav", "audio/webm", "audio/aac", "audio/x-m4a", "audio/mp4",
+    "audio/flac", "audio/x-flac",
 }
 
 
@@ -25,7 +27,30 @@ async def upload_file(
     db=Depends(get_db),
 ):
     """Upload an image or audio file; returns {url, id}."""
-    if file.content_type not in ALLOWED_TYPES:
+    content_type = file.content_type or ""
+
+    # Fallback: detect by extension if MIME type is missing or generic
+    EXTENSION_MAP = {
+        ".mp3": "audio/mpeg",
+        ".ogg": "audio/ogg",
+        ".wav": "audio/wav",
+        ".webm": "audio/webm",
+        ".aac": "audio/aac",
+        ".m4a": "audio/mp4",
+        ".flac": "audio/flac",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+        ".svg": "image/svg+xml",
+    }
+    if content_type not in ALLOWED_TYPES and file.filename:
+        ext = "." + file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+        if ext in EXTENSION_MAP:
+            content_type = EXTENSION_MAP[ext]
+
+    if content_type not in ALLOWED_TYPES:
         raise HTTPException(400, f"Unsupported file type: {file.content_type}")
 
     data = await file.read()
@@ -36,7 +61,7 @@ async def upload_file(
     row = UploadedFile(
         id=file_id,
         filename=file.filename or "upload",
-        content_type=file.content_type,
+        content_type=content_type,
         data=data,
         size=len(data),
         guild_id=x_guild_id,
