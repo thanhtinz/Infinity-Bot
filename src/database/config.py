@@ -1,9 +1,12 @@
 import os
 import ssl
+import logging
 from typing import AsyncGenerator
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base, sessionmaker
+
+logger = logging.getLogger(__name__)
 
 # Get DB config from Neon
 # Workshop's DB injection standard: use standard env vars injected by workshop platform
@@ -239,6 +242,11 @@ async def init_db():
 
         # ── Thực thi tất cả ALTER trong 1 transaction ──
         if all_stmts:
+            logger.info(f"[init_db] Running {len(all_stmts)} migration(s): {all_stmts}")
             with engine.begin() as connection:
                 for stmt in all_stmts:
+                    logger.info(f"[init_db] Executing: {stmt}")
                     connection.execute(text(stmt))
+            logger.info("[init_db] Migrations complete.")
+        else:
+            logger.info("[init_db] No migrations needed — schema is up to date.")

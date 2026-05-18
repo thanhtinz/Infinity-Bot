@@ -263,7 +263,7 @@ export function VerifyPage() {
   useEffect(() => {
     if (!guildId) return; // wait for slug resolution
     fetchVerifyConfig(guildId)
-      .then(data => { setConfig(data); setError(null); })
+      .then(data => { console.log("[VerifyPage] config loaded:", data); setConfig(data); setError(null); })
       .catch(() => setError("Unable to load verification page."))
       .finally(() => setLoading(false));
   }, [guildId]);
@@ -360,7 +360,7 @@ export function VerifyPage() {
         {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />}
         {bgImage && <div className="absolute inset-0 bg-black/60" />}
         <div className="relative w-full max-w-md rounded-2xl backdrop-blur-xl border p-8 text-center shadow-2xl"
-          style={{ backgroundColor: `${cardBg}e6`, borderColor: cardBorder }}>
+          style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: `${btnColor}20` }}>
             <CheckCircle2 className="h-8 w-8" style={{ color: btnColor }} />
           </div>
@@ -385,7 +385,7 @@ export function VerifyPage() {
         {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />}
         {bgImage && <div className="absolute inset-0 bg-black/60" />}
         <div className="relative w-full max-w-md rounded-2xl backdrop-blur-xl border p-8 text-center shadow-2xl"
-          style={{ backgroundColor: `${cardBg}e6`, borderColor: cardBorder }}>
+          style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10">
             <XCircle className="h-8 w-8 text-red-400" />
           </div>
@@ -428,7 +428,7 @@ export function VerifyPage() {
       <div
         ref={tiltRef}
         className="relative z-20 w-full max-w-md rounded-2xl backdrop-blur-xl border p-8 text-center shadow-2xl transition-transform duration-200"
-        style={{ backgroundColor: `${cardBg}e6`, borderColor: cardBorder }}
+        style={{ backgroundColor: cardBg, borderColor: cardBorder }}
       >
         {config?.banner_url && (
           <div className="w-full h-24 rounded-xl overflow-hidden mb-5 -mt-2">
