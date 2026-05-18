@@ -78,17 +78,24 @@ export function FirewallLogs() {
 
   const { data: stats } = useQuery<FirewallStats>({
     queryKey: ["firewall-stats"],
-    queryFn: () => apiFetch("/api/firewall/stats").then((r) => r.json()),
+    queryFn: async () => {
+      const r = await apiFetch("/api/firewall/stats");
+      if (!r.ok) return null;
+      return r.json();
+    },
   });
 
   const { data: logs = [], isLoading } = useQuery<FirewallLog[]>({
     queryKey: ["firewall-logs", filterBy, page],
-    queryFn: () => {
+    queryFn: async () => {
       const params = new URLSearchParams();
       if (filterBy !== "all") params.set("blocked_by", filterBy);
       params.set("limit", String(PAGE_SIZE));
       params.set("offset", String(page * PAGE_SIZE));
-      return apiFetch(`/api/firewall/logs?${params}`).then((r) => r.json());
+      const r = await apiFetch(`/api/firewall/logs?${params}`);
+      if (!r.ok) return [];
+      const data = await r.json();
+      return Array.isArray(data) ? data : [];
     },
   });
 
