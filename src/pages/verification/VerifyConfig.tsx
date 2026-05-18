@@ -48,7 +48,7 @@ import {
 } from "react-icons/fa6";
 import type { IconType } from "react-icons";
 import { useGuild } from "@/contexts/GuildContext";
-import { deleteGuildBot, fetchConfig, fetchGuildBot, updateConfig, updateGuildBot, validateGuildBot } from "./shared";
+import { fetchConfig, updateConfig } from "./shared";
 import type { VerificationConfig } from "./shared";
 import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
@@ -310,7 +310,6 @@ export function VerifyConfig() {
   const { selectedGuildId } = useGuild();
   const [copied, setCopied] = useState(false);
   const [configForm, setConfigForm] = useState<VerificationConfig | null>(null);
-  const [guildBotForm, setGuildBotForm] = useState({ client_id: "", bot_token: "", client_secret: "" });
   const [domainDialogOpen, setDomainDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
   const [slugInput, setSlugInput] = useState("");
@@ -334,11 +333,6 @@ export function VerifyConfig() {
     enabled: !!selectedGuildId,
     refetchInterval: false,
   });
-  const guildBotQuery = useQuery({
-    queryKey: ["verification-guild-bot", selectedGuildId],
-    queryFn: fetchGuildBot,
-    enabled: !!selectedGuildId,
-  });
   const firewallQuery = useQuery<FirewallRule[]>({
     queryKey: ["firewall-rules", selectedGuildId],
     queryFn: () => apiFetch("/api/firewall/rules").then(r => r.json()),
@@ -347,9 +341,6 @@ export function VerifyConfig() {
 
   useEffect(() => { if (configQuery.data && !configForm) setConfigForm(configQuery.data); }, [configQuery.data, configForm]);
   useEffect(() => { if (configQuery.data?.verify_slug && !slugInput) setSlugInput(configQuery.data.verify_slug); }, [configQuery.data?.verify_slug]);
-  useEffect(() => {
-    if (guildBotQuery.data) setGuildBotForm({ client_id: guildBotQuery.data.client_id || "", bot_token: "", client_secret: "" });
-  }, [guildBotQuery.data]);
 
   const configMutation = useMutation({
     mutationFn: updateConfig,
