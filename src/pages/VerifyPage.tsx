@@ -402,7 +402,7 @@ export function VerifyPage() {
         {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />}
         {bgImage && <div className="absolute inset-0 bg-black/60" />}
         <div className="relative w-full max-w-md rounded-2xl border p-8 text-center shadow-2xl"
-          style={{ backgroundColor: cardBg, borderColor: cardBorder, backdropFilter: cardOpacity < 0.95 ? "blur(12px)" : "none" }}>
+          style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
           <div style={{ opacity: contentOpacity }}>
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: `${btnColor}20` }}>
             <CheckCircle2 className="h-8 w-8" style={{ color: btnColor }} />
@@ -429,7 +429,7 @@ export function VerifyPage() {
         {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />}
         {bgImage && <div className="absolute inset-0 bg-black/60" />}
         <div className="relative w-full max-w-md rounded-2xl border p-8 text-center shadow-2xl"
-          style={{ backgroundColor: cardBg, borderColor: cardBorder, backdropFilter: cardOpacity < 0.95 ? "blur(12px)" : "none" }}>
+          style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
           <div style={{ opacity: contentOpacity }}>
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10">
             <XCircle className="h-8 w-8 text-red-400" />
@@ -478,7 +478,7 @@ export function VerifyPage() {
       <div
         ref={tiltRef}
         className="relative z-20 w-full max-w-md rounded-2xl border p-8 text-center shadow-2xl transition-transform duration-200"
-        style={{ backgroundColor: cardBg, borderColor: cardBorder, backdropFilter: cardOpacity < 0.95 ? "blur(12px)" : "none" }}
+        style={{ backgroundColor: cardBg, borderColor: cardBorder }}
       >
         <div style={{ opacity: contentOpacity }}>
         {config?.banner_url && (

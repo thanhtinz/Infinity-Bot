@@ -320,7 +320,7 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
       <div className="relative z-20 flex flex-col items-center justify-center min-h-[500px] p-6"
         style={{ fontFamily: c.font_family }}>
         <div className="w-full max-w-xs rounded-2xl border p-6 text-center shadow-2xl"
-          style={{ backgroundColor: cardBg, borderColor: cardBorder, color: textColor, backdropFilter: cardOpacity < 0.95 ? "blur(12px)" : "none" }}>
+          style={{ backgroundColor: cardBg, borderColor: cardBorder, color: textColor }}>
           <div style={{ opacity: contentOpacity }}>
 
           {c.page_logo_url && (
