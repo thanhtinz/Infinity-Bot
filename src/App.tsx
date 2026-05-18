@@ -70,6 +70,7 @@ import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 import type { LucideIcon } from "lucide-react";
 
@@ -405,24 +406,41 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
       {user && (
         <div className="p-4 border-t">
-          <div className="flex items-center gap-3 mb-4">
-            <Avatar>
-              <AvatarImage src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`} />
-              <AvatarFallback>{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="overflow-hidden">
-              <p className="text-sm font-medium truncate">{user.username}</p>
-              <p className="text-xs text-muted-foreground truncate">{user.is_owner ? "Owner" : "Admin"}</p>
-            </div>
-          </div>
-          <Button variant="outline" className="w-full justify-start text-destructive" onClick={() => {
-            fetch("/api/auth/logout", { method: "POST", credentials: "include" }).then(() => {
-              window.location.href = "/login";
-            });
-          }}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Log out
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-3 w-full rounded-lg px-2 py-2 hover:bg-accent transition-colors text-left">
+                <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarImage src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`} />
+                  <AvatarFallback>{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="overflow-hidden flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{user.username}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user.is_owner ? "Owner" : "Admin"}</p>
+                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" align="start" className="w-56 mb-1">
+              <DropdownMenuItem asChild>
+                <Link to="/my-plan" className="flex items-center gap-2 cursor-pointer">
+                  <Crown className="h-4 w-4 text-yellow-500" />
+                  My Plan
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive cursor-pointer"
+                onClick={() => {
+                  fetch("/api/auth/logout", { method: "POST", credentials: "include" }).then(() => {
+                    window.location.href = "/login";
+                  });
+                }}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
     </div>
