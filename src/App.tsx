@@ -605,8 +605,15 @@ function RouteLoader() {
 interface EBState { hasError: boolean; error?: Error }
 class PageErrorBoundary extends Component<{ children: ReactNode }, EBState> {
   state: EBState = { hasError: false };
-  static getDerivedStateFromError(error: Error): EBState { return { hasError: true, error }; }
-  componentDidCatch(error: Error, info: ErrorInfo) { console.error("[PageErrorBoundary]", error, info); }
+  static getDerivedStateFromError(error: unknown): EBState {
+    // Promises thrown by Suspense should NOT be caught here — ignore them
+    if (typeof (error as Promise<unknown>)?.then === "function") return { hasError: false };
+    return { hasError: true, error: error instanceof Error ? error : new Error(String(error)) };
+  }
+  componentDidCatch(error: unknown, info: ErrorInfo) {
+    if (typeof (error as Promise<unknown>)?.then === "function") return;
+    console.error("[PageErrorBoundary]", error, info);
+  }
   render() {
     if (this.state.hasError) {
       return (
