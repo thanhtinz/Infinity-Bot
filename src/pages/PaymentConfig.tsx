@@ -229,6 +229,7 @@ function TestConnectionButton({ endpoint, label }: { endpoint: string; label: st
 // ── Main Component ─────────────────────────────────────────────────────────
 
 export function PaymentConfig() {
+  const { toast } = useToast();
   const qc = useQueryClient();
 
   const [form, setForm] = useState<FormState | null>(null);
