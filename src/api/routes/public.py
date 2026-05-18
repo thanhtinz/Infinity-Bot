@@ -134,22 +134,33 @@ async def public_commands():
     """Full public slash-command catalog for the landing page."""
     from src.bot.cogs.help_cog import HELP_CATEGORIES
 
+    # Display-name overrides for Vietnamese bot command names
+    DISPLAY_NAMES: dict[str, str] = {
+        "san_pham":        "product",
+        "tao_don":         "create_order",
+        "tao_don_custom":  "create_custom_order",
+        "bang_gia":        "price_list",
+        "bxh":             "leaderboard",
+    }
+
     category_labels = {
-        "interaction": "Interaction",
-        "expression": "Expression",
-        "fun": "Fun",
-        "shop": "Shop",
-        "info": "Info",
-        "level": "Level",
-        "giveaway": "Giveaway",
-        "ticket": "Ticket",
-        "misc": "Misc",
-        "sticky": "Sticky",
-        "moderator": "Moderator",
-        "modtools": "Mod Tools",
-        "role": "Role",
-        "tempvoice": "TempVoice",
-        "other": "Other",
+        "interaction": "Interactions",
+        "expression":  "Expressions",
+        "fun":         "Fun",
+        "shop":        "Shop",
+        "info":        "Info",
+        "level":       "Levels",
+        "giveaway":    "Giveaways",
+        "misc":        "Misc",
+        "sticky":      "Sticky",
+        "moderator":   "Moderation",
+        "modtools":    "Mod Tools",
+        "role":        "Roles",
+        "other":       "Other",
+        "channel_admin": "Channel Admin",
+        "invites":     "Invites",
+        "voice":       "Temp Voice",
+        "utility":     "Utility",
     }
 
     categories = []
@@ -159,11 +170,12 @@ async def public_commands():
         commands = []
         for cmd in cat.get("commands", []):
             total += 1
-            name = cmd["name"]
+            raw_name = cmd["name"]
+            display = DISPLAY_NAMES.get(raw_name, raw_name)
             commands.append({
-                "name": f"/{name}",
-                "description": cmd.get("desc", f"Run the /{name} command."),
-                "usage": cmd.get("usage", f"`/{name}`"),
+                "name": f"/{display}",
+                "description": cmd.get("desc", f"Run the /{display} command."),
+                "usage": cmd.get("usage", f"`/{raw_name}`"),
                 "admin": bool(cmd.get("admin")),
             })
         categories.append({
