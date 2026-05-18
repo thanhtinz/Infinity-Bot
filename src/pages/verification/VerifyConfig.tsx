@@ -244,6 +244,7 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
   const btnColor = c.btn_color || "#5865F2";
   const cardBg = c.card_bg_color || "#1a1d2e";
   const cardBorder = c.card_border_color || "#2a2d3e";
+  const cardOpacity = (c.card_opacity ?? 95) / 100;
 
   return (
     <div className="relative w-full rounded-xl overflow-hidden border border-border"
@@ -311,7 +312,7 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
       <div className="relative z-20 flex flex-col items-center justify-center min-h-[500px] p-6"
         style={{ fontFamily: c.font_family }}>
         <div className="w-full max-w-xs rounded-2xl border p-6 text-center shadow-2xl"
-          style={{ backgroundColor: cardBg, borderColor: cardBorder, color: textColor }}>
+          style={{ backgroundColor: cardBg, borderColor: cardBorder, color: textColor, opacity: cardOpacity }}>
 
           {c.page_logo_url && (
             <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden border-2"
@@ -686,7 +687,6 @@ export function VerifyConfig() {
               <div className="rounded-xl border border-border bg-card p-5 space-y-4">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Image className="h-3.5 w-3.5" />Media <PremiumBadge size="xs" /> <span className="normal-case font-normal text-muted-foreground">(GIF requires premium)</span></p>
                 <MediaUpload label="Profile Image" value={configForm.page_logo_url} onChange={v => update({ page_logo_url: v })} allowGif={hasFeature("animated_gif")} />
-                <MediaUpload label="Banner Image" value={configForm.banner_url} onChange={v => update({ banner_url: v })} allowGif={hasFeature("animated_gif")} />
                 <MediaUpload label="Background Image" value={configForm.page_background_url} onChange={v => update({ page_background_url: v })} allowGif={hasFeature("animated_gif")} />
                 <MediaUpload label="Mouse Cursor" value={configForm.cursor_url} onChange={v => update({ cursor_url: v })} placeholder="Cursor image URL" allowGif={hasFeature("animated_gif")} />
                 <MediaUpload label="Background Music" value={configForm.music_url || ""} onChange={v => update({ music_url: v })} accept="audio/mpeg,audio/mp3,audio/ogg,audio/wav,audio/webm,audio/aac,audio/flac,audio/*" placeholder="Audio URL (mp3, ogg, wav)" />
@@ -721,6 +721,21 @@ export function VerifyConfig() {
                   <ColorField label="Button Border" value={configForm.btn_border_color} onChange={v => update({ btn_border_color: v })} />
                   <ColorField label="Card Background" value={configForm.card_bg_color} onChange={v => update({ card_bg_color: v })} />
                   <ColorField label="Card Border" value={configForm.card_border_color} onChange={v => update({ card_border_color: v })} />
+                </div>
+                {/* Card Opacity slider — full width below the grid */}
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 flex items-center justify-between">
+                    <span>Card Opacity</span>
+                    <span className="font-mono">{configForm.card_opacity ?? 95}%</span>
+                  </Label>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={configForm.card_opacity ?? 95}
+                    onChange={e => update({ card_opacity: Number(e.target.value) })}
+                    className="w-full accent-primary"
+                  />
                 </div>
               </div>
 

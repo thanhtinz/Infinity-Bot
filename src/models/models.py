@@ -722,6 +722,7 @@ class VerificationConfig(Base):
     btn_border_color = Column(String, default="#5865F2")
     card_border_color = Column(String, default="#1a1d2e")
     card_bg_color = Column(String, default="#1a1d2e")
+    card_opacity = Column(Integer, default=95)         # 0–100 percent
     # Effects
     typewriter_effect = Column(Boolean, default=False)
     glow_effect = Column(Boolean, default=False)

@@ -35,6 +35,7 @@ interface VerifyConfig {
   btn_border_color?: string;
   card_border_color?: string;
   card_bg_color?: string;
+  card_opacity?: number;
   typewriter_effect?: boolean;
   glow_effect?: boolean;
   tilt_effect?: boolean;
@@ -324,6 +325,7 @@ export function VerifyPage() {
   const btnBorder = config?.btn_border_color || btnColor;
   const cardBg = config?.card_bg_color || "#1a1d2e";
   const cardBorder = config?.card_border_color || "#1a1d2e";
+  const cardOpacity = ((config?.card_opacity ?? 95) / 100);
   const fontFamily = config?.font_family || "Inter";
   const bgImage = config?.page_background_url;
   const bgEffect = config?.bg_effect || "none";
@@ -374,7 +376,7 @@ export function VerifyPage() {
         {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />}
         {bgImage && <div className="absolute inset-0 bg-black/60" />}
         <div className="relative w-full max-w-md rounded-2xl backdrop-blur-xl border p-8 text-center shadow-2xl"
-          style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
+          style={{ backgroundColor: cardBg, borderColor: cardBorder, opacity: cardOpacity }}>
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: `${btnColor}20` }}>
             <CheckCircle2 className="h-8 w-8" style={{ color: btnColor }} />
           </div>
@@ -399,7 +401,7 @@ export function VerifyPage() {
         {bgImage && <img src={bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />}
         {bgImage && <div className="absolute inset-0 bg-black/60" />}
         <div className="relative w-full max-w-md rounded-2xl backdrop-blur-xl border p-8 text-center shadow-2xl"
-          style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
+          style={{ backgroundColor: cardBg, borderColor: cardBorder, opacity: cardOpacity }}>
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10">
             <XCircle className="h-8 w-8 text-red-400" />
           </div>
@@ -444,7 +446,7 @@ export function VerifyPage() {
       <div
         ref={tiltRef}
         className="relative z-20 w-full max-w-md rounded-2xl backdrop-blur-xl border p-8 text-center shadow-2xl transition-transform duration-200"
-        style={{ backgroundColor: cardBg, borderColor: cardBorder }}
+        style={{ backgroundColor: cardBg, borderColor: cardBorder, opacity: cardOpacity }}
       >
         {config?.banner_url && (
           <div className="w-full h-24 rounded-xl overflow-hidden mb-5 -mt-2">
