@@ -89,7 +89,7 @@ export function VerifyMembers() {
   const [transferGuildId, setTransferGuildId] = useState("");
 
   const perPage = 50;
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // ── Debounced search ───────────────────────────────────────────────────
   const handleSearchChange = useCallback((value: string) => {

@@ -16,7 +16,6 @@ import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
 import { RoleSelect } from "@/components/RoleSelect";
 import { Shield, Plus, Pencil, Trash2, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface StaffPerm {
   id: number;

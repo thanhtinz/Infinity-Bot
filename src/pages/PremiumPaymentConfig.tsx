@@ -75,7 +75,7 @@ const CURRENCY_MAP = Object.fromEntries(
   CURRENCIES.map((c) => [c.code, c.symbol])
 );
 
-const EMPTY_FORM: FormState = {
+const _EMPTY_FORM: FormState = {
   currency: "VND",
   currency_symbol: "₫",
   premium_default_renewal_days: 30,

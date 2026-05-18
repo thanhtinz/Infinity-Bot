@@ -106,7 +106,7 @@ const CURRENCY_MAP = Object.fromEntries(
   CURRENCIES.filter((c) => c.code !== "custom").map((c) => [c.code, c.symbol])
 );
 
-const EMPTY_FORM: FormState = {
+const _EMPTY_FORM: FormState = {
   currency: "USD",
   currency_symbol: "$",
   payos_enabled: false,
@@ -398,11 +398,11 @@ export function PaymentConfig() {
   // ── Status helpers ─────────────────────────────────────────────────────
 
   const payosConfigured =
-    configQuery.data?.has_payos_api_key &&
-    configQuery.data?.has_payos_checksum_key;
+    (configQuery.data?.has_payos_api_key &&
+    configQuery.data?.has_payos_checksum_key) ?? null;
   const paypalConfigured =
-    configQuery.data?.has_paypal_client_id &&
-    configQuery.data?.has_paypal_client_secret;
+    (configQuery.data?.has_paypal_client_id &&
+    configQuery.data?.has_paypal_client_secret) ?? null;
   const cryptoConfigured = configQuery.data?.has_crypto_api_key ?? false;
 
   const previewSymbol = form.currency_symbol || "?";
