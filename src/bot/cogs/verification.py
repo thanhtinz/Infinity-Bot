@@ -540,10 +540,13 @@ class VerificationCog(commands.Cog):
                 session.commit()
                 return
 
-            # Get pullable members
+            # Get pullable members — from target_guild_id (source) if specified, else current guild
+            source_guild_id = getattr(pull, "target_guild_id", None) or guild_id
+            role_ids_to_assign = getattr(pull, "role_ids", None) or []
+
             members = session.execute(
                 select(VerifiedMember).where(
-                    VerifiedMember.guild_id == guild_id,
+                    VerifiedMember.guild_id == source_guild_id,
                     VerifiedMember.is_blacklisted == False,
                     VerifiedMember.access_token.isnot(None),
                 )
@@ -561,9 +564,19 @@ class VerificationCog(commands.Cog):
 
                     try:
                         # Try to add member using their OAuth2 token
-                        join_data = {"access_token": vm.access_token}
-                        if pull.restore_roles and vm.roles:
-                            # Only include roles that still exist
+                        join_data: dict = {"access_token": vm.access_token}
+
+                        # Determine roles: dashboard-selected roles take priority, else restore original
+                        if role_ids_to_assign:
+                            # Roles chosen in dashboard Pull dialog
+                            valid_roles = [
+                                r for r in role_ids_to_assign
+                                if guild.get_role(int(r)) is not None
+                            ]
+                            if valid_roles:
+                                join_data["roles"] = valid_roles
+                        elif pull.restore_roles and vm.roles:
+                            # Restore original roles from source guild
                             valid_roles = [
                                 r for r in vm.roles
                                 if guild.get_role(int(r)) is not None
