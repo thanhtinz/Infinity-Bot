@@ -16,10 +16,29 @@ from src.models.models import (
     SystemConfig,
     PremiumCoupon,
     CouponRedemption,
+    VerificationConfig,
 )
 from src.api.deps import get_guild_id, require_auth, require_owner
 
 logger = logging.getLogger(__name__)
+
+
+# ── Premium feature cleanup ────────────────────────────────────────────────────
+# Maps feature key → list of (model, field) to clear when feature is revoked.
+_FEATURE_CLEANUP: dict[str, list[tuple]] = {
+    "background_music": [(VerificationConfig, "music_url")],
+}
+
+def _cleanup_premium_features(guild_id: str, lost_features: set[str], db) -> None:
+    """Clear guild data for features that are no longer accessible."""
+    for feature in lost_features:
+        for model_cls, field in _FEATURE_CLEANUP.get(feature, []):
+            db.execute(
+                update(model_cls)
+                .where(model_cls.guild_id == guild_id)
+                .values({field: None})
+            )
+            logger.info(f"Cleared {model_cls.__tablename__}.{field} for guild {guild_id} (feature '{feature}' revoked)")
 router = APIRouter()
 
 # ── constants ─────────────────────────────────────────────────────────────────
@@ -506,6 +525,10 @@ def cancel_subscription(
 
     if body.get("immediately", False):
         sub.status = "cancelled"
+        # Revoke premium features immediately — clear associated data
+        if sub.plan and sub.plan.features:
+            lost = set(sub.plan.features.keys())
+            _cleanup_premium_features(sub.guild_id, lost, db)
     else:
         sub.cancel_at_period_end = True
 
@@ -709,9 +732,12 @@ def scan_renewal_reminders(
         days_left = (sub.current_period_end - now).days
 
         if days_left < 0:
-            # Just expired
+            # Just expired — revoke premium features and clear associated data
             sub.status = "expired"
             sub.updated_at = now
+            if sub.plan and sub.plan.features:
+                lost = set(sub.plan.features.keys())
+                _cleanup_premium_features(sub.guild_id, lost, db)
         elif days_left <= sub.renewal_reminder_days:
             # Dedup: skip if already reminded today
             last = sub.last_reminder_at
