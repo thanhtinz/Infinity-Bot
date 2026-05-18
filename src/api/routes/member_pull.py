@@ -71,12 +71,26 @@ def start_pull(
                 raise HTTPException(400, f"Pull cooldown active. Try again in {remaining:.1f} hours.")
 
     opts = body or {}
+    target_guild_id = opts.get("target_guild_id") or guild_id
+
+    # Check pullable members exist in source guild
+    pullable_count = db.execute(
+        select(func.count(VerifiedMember.id)).where(
+            VerifiedMember.guild_id == target_guild_id,
+            VerifiedMember.is_blacklisted == False,
+            VerifiedMember.access_token.isnot(None),
+        )
+    ).scalar() or 0
+
+    if pullable_count == 0:
+        raise HTTPException(400, "No pullable members found in the selected server. Members must have verified via OAuth2 with a valid token.")
+
     pull = MemberPull(
         guild_id=guild_id,
         status="pending",
         restore_roles=opts.get("restore_roles", True),
         join_delay_seconds=max(0, opts.get("join_delay_seconds", 0)),
-        target_guild_id=opts.get("target_guild_id") or None,
+        target_guild_id=target_guild_id if target_guild_id != guild_id else None,
         role_ids=opts.get("role_ids") or [],
     )
     db.add(pull)

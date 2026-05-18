@@ -409,6 +409,11 @@ export function VerifyMembersPage() {
                 ))}
               </SelectContent>
             </Select>
+            {!guildsQuery.isLoading && !guildsQuery.data?.length && (
+              <p className="text-xs text-muted-foreground -mt-2">
+                No servers with verified members found. Members must verify via OAuth2 first.
+              </p>
+            )}
 
             {/* Select roles */}
             <div className="space-y-1.5">
@@ -606,7 +611,7 @@ export function VerifyMembersPage() {
                         role_ids: selectedRoleIds,
                       })
                     }
-                    disabled={startPullMutation.isPending}
+                    disabled={startPullMutation.isPending || !selectedGuildId}
                   >
                     {startPullMutation.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
