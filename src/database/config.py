@@ -132,6 +132,52 @@ async def init_db():
         if "text_template" not in et:
             all_stmts.append("ALTER TABLE embed_templates ADD COLUMN text_template TEXT")
 
+        # verification_configs
+        vc = cols("verification_configs")
+        for col, stmt in {
+            "page_footer_text": "ALTER TABLE verification_configs ADD COLUMN page_footer_text VARCHAR",
+            "page_theme": "ALTER TABLE verification_configs ADD COLUMN page_theme VARCHAR DEFAULT 'dark'",
+            "custom_css": "ALTER TABLE verification_configs ADD COLUMN custom_css TEXT",
+            "redirect_url": "ALTER TABLE verification_configs ADD COLUMN redirect_url VARCHAR",
+            "terms_url": "ALTER TABLE verification_configs ADD COLUMN terms_url VARCHAR",
+            "verify_password": "ALTER TABLE verification_configs ADD COLUMN verify_password VARCHAR",
+            "banner_url": "ALTER TABLE verification_configs ADD COLUMN banner_url VARCHAR",
+            "cursor_url": "ALTER TABLE verification_configs ADD COLUMN cursor_url VARCHAR",
+            "font_family": "ALTER TABLE verification_configs ADD COLUMN font_family VARCHAR DEFAULT 'Inter'",
+            "bg_effect": "ALTER TABLE verification_configs ADD COLUMN bg_effect VARCHAR DEFAULT 'none'",
+            "bg_color": "ALTER TABLE verification_configs ADD COLUMN bg_color VARCHAR DEFAULT '#0b0d14'",
+            "text_color": "ALTER TABLE verification_configs ADD COLUMN text_color VARCHAR DEFAULT '#ffffff'",
+            "btn_color": "ALTER TABLE verification_configs ADD COLUMN btn_color VARCHAR DEFAULT '#5865F2'",
+            "btn_border_color": "ALTER TABLE verification_configs ADD COLUMN btn_border_color VARCHAR DEFAULT '#5865F2'",
+            "card_border_color": "ALTER TABLE verification_configs ADD COLUMN card_border_color VARCHAR DEFAULT '#1a1d2e'",
+            "card_bg_color": "ALTER TABLE verification_configs ADD COLUMN card_bg_color VARCHAR DEFAULT '#1a1d2e'",
+            "typewriter_effect": "ALTER TABLE verification_configs ADD COLUMN typewriter_effect BOOLEAN DEFAULT FALSE",
+            "glow_effect": "ALTER TABLE verification_configs ADD COLUMN glow_effect BOOLEAN DEFAULT FALSE",
+            "tilt_effect": "ALTER TABLE verification_configs ADD COLUMN tilt_effect BOOLEAN DEFAULT FALSE",
+            "bio_description": "ALTER TABLE verification_configs ADD COLUMN bio_description TEXT",
+            "socials": "ALTER TABLE verification_configs ADD COLUMN socials JSON DEFAULT '{}'",
+            "block_mobile": "ALTER TABLE verification_configs ADD COLUMN block_mobile BOOLEAN DEFAULT FALSE",
+            "block_scammers": "ALTER TABLE verification_configs ADD COLUMN block_scammers BOOLEAN DEFAULT FALSE",
+            "deny_alt_role": "ALTER TABLE verification_configs ADD COLUMN deny_alt_role VARCHAR",
+            "auto_ban_alts": "ALTER TABLE verification_configs ADD COLUMN auto_ban_alts BOOLEAN DEFAULT FALSE",
+            "no_save_ip": "ALTER TABLE verification_configs ADD COLUMN no_save_ip BOOLEAN DEFAULT FALSE",
+            "guild_join_enabled": "ALTER TABLE verification_configs ADD COLUMN guild_join_enabled BOOLEAN DEFAULT FALSE",
+            "force_all_permissions": "ALTER TABLE verification_configs ADD COLUMN force_all_permissions BOOLEAN DEFAULT FALSE",
+            "notify_success_role_id": "ALTER TABLE verification_configs ADD COLUMN notify_success_role_id VARCHAR",
+            "notify_blocked_role_id": "ALTER TABLE verification_configs ADD COLUMN notify_blocked_role_id VARCHAR",
+            "gateway_guild_id": "ALTER TABLE verification_configs ADD COLUMN gateway_guild_id VARCHAR",
+            "verify_passwords": "ALTER TABLE verification_configs ADD COLUMN verify_passwords JSON DEFAULT '[]'",
+            "vpn_api_key": "ALTER TABLE verification_configs ADD COLUMN vpn_api_key VARCHAR",
+            "vpn_api_provider": "ALTER TABLE verification_configs ADD COLUMN vpn_api_provider VARCHAR DEFAULT 'proxycheck'",
+            "custom_domain": "ALTER TABLE verification_configs ADD COLUMN custom_domain VARCHAR",
+            "music_url": "ALTER TABLE verification_configs ADD COLUMN music_url VARCHAR",
+            "pull_cooldown_hours": "ALTER TABLE verification_configs ADD COLUMN pull_cooldown_hours INTEGER DEFAULT 10",
+            "captcha_type": "ALTER TABLE verification_configs ADD COLUMN captcha_type VARCHAR DEFAULT 'none'",
+            "captcha_difficulty": "ALTER TABLE verification_configs ADD COLUMN captcha_difficulty VARCHAR DEFAULT 'medium'",
+        }.items():
+            if col not in vc:
+                all_stmts.append(stmt)
+
         # custom_commands
         cc = cols("custom_commands")
         for col, stmt in {
@@ -173,46 +219,6 @@ async def init_db():
         pr = cols("products")
         if "emoji" not in pr:
             all_stmts.append("ALTER TABLE products ADD COLUMN emoji VARCHAR")
-
-        # verification_configs — VPN per-guild
-        vc = cols("verification_configs")
-        for col, stmt in {
-            "vpn_api_key": "ALTER TABLE verification_configs ADD COLUMN vpn_api_key VARCHAR",
-            "vpn_api_provider": "ALTER TABLE verification_configs ADD COLUMN vpn_api_provider VARCHAR DEFAULT 'proxycheck'",
-            "block_mobile": "ALTER TABLE verification_configs ADD COLUMN block_mobile BOOLEAN DEFAULT FALSE",
-            "block_scammers": "ALTER TABLE verification_configs ADD COLUMN block_scammers BOOLEAN DEFAULT FALSE",
-            "deny_alt_role": "ALTER TABLE verification_configs ADD COLUMN deny_alt_role BOOLEAN DEFAULT FALSE",
-            "auto_ban_alts": "ALTER TABLE verification_configs ADD COLUMN auto_ban_alts BOOLEAN DEFAULT FALSE",
-            "no_save_ip": "ALTER TABLE verification_configs ADD COLUMN no_save_ip BOOLEAN DEFAULT FALSE",
-            "guild_join_enabled": "ALTER TABLE verification_configs ADD COLUMN guild_join_enabled BOOLEAN DEFAULT TRUE",
-            "force_all_permissions": "ALTER TABLE verification_configs ADD COLUMN force_all_permissions BOOLEAN DEFAULT FALSE",
-            "notify_success_role_id": "ALTER TABLE verification_configs ADD COLUMN notify_success_role_id VARCHAR",
-            "notify_blocked_role_id": "ALTER TABLE verification_configs ADD COLUMN notify_blocked_role_id VARCHAR",
-            "gateway_guild_id": "ALTER TABLE verification_configs ADD COLUMN gateway_guild_id VARCHAR",
-            "verify_passwords": "ALTER TABLE verification_configs ADD COLUMN verify_passwords JSON DEFAULT '[]'",
-            "banner_url": "ALTER TABLE verification_configs ADD COLUMN banner_url VARCHAR",
-            "cursor_url": "ALTER TABLE verification_configs ADD COLUMN cursor_url VARCHAR",
-            "font_family": "ALTER TABLE verification_configs ADD COLUMN font_family VARCHAR DEFAULT 'Inter'",
-            "bg_effect": "ALTER TABLE verification_configs ADD COLUMN bg_effect VARCHAR DEFAULT 'none'",
-            "bg_color": "ALTER TABLE verification_configs ADD COLUMN bg_color VARCHAR DEFAULT '#0b0d14'",
-            "text_color": "ALTER TABLE verification_configs ADD COLUMN text_color VARCHAR DEFAULT '#ffffff'",
-            "btn_color": "ALTER TABLE verification_configs ADD COLUMN btn_color VARCHAR DEFAULT '#5865F2'",
-            "btn_border_color": "ALTER TABLE verification_configs ADD COLUMN btn_border_color VARCHAR DEFAULT '#5865F2'",
-            "card_border_color": "ALTER TABLE verification_configs ADD COLUMN card_border_color VARCHAR DEFAULT '#1a1d2e'",
-            "card_bg_color": "ALTER TABLE verification_configs ADD COLUMN card_bg_color VARCHAR DEFAULT '#1a1d2e'",
-            "typewriter_effect": "ALTER TABLE verification_configs ADD COLUMN typewriter_effect BOOLEAN DEFAULT FALSE",
-            "glow_effect": "ALTER TABLE verification_configs ADD COLUMN glow_effect BOOLEAN DEFAULT FALSE",
-            "tilt_effect": "ALTER TABLE verification_configs ADD COLUMN tilt_effect BOOLEAN DEFAULT FALSE",
-            "bio_description": "ALTER TABLE verification_configs ADD COLUMN bio_description TEXT",
-            "socials": "ALTER TABLE verification_configs ADD COLUMN socials JSON DEFAULT '{}'",
-            "custom_domain": "ALTER TABLE verification_configs ADD COLUMN custom_domain VARCHAR",
-            "music_url": "ALTER TABLE verification_configs ADD COLUMN music_url VARCHAR",
-            "pull_cooldown_hours": "ALTER TABLE verification_configs ADD COLUMN pull_cooldown_hours INTEGER DEFAULT 10",
-            "captcha_type": "ALTER TABLE verification_configs ADD COLUMN captcha_type VARCHAR DEFAULT 'none'",
-            "captcha_difficulty": "ALTER TABLE verification_configs ADD COLUMN captcha_difficulty VARCHAR DEFAULT 'medium'",
-        }.items():
-            if col not in vc:
-                all_stmts.append(stmt)
 
         # ── Thực thi tất cả ALTER trong 1 transaction ──
         if all_stmts:
