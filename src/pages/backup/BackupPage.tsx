@@ -1,307 +1,360 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { apiFetch } from "@/hooks/useApi";
-import { RotateCcw, Settings2, Users, MessageSquare, Loader2 } from "lucide-react";
-import { BackupList } from "./BackupList";
-import { BackupSchedule } from "./BackupSchedule";
-import { BackupHistory } from "./BackupHistory";
-import type { ServerBackupItem } from "./shared";
-import { fetchBackups, formatDate, formatBytes } from "./shared";
+import {
+  Database, Download, RotateCcw, Trash2, Plus, Settings2, Users, Clock,
+  CheckCircle2, XCircle, Loader2, Save, Calendar, HardDrive,
+} from "lucide-react";
 import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
+import type { ServerBackupItem, BackupSchedule as BackupScheduleType } from "./shared";
+import {
+  fetchBackups, createBackup, deleteBackup, restoreBackup, downloadBackup,
+  fetchSchedule, updateSchedule, formatBytes, formatDate,
+} from "./shared";
 
-// ── Restore API call ──────────────────────────────────────────────────────
-async function restoreBackupApi(
-  id: number,
-  data: { restore_bot_config: boolean; restore_verified: boolean; restore_discord: boolean }
-) {
-  const res = await apiFetch(`/api/server-backup/${id}/restore`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Restore failed");
-  return res.json();
+// ── Backup type options ────────────────────────────────────────────────────
+type BackupType = "all" | "bot_config" | "verified_members";
+
+const BACKUP_TYPE_OPTIONS: { value: BackupType; label: string; icon: React.ReactNode; desc: string }[] = [
+  { value: "all",              label: "All",             icon: <Database className="h-4 w-4" />,  desc: "Bot config + Verified members" },
+  { value: "bot_config",       label: "Bot Config",      icon: <Settings2 className="h-4 w-4" />, desc: "Settings, embeds, channels" },
+  { value: "verified_members", label: "Verified Members",icon: <Users className="h-4 w-4" />,    desc: "Member verification data only" },
+];
+
+function typeToPayload(t: BackupType) {
+  return {
+    include_bot_config:       t === "all" || t === "bot_config",
+    include_verified_members: t === "all" || t === "verified_members",
+  };
 }
 
-// ── Valid tab values ──────────────────────────────────────────────────────
-const VALID_TABS = ["backup", "restore", "schedule", "history"] as const;
-type TabValue = (typeof VALID_TABS)[number];
+// ── Status badge ───────────────────────────────────────────────────────────
+const STATUS_BADGE: Record<string, { cls: string; icon: React.ReactNode; label: string }> = {
+  completed:   { cls: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30", icon: <CheckCircle2 className="h-3 w-3" />, label: "Completed" },
+  failed:      { cls: "bg-red-500/15 text-red-500 border-red-500/30",             icon: <XCircle className="h-3 w-3" />,      label: "Failed" },
+  in_progress: { cls: "bg-blue-500/15 text-blue-500 border-blue-500/30",          icon: <Loader2 className="h-3 w-3 animate-spin" />, label: "In progress" },
+};
 
-function isValidTab(v: string | null): v is TabValue {
-  return !!v && VALID_TABS.includes(v as TabValue);
-}
-
-// ── Restore Tab (inline) ─────────────────────────────────────────────────
-function RestoreTab() {
+// ── Main BackupPage ────────────────────────────────────────────────────────
+export function BackupPage() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { hasFeature, isLoading: entLoading } = useEntitlements();
 
-  const [confirmTarget, setConfirmTarget] = useState<ServerBackupItem | null>(null);
-  const [restoreBotConfig, setRestoreBotConfig] = useState(true);
-  const [restoreVerified, setRestoreVerified] = useState(true);
-  const [restoreDiscord, setRestoreDiscord] = useState(true);
+  // ── Create dialog ──
+  const [createOpen, setCreateOpen] = useState(false);
+  const [backupType, setBackupType] = useState<BackupType>("all");
 
-  const backupsQuery = useQuery({
-    queryKey: ["server-backups"],
-    queryFn: fetchBackups,
-  });
+  // ── Restore dialog ──
+  const [restoreTarget, setRestoreTarget] = useState<ServerBackupItem | null>(null);
+  const [restoreType, setRestoreType] = useState<BackupType>("all");
 
-  const restoreMutation = useMutation({
-    mutationFn: (backup: ServerBackupItem) =>
-      restoreBackupApi(backup.id, {
-        restore_bot_config: restoreBotConfig,
-        restore_verified: restoreVerified,
-        restore_discord: restoreDiscord,
-      }),
+  // ── Delete confirm ──
+  const [deleteTarget, setDeleteTarget] = useState<ServerBackupItem | null>(null);
+
+  // ── Schedule form state ──
+  const [scheduleForm, setScheduleForm] = useState<BackupScheduleType | null>(null);
+
+  // ── Queries ──
+  const backupsQuery = useQuery({ queryKey: ["server-backups"], queryFn: fetchBackups });
+  const scheduleQuery = useQuery({ queryKey: ["server-backup-schedule"], queryFn: fetchSchedule });
+
+  if (scheduleQuery.data && !scheduleForm) setScheduleForm(scheduleQuery.data);
+
+  // ── Mutations ──
+  const createMut = useMutation({
+    mutationFn: (type: BackupType) => createBackup(typeToPayload(type)),
     onSuccess: () => {
-      toast({ title: "Restore complete", description: "Backup has been restored successfully." });
+      toast({ title: "Backup created" });
       qc.invalidateQueries({ queryKey: ["server-backups"] });
-      setConfirmTarget(null);
+      setCreateOpen(false);
     },
-    onError: (err: Error) => {
-      toast({ title: "Restore failed", description: err.message, variant: "destructive" });
-    },
+    onError: (e) => toast({ title: "Error", description: (e as Error).message, variant: "destructive" }),
   });
 
-  function openConfirm(backup: ServerBackupItem) {
-    setRestoreBotConfig(true);
-    setRestoreVerified(true);
-    setRestoreDiscord(true);
-    setConfirmTarget(backup);
-  }
+  const restoreMut = useMutation({
+    mutationFn: (item: ServerBackupItem) => restoreBackup(item.id, {
+      restore_bot_config:       restoreType === "all" || restoreType === "bot_config",
+      restore_verified_members: restoreType === "all" || restoreType === "verified_members",
+      restore_discord:          restoreType === "all",
+    }),
+    onSuccess: () => {
+      toast({ title: "Restore complete" });
+      setRestoreTarget(null);
+    },
+    onError: (e) => toast({ title: "Restore failed", description: (e as Error).message, variant: "destructive" }),
+  });
 
-  const anyChecked = restoreBotConfig || restoreVerified || restoreDiscord;
+  const deleteMut = useMutation({
+    mutationFn: (id: number) => deleteBackup(id),
+    onSuccess: () => {
+      toast({ title: "Backup deleted" });
+      qc.invalidateQueries({ queryKey: ["server-backups"] });
+      setDeleteTarget(null);
+    },
+    onError: (e) => toast({ title: "Error", description: (e as Error).message, variant: "destructive" }),
+  });
+
+  const scheduleMut = useMutation({
+    mutationFn: updateSchedule,
+    onSuccess: () => {
+      toast({ title: "Schedule saved" });
+      qc.invalidateQueries({ queryKey: ["server-backup-schedule"] });
+    },
+    onError: (e) => toast({ title: "Error", description: (e as Error).message, variant: "destructive" }),
+  });
+
+  const backups = backupsQuery.data ?? [];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <RotateCcw className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold tracking-tight">Restore</h2>
-      </div>
-      <p className="text-muted-foreground text-sm -mt-4">
-        Restore a previous backup. Select which components to restore and confirm.
-      </p>
-
-      {/* Loading */}
-      {backupsQuery.isLoading && (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-28 w-full rounded-lg" />
-          ))}
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold">Backup & Restore</h2>
+          <PremiumBadge />
         </div>
-      )}
+        <Button onClick={() => setCreateOpen(true)} className="gap-2">
+          <Plus className="h-4 w-4" />
+          New Backup
+        </Button>
+      </div>
 
-      {/* Empty */}
-      {backupsQuery.data && backupsQuery.data.length === 0 && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <RotateCcw className="h-12 w-12 text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-medium">No backups available</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-              Create a backup first, then you can restore it here.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <PremiumGate feature="scheduled_backup" featureLabel="Backup & Restore" hasAccess={hasFeature("scheduled_backup")} isLoading={entLoading}>
+        <div className="space-y-6">
 
-      {/* Backup cards */}
-      {backupsQuery.data &&
-        backupsQuery.data.map((backup) => (
-          <Card key={backup.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">
-                  {backup.backup_type === "manual" ? "Manual" : "Scheduled"} Backup
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    {formatBytes(backup.size_bytes)}
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    {formatDate(backup.created_at)}
-                  </Badge>
-                </div>
+          {/* ── Backup list ── */}
+          <div className="rounded-xl border border-border bg-card">
+            <div className="px-5 py-3 border-b flex items-center gap-2">
+              <HardDrive className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-semibold">Backups</span>
+              <Badge variant="secondary" className="ml-auto">{backups.length}</Badge>
+            </div>
+
+            {backupsQuery.isLoading ? (
+              <div className="p-4 space-y-3">
+                {[1,2,3].map(i => <Skeleton key={i} className="h-16 w-full" />)}
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                {/* Stats */}
-                <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Settings2 className="h-3.5 w-3.5" />
-                    {backup.config_count} configs
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3.5 w-3.5" />
-                    {backup.member_count} members
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MessageSquare className="h-3.5 w-3.5" />
-                    {backup.message_count} messages
-                  </span>
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5"
-                  onClick={() => openConfirm(backup)}
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  Restore
-                </Button>
+            ) : backups.length === 0 ? (
+              <div className="py-12 text-center text-sm text-muted-foreground">
+                <Database className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                No backups yet
               </div>
-            </CardContent>
-          </Card>
-        ))}
-
-      {/* ── Confirm AlertDialog ── */}
-      <AlertDialog
-        open={!!confirmTarget}
-        onOpenChange={(v) => {
-          if (!v) setConfirmTarget(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Restore</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will overwrite current settings. Are you sure you want to restore the backup from{" "}
-              {confirmTarget ? formatDate(confirmTarget.created_at) : ""}?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          {/* Restore options */}
-          <div className="space-y-3 py-2">
-            <p className="text-sm font-medium">Select what to restore:</p>
-
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id="restore-bot-config"
-                checked={restoreBotConfig}
-                onCheckedChange={(v) => setRestoreBotConfig(!!v)}
-              />
-              <Label htmlFor="restore-bot-config" className="text-sm font-medium cursor-pointer">
-                Bot Config
-              </Label>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id="restore-verified"
-                checked={restoreVerified}
-                onCheckedChange={(v) => setRestoreVerified(!!v)}
-              />
-              <Label htmlFor="restore-verified" className="text-sm font-medium cursor-pointer">
-                Verified Members
-              </Label>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id="restore-discord"
-                checked={restoreDiscord}
-                onCheckedChange={(v) => setRestoreDiscord(!!v)}
-              />
-              <Label htmlFor="restore-discord" className="text-sm font-medium cursor-pointer">
-                Discord Settings
-              </Label>
-            </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {backups.map((b) => {
+                  const s = STATUS_BADGE[b.status] ?? STATUS_BADGE.completed;
+                  return (
+                    <div key={b.id} className="flex items-center gap-4 px-5 py-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-medium">{formatDate(b.created_at)}</span>
+                          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border font-medium ${s.cls}`}>
+                            {s.icon}{s.label}
+                          </span>
+                          <Badge variant="outline" className="text-[10px]">
+                            {b.backup_type === "scheduled" ? "Auto" : "Manual"}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {[
+                            b.config_count > 0  && `${b.config_count} configs`,
+                            b.member_count > 0  && `${b.member_count} members`,
+                            b.channel_count > 0 && `${b.channel_count} channels`,
+                            b.role_count > 0    && `${b.role_count} roles`,
+                          ].filter(Boolean).join(" · ")} · {formatBytes(b.size_bytes)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button size="icon" variant="ghost" className="h-8 w-8" title="Download"
+                          onClick={() => downloadBackup(b.id).catch(e => toast({ title: "Error", description: e.message, variant: "destructive" }))}>
+                          <Download className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" title="Restore"
+                          onClick={() => { setRestoreTarget(b); setRestoreType("all"); }}>
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" title="Delete"
+                          onClick={() => setDeleteTarget(b)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
+          {/* ── Auto Schedule ── */}
+          <div className="rounded-xl border border-border bg-card">
+            <div className="px-5 py-3 border-b flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-semibold">Auto Schedule</span>
+            </div>
+            {scheduleQuery.isLoading || !scheduleForm ? (
+              <div className="p-4 space-y-3"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
+            ) : (
+              <div className="p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Switch id="sched-enabled" checked={scheduleForm.enabled}
+                    onCheckedChange={v => setScheduleForm(f => f && ({ ...f, enabled: v }))} />
+                  <Label htmlFor="sched-enabled" className="text-sm font-medium">Enable automatic backups</Label>
+                </div>
+
+                {scheduleForm.enabled && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Interval</Label>
+                      <Select value={String(scheduleForm.interval_hours)}
+                        onValueChange={v => setScheduleForm(f => f && ({ ...f, interval_hours: Number(v) }))}>
+                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {[6,12,24,48,72,168].map(h => (
+                            <SelectItem key={h} value={String(h)}>
+                              {h < 24 ? `${h}h` : h === 168 ? "1 week" : `${h/24}d`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Keep max backups</Label>
+                      <Input type="number" min={1} max={50} className="h-9"
+                        value={scheduleForm.max_backups}
+                        onChange={e => setScheduleForm(f => f && ({ ...f, max_backups: Number(e.target.value) }))} />
+                    </div>
+                  </div>
+                )}
+
+                {scheduleForm.last_backup_at && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" />
+                    Last: {formatDate(scheduleForm.last_backup_at)}
+                    {scheduleForm.next_backup_at && ` · Next: ${formatDate(scheduleForm.next_backup_at)}`}
+                  </p>
+                )}
+
+                <Button size="sm" className="gap-2" onClick={() => scheduleMut.mutate(scheduleForm)} disabled={scheduleMut.isPending}>
+                  {scheduleMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  Save Schedule
+                </Button>
+              </div>
+            )}
+          </div>
+
+        </div>
+      </PremiumGate>
+
+      {/* ── Create Backup Dialog ── */}
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>New Backup</DialogTitle>
+            <DialogDescription>Choose what to include in this backup.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            {BACKUP_TYPE_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setBackupType(opt.value)}
+                className={`w-full flex items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
+                  backupType === opt.value
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border hover:bg-accent"
+                }`}
+              >
+                <span className={backupType === opt.value ? "text-primary" : "text-muted-foreground"}>{opt.icon}</span>
+                <div>
+                  <p className="text-sm font-medium">{opt.label}</p>
+                  <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                </div>
+                {backupType === opt.value && <CheckCircle2 className="h-4 w-4 ml-auto text-primary" />}
+              </button>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button onClick={() => createMut.mutate(backupType)} disabled={createMut.isPending} className="gap-2">
+              {createMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+              Create Backup
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Restore Dialog ── */}
+      <Dialog open={!!restoreTarget} onOpenChange={v => { if (!v) setRestoreTarget(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Restore Backup</DialogTitle>
+            <DialogDescription>
+              {restoreTarget ? `From ${formatDate(restoreTarget.created_at)}` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            {BACKUP_TYPE_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setRestoreType(opt.value)}
+                className={`w-full flex items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
+                  restoreType === opt.value
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border hover:bg-accent"
+                }`}
+              >
+                <span className={restoreType === opt.value ? "text-primary" : "text-muted-foreground"}>{opt.icon}</span>
+                <div>
+                  <p className="text-sm font-medium">{opt.label}</p>
+                  <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                </div>
+                {restoreType === opt.value && <CheckCircle2 className="h-4 w-4 ml-auto text-primary" />}
+              </button>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRestoreTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => restoreTarget && restoreMut.mutate(restoreTarget)} disabled={restoreMut.isPending} className="gap-2">
+              {restoreMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+              Restore
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Delete Confirm ── */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={v => { if (!v) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Backup</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete backup from {deleteTarget ? formatDate(deleteTarget.created_at) : ""}? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => confirmTarget && restoreMutation.mutate(confirmTarget)}
-              disabled={restoreMutation.isPending || !anyChecked}
-            >
-              {restoreMutation.isPending ? (
-                <span className="flex items-center gap-1.5">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Restoring…
-                </span>
-              ) : (
-                "Restore"
-              )}
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && deleteMut.mutate(deleteTarget.id)} disabled={deleteMut.isPending}>
+              {deleteMut.isPending ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
-}
-
-// ── Main BackupPage ───────────────────────────────────────────────────────
-export function BackupPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { hasFeature, isLoading: entLoading } = useEntitlements();
-
-  const tabParam = searchParams.get("tab");
-  const activeTab: TabValue = isValidTab(tabParam) ? tabParam : "backup";
-
-  function handleTabChange(value: string) {
-    setSearchParams({ tab: value }, { replace: true });
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <h2 className="text-lg font-semibold">Backup & Restore</h2>
-        <PremiumBadge />
-      </div>
-      <PremiumGate
-        feature="scheduled_backup"
-        featureLabel="Backup & Restore"
-        hasAccess={hasFeature("scheduled_backup")}
-        isLoading={entLoading}
-      >
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="backup">Backup</TabsTrigger>
-            <TabsTrigger value="restore">Restore</TabsTrigger>
-            <TabsTrigger value="schedule">Schedule</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="backup">
-            <BackupList />
-          </TabsContent>
-
-          <TabsContent value="restore">
-            <RestoreTab />
-          </TabsContent>
-
-          <TabsContent value="schedule">
-            <BackupSchedule />
-          </TabsContent>
-
-          <TabsContent value="history">
-            <BackupHistory />
-          </TabsContent>
-        </Tabs>
-      </PremiumGate>
     </div>
   );
 }
