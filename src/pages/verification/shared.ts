@@ -163,7 +163,8 @@ export async function fetchMembers(
   page: number,
   perPage: number,
   search: string,
-  blacklisted?: boolean
+  blacklisted?: boolean,
+  deauthorized?: boolean,
 ): Promise<MembersResponse> {
   const params = new URLSearchParams({
     page: String(page),
@@ -171,6 +172,7 @@ export async function fetchMembers(
     search,
   });
   if (blacklisted !== undefined) params.set("blacklisted", String(blacklisted));
+  if (deauthorized !== undefined) params.set("deauthorized", String(deauthorized));
   const res = await apiFetch(`/api/verification/members?${params}`);
   if (!res.ok) throw new Error("Failed to load members");
   return res.json();

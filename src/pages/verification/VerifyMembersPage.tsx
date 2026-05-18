@@ -106,10 +106,10 @@ export function VerifyMembersPage() {
     placeholderData: (prev) => prev,
   });
 
-  // Deauthorized members = blacklisted filter as proxy, or use separate fetch if available
+  // Deauthorized members = token null or expired (NOT blacklisted)
   const deauthQuery = useQuery({
     queryKey: ["verification-members-deauth"],
-    queryFn: () => fetchMembers(1, 100, "", true),
+    queryFn: () => fetchMembers(1, 100, "", undefined, true),
     enabled: deauthDialogOpen,
   });
 

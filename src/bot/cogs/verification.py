@@ -457,19 +457,35 @@ class VerificationCog(commands.Cog):
     # ── Events ──
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
-        """When a member leaves, update their last_seen and save current roles."""
+        """When a member leaves, update last_seen and save current roles."""
         session = SessionLocal()
         try:
+            guild_id = str(member.guild.id)
             vm = session.execute(
                 select(VerifiedMember).where(
-                    VerifiedMember.guild_id == str(member.guild.id),
+                    VerifiedMember.guild_id == guild_id,
                     VerifiedMember.discord_id == str(member.id),
                 )
             ).scalars().first()
-            if vm:
-                vm.last_seen = datetime.datetime.utcnow()
-                vm.roles = [str(r.id) for r in member.roles if not r.is_default()]
-                session.commit()
+            if not vm:
+                return
+
+            vm.last_seen = datetime.datetime.utcnow()
+            vm.roles = [str(r.id) for r in member.roles if not r.is_default()]
+            session.commit()
+
+            # kick_on_deauth: if token is gone/expired, kick from guild when they leave
+            cfg = session.execute(
+                select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
+            ).scalars().first()
+            if cfg and getattr(cfg, "kick_on_deauth", False):
+                token_invalid = (
+                    vm.access_token is None or
+                    (vm.token_expires_at and vm.token_expires_at <= datetime.datetime.utcnow())
+                )
+                if token_invalid:
+                    # Already left — nothing to kick, but we log it
+                    logger.info(f"[deauth] Member {vm.discord_id} left with invalid token in guild {guild_id}")
         finally:
             session.close()
 

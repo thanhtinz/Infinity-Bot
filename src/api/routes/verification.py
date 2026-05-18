@@ -230,6 +230,7 @@ def list_members(
     per_page: int = 50,
     search: str = "",
     blacklisted: bool | None = None,
+    deauthorized: bool | None = None,
 ):
     q = select(VerifiedMember).where(VerifiedMember.guild_id == guild_id)
     if search:
@@ -241,6 +242,21 @@ def list_members(
         )
     if blacklisted is not None:
         q = q.where(VerifiedMember.is_blacklisted == blacklisted)
+    if deauthorized is True:
+        # Deauthorized = token revoked (null) OR expired — and NOT just blacklisted
+        q = q.where(
+            VerifiedMember.is_blacklisted == False,
+            (VerifiedMember.access_token.is_(None)) |
+            (VerifiedMember.token_expires_at <= datetime.utcnow()),
+        )
+    elif deauthorized is False:
+        # Only pullable (valid token, not expired)
+        q = q.where(
+            VerifiedMember.is_blacklisted == False,
+            VerifiedMember.access_token.isnot(None),
+            (VerifiedMember.token_expires_at.is_(None)) |
+            (VerifiedMember.token_expires_at > datetime.utcnow()),
+        )
 
     total = db.execute(select(func.count()).select_from(q.subquery())).scalar() or 0
     members = db.execute(

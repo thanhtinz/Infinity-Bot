@@ -668,3 +668,84 @@ async def verify_callback(
         db.commit()
 
     return RedirectResponse(f"{verify_page}?success=true")
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Discord OAuth2 Deauthorization Webhook
+# Discord calls this URL when a user revokes an app's OAuth2 authorization.
+# Docs: https://discord.com/developers/docs/topics/oauth2#authorization-code-grant-client-credentials-grant
+# ──────────────────────────────────────────────────────────────────────────────
+
+@router.post("/verify/webhook/deauth")
+async def handle_deauth_webhook(request: Request, db: Session = Depends(get_db)):
+    """
+    Handle Discord's OAuth2 application authorization removal event.
+    Discord sends this when a user removes app authorization in their settings.
+    Marks the member's token as revoked across ALL guilds they verified on.
+    """
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    # Discord sends { user: { id: "..." }, guild_id?: "...", ... }
+    user = payload.get("user") or {}
+    discord_id = str(user.get("id", "")).strip()
+    # guild_id is optional — if present, scope revocation to that guild only
+    guild_id = str(payload.get("guild_id", "")).strip() or None
+
+    if not discord_id:
+        raise HTTPException(status_code=400, detail="Missing user.id in payload")
+
+    now = datetime.utcnow()
+
+    # Find affected member records
+    q = db.query(VerifiedMember).filter(VerifiedMember.discord_id == discord_id)
+    if guild_id:
+        q = q.filter(VerifiedMember.guild_id == guild_id)
+
+    members = q.all()
+    if not members:
+        # No records — nothing to do, return 200 to stop Discord retrying
+        return JSONResponse({"ok": True, "affected": 0})
+
+    affected_guilds: list[str] = []
+    for member in members:
+        if member.access_token is not None:
+            member.access_token = None
+            member.refresh_token = None
+            member.token_expires_at = now  # mark as expired/revoked
+            affected_guilds.append(member.guild_id)
+
+    db.commit()
+
+    # Optionally kick member if kick_on_deauth is enabled (per guild)
+    for g_id in affected_guilds:
+        try:
+            cfg = db.query(VerificationConfig).filter(
+                VerificationConfig.guild_id == g_id
+            ).first()
+            if cfg and getattr(cfg, "kick_on_deauth", False):
+                # Retrieve bot token for this guild
+                sys_cfg = db.query(SystemConfig).filter(
+                    SystemConfig.guild_id == g_id
+                ).first()
+                bot_token = sys_cfg.bot_token if sys_cfg else None
+                if bot_token:
+                    async with httpx.AsyncClient() as client:
+                        kick_res = await client.delete(
+                            f"https://discord.com/api/guilds/{g_id}/members/{discord_id}",
+                            headers={"Authorization": f"Bot {bot_token}"},
+                        )
+                        if kick_res.status_code not in (200, 204, 404):
+                            logger.warning(
+                                f"Deauth kick failed for {discord_id} in {g_id}: {kick_res.status_code}"
+                            )
+        except Exception as e:
+            logger.error(f"Deauth kick error for guild {g_id}: {e}")
+
+    logger.info(
+        f"Deauth webhook: revoked tokens for discord_id={discord_id} "
+        f"across {len(affected_guilds)} guild(s)"
+    )
+    return JSONResponse({"ok": True, "affected": len(affected_guilds)})
