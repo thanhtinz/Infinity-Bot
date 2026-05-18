@@ -121,19 +121,25 @@ function ShootingStars() {
 function FloatingParticles() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {Array.from({ length: 20 }).map((_, i) => (
-        <div key={i} className="absolute w-1 h-1 rounded-full bg-white/20"
+      {Array.from({ length: 24 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full bg-white/25"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animation: `float ${4 + Math.random() * 6}s ease-in-out ${Math.random() * 5}s infinite alternate`,
+            width: `${2 + (i % 3)}px`,
+            height: `${2 + (i % 3)}px`,
+            left: `${(i * 11) % 100}%`,
+            top: `${(i * 17) % 100}%`,
+            animation: `floatParticle ${5 + (i % 6)}s ease-in-out ${(i % 5) * 0.6}s infinite alternate`,
+            filter: "blur(0.2px)",
           }}
         />
       ))}
       <style>{`
-        @keyframes float {
-          0% { transform: translateY(0) scale(1); opacity: 0.2; }
-          100% { transform: translateY(-40px) scale(1.5); opacity: 0.6; }
+        @keyframes floatParticle {
+          0% { transform: translate3d(0, 0, 0) scale(0.9); opacity: 0.15; }
+          50% { transform: translate3d(10px, -18px, 0) scale(1.2); opacity: 0.45; }
+          100% { transform: translate3d(-8px, -42px, 0) scale(1.5); opacity: 0.75; }
         }
       `}</style>
     </div>
@@ -447,9 +453,10 @@ export function VerifyPage() {
       {bgEffect === "particles" && <div className="absolute inset-0 z-10 pointer-events-none"><FloatingParticles /></div>}
       {bgEffect === "rain" && <div className="absolute inset-0 z-10 pointer-events-none"><DigitalRain /></div>}
       {bgEffect === "gradient" && (
-        <div className="absolute inset-0 z-10" style={{
-          background: `linear-gradient(45deg, ${btnColor}20, transparent, ${btnColor}10)`,
-          animation: "gradientShift 8s ease infinite",
+        <div className="absolute inset-0 z-10 pointer-events-none" style={{
+          background: `linear-gradient(120deg, ${btnColor}22 0%, transparent 25%, ${btnColor}14 50%, transparent 75%, ${btnColor}22 100%)`,
+          backgroundSize: "220% 220%",
+          animation: "gradientShift 10s ease-in-out infinite",
         }} />
       )}
 
@@ -661,8 +668,9 @@ export function VerifyPage() {
 
       <style>{`
         @keyframes gradientShift {
-          0%, 100% { opacity: 0.3; transform: rotate(0deg); }
-          50% { opacity: 0.6; transform: rotate(2deg); }
+          0%   { background-position: 0% 50%; opacity: 0.35; }
+          50%  { background-position: 100% 50%; opacity: 0.65; }
+          100% { background-position: 0% 50%; opacity: 0.35; }
         }
       `}</style>
 
