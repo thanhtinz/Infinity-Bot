@@ -89,7 +89,7 @@ export function VerifyMembersPage() {
   const guildsQuery = useQuery<{ guild_id: string; name: string; member_count: number }[]>({
     queryKey: ["member_pull_source_guilds"],
     queryFn: fetchSourceGuilds,
-    enabled: pullDialogOpen,
+    enabled: pullDialogOpen || transferDialogOpen,
     staleTime: 60_000,
   });
 
@@ -692,31 +692,68 @@ export function VerifyMembersPage() {
       <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ArrowRightLeft className="h-4 w-4" />
-              Transfer Members
-            </DialogTitle>
-            <DialogDescription>
-              Import verified members from another guild into this one.
-            </DialogDescription>
+            <DialogTitle className="text-center text-lg">Transfer Members</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label>Source Guild ID</Label>
+
+          <div className="space-y-4">
+            {/* Info: current guild ID */}
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Your server ID is{" "}
+              <span className="bg-muted rounded px-1.5 py-0.5 font-mono text-foreground text-xs">
+                {localStorage.getItem("selected_guild_id") ?? "—"}
+              </span>{" "}
+              if you are transferring from another account.
+            </p>
+
+            {/* Select from saved guilds */}
+            <Select
+              value={transferSource}
+              onValueChange={setTransferSource}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a server" />
+              </SelectTrigger>
+              <SelectContent>
+                {guildsQuery.data?.length ? guildsQuery.data.map((g) => (
+                  <SelectItem key={g.guild_id} value={g.guild_id}>
+                    <span>{g.name}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">({g.member_count})</span>
+                  </SelectItem>
+                )) : (
+                  <SelectItem value="__empty" disabled>No saved servers</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex-1 h-px bg-border" />
+              or
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
+            {/* Manual input */}
             <Input
-              placeholder="e.g. 123456789012345678"
+              placeholder="Or manually enter Server ID (if it's a different account)"
               value={transferSource}
               onChange={(e) => setTransferSource(e.target.value)}
             />
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setTransferDialogOpen(false)}>Cancel</Button>
+
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button
+              className="w-full bg-blue-600 hover:bg-blue-700"
               disabled={!transferSource.trim() || transferMutation.isPending}
               onClick={() => transferMutation.mutate()}
-              className="gap-2"
             >
-              {transferMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRightLeft className="h-4 w-4" />}
-              Transfer
+              {transferMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Submit
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setTransferDialogOpen(false)}
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
