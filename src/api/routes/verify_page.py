@@ -81,7 +81,7 @@ def _get_vpn_api_key(db: Session, guild_id: str) -> tuple[str | None, str]:
 
 
 # ── Custom domain → guild_id lookup (no auth) ──
-@router.get("/api/verify/by-domain")
+@router.get("/verify/by-domain")
 def get_guild_by_domain(host: str, db: Session = Depends(get_db)):
     """Resolve a custom domain to a guild_id. Used by the frontend for custom-domain verify pages."""
     host = host.strip().lower().removeprefix("https://").removeprefix("http://").split("/")[0]
@@ -95,7 +95,7 @@ def get_guild_by_domain(host: str, db: Session = Depends(get_db)):
     return {"guild_id": cfg.guild_id}
 
 
-@router.get("/api/verify/by-slug/{slug}")
+@router.get("/verify/by-slug/{slug}")
 def get_guild_by_slug(slug: str, db: Session = Depends(get_db)):
     """Resolve a custom slug (e.g. /verify/myserver) to a guild_id."""
     cfg = db.execute(
@@ -109,7 +109,7 @@ def get_guild_by_slug(slug: str, db: Session = Depends(get_db)):
 
 
 # ── Public config for verify page branding (no auth) ──
-@router.get("/api/verify/{guild_id}/config")
+@router.get("/verify/{guild_id}/config")
 def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):
     cfg = db.execute(
         select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
@@ -164,7 +164,7 @@ def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):
 # ── Captcha challenge generation & validation ──
 import random
 
-@router.post("/api/verify/{guild_id}/captcha/generate")
+@router.post("/verify/{guild_id}/captcha/generate")
 def generate_captcha(guild_id: str, db: Session = Depends(get_db)):
     """Generate a captcha challenge based on guild config."""
     cfg = db.execute(
@@ -233,7 +233,7 @@ def generate_captcha(guild_id: str, db: Session = Depends(get_db)):
     return {"type": "none", "token": _issue_captcha_token()}
 
 
-@router.post("/api/verify/{guild_id}/captcha/validate")
+@router.post("/verify/{guild_id}/captcha/validate")
 def validate_captcha(guild_id: str, body: dict, db: Session = Depends(get_db)):
     """Validate captcha answer and return a one-time token."""
     cfg = db.execute(
@@ -277,7 +277,7 @@ def validate_captcha(guild_id: str, body: dict, db: Session = Depends(get_db)):
 
 
 # ── Start OAuth2 flow ──
-@router.get("/api/verify/{guild_id}/start")
+@router.get("/verify/{guild_id}/start")
 def start_verification(guild_id: str, request: Request, fp: str = "", captcha_token: str = "", db: Session = Depends(get_db)):
     cfg = db.execute(
         select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
@@ -314,7 +314,7 @@ def start_verification(guild_id: str, request: Request, fp: str = "", captcha_to
 
 
 # ── OAuth2 callback ──
-@router.get("/api/verify/{guild_id}/callback")
+@router.get("/verify/{guild_id}/callback")
 async def verify_callback(
     guild_id: str,
     code: str,
