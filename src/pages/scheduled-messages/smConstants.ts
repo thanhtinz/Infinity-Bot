@@ -14,11 +14,11 @@ export const PRESET_COLORS = [
 export const DEFAULT_COLOR = "#5865F2";
 
 export const REPEAT_LABELS: Record<FormState["repeat_type"], string> = {
-  none: "Không lặp",
-  hourly: "Mỗi giờ",
-  daily: "Mỗi ngày",
-  weekly: "Mỗi tuần",
-  monthly: "Mỗi tháng",
+  none: "No repeat",
+  hourly: "Hourly",
+  daily: "Daily",
+  weekly: "Weekly",
+  monthly: "Monthly",
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

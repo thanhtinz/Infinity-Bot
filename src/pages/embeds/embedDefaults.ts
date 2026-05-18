@@ -5,19 +5,19 @@ type EmbedLang = Omit<EmbedTemplate, "id" | "event_type" | "name">;
 export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   don_hang_moi: {
     vi: {
-      title: "Đơn hàng mới",
-      description: "Vui lòng thanh toán để hoàn tất đơn hàng.\nHết hạn sau 15 phút.",
+      title: "New Order",
+      description: "Please complete payment to finalize your order.\nExpires in 15 minutes.",
       color: "#F0B232",
       author: "",
       author_icon_url: "",
-      footer: "Đang chờ thanh toán...",
+      footer: "Awaiting payment...",
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "ID Đơn", value: "#{order.id}", inline: true },
-        { name: "Khách hàng", value: "{user.mention}", inline: true },
-        { name: "Sản phẩm", value: "{product.name}", inline: false },
-        { name: "Số tiền", value: "{order.total} VNĐ", inline: true },
+        { name: "Order ID", value: "#{order.id}", inline: true },
+        { name: "Customer", value: "{user.mention}", inline: true },
+        { name: "Product", value: "{product.name}", inline: false },
+        { name: "Amount", value: "{order.total} VND", inline: true },
       ],
       enabled: true,
     },
@@ -34,23 +34,23 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
         { name: "Order ID", value: "#{order.id}", inline: true },
         { name: "Customer", value: "{user.mention}", inline: true },
         { name: "Product", value: "{product.name}", inline: false },
-        { name: "Amount", value: "{order.total} VNĐ", inline: true },
+        { name: "Amount", value: "{order.total} VND", inline: true },
       ],
       enabled: true,
     },
   },
   don_hang_het_han: {
     vi: {
-      title: "Đơn hàng đã hết hạn",
-      description: "Đơn hàng #{order.id} của bạn đã hết hạn do chưa thanh toán sau 15 phút.",
+      title: "Order Expired",
+      description: "Your order #{order.id} has expired due to non-payment after 15 minutes.",
       color: "#ED4245",
       author: "",
       author_icon_url: "",
-      footer: "Tạo đơn mới để tiếp tục mua hàng.",
+      footer: "Create a new order to continue shopping.",
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "Sản phẩm", value: "{product.name}", inline: true },
+        { name: "Product", value: "{product.name}", inline: true },
       ],
       enabled: true,
     },
@@ -71,8 +71,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   ghi_chu_don_hang: {
     vi: {
-      title: "📝 Ghi chú đơn hàng",
-      description: "Đơn hàng #{order.id} của {user.mention} vừa được cập nhật ghi chú.",
+      title: "📝 Order Note",
+      description: "Order #{order.id} by {user.mention} has been updated with a note.",
       color: "#5865F2",
       author: "",
       author_icon_url: "",
@@ -80,8 +80,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "📦 Sản phẩm", value: "{product.name}", inline: true },
-        { name: "📝 Ghi chú", value: "{note}", inline: false },
+        { name: "📦 Product", value: "{product.name}", inline: true },
+        { name: "📝 Note", value: "{note}", inline: false },
       ],
       enabled: true,
     },
@@ -103,12 +103,12 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   bang_gia: {
     vi: {
-      title: "🛒 Bảng Giá Sản Phẩm",
-      description: "Chọn sản phẩm từ menu bên dưới để xem chi tiết và giá các gói.",
+      title: "🛒 Product Price List",
+      description: "Select a product from the menu below to view details and package prices.",
       color: "#5865F2",
       author: "",
       author_icon_url: "",
-      footer: "Bấm vào tên sản phẩm bên dưới để xem chi tiết",
+      footer: "Click a product name below for details",
       thumbnail_url: "",
       image_url: "",
       fields: [],
@@ -134,12 +134,12 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       color: "#5865F2",
       author: "",
       author_icon_url: "",
-      footer: "Sản phẩm đang mở bán",
+      footer: "Product currently on sale",
       thumbnail_url: "{product.image_url}",
       image_url: "",
       fields: [
-        { name: "💰 Giá", value: "{product.price} VNĐ", inline: true },
-        { name: "📦 Tồn kho", value: "{product.stock}", inline: true },
+        { name: "💰 Price", value: "{product.price} VND", inline: true },
+        { name: "📦 Stock", value: "{product.stock}", inline: true },
       ],
       enabled: true,
     },
@@ -153,7 +153,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       thumbnail_url: "{product.image_url}",
       image_url: "",
       fields: [
-        { name: "💰 Price", value: "{product.price} VNĐ", inline: true },
+        { name: "💰 Price", value: "{product.price} VND", inline: true },
         { name: "📦 Stock", value: "{product.stock}", inline: true },
       ],
       enabled: true,
@@ -167,11 +167,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       color: "#57F287",
       author: "",
       author_icon_url: "",
-      footer: "Liên hệ admin để đặt hàng",
+      footer: "Contact admin to place an order",
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "🔹 {package.name}", value: "💰 **{package.price}đ**\n{package.description}", inline: false },
+        { name: "🔹 {package.name}", value: "💰 **{package.price}VND**\n{package.description}", inline: false },
       ],
       enabled: true,
     },
@@ -185,15 +185,15 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "🔹 {package.name}", value: "💰 **{package.price}đ**\n{package.description}", inline: false },
+        { name: "🔹 {package.name}", value: "💰 **{package.price}VND**\n{package.description}", inline: false },
       ],
       enabled: true,
     },
   },
   feedback: {
     vi: {
-      title: "Feedback mới",
-      description: "{user} đã gửi đánh giá cho {product.name}",
+      title: "New Feedback",
+      description: "{user} submitted a review for {product.name}",
       color: "#FEE75C",
       author: "",
       author_icon_url: "",
@@ -201,8 +201,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "Xếp hạng", value: "{stars}", inline: true },
-        { name: "Nội dung", value: "{content}", inline: false },
+        { name: "Rating", value: "{stars}", inline: true },
+        { name: "Content", value: "{content}", inline: false },
       ],
       enabled: true,
     },
@@ -225,15 +225,15 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   giveaway: {
     vi: {
       title: "GIVEAWAY",
-      description: "{prize}\n\nNhấn nút bên dưới để tham gia!\nKết thúc: {ends_at}",
+      description: "{prize}\n\nPress the button below to enter!\nEnds: {ends_at}",
       color: "#FF73FA",
-      author: "Tổ chức bởi {host}",
+      author: "Hosted by {host}",
       author_icon_url: "",
-      footer: "Kết thúc lúc {ends_at}",
+      footer: "Ends at {ends_at}",
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "Số người thắng", value: "{winners_count}", inline: true },
+        { name: "Winners", value: "{winners_count}", inline: true },
       ],
       enabled: true,
     },
@@ -254,16 +254,16 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   ket_qua_giveaway: {
     vi: {
-      title: "Kết quả Giveaway",
-      description: "Giveaway đã kết thúc!\nPhần thưởng: {prize}",
+      title: "Giveaway Results",
+      description: "The giveaway has ended!\nPrize: {prize}",
       color: "#FF73FA",
       author: "",
       author_icon_url: "",
-      footer: "Chúc mừng người chiến thắng!",
+      footer: "Congratulations to the winners!",
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "Người thắng", value: "{winners}", inline: false },
+        { name: "Winners", value: "{winners}", inline: false },
       ],
       enabled: true,
     },
@@ -286,11 +286,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   reaction_role_panel: {
     vi: {
       title: "🎭 Reaction Role",
-      description: "Chọn role bạn muốn bằng cách react bên dưới!",
+      description: "Choose the role you want by reacting below!",
       color: "#5865F2",
       author: "",
       author_icon_url: "",
-      footer: "React để nhận role • Bỏ react để gỡ role",
+      footer: "React to get a role • Remove reaction to remove role",
       thumbnail_url: "",
       image_url: "",
       fields: [],
@@ -312,7 +312,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   starboard_post: {
     vi: {
       title: "⭐ Starboard",
-      description: "{user.mention} nhận ⭐ **{star_count}** sao trong {channel}",
+      description: "{user.mention} received ⭐ **{star_count}** stars in {channel}",
       color: "#FEE75C",
       author: "",
       author_icon_url: "",
@@ -320,7 +320,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "Nội dung", value: "{content}", inline: false },
+        { name: "Content", value: "{content}", inline: false },
       ],
       enabled: true,
     },
@@ -341,17 +341,17 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   canh_bao: {
     vi: {
-      title: "Cảnh báo",
-      description: "{user.mention} đã nhận cảnh báo.",
+      title: "Warning",
+      description: "{user.mention} has received a warning.",
       color: "#FEE75C",
       author: "",
       author_icon_url: "",
-      footer: "Hãy tuân thủ nội quy server",
+      footer: "Please follow the server rules",
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "Lý do", value: "{reason}", inline: false },
-        { name: "Tổng cảnh báo", value: "{warn_count}", inline: true },
+        { name: "Reason", value: "{reason}", inline: false },
+        { name: "Total Warnings", value: "{warn_count}", inline: true },
       ],
       enabled: true,
     },
@@ -374,8 +374,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
 
   kick: {
     vi: {
-      title: "👢 Đã kick khỏi server",
-      description: "{user.mention} đã bị kick khỏi server.",
+      title: "👢 Kicked from Server",
+      description: "{user.mention} has been kicked from the server.",
       color: "#ED4245",
       author: "",
       author_icon_url: "",
@@ -383,7 +383,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "Lý do", value: "{reason}", inline: false },
+        { name: "Reason", value: "{reason}", inline: false },
         { name: "Mod", value: "{mod}", inline: true },
       ],
       enabled: true,
@@ -406,8 +406,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   ban: {
     vi: {
-      title: "🔨 Đã bị cấm vĩnh viễn",
-      description: "{user.mention} đã bị ban khỏi server.",
+      title: "🔨 Permanently Banned",
+      description: "{user.mention} has been banned from the server.",
       color: "#ED4245",
       author: "",
       author_icon_url: "",
@@ -415,7 +415,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "Lý do", value: "{reason}", inline: false },
+        { name: "Reason", value: "{reason}", inline: false },
         { name: "Mod", value: "{mod}", inline: true },
       ],
       enabled: true,
@@ -438,17 +438,17 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   qr_thanh_toan: {
     vi: {
-      title: "💳 Thanh toán đơn hàng #{order.id}",
-      description: "Quét mã QR bên dưới để thanh toán.\nĐơn hàng sẽ hết hạn sau **15 phút**.",
+      title: "💳 Payment for Order #{order.id}",
+      description: "Scan the QR code below to pay.\nYour order will expire in **15 minutes**.",
       color: "#5865F2",
       author: "",
       author_icon_url: "",
-      footer: "Quét QR bằng app ngân hàng",
+      footer: "Scan QR with your banking app",
       thumbnail_url: "",
       image_url: "{qr_url}",
       fields: [
-        { name: "Số tiền", value: "{order.total} VNĐ", inline: true },
-        { name: "Nội dung CK", value: "{transfer_content}", inline: true },
+        { name: "Amount", value: "{order.total} VND", inline: true },
+        { name: "Transfer Content", value: "{transfer_content}", inline: true },
       ],
       enabled: true,
     },
@@ -462,7 +462,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       thumbnail_url: "",
       image_url: "{qr_url}",
       fields: [
-        { name: "Amount", value: "{order.total} VNĐ", inline: true },
+        { name: "Amount", value: "{order.total} VND", inline: true },
         { name: "Transfer Note", value: "{transfer_content}", inline: true },
       ],
       enabled: true,
@@ -470,17 +470,17 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   qr_thanh_toan_payos: {
     vi: {
-      title: "💳 Thanh toán — PayOS",
-      description: "Đơn hàng **#{order.id}**\nSố tiền: **{order.total}**\n\n[Nhấn để thanh toán]({qr_url})",
+      title: "💳 Payment — PayOS",
+      description: "Order **#{order.id}**\nAmount: **{order.total}**\n\n[Click to pay]({qr_url})",
       color: "#5865F2",
       author: "",
       author_icon_url: "",
-      footer: "Quét QR bằng app ngân hàng",
+      footer: "Scan QR with your banking app",
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "Nội dung CK", value: "{transfer_content}", inline: true },
-        { name: "Hết hạn", value: "15 phút", inline: true },
+        { name: "Transfer Content", value: "{transfer_content}", inline: true },
+        { name: "Expires", value: "15 minutes", inline: true },
       ],
       enabled: true,
     },
@@ -502,8 +502,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   qr_thanh_toan_paypal: {
     vi: {
-      title: "💳 Thanh toán — PayPal",
-      description: "Đơn hàng **#{order.id}**\nSố tiền: **{order.total}**\n\n[Thanh toán qua PayPal]({qr_url})",
+      title: "💳 Payment — PayPal",
+      description: "Order **#{order.id}**\nAmount: **{order.total}**\n\n[Pay with PayPal]({qr_url})",
       color: "#0070BA",
       author: "",
       author_icon_url: "",
@@ -528,8 +528,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   qr_thanh_toan_crypto: {
     vi: {
-      title: "💳 Thanh toán — Crypto",
-      description: "Đơn hàng **#{order.id}**\nSố tiền: **{order.total}**\n\n[Thanh toán bằng Crypto]({qr_url})",
+      title: "💳 Payment — Crypto",
+      description: "Order **#{order.id}**\nAmount: **{order.total}**\n\n[Pay with Crypto]({qr_url})",
       color: "#F7931A",
       author: "",
       author_icon_url: "",
@@ -554,8 +554,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   qr_thanh_toan_manual: {
     vi: {
-      title: "💳 Thanh toán thủ công",
-      description: "Đơn hàng **#{order.id}**\nSố tiền: **{order.total}**\n\n**Ngân hàng:** {bank_name}\n**Chủ tài khoản:** {account_holder}\n**Số tài khoản:** {account_number}\n**Nội dung CK:** {transfer_content}\n\n{instructions}",
+      title: "💳 Manual Payment",
+      description: "Order **#{order.id}**\nAmount: **{order.total}**\n\n**Bank:** {bank_name}\n**Account:** {account_holder}\n**Number:** {account_number}\n**Transfer content:** {transfer_content}\n\n{instructions}",
       color: "#10B981",
       author: "",
       author_icon_url: "",
@@ -580,12 +580,12 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   bxh_chi_tieu: {
     vi: {
-      title: "🏆 BXH Chi tiêu — {time_label}",
+      title: "🏆 Spending Leaderboard — {time_label}",
       description: "{leaderboard_lines}",
       color: "#F0B232",
       author: "",
       author_icon_url: "",
-      footer: "Cập nhật: {updated_at}",
+      footer: "Updated: {updated_at}",
       thumbnail_url: "",
       image_url: "",
       fields: [],
@@ -606,12 +606,12 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   bxh_don_hang: {
     vi: {
-      title: "🏆 BXH Đơn hàng — {time_label}",
+      title: "🏆 Orders Leaderboard — {time_label}",
       description: "{leaderboard_lines}",
       color: "#F0B232",
       author: "",
       author_icon_url: "",
-      footer: "Cập nhật: {updated_at}",
+      footer: "Updated: {updated_at}",
       thumbnail_url: "",
       image_url: "",
       fields: [],
@@ -632,8 +632,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   unban: {
     vi: {
-      title: "🔓 Unban thành viên",
-      description: "{user.mention} đã được unban.",
+      title: "🔓 Member Unbanned",
+      description: "{user.mention} has been unbanned.",
       color: "#57F287",
       author: "",
       author_icon_url: "",
@@ -641,7 +641,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       thumbnail_url: "",
       image_url: "",
       fields: [
-        { name: "Người thực hiện", value: "{moderator}", inline: true },
+        { name: "Moderator", value: "{moderator}", inline: true },
       ],
       enabled: true,
     },
@@ -664,11 +664,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
 
   log_message_delete: {
     vi: {
-      title: "🗑️ Tin nhắn bị xóa",
-      description: "Tin nhắn của {user.mention} trong {channel} đã bị xóa.",
+      title: "🗑️ Message Deleted",
+      description: "A message by {user.mention} in {channel} has been deleted.",
       color: "#ED4245",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "Nội dung", value: "{content}", inline: false }],
+      fields: [{ name: "Content", value: "{content}", inline: false }],
       enabled: true,
     },
     en: {
@@ -682,13 +682,13 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   log_message_edit: {
     vi: {
-      title: "✏️ Tin nhắn được sửa",
-      description: "{user.mention} đã sửa tin nhắn trong {channel}.",
+      title: "✏️ Message Edited",
+      description: "{user.mention} edited a message in {channel}.",
       color: "#FEE75C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "Trước", value: "{before}", inline: false },
-        { name: "Sau", value: "{after}", inline: false },
+        { name: "Before", value: "{before}", inline: false },
+        { name: "After", value: "{after}", inline: false },
       ],
       enabled: true,
     },
@@ -706,8 +706,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   log_message_bulk_delete: {
     vi: {
-      title: "🗑️ Xóa hàng loạt",
-      description: "**{count}** tin nhắn đã bị xóa trong {channel}.",
+      title: "🗑️ Bulk Delete",
+      description: "**{count}** messages were deleted in {channel}.",
       color: "#ED4245",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -724,8 +724,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   log_voice_join: {
     vi: {
-      title: "🔊 Vào voice",
-      description: "{user.mention} đã vào {channel}.",
+      title: "🔊 Joined Voice",
+      description: "{user.mention} joined {channel}.",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -742,8 +742,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   log_voice_leave: {
     vi: {
-      title: "🔇 Rời voice",
-      description: "{user.mention} đã rời {channel}.",
+      title: "🔇 Left Voice",
+      description: "{user.mention} left {channel}.",
       color: "#ED4245",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -760,8 +760,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   log_voice_move: {
     vi: {
-      title: "🔀 Chuyển voice",
-      description: "{user.mention} đã chuyển từ {from} sang {to}.",
+      title: "🔀 Moved Voice",
+      description: "{user.mention} moved from {from} to {to}.",
       color: "#FEE75C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -778,13 +778,13 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   log_member_join: {
     vi: {
-      title: "📥 Thành viên mới",
-      description: "{user.mention} đã tham gia server.",
+      title: "📥 New Member",
+      description: "{user.mention} has joined the server.",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "Tạo tài khoản", value: "{account_age}", inline: true },
-        { name: "Thành viên thứ", value: "{member_count}", inline: true },
+        { name: "Account Age", value: "{account_age}", inline: true },
+        { name: "Member #", value: "{member_count}", inline: true },
       ],
       enabled: true,
     },
@@ -802,13 +802,13 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   log_member_leave: {
     vi: {
-      title: "📤 Thành viên rời",
-      description: "{user.mention} đã rời server.",
+      title: "📤 Member Left",
+      description: "{user.mention} has left the server.",
       color: "#ED4245",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
         { name: "Roles", value: "{roles}", inline: false },
-        { name: "Còn lại", value: "{member_count} thành viên", inline: true },
+        { name: "Remaining", value: "{member_count} members", inline: true },
       ],
       enabled: true,
     },
@@ -826,13 +826,13 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   log_nickname_change: {
     vi: {
-      title: "📝 Đổi nickname",
-      description: "{user.mention} đã đổi nickname.",
+      title: "📝 Nickname Changed",
+      description: "{user.mention} changed their nickname.",
       color: "#5865F2",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "Trước", value: "{before}", inline: true },
-        { name: "Sau", value: "{after}", inline: true },
+        { name: "Before", value: "{before}", inline: true },
+        { name: "After", value: "{after}", inline: true },
       ],
       enabled: true,
     },
@@ -850,11 +850,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   log_role_update: {
     vi: {
-      title: "🎭 Thay đổi role",
-      description: "Role của {user.mention} đã được thay đổi.",
+      title: "🎭 Role Updated",
+      description: "Roles for {user.mention} have been updated.",
       color: "#5865F2",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "Thay đổi", value: "{changes}", inline: false }],
+      fields: [{ name: "Changes", value: "{changes}", inline: false }],
       enabled: true,
     },
     en: {
@@ -868,8 +868,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   log_channel_create: {
     vi: {
-      title: "📺 Kênh mới",
-      description: "Kênh {channel} ({type}) đã được tạo.",
+      title: "📺 Channel Created",
+      description: "Channel {channel} ({type}) has been created.",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -886,8 +886,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   log_channel_delete: {
     vi: {
-      title: "📺 Kênh bị xóa",
-      description: "Kênh **{channel.name}** ({type}) đã bị xóa.",
+      title: "📺 Channel Deleted",
+      description: "Channel **{channel.name}** ({type}) has been deleted.",
       color: "#ED4245",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -905,11 +905,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   // ── AutoMod ──
   automod_warn: {
     vi: {
-      title: "⚠️ AutoMod — Cảnh báo",
-      description: "{user.mention} đã bị cảnh báo bởi AutoMod.\n**Lý do:** {reason}",
+      title: "⚠️ AutoMod — Warning",
+      description: "{user.mention} has been warned by AutoMod.\n**Reason:** {reason}",
       color: "#FEE75C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "Kênh", value: "{channel}", inline: true }],
+      fields: [{ name: "Channel", value: "{channel}", inline: true }],
       enabled: true,
     },
     en: {
@@ -924,10 +924,10 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   automod_mute: {
     vi: {
       title: "🔇 AutoMod — Mute",
-      description: "{user.mention} đã bị mute bởi AutoMod.\n**Lý do:** {reason}",
+      description: "{user.mention} has been muted by AutoMod.\n**Reason:** {reason}",
       color: "#E67E22",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "Thời gian", value: "{duration}", inline: true }],
+      fields: [{ name: "Duration", value: "{duration}", inline: true }],
       enabled: true,
     },
     en: {
@@ -942,7 +942,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   automod_kick: {
     vi: {
       title: "👢 AutoMod — Kick",
-      description: "{user.mention} đã bị kick bởi AutoMod.\n**Lý do:** {reason}",
+      description: "{user.mention} has been kicked by AutoMod.\n**Reason:** {reason}",
       color: "#ED4245",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -959,11 +959,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   automod_delete: {
     vi: {
-      title: "🗑️ AutoMod — Xóa tin nhắn",
-      description: "Tin nhắn của {user.mention} đã bị xóa bởi AutoMod.\n**Lý do:** {reason}",
+      title: "🗑️ AutoMod — Message Deleted",
+      description: "A message by {user.mention} was deleted by AutoMod.\n**Reason:** {reason}",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "Nội dung", value: "{content}", inline: false }],
+      fields: [{ name: "Content", value: "{content}", inline: false }],
       enabled: true,
     },
     en: {
@@ -979,7 +979,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   afk_set: {
     vi: {
       title: "💤 AFK",
-      description: "{user.mention} đã đặt AFK: **{reason}**",
+      description: "{user.mention} is now AFK: **{reason}**",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -996,8 +996,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   afk_return: {
     vi: {
-      title: "👋 Đã trở lại",
-      description: "{user.mention} đã trở lại! (AFK {duration})",
+      title: "👋 Welcome Back",
+      description: "{user.mention} is back! (AFK {duration})",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -1015,10 +1015,10 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
 
   leaderboard: {
     vi: {
-      title: "🏆 Bảng xếp hạng XP",
+      title: "🏆 XP Leaderboard",
       description: "{leaderboard_lines}",
       color: "#F0B232",
-      author: "", author_icon_url: "", footer: "Cập nhật: {updated_at}", thumbnail_url: "", image_url: "",
+      author: "", author_icon_url: "", footer: "Updated: {updated_at}", thumbnail_url: "", image_url: "",
       fields: [],
       enabled: true,
     },
@@ -1033,10 +1033,10 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   help_menu: {
     vi: {
-      title: "📋 Trợ giúp — {bot_name}",
-      description: "Xin chào {user.mention}!\nChọn **danh mục** bên dưới để xem danh sách lệnh.",
+      title: "📋 Help — {bot_name}",
+      description: "Hello {user.mention}!\nSelect a **category** below to view the command list.",
       color: "#5865F2",
-      author: "", author_icon_url: "", footer: "{bot_name} • Chọn danh mục để tiếp tục", thumbnail_url: "", image_url: "",
+      author: "", author_icon_url: "", footer: "{bot_name} • Select a category to continue", thumbnail_url: "", image_url: "",
       fields: [],
       enabled: true,
     },
@@ -1052,9 +1052,9 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   help_category: {
     vi: {
       title: "{category_emoji} {category_name}",
-      description: "Danh sách lệnh trong **{category_name}**:\n{commands_list}",
+      description: "Commands in **{category_name}**:\n{commands_list}",
       color: "#5865F2",
-      author: "", author_icon_url: "", footer: "{bot_name} • Chọn lệnh để xem chi tiết", thumbnail_url: "", image_url: "",
+      author: "", author_icon_url: "", footer: "{bot_name} • Select a command for details", thumbnail_url: "", image_url: "",
       fields: [],
       enabled: true,
     },
@@ -1073,7 +1073,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       description: "{command_desc}",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "{bot_name}", thumbnail_url: "", image_url: "",
-      fields: [{ name: "📌 Cách dùng", value: "{command_usage}", inline: false }],
+      fields: [{ name: "📌 Usage", value: "{command_usage}", inline: false }],
       enabled: true,
     },
     en: {
@@ -1085,11 +1085,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  // ── Tương tác — Có mục tiêu ──
+  // ── Interactions — With Target ──
   interact_airkiss: {
     vi: {
       title: "😘 Airkiss!",
-      description: "{user.mention} gửi nụ hôn gió cho {target.mention}",
+      description: "{user.mention} blows a kiss at {target.mention}",
       color: "#FF69B4",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1109,7 +1109,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_angrystare: {
     vi: {
       title: "😠 Angry Stare!",
-      description: "{user.mention} nhìn giận dữ {target.mention}",
+      description: "{user.mention} stares angrily at {target.mention}",
       color: "#E74C3C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1129,7 +1129,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_bite: {
     vi: {
       title: "😬 Bite!",
-      description: "{user.mention} cắn {target.mention}",
+      description: "{user.mention} bites {target.mention}",
       color: "#E67E22",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1149,7 +1149,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_brofist: {
     vi: {
       title: "🤜 Brofist!",
-      description: "{user.mention} đấm tay với {target.mention}",
+      description: "{user.mention} fist-bumps {target.mention}",
       color: "#3498DB",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1169,7 +1169,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_cuddle: {
     vi: {
       title: "🤗 Cuddle!",
-      description: "{user.mention} ôm ấp {target.mention}",
+      description: "{user.mention} cuddles {target.mention}",
       color: "#FF69B4",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1189,7 +1189,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_handhold: {
     vi: {
       title: "🤝 Handhold!",
-      description: "{user.mention} nắm tay {target.mention}",
+      description: "{user.mention} holds hands with {target.mention}",
       color: "#FF69B4",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1209,7 +1209,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_hug: {
     vi: {
       title: "🫂 Hug!",
-      description: "{user.mention} ôm {target.mention}",
+      description: "{user.mention} hugs {target.mention}",
       color: "#FF69B4",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1229,7 +1229,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_kiss: {
     vi: {
       title: "💋 Kiss!",
-      description: "{user.mention} hôn {target.mention}",
+      description: "{user.mention} kisses {target.mention}",
       color: "#E91E63",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1249,7 +1249,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_lick: {
     vi: {
       title: "👅 Lick!",
-      description: "{user.mention} liếm {target.mention}",
+      description: "{user.mention} licks {target.mention}",
       color: "#E67E22",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1269,7 +1269,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_nom: {
     vi: {
       title: "😋 Nom!",
-      description: "{user.mention} ăn {target.mention}",
+      description: "{user.mention} noms on {target.mention}",
       color: "#E67E22",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1289,7 +1289,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_nuzzle: {
     vi: {
       title: "🥰 Nuzzle!",
-      description: "{user.mention} cọ mũi với {target.mention}",
+      description: "{user.mention} nuzzles {target.mention}",
       color: "#FF69B4",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1309,7 +1309,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_pat: {
     vi: {
       title: "🤚 Pat!",
-      description: "{user.mention} xoa đầu {target.mention}",
+      description: "{user.mention} pats {target.mention}",
       color: "#F1C40F",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1329,7 +1329,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_pinch: {
     vi: {
       title: "🤏 Pinch!",
-      description: "{user.mention} véo {target.mention}",
+      description: "{user.mention} pinches {target.mention}",
       color: "#E67E22",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1349,7 +1349,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_poke: {
     vi: {
       title: "👉 Poke!",
-      description: "{user.mention} chọc {target.mention}",
+      description: "{user.mention} pokes {target.mention}",
       color: "#3498DB",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1369,7 +1369,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_punch: {
     vi: {
       title: "👊 Punch!",
-      description: "{user.mention} đấm {target.mention}",
+      description: "{user.mention} punches {target.mention}",
       color: "#E74C3C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1389,7 +1389,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_slap: {
     vi: {
       title: "🫲 Slap!",
-      description: "{user.mention} tát {target.mention}",
+      description: "{user.mention} slaps {target.mention}",
       color: "#E74C3C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1409,7 +1409,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_smack: {
     vi: {
       title: "💥 Smack!",
-      description: "{user.mention} đánh {target.mention}",
+      description: "{user.mention} smacks {target.mention}",
       color: "#E74C3C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1429,7 +1429,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_tickle: {
     vi: {
       title: "🤭 Tickle!",
-      description: "{user.mention} cù {target.mention}",
+      description: "{user.mention} tickles {target.mention}",
       color: "#F1C40F",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1449,7 +1449,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_wave: {
     vi: {
       title: "👋 Wave!",
-      description: "{user.mention} vẫy tay với {target.mention}",
+      description: "{user.mention} waves at {target.mention}",
       color: "#3498DB",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1469,7 +1469,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_wink: {
     vi: {
       title: "😉 Wink!",
-      description: "{user.mention} nháy mắt với {target.mention}",
+      description: "{user.mention} winks at {target.mention}",
       color: "#9B59B6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1489,7 +1489,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_stare: {
     vi: {
       title: "👀 Stare!",
-      description: "{user.mention} nhìn chằm chằm {target.mention}",
+      description: "{user.mention} stares at {target.mention}",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1509,7 +1509,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_peek: {
     vi: {
       title: "🫣 Peek!",
-      description: "{user.mention} nhìn trộm {target.mention}",
+      description: "{user.mention} peeks at {target.mention}",
       color: "#9B59B6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1526,11 +1526,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  // ── Tương tác — Biểu cảm ──
+  // ── Interactions — Expressions ──
   interact_bleh: {
     vi: {
       title: "😝 Bleh!",
-      description: "{user.mention} le lưỡi",
+      description: "{user.mention} sticks their tongue out",
       color: "#E67E22",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1550,7 +1550,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_blush: {
     vi: {
       title: "😊 Blush!",
-      description: "{user.mention} đỏ mặt",
+      description: "{user.mention} blushes",
       color: "#FF69B4",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1570,7 +1570,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_celebrate: {
     vi: {
       title: "🎉 Celebrate!",
-      description: "{user.mention} ăn mừng",
+      description: "{user.mention} celebrates",
       color: "#F1C40F",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1590,7 +1590,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_cheers: {
     vi: {
       title: "🍻 Cheers!",
-      description: "{user.mention} nâng ly",
+      description: "{user.mention} cheers",
       color: "#F1C40F",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1610,7 +1610,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_clap: {
     vi: {
       title: "👏 Clap!",
-      description: "{user.mention} vỗ tay",
+      description: "{user.mention} claps",
       color: "#F1C40F",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1630,7 +1630,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_confused: {
     vi: {
       title: "😕 Confused!",
-      description: "{user.mention} bối rối",
+      description: "{user.mention} is confused",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1650,7 +1650,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_cool: {
     vi: {
       title: "😎 Cool!",
-      description: "{user.mention} ngầu",
+      description: "{user.mention} looks cool",
       color: "#3498DB",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1670,7 +1670,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_cry: {
     vi: {
       title: "😢 Cry!",
-      description: "{user.mention} khóc",
+      description: "{user.mention} cries",
       color: "#3498DB",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1690,7 +1690,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_dance: {
     vi: {
       title: "💃 Dance!",
-      description: "{user.mention} nhảy",
+      description: "{user.mention} dances",
       color: "#9B59B6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1710,7 +1710,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_drool: {
     vi: {
       title: "🤤 Drool!",
-      description: "{user.mention} chảy nước miếng",
+      description: "{user.mention} drools",
       color: "#E67E22",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1730,7 +1730,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_evillaugh: {
     vi: {
       title: "😈 Evil Laugh!",
-      description: "{user.mention} cười ác",
+      description: "{user.mention} laughs evilly",
       color: "#8E44AD",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1770,7 +1770,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_happy: {
     vi: {
       title: "😄 Happy!",
-      description: "{user.mention} vui vẻ",
+      description: "{user.mention} is happy",
       color: "#F1C40F",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1810,7 +1810,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_huh: {
     vi: {
       title: "❓ Huh?",
-      description: "{user.mention} hả?",
+      description: "{user.mention} is confused — huh?",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1830,7 +1830,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_laugh: {
     vi: {
       title: "😂 Laugh!",
-      description: "{user.mention} cười",
+      description: "{user.mention} laughs",
       color: "#F1C40F",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1850,7 +1850,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_love: {
     vi: {
       title: "❤️ Love!",
-      description: "{user.mention} yêu",
+      description: "{user.mention} is feeling love",
       color: "#E91E63",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1870,7 +1870,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_mad: {
     vi: {
       title: "😡 Mad!",
-      description: "{user.mention} giận dữ",
+      description: "{user.mention} is angry",
       color: "#E74C3C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1890,7 +1890,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_nervous: {
     vi: {
       title: "😰 Nervous!",
-      description: "{user.mention} lo lắng",
+      description: "{user.mention} is nervous",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1910,7 +1910,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_no: {
     vi: {
       title: "🙅 No!",
-      description: "{user.mention} lắc đầu",
+      description: "{user.mention} shakes their head",
       color: "#E74C3C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1930,7 +1930,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_nosebleed: {
     vi: {
       title: "🫠 Nosebleed!",
-      description: "{user.mention} chảy máu mũi",
+      description: "{user.mention} gets a nosebleed",
       color: "#E74C3C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1970,7 +1970,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_pout: {
     vi: {
       title: "😤 Pout!",
-      description: "{user.mention} phụng phịu",
+      description: "{user.mention} pouts",
       color: "#E67E22",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -1990,7 +1990,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_roll: {
     vi: {
       title: "🙄 Roll!",
-      description: "{user.mention} lăn",
+      description: "{user.mention} rolls their eyes",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2010,7 +2010,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_run: {
     vi: {
       title: "🏃 Run!",
-      description: "{user.mention} chạy",
+      description: "{user.mention} runs",
       color: "#3498DB",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2030,7 +2030,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_sad: {
     vi: {
       title: "😞 Sad!",
-      description: "{user.mention} buồn",
+      description: "{user.mention} is sad",
       color: "#3498DB",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2050,7 +2050,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_scared: {
     vi: {
       title: "😱 Scared!",
-      description: "{user.mention} sợ hãi",
+      description: "{user.mention} is scared",
       color: "#8E44AD",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2070,7 +2070,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_shout: {
     vi: {
       title: "📢 Shout!",
-      description: "{user.mention} hét",
+      description: "{user.mention} shouts",
       color: "#E74C3C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2090,7 +2090,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_shrug: {
     vi: {
       title: "🤷 Shrug!",
-      description: "{user.mention} nhún vai",
+      description: "{user.mention} shrugs",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2110,7 +2110,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_shy: {
     vi: {
       title: "🙈 Shy!",
-      description: "{user.mention} ngại ngùng",
+      description: "{user.mention} is shy",
       color: "#FF69B4",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2130,7 +2130,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_sigh: {
     vi: {
       title: "😮‍💨 Sigh!",
-      description: "{user.mention} thở dài",
+      description: "{user.mention} sighs",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2150,7 +2150,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_sip: {
     vi: {
       title: "🍵 Sip!",
-      description: "{user.mention} nhâm nhi",
+      description: "{user.mention} takes a sip",
       color: "#2ECC71",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2170,7 +2170,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_sleep: {
     vi: {
       title: "😴 Sleep!",
-      description: "{user.mention} ngủ",
+      description: "{user.mention} falls asleep",
       color: "#3498DB",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2190,7 +2190,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_slowclap: {
     vi: {
       title: "👏 Slow Clap!",
-      description: "{user.mention} vỗ tay chậm",
+      description: "{user.mention} slow claps",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2210,7 +2210,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_smile: {
     vi: {
       title: "😊 Smile!",
-      description: "{user.mention} cười",
+      description: "{user.mention} laughs",
       color: "#F1C40F",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2230,7 +2230,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_smug: {
     vi: {
       title: "😏 Smug!",
-      description: "{user.mention} tự mãn",
+      description: "{user.mention} looks smug",
       color: "#9B59B6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2250,7 +2250,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_sneeze: {
     vi: {
       title: "🤧 Sneeze!",
-      description: "{user.mention} hắt xì",
+      description: "{user.mention} sneezes",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2270,7 +2270,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_sorry: {
     vi: {
       title: "🙏 Sorry!",
-      description: "{user.mention} xin lỗi",
+      description: "{user.mention} apologizes",
       color: "#3498DB",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2290,7 +2290,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_stop: {
     vi: {
       title: "🛑 Stop!",
-      description: "{user.mention} dừng lại",
+      description: "{user.mention} says stop",
       color: "#E74C3C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2310,7 +2310,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_surprised: {
     vi: {
       title: "😲 Surprised!",
-      description: "{user.mention} ngạc nhiên",
+      description: "{user.mention} is surprised",
       color: "#F1C40F",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2330,7 +2330,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_sweat: {
     vi: {
       title: "😓 Sweat!",
-      description: "{user.mention} toát mồ hôi",
+      description: "{user.mention} sweats",
       color: "#3498DB",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2350,7 +2350,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_thumbsup: {
     vi: {
       title: "👍 Thumbs Up!",
-      description: "{user.mention} thích",
+      description: "{user.mention} gives a thumbs up",
       color: "#2ECC71",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2370,7 +2370,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_tired: {
     vi: {
       title: "😩 Tired!",
-      description: "{user.mention} mệt",
+      description: "{user.mention} is tired",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2410,7 +2410,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_yawn: {
     vi: {
       title: "🥱 Yawn!",
-      description: "{user.mention} ngáp",
+      description: "{user.mention} yawns",
       color: "#95A5A6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2450,7 +2450,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   interact_yes: {
     vi: {
       title: "✅ Yes!",
-      description: "{user.mention} gật đầu",
+      description: "{user.mention} nods",
       color: "#2ECC71",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "",
       image_url: "{gif_url}",
@@ -2467,16 +2467,16 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  // ── Đơn hàng (bổ sung) ──
+  // ── Orders (supplemental) ──
   thanh_toan: {
     vi: {
-      title: "✅ Thanh toán thành công",
-      description: "Cảm ơn {user.mention}! Đơn hàng #{order.id} đã được thanh toán.",
+      title: "✅ Payment Successful",
+      description: "Thank you {user.mention}! Order #{order.id} has been paid.",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "📦 Sản phẩm", value: "{product.name}", inline: true },
-        { name: "💰 Số tiền", value: "{order.total} VNĐ", inline: true },
+        { name: "📦 Product", value: "{product.name}", inline: true },
+        { name: "💰 Amount", value: "{order.total} VND", inline: true },
       ],
       enabled: true,
     },
@@ -2487,20 +2487,20 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
         { name: "📦 Product", value: "{product.name}", inline: true },
-        { name: "💰 Amount", value: "{order.total} VNĐ", inline: true },
+        { name: "💰 Amount", value: "{order.total} VND", inline: true },
       ],
       enabled: true,
     },
   },
   giao_hang: {
     vi: {
-      title: "📦 Đơn hàng đã được giao",
-      description: "Đơn hàng #{order.id} của bạn đã được giao thành công!",
+      title: "📦 Order Delivered",
+      description: "Your order #{order.id} has been delivered successfully!",
       color: "#5865F2",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "📦 Sản phẩm", value: "{product.name}", inline: true },
-        { name: "👤 Khách hàng", value: "{user.mention}", inline: true },
+        { name: "📦 Product", value: "{product.name}", inline: true },
+        { name: "👤 Customer", value: "{user.mention}", inline: true },
       ],
       enabled: true,
     },
@@ -2518,15 +2518,15 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   don_hang_chi_tiet: {
     vi: {
-      title: "📋 Chi tiết đơn hàng #{order.id}",
+      title: "📋 Order Details #{order.id}",
       description: "",
       color: "#5865F2",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "👤 Khách hàng", value: "{user.mention}", inline: true },
-        { name: "📦 Sản phẩm", value: "{product.name}", inline: true },
-        { name: "💰 Tổng tiền", value: "{order.total} VNĐ", inline: true },
-        { name: "📋 Trạng thái", value: "{order.status}", inline: true },
+        { name: "👤 Customer", value: "{user.mention}", inline: true },
+        { name: "📦 Product", value: "{product.name}", inline: true },
+        { name: "💰 Total", value: "{order.total} VND", inline: true },
+        { name: "📋 Status", value: "{order.status}", inline: true },
       ],
       enabled: true,
     },
@@ -2538,7 +2538,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       fields: [
         { name: "👤 Customer", value: "{user.mention}", inline: true },
         { name: "📦 Product", value: "{product.name}", inline: true },
-        { name: "💰 Total", value: "{order.total} VNĐ", inline: true },
+        { name: "💰 Total", value: "{order.total} VND", inline: true },
         { name: "📋 Status", value: "{order.status}", inline: true },
       ],
       enabled: true,
@@ -2546,13 +2546,13 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   coupon: {
     vi: {
-      title: "🏷️ Mã giảm giá",
-      description: "Mã **{coupon.code}** đã được áp dụng!",
+      title: "🏷️ Coupon Applied",
+      description: "Code **{coupon.code}** has been applied!",
       color: "#FEE75C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "💸 Giảm", value: "{coupon.discount}", inline: true },
-        { name: "📅 Hết hạn", value: "{coupon.expires_at}", inline: true },
+        { name: "💸 Discount", value: "{coupon.discount}", inline: true },
+        { name: "📅 Expires", value: "{coupon.expires_at}", inline: true },
       ],
       enabled: true,
     },
@@ -2570,11 +2570,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   ban_shop: {
     vi: {
-      title: "🚫 Cấm mua hàng",
-      description: "{user.mention} đã bị cấm mua hàng.",
+      title: "🚫 Shop Banned",
+      description: "{user.mention} has been banned from shopping.",
       color: "#ED4245",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "📋 Lý do", value: "{reason}", inline: false }],
+      fields: [{ name: "📋 Reason", value: "{reason}", inline: false }],
       enabled: true,
     },
     en: {
@@ -2588,11 +2588,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   unban_shop: {
     vi: {
-      title: "✅ Bỏ cấm mua hàng",
-      description: "{user.mention} đã được bỏ cấm mua hàng.",
+      title: "✅ Shop Unbanned",
+      description: "{user.mention} has been unbanned from shopping.",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "👮 Người thực hiện", value: "{mod}", inline: true }],
+      fields: [{ name: "👮 Moderator", value: "{mod}", inline: true }],
       enabled: true,
     },
     en: {
@@ -2604,16 +2604,16 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  // ── Kiểm duyệt (bổ sung) ──
+  // ── Moderation (supplemental) ──
   timeout: {
     vi: {
-      title: "⏱️ Bị timeout",
-      description: "{user.mention} đã bị timeout trong server **{server}**.",
+      title: "⏱️ Timed Out",
+      description: "{user.mention} has been timed out in **{server}**.",
       color: "#FEE75C",
-      author: "", author_icon_url: "", footer: "Hãy tuân thủ nội quy server", thumbnail_url: "", image_url: "",
+      author: "", author_icon_url: "", footer: "Please follow the server rules", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "⏰ Thời gian", value: "{duration}", inline: true },
-        { name: "📋 Lý do", value: "{reason}", inline: true },
+        { name: "⏰ Duration", value: "{duration}", inline: true },
+        { name: "📋 Reason", value: "{reason}", inline: true },
       ],
       enabled: true,
     },
@@ -2629,16 +2629,16 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  // ── Cộng đồng (bổ sung) ──
+  // ── Community (supplemental) ──
   invite_join: {
     vi: {
-      title: "🎉 Thành viên mới từ invite",
-      description: "{user.mention} đã tham gia qua link của **{inviter}**!",
+      title: "🎉 New Member via Invite",
+      description: "{user.mention} joined via **{inviter}**'s invite!",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "🔗 Code invite", value: "{invite_code}", inline: true },
-        { name: "📊 Tổng invite", value: "{invite.count}", inline: true },
+        { name: "🔗 Invite Code", value: "{invite_code}", inline: true },
+        { name: "📊 Total Invites", value: "{invite.count}", inline: true },
       ],
       enabled: true,
     },
@@ -2656,8 +2656,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   invite_leaderboard: {
     vi: {
-      title: "🏆 Bảng xếp hạng Invite",
-      description: "Top thành viên có nhiều lượt invite nhất trong **{server}**.",
+      title: "🏆 Invite Leaderboard",
+      description: "Top members with the most invites in **{server}**.",
       color: "#F0B232",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
@@ -2682,11 +2682,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   giveaway_banned: {
     vi: {
-      title: "⛔ Cấm tham gia Giveaway",
-      description: "{user.mention} đã bị cấm tham gia giveaway.",
+      title: "⛔ Giveaway Banned",
+      description: "{user.mention} has been banned from participating in giveaways.",
       color: "#ED4245",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "📋 Lý do", value: "{reason}", inline: false }],
+      fields: [{ name: "📋 Reason", value: "{reason}", inline: false }],
       enabled: true,
     },
     en: {
@@ -2698,7 +2698,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  // ── Tiện ích (bổ sung) ──
+  // ── Utilities (supplemental) ──
   sticky_message: {
     vi: {
       title: "{sticky.title}",
@@ -2721,11 +2721,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   softban: {
     vi: {
       title: "Softbanned",
-      description: "{user.mention} đã bị softban khỏi server {server}.",
+      description: "{user.mention} has been softbanned from **{server}**.",
       color: "#ED4245",
-      author: "", author_icon_url: "", footer: "Softban — tin nhắn đã bị xóa", thumbnail_url: "", image_url: "",
+      author: "", author_icon_url: "", footer: "Softban — messages deleted", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "Lý do", value: "{reason}", inline: false },
+        { name: "Reason", value: "{reason}", inline: false },
         { name: "Mod", value: "{mod.name}", inline: true },
       ],
       enabled: true,
@@ -2744,13 +2744,13 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   mute: {
     vi: {
-      title: "Đã bị mute",
-      description: "{user.mention} đã bị mute trong server {server}.",
+      title: "Muted",
+      description: "{user.mention} has been muted in **{server}**.",
       color: "#5865F2",
-      author: "", author_icon_url: "", footer: "Hãy tuân thủ nội quy server", thumbnail_url: "", image_url: "",
+      author: "", author_icon_url: "", footer: "Please follow the server rules", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "Thời gian", value: "{duration}", inline: true },
-        { name: "Lý do", value: "{reason}", inline: false },
+        { name: "Duration", value: "{duration}", inline: true },
+        { name: "Reason", value: "{reason}", inline: false },
       ],
       enabled: true,
     },
@@ -2768,12 +2768,12 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   deafen: {
     vi: {
-      title: "Đã bị deafen",
-      description: "{user.mention} đã bị deafen trong voice.",
+      title: "Deafened",
+      description: "{user.mention} has been server deafened.",
       color: "#9B59B6",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "Lý do", value: "{reason}", inline: false },
+        { name: "Reason", value: "{reason}", inline: false },
         { name: "Mod", value: "{mod.name}", inline: true },
       ],
       enabled: true,
@@ -2793,7 +2793,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   rolepersist: {
     vi: {
       title: "Role Persist",
-      description: "Role **{role.name}** đã được gán cố định cho {user.mention}.",
+      description: "Role **{role.name}** has been persistently assigned to {user.mention}.",
       color: "#5865F2",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [{ name: "Mod", value: "{mod.name}", inline: true }],
@@ -2811,12 +2811,12 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   temprole: {
     vi: {
       title: "Temporary Role",
-      description: "Role **{role.name}** đã được gán cho {user.mention} trong **{duration}**.",
+      description: "Role **{role.name}** assigned to {user.mention} for **{duration}**.",
       color: "#F0B232",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
         { name: "Mod", value: "{mod.name}", inline: true },
-        { name: "Hết hạn", value: "{expires_at}", inline: true },
+        { name: "Expires", value: "{expires_at}", inline: true },
       ],
       enabled: true,
     },
@@ -2835,10 +2835,10 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   lockdown_start: {
     vi: {
       title: "Lockdown",
-      description: "Server **{server}** đã vào chế độ lockdown.",
+      description: "Server **{server}** is now in lockdown mode.",
       color: "#ED4245",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "Kênh bị khóa", value: "{count}", inline: true }],
+      fields: [{ name: "Channels Locked", value: "{count}", inline: true }],
       enabled: true,
     },
     en: {
@@ -2852,11 +2852,11 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   lockdown_end: {
     vi: {
-      title: "Lockdown kết thúc",
-      description: "Server **{server}** đã thoát chế độ lockdown.",
+      title: "Lockdown Ended",
+      description: "Server **{server}** lockdown has been lifted.",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [{ name: "Kênh được mở", value: "{count}", inline: true }],
+      fields: [{ name: "Channels Unlocked", value: "{count}", inline: true }],
       enabled: true,
     },
     en: {
@@ -2868,15 +2868,15 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  // ── Bảo mật & Khôi phục ──
+  // ── Security & Recovery ──
   verification_log: {
     vi: {
-      title: "✅ Xác minh thành công",
-      description: "{user.mention} đã xác minh thành công.",
+      title: "✅ Verification Successful",
+      description: "{user.mention} has been verified successfully.",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "👤 Người dùng", value: "{user.tag}", inline: true },
+        { name: "👤 User", value: "{user.tag}", inline: true },
         { name: "📧 Email", value: "{email}", inline: true },
         { name: "🌐 IP", value: "{ip}", inline: true },
         { name: "⚠️ Risk Score", value: "{risk_score}", inline: true },
@@ -2899,13 +2899,13 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   verification_denied: {
     vi: {
-      title: "❌ Xác minh bị từ chối",
-      description: "Một người dùng đã bị từ chối xác minh.",
+      title: "❌ Verification Denied",
+      description: "A user was denied verification.",
       color: "#ED4245",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "👤 Người dùng", value: "{user.tag}", inline: true },
-        { name: "📝 Lý do", value: "{reason}", inline: false },
+        { name: "👤 User", value: "{user.tag}", inline: true },
+        { name: "📝 Reason", value: "{reason}", inline: false },
       ],
       enabled: true,
     },
@@ -2923,12 +2923,12 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   backup_completed: {
     vi: {
-      title: "✅ Sao lưu hoàn tất",
-      description: "Server backup đã hoàn tất thành công.",
+      title: "✅ Backup Completed",
+      description: "Server backup completed successfully.",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "📋 Loại", value: "{backup_type}", inline: true },
+        { name: "📋 Type", value: "{backup_type}", inline: true },
         { name: "📁 Channels", value: "{channel_count}", inline: true },
         { name: "🎭 Roles", value: "{role_count}", inline: true },
         { name: "👥 Members", value: "{member_count}", inline: true },
@@ -2951,8 +2951,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   restore_started: {
     vi: {
-      title: "🔄 Đang khôi phục...",
-      description: "Đang khôi phục server từ bản sao lưu.",
+      title: "🔄 Restoring...",
+      description: "Restoring server from backup.",
       color: "#FEE75C",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -2969,8 +2969,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   restore_completed: {
     vi: {
-      title: "✅ Khôi phục hoàn tất",
-      description: "Server đã được khôi phục thành công.",
+      title: "✅ Restore Completed",
+      description: "Server has been restored successfully.",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -2987,8 +2987,8 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   member_pull_started: {
     vi: {
-      title: "🔄 Đang kéo thành viên...",
-      description: "Đang kéo **{total_members}** thành viên về server.",
+      title: "🔄 Pulling Members...",
+      description: "Pulling **{total_members}** members back to the server.",
       color: "#5865F2",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
@@ -3005,14 +3005,14 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
   },
   member_pull_completed: {
     vi: {
-      title: "✅ Kéo thành viên hoàn tất",
-      description: "Đã kéo thành viên về server thành công.",
+      title: "✅ Member Pull Completed",
+      description: "Members have been pulled back to the server.",
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [
-        { name: "✅ Thành công", value: "{pulled}", inline: true },
-        { name: "❌ Thất bại", value: "{failed}", inline: true },
-        { name: "📊 Tổng", value: "{total}", inline: true },
+        { name: "✅ Success", value: "{pulled}", inline: true },
+        { name: "❌ Failed", value: "{failed}", inline: true },
+        { name: "📊 Total", value: "{total}", inline: true },
       ],
       enabled: true,
     },

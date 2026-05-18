@@ -104,7 +104,7 @@ export function ProductsManager() {
                     {p.packages.map((pkg, i) => (
                       <div key={i} className={cn("flex items-center justify-between text-xs rounded px-2 py-1 bg-muted/50", !pkg.active && "opacity-50 line-through")}>
                         <span>{pkg.name}</span>
-                        <span className="font-medium">{pkg.price.toLocaleString()} đ</span>
+                        <span className="font-medium">{pkg.price.toLocaleString()} VND</span>
                       </div>
                     ))}
                   </div>

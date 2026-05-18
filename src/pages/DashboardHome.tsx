@@ -68,10 +68,10 @@ export function DashboardHome() {
 
   const fmtMoney = (n: number) =>
     n >= 1_000_000
-      ? `${(n / 1_000_000).toFixed(1)}M đ`
+      ? `${(n / 1_000_000).toFixed(1)}M VND`
       : n >= 1_000
-      ? `${(n / 1_000).toFixed(0)}K đ`
-      : `${n.toLocaleString("vi-VN")} đ`;
+      ? `${(n / 1_000).toFixed(0)}K VND`
+      : `${n.toLocaleString("en-US")} VND`;
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
@@ -122,7 +122,7 @@ export function DashboardHome() {
                     tickFormatter={(v) => v >= 1000 ? `${v / 1000}K` : v}
                   />
                   <Tooltip
-                    formatter={(v: unknown) => [(v as number).toLocaleString("vi-VN") + " đ", t("dashboard_revenue")]}
+                    formatter={(v: unknown) => [(v as number).toLocaleString("en-US") + " VND", t("dashboard_revenue")]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Area

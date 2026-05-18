@@ -67,7 +67,7 @@ export function BackupSchedule() {
 
       <PremiumGate
         feature="scheduled_backup"
-        featureLabel="Sao lưu tự động"
+        featureLabel="Automatic backup"
         hasAccess={hasFeature("scheduled_backup")}
         isLoading={entLoading}
       >

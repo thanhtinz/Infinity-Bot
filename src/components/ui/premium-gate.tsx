@@ -70,7 +70,7 @@ export function PremiumGate({
   // Owner / premium guild — render normally
   if (isLoading || hasAccess) return <>{children}</>;
 
-  const label = featureLabel ?? "tính năng này";
+  const label = featureLabel ?? "this feature";
 
   if (mode === "inline") {
     return (
@@ -111,11 +111,11 @@ export function PremiumGate({
         </div>
         <div>
           <p className="font-semibold text-amber-800 dark:text-amber-300 text-base">
-            Tính năng Premium
+            Premium Feature
           </p>
           <p className="text-sm text-amber-700/80 dark:text-amber-400/70 mt-1 max-w-sm">
-            <span className="font-medium capitalize">{label}</span> chỉ dành cho server có gói Premium.
-            Nâng cấp để mở khóa.
+            <span className="font-medium capitalize">{label}</span> is only available for servers with a Premium plan.
+            Upgrade to unlock.
           </p>
         </div>
         <Button
@@ -124,7 +124,7 @@ export function PremiumGate({
           onClick={(e) => { e.stopPropagation(); setDialogOpen(true); }}
         >
           <Gem className="h-4 w-4 mr-1.5" />
-          Xem gói Premium
+          View Premium Plans
         </Button>
       </div>
       <UpgradeDialog open={dialogOpen} onClose={() => setDialogOpen(false)} label={label} navigate={navigate} />
@@ -151,33 +151,33 @@ function UpgradeDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Crown className="h-5 w-5 text-amber-500" />
-            Yêu cầu gói Premium
+            Premium Required
           </DialogTitle>
           <DialogDescription className="pt-1">
-            <span className="font-medium capitalize">{label}</span> là tính năng Premium. Server của bạn cần đăng ký gói Premium để sử dụng.
+            <span className="font-medium capitalize">{label}</span> is a Premium feature. Your server needs a Premium plan to use it.
           </DialogDescription>
         </DialogHeader>
 
         <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-800 dark:text-amber-300 space-y-1">
-          <p className="font-medium">Gói Premium mang lại:</p>
+          <p className="font-medium">Premium plan includes:</p>
           <ul className="list-disc list-inside space-y-0.5 text-amber-700 dark:text-amber-400 text-xs">
-            <li>Custom Bot riêng cho server</li>
-            <li>Captcha nâng cao</li>
-            <li>Sao lưu tự động & lưu trữ lâu dài</li>
-            <li>Và nhiều tính năng khác…</li>
+            <li>Custom Bot for your server</li>
+            <li>Advanced Captcha</li>
+            <li>Automatic backup & long-term storage</li>
+            <li>And many more features…</li>
           </ul>
         </div>
 
         <div className="flex gap-2 pt-1">
           <Button variant="outline" className="flex-1" onClick={onClose}>
-            Đóng
+            Close
           </Button>
           <Button
             className="flex-1 bg-amber-500 hover:bg-amber-600 text-white border-0"
             onClick={() => { onClose(); navigate("/my-plan"); }}
           >
             <ArrowRight className="h-4 w-4 mr-1.5" />
-            Xem gói Premium
+            View Premium Plans
           </Button>
         </div>
       </DialogContent>

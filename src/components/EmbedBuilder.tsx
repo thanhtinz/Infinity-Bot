@@ -71,7 +71,7 @@ export function DiscordEmbedPreview({ data, varsMap }: PreviewProps) {
   if (!hasContent) {
     return (
       <div className="rounded-md bg-[#313338] p-6 text-center">
-        <p className="text-sm text-[#B5BAC1]">Xem trước embed sẽ hiển thị ở đây</p>
+        <p className="text-sm text-[#B5BAC1]">Embed preview will appear here</p>
       </div>
     );
   }
@@ -219,7 +219,7 @@ export function EmbedBuilder({
           className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           value={data.title}
           onChange={(e: ChangeEvent<HTMLInputElement>) => update({ title: e.target.value })}
-          placeholder="Tiêu đề embed"
+          placeholder="Embed title"
         />
         <EmojiPicker onSelect={(em) => update({ title: data.title + em })} />
       </div>
@@ -233,7 +233,7 @@ export function EmbedBuilder({
         <Textarea
           value={data.description}
           onChange={(e: ChangeEvent<HTMLTextAreaElement>) => update({ description: e.target.value })}
-          placeholder="Nội dung embed..."
+          placeholder="Embed content..."
           rows={3}
           className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
         />
@@ -253,7 +253,7 @@ export function EmbedBuilder({
           className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           value={data.footer}
           onChange={(e: ChangeEvent<HTMLInputElement>) => update({ footer: e.target.value })}
-          placeholder="Chữ footer..."
+          placeholder="Footer text..."
         />
         <EmojiPicker onSelect={(em) => update({ footer: data.footer + em })} />
       </div>
@@ -264,7 +264,7 @@ export function EmbedBuilder({
     <div className="space-y-3">
       <div className="space-y-2">
         <Label className="text-sm flex items-center gap-1.5">
-          <Image className="w-3.5 h-3.5" /> Ảnh lớn
+          <Image className="w-3.5 h-3.5" /> Large Image
         </Label>
         <Input
           value={data.image_url}
@@ -296,11 +296,11 @@ export function EmbedBuilder({
           onClick={addField}
           disabled={data.fields.length >= maxFields}
         >
-          <Plus className="w-3 h-3 mr-1" /> Thêm field
+          <Plus className="w-3 h-3 mr-1" /> Add Field
         </Button>
       </div>
       {data.fields.length === 0 && (
-        <p className="text-xs text-muted-foreground">Chưa có field nào.</p>
+        <p className="text-xs text-muted-foreground">No fields yet.</p>
       )}
       <div className="space-y-3">
         {data.fields.map((field, idx) => (
@@ -321,7 +321,7 @@ export function EmbedBuilder({
               <Input
                 value={field.name}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => updateField(idx, "name", e.target.value)}
-                placeholder="Tên field"
+                placeholder="Field name"
                 className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
               <EmojiPicker onSelect={(em) => updateField(idx, "name", field.name + em)} />
@@ -330,7 +330,7 @@ export function EmbedBuilder({
               <Textarea
                 value={field.value}
                 onChange={(e: ChangeEvent<HTMLTextAreaElement>) => updateField(idx, "value", e.target.value)}
-                placeholder="Giá trị field"
+                placeholder="Field value"
                 rows={2}
                 className="text-sm flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
@@ -365,7 +365,7 @@ export function EmbedBuilder({
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setShowAdvanced(!showAdvanced); } }}
         >
           {showAdvanced ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          Nâng cao (footer, ảnh, fields)
+          Advanced (footer, images, fields)
         </div>
 
         {showAdvanced && (
@@ -377,7 +377,7 @@ export function EmbedBuilder({
         )}
 
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">Xem trước</Label>
+          <Label className="text-xs text-muted-foreground">Preview</Label>
           <DiscordEmbedPreview data={data} varsMap={varsMap} />
         </div>
       </div>
@@ -394,7 +394,7 @@ export function EmbedBuilder({
       {fieldsSection}
 
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Xem trước</Label>
+        <Label className="text-xs text-muted-foreground">Preview</Label>
         <DiscordEmbedPreview data={data} varsMap={varsMap} />
       </div>
     </div>

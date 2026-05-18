@@ -71,9 +71,9 @@ export default function SpendingMilestones() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["milestones"] });
       setDialogOpen(false);
-      toast({ title: editId ? "Đã cập nhật mốc" : "Đã tạo mốc mới" });
+      toast({ title: editId ? "Milestone updated" : "Milestone created" });
     },
-    onError: () => toast({ title: "Lỗi", variant: "destructive" }),
+    onError: () => toast({ title: "Error", variant: "destructive" }),
   });
 
   const remove = useMutation({
@@ -82,7 +82,7 @@ export default function SpendingMilestones() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["milestones"] });
       setDeleteId(null);
-      toast({ title: "Đã xoá mốc" });
+      toast({ title: "Milestone deleted" });
     },
   });
 
@@ -105,7 +105,7 @@ export default function SpendingMilestones() {
   }
 
   function formatVND(n: number) {
-    return new Intl.NumberFormat("vi-VN").format(n) + "đ";
+    return new Intl.NumberFormat("en-US").format(n) + " VND";
   }
 
   const sorted = [...milestones].sort((a, b) => a.threshold - b.threshold);
@@ -116,26 +116,26 @@ export default function SpendingMilestones() {
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Trophy className="h-6 w-6 text-yellow-500" />
-            Mốc chi tiêu
+            Spending Milestones
           </h2>
           <p className="text-muted-foreground text-sm mt-1">
-            Tự động trao role khi khách hàng đạt mốc chi tiêu
+            Automatically grant roles when customers reach spending milestones
           </p>
         </div>
         <Button onClick={openCreate}>
-          <Plus className="h-4 w-4 mr-1" /> Thêm mốc
+          <Plus className="h-4 w-4 mr-1" /> Add Milestone
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12 text-muted-foreground">Đang tải...</div>
+        <div className="text-center py-12 text-muted-foreground">Loading...</div>
       ) : sorted.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             <Award className="h-12 w-12 mx-auto mb-3 opacity-40" />
-            <p>Chưa có mốc chi tiêu nào</p>
+            <p>No spending milestones yet</p>
             <p className="text-sm mt-1">
-              Tạo mốc để tự động trao role khi khách đạt mức chi tiêu nhất định
+              Create milestones to automatically grant roles when customers reach a spending threshold
             </p>
           </CardContent>
         </Card>
@@ -158,11 +158,11 @@ export default function SpendingMilestones() {
                   <div className="font-semibold flex items-center gap-2">
                     {m.name}
                     {!m.active && (
-                      <span className="text-xs text-muted-foreground">(tắt)</span>
+                      <span className="text-xs text-muted-foreground">(off)</span>
                     )}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Mốc {formatVND(m.threshold)} → Role: {m.role_id}
+                    Milestone {formatVND(m.threshold)} → Role: {m.role_id}
                   </div>
                 </div>
 
@@ -194,22 +194,22 @@ export default function SpendingMilestones() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editId ? "Chỉnh sửa mốc chi tiêu" : "Thêm mốc chi tiêu"}
+              {editId ? "Edit Spending Milestone" : "Add Spending Milestone"}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>Tên mốc</Label>
+              <Label>Milestone Name</Label>
               <Input
-                placeholder="VD: VIP, Diamond, Gold..."
+                placeholder="e.g. VIP, Diamond, Gold..."
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Mốc chi tiêu (VNĐ)</Label>
+              <Label>Spending Threshold (VND)</Label>
               <Input
                 type="number"
                 placeholder="500000"
@@ -221,7 +221,7 @@ export default function SpendingMilestones() {
             </div>
 
             <div className="space-y-2">
-              <Label>Role được trao</Label>
+              <Label>Role to Grant</Label>
               <RoleSelect
                 value={form.role_id}
                 onChange={(v) => setForm({ ...form, role_id: v })}
@@ -230,9 +230,9 @@ export default function SpendingMilestones() {
             </div>
 
             <div className="space-y-2">
-              <Label>Emoji (tuỳ chọn)</Label>
+              <Label>Emoji (optional)</Label>
               <Input
-                placeholder="🏆 hoặc để trống"
+                placeholder="🏆 or leave empty"
                 value={form.emoji}
                 onChange={(e) => setForm({ ...form, emoji: e.target.value })}
               />
@@ -243,7 +243,7 @@ export default function SpendingMilestones() {
                 checked={form.active}
                 onCheckedChange={(v) => setForm({ ...form, active: v })}
               />
-              <Label>Kích hoạt</Label>
+              <Label>Active</Label>
             </div>
           </div>
 
@@ -252,7 +252,7 @@ export default function SpendingMilestones() {
               variant="outline"
               onClick={() => setDialogOpen(false)}
             >
-              Huỷ
+              Cancel
             </Button>
             <Button
               onClick={() => save.mutate()}
@@ -260,7 +260,7 @@ export default function SpendingMilestones() {
                 !form.name || !form.threshold || !form.role_id || save.isPending
               }
             >
-              {save.isPending ? "Đang lưu..." : editId ? "Cập nhật" : "Tạo mốc"}
+              {save.isPending ? "Saving..." : editId ? "Update" : "Create Milestone"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -270,22 +270,22 @@ export default function SpendingMilestones() {
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xoá mốc chi tiêu?</DialogTitle>
+            <DialogTitle>Delete Spending Milestone?</DialogTitle>
           </DialogHeader>
           <p className="text-muted-foreground">
-            Hành động này không thể hoàn tác. Các khách hàng đã nhận role sẽ
-            không bị mất role.
+            This action cannot be undone. Customers who already received the role
+            will not lose it.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteId(null)}>
-              Huỷ
+              Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={() => deleteId && remove.mutate(deleteId)}
               disabled={remove.isPending}
             >
-              Xoá
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -101,7 +101,7 @@ export function CouponsManager() {
                         {c.discount_percent
                           ? `${c.discount_percent}%`
                           : c.discount_amount
-                          ? `${c.discount_amount.toLocaleString()} đ`
+                          ? `${c.discount_amount.toLocaleString()}₫`
                           : "—"}
                       </p>
                     </div>

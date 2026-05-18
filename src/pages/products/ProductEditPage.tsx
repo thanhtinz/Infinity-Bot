@@ -154,7 +154,7 @@ export function ProductEditPage() {
             {/* Emoji icon for dropdown */}
             <FormField control={form.control} name="emoji" render={({ field }) => (
               <FormItem>
-                <FormLabel>Dropdown emoji <span className="text-xs text-muted-foreground font-normal">(hiển thị trong menu bảng giá)</span></FormLabel>
+                <FormLabel>Dropdown emoji <span className="text-xs text-muted-foreground font-normal">(shown in price list menu)</span></FormLabel>
                 <div className="flex items-center gap-2">
                   <div className="w-12 h-10 rounded border bg-muted flex items-center justify-center text-xl shrink-0">
                     {field.value || "—"}

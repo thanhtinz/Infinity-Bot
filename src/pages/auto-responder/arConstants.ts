@@ -17,12 +17,12 @@ export const TRIGGER_TYPE_CONFIG: Record<
   AutoResponderRule["trigger_type"],
   { label: string; color: string; helper: string; icon: typeof Zap }
 > = {
-  exact: { label: "Chính xác", color: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30", helper: "Khớp toàn bộ nội dung tin nhắn.", icon: Zap },
-  contains: { label: "Chứa", color: "bg-blue-500/15 text-blue-600 border-blue-500/30", helper: "Tin nhắn chứa từ khóa này.", icon: Type },
-  startswith: { label: "Bắt đầu bằng", color: "bg-cyan-500/15 text-cyan-600 border-cyan-500/30", helper: "Tin nhắn bắt đầu bằng từ khóa.", icon: ArrowUpRight },
-  endswith: { label: "Kết thúc bằng", color: "bg-teal-500/15 text-teal-600 border-teal-500/30", helper: "Tin nhắn kết thúc bằng từ khóa.", icon: ArrowUpRight },
-  regex: { label: "Regex", color: "bg-purple-500/15 text-purple-600 border-purple-500/30", helper: "Sử dụng biểu thức chính quy (regex).", icon: Regex },
-  wildcard: { label: "Wildcard", color: "bg-orange-500/15 text-orange-600 border-orange-500/30", helper: "Dùng * cho wildcard. VD: hello*world", icon: Asterisk },
+  exact: { label: "Exact", color: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30", helper: "Matches the entire message content.", icon: Zap },
+  contains: { label: "Contains", color: "bg-blue-500/15 text-blue-600 border-blue-500/30", helper: "Message contains this keyword.", icon: Type },
+  startswith: { label: "Starts with", color: "bg-cyan-500/15 text-cyan-600 border-cyan-500/30", helper: "Message starts with this keyword.", icon: ArrowUpRight },
+  endswith: { label: "Ends with", color: "bg-teal-500/15 text-teal-600 border-teal-500/30", helper: "Message ends with this keyword.", icon: ArrowUpRight },
+  regex: { label: "Regex", color: "bg-purple-500/15 text-purple-600 border-purple-500/30", helper: "Use a regular expression (regex).", icon: Regex },
+  wildcard: { label: "Wildcard", color: "bg-orange-500/15 text-orange-600 border-orange-500/30", helper: "Use * for wildcard. E.g.: hello*world", icon: Asterisk },
 };
 
 export const PRESET_COLORS = [
@@ -38,7 +38,7 @@ export const DEFAULT_COLOR = "#5865F2";
 
 export const VARIABLE_GROUPS: { label: string; icon: typeof Variable; vars: { key: string; desc: string }[] }[] = [
   {
-    label: "Người dùng",
+    label: "User",
     icon: Variable,
     vars: [
       { key: "{user}", desc: "Username" },
@@ -52,7 +52,7 @@ export const VARIABLE_GROUPS: { label: string; icon: typeof Variable; vars: { ke
     icon: Variable,
     vars: [
       { key: "{server}", desc: "Server name" },
-      { key: "{server.member_count}", desc: "Số thành viên" },
+      { key: "{server.member_count}", desc: "Member count" },
     ],
   },
   {
@@ -64,19 +64,19 @@ export const VARIABLE_GROUPS: { label: string; icon: typeof Variable; vars: { ke
     ],
   },
   {
-    label: "Thời gian",
+    label: "Time",
     icon: Clock,
     vars: [
-      { key: "{date}", desc: "Ngày (DD/MM/YYYY)" },
-      { key: "{time}", desc: "Giờ (HH:MM)" },
+      { key: "{date}", desc: "Date (DD/MM/YYYY)" },
+      { key: "{time}", desc: "Time (HH:MM)" },
     ],
   },
   {
-    label: "Khác",
+    label: "Other",
     icon: Sparkles,
     vars: [
-      { key: "{message}", desc: "Nội dung tin nhắn" },
-      { key: "{random:1:100}", desc: "Số ngẫu nhiên" },
+      { key: "{message}", desc: "Message content" },
+      { key: "{random:1:100}", desc: "Random number" },
     ],
   },
 ];
@@ -126,7 +126,7 @@ export const emptyForm = (): RuleForm => ({
 
 export function formatDate(s?: string | null) {
   if (!s) return "";
-  return new Date(s).toLocaleDateString("vi-VN", {
+  return new Date(s).toLocaleDateString("en-US", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

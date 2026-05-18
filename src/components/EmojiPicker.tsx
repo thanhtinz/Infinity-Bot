@@ -26,7 +26,7 @@ interface EmojiPickerProps {
 
 const EMOJI_CATEGORIES: { label: string; emojis: [string, string][] }[] = [
   {
-    label: "Hay dùng",
+    label: "Frequently Used",
     emojis: [
       ["✅", "check"], ["❌", "x"], ["🎉", "tada"], ["⭐", "star"], ["🔥", "fire"],
       ["✨", "sparkles"], ["❤️", "heart"], ["💯", "100"], ["👍", "thumbsup"], ["👎", "thumbsdown"],
@@ -54,7 +54,7 @@ const EMOJI_CATEGORIES: { label: string; emojis: [string, string][] }[] = [
     ],
   },
   {
-    label: "Cử chỉ",
+    label: "Gestures",
     emojis: [
       ["👋", "wave"], ["🤚", "raised_back"], ["🖐️", "hand_splayed"], ["✋", "hand"],
       ["🖖", "vulcan"], ["👌", "ok_hand"], ["🤌", "pinched"], ["✌️", "v"],
@@ -66,7 +66,7 @@ const EMOJI_CATEGORIES: { label: string; emojis: [string, string][] }[] = [
     ],
   },
   {
-    label: "Vật thể",
+    label: "Objects",
     emojis: [
       ["🛒", "cart"], ["📦", "package"], ["💰", "moneybag"], ["💵", "dollar"],
       ["💎", "gem"], ["🎫", "ticket"], ["🏷️", "label"], ["📋", "clipboard"],
@@ -96,7 +96,7 @@ const EMOJI_CATEGORIES: { label: string; emojis: [string, string][] }[] = [
     ],
   },
   {
-    label: "Động vật & Thiên nhiên",
+    label: "Animals & Nature",
     emojis: [
       ["🐶", "dog"], ["🐱", "cat"], ["🐭", "mouse"], ["🐰", "rabbit"],
       ["🦊", "fox"], ["🐻", "bear"], ["🐼", "panda"], ["🐨", "koala"],
@@ -109,7 +109,7 @@ const EMOJI_CATEGORIES: { label: string; emojis: [string, string][] }[] = [
     ],
   },
   {
-    label: "Đồ ăn",
+    label: "Food",
     emojis: [
       ["🍎", "apple"], ["🍊", "orange"], ["🍋", "lemon"], ["🍌", "banana"],
       ["🍉", "watermelon"], ["🍇", "grapes"], ["🍓", "strawberry"], ["🍑", "peach"],
@@ -119,7 +119,7 @@ const EMOJI_CATEGORIES: { label: string; emojis: [string, string][] }[] = [
     ],
   },
   {
-    label: "Cờ & Số",
+    label: "Flags & Numbers",
     emojis: [
       ["🏁", "checkered_flag"], ["🚩", "red_flag"], ["🏴", "black_flag"], ["🏳️", "white_flag"],
       ["0️⃣", "zero"], ["1️⃣", "one"], ["2️⃣", "two"], ["3️⃣", "three"],
@@ -245,7 +245,7 @@ export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
         {/* Search */}
         <div className="p-2">
           <Input
-            placeholder="Tìm emoji..."
+            placeholder="Search emoji..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-8 text-sm"
@@ -284,10 +284,10 @@ export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
             ) : (
               <div className="px-3 py-8 text-center">
                 <p className="text-xs text-muted-foreground">
-                  {search ? "Không tìm thấy emoji" : "No custom emojis yet"}
+                  {search ? "No emojis found" : "No custom emojis yet"}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  Thêm emoji tại Quản lý Emoji
+                  Add emojis in Emoji Manager
                 </p>
               </div>
             )
@@ -299,7 +299,7 @@ export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
               </div>
             ) : (
               <p className="px-3 py-8 text-xs text-muted-foreground text-center">
-                Không tìm thấy emoji
+                No emojis found
               </p>
             )
           ) : (

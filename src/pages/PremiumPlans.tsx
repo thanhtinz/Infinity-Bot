@@ -67,10 +67,10 @@ interface PremiumPlan {
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const INTERVAL_LABELS: Record<string, string> = {
-  monthly: "Hàng tháng",
-  quarterly: "Hàng quý",
-  yearly: "Hàng năm",
-  lifetime: "Vĩnh viễn",
+  monthly: "Monthly",
+  quarterly: "Quarterly",
+  yearly: "Yearly",
+  lifetime: "Lifetime",
 };
 
 const CURRENCY_OPTIONS = [
@@ -80,17 +80,17 @@ const CURRENCY_OPTIONS = [
 ];
 
 const INTERVAL_OPTIONS = [
-  { value: "monthly", label: "Hàng tháng" },
-  { value: "quarterly", label: "Hàng quý" },
-  { value: "yearly", label: "Hàng năm" },
-  { value: "lifetime", label: "Vĩnh viễn" },
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
+  { value: "yearly", label: "Yearly" },
+  { value: "lifetime", label: "Lifetime" },
 ];
 
 const FEATURE_KEYS = [
   { key: "custom_bot", label: "Custom Bot", type: "boolean" as const },
   { key: "advanced_captcha", label: "Advanced Captcha", type: "boolean" as const },
   { key: "scheduled_backup", label: "Scheduled Backup", type: "boolean" as const },
-  { key: "backup_retention", label: "Backup Retention (ngày)", type: "number" as const },
+  { key: "backup_retention", label: "Backup Retention (days)", type: "number" as const },
   { key: "remove_branding", label: "Remove Branding", type: "boolean" as const },
   { key: "priority_support", label: "Priority Support", type: "boolean" as const },
 ];
@@ -186,12 +186,12 @@ export function PremiumPlans() {
   const createMutation = useMutation({
     mutationFn: createPlan,
     onSuccess: () => {
-      toast({ title: "Đã tạo gói mới" });
+      toast({ title: "Plan created" });
       qc.invalidateQueries({ queryKey: ["premium-plans"] });
       closeDialog();
     },
     onError: () => {
-      toast({ title: "Tạo gói thất bại", variant: "destructive" });
+      toast({ title: "Failed to create plan", variant: "destructive" });
     },
   });
 
@@ -199,24 +199,24 @@ export function PremiumPlans() {
     mutationFn: (args: { id: number; plan: Partial<PremiumPlan> }) =>
       updatePlan(args.id, args.plan),
     onSuccess: () => {
-      toast({ title: "Đã cập nhật gói" });
+      toast({ title: "Plan updated" });
       qc.invalidateQueries({ queryKey: ["premium-plans"] });
       closeDialog();
     },
     onError: () => {
-      toast({ title: "Cập nhật thất bại", variant: "destructive" });
+      toast({ title: "Failed to update plan", variant: "destructive" });
     },
   });
 
   const archiveMutation = useMutation({
     mutationFn: archivePlan,
     onSuccess: () => {
-      toast({ title: "Đã lưu trữ gói" });
+      toast({ title: "Plan archived" });
       qc.invalidateQueries({ queryKey: ["premium-plans"] });
       setConfirmArchiveId(null);
     },
     onError: () => {
-      toast({ title: "Lưu trữ thất bại", variant: "destructive" });
+      toast({ title: "Failed to archive plan", variant: "destructive" });
     },
   });
 
@@ -326,15 +326,15 @@ export function PremiumPlans() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Quản lý gói Premium
+            Premium Plan Management
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Tạo và quản lý các gói đăng ký Premium.
+            Create and manage Premium subscription plans.
           </p>
         </div>
         <Button onClick={openCreateDialog}>
           <Plus className="h-4 w-4 mr-2" />
-          Tạo gói mới
+          Create New Plan
         </Button>
       </div>
 
@@ -344,19 +344,19 @@ export function PremiumPlans() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Tên gói</TableHead>
-                <TableHead>Giá / Chu kỳ</TableHead>
+                <TableHead>Plan Name</TableHead>
+                <TableHead>Price / Interval</TableHead>
                 <TableHead>Badge</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead>Thứ tự</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Order</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {plans.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Chưa có gói nào. Nhấn "Tạo gói mới" để bắt đầu.
+                    No plans yet. Click "Create New Plan" to get started.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -395,10 +395,10 @@ export function PremiumPlans() {
                     <TableCell>
                       {plan.active ? (
                         <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
-                          Hoạt động
+                          Active
                         </Badge>
                       ) : (
-                        <Badge variant="secondary">Lưu trữ</Badge>
+                        <Badge variant="secondary">Archived</Badge>
                       )}
                     </TableCell>
                     <TableCell>{plan.sort_order}</TableCell>
@@ -436,12 +436,12 @@ export function PremiumPlans() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Gem className="h-5 w-5" />
-              {editingPlan ? "Chỉnh sửa gói" : "Tạo gói mới"}
+              {editingPlan ? "Edit Plan" : "Create New Plan"}
             </DialogTitle>
             <DialogDescription>
               {editingPlan
-                ? "Cập nhật thông tin gói Premium."
-                : "Điền thông tin để tạo gói Premium mới."}
+                ? "Update Premium plan details."
+                : "Fill in the details to create a new Premium plan."}
             </DialogDescription>
           </DialogHeader>
 
@@ -449,7 +449,7 @@ export function PremiumPlans() {
             {/* Basic info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="plan-code">Mã gói</Label>
+                <Label htmlFor="plan-code">Plan Code</Label>
                 <Input
                   id="plan-code"
                   value={form.code}
@@ -459,7 +459,7 @@ export function PremiumPlans() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="plan-name">Tên gói</Label>
+                <Label htmlFor="plan-name">Plan Name</Label>
                 <Input
                   id="plan-name"
                   value={form.name}
@@ -470,12 +470,12 @@ export function PremiumPlans() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="plan-description">Mô tả</Label>
+              <Label htmlFor="plan-description">Description</Label>
               <Textarea
                 id="plan-description"
                 value={form.description}
                 onChange={(e) => updateField("description", e.target.value)}
-                placeholder="Mô tả ngắn về gói..."
+                placeholder="Brief description of the plan..."
                 rows={2}
               />
             </div>
@@ -483,7 +483,7 @@ export function PremiumPlans() {
             {/* Pricing */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="plan-price">Giá</Label>
+                <Label htmlFor="plan-price">Price</Label>
                 <Input
                   id="plan-price"
                   type="number"
@@ -495,7 +495,7 @@ export function PremiumPlans() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="plan-currency">Tiền tệ</Label>
+                <Label htmlFor="plan-currency">Currency</Label>
                 <Select
                   value={form.currency}
                   onValueChange={(v) => updateField("currency", v)}
@@ -513,7 +513,7 @@ export function PremiumPlans() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="plan-interval">Chu kỳ</Label>
+                <Label htmlFor="plan-interval">Interval</Label>
                 <Select
                   value={form.interval}
                   onValueChange={(v) => updateField("interval", v)}
@@ -544,7 +544,7 @@ export function PremiumPlans() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="plan-color">Màu sắc</Label>
+                <Label htmlFor="plan-color">Color</Label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
@@ -560,7 +560,7 @@ export function PremiumPlans() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="plan-sort-order">Thứ tự</Label>
+                <Label htmlFor="plan-sort-order">Order</Label>
                 <Input
                   id="plan-sort-order"
                   type="number"
@@ -579,20 +579,20 @@ export function PremiumPlans() {
                   checked={form.active}
                   onCheckedChange={(v) => updateField("active", v)}
                 />
-                <Label>Hoạt động</Label>
+                <Label>Active</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch
                   checked={form.is_public}
                   onCheckedChange={(v) => updateField("is_public", v)}
                 />
-                <Label>Công khai</Label>
+                <Label>Public</Label>
               </div>
             </div>
 
             {/* Features */}
             <div className="space-y-3">
-              <Label className="text-base font-medium">Tính năng</Label>
+              <Label className="text-base font-medium">Features</Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {FEATURE_KEYS.map((feat) => (
                   <div
@@ -628,11 +628,11 @@ export function PremiumPlans() {
 
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog}>
-              Hủy
+              Cancel
             </Button>
             <Button onClick={handleSubmit} disabled={isSaving}>
               {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {editingPlan ? "Cập nhật" : "Tạo mới"}
+              {editingPlan ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -645,10 +645,10 @@ export function PremiumPlans() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Lưu trữ gói</DialogTitle>
+            <DialogTitle>Archive Plan</DialogTitle>
             <DialogDescription>
-              Gói sẽ bị đánh dấu là không hoạt động. Bạn có thể kích hoạt lại
-              sau bằng cách chỉnh sửa.
+              The plan will be marked as inactive. You can reactivate it
+              later by editing.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -656,7 +656,7 @@ export function PremiumPlans() {
               variant="outline"
               onClick={() => setConfirmArchiveId(null)}
             >
-              Hủy
+              Cancel
             </Button>
             <Button
               variant="destructive"
@@ -669,7 +669,7 @@ export function PremiumPlans() {
               {archiveMutation.isPending && (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               )}
-              Lưu trữ
+              Archive
             </Button>
           </DialogFooter>
         </DialogContent>

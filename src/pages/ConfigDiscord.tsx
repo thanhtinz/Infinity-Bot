@@ -16,7 +16,7 @@ const schema = z.object({
   discord_token: z.string().optional(),
   discord_client_id: z.string().optional(),
   discord_client_secret: z.string().optional(),
-  support_server_url: z.string().url("Nhập URL Discord hợp lệ").or(z.literal("")).optional(),
+  support_server_url: z.string().url("Enter a valid Discord URL").or(z.literal("")).optional(),
 });
 type FormValues = z.infer<typeof schema>;
 

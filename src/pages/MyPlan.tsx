@@ -100,61 +100,61 @@ interface SubscriptionPayment {
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const INTERVAL_LABELS: Record<string, string> = {
-  monthly: "Hàng tháng",
-  quarterly: "Hàng quý",
-  yearly: "Hàng năm",
-  lifetime: "Vĩnh viễn",
+  monthly: "Monthly",
+  quarterly: "Quarterly",
+  yearly: "Yearly",
+  lifetime: "Lifetime",
 };
 
 const STATUS_BADGES: Record<string, { label: string; className: string }> = {
   active: {
-    label: "Hoạt động",
+    label: "Active",
     className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0",
   },
   trial: {
-    label: "Dùng thử",
+    label: "Trial",
     className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0",
   },
   expired: {
-    label: "Hết hạn",
+    label: "Expired",
     className: "bg-gray-100 text-gray-700 dark:bg-gray-800/30 dark:text-gray-400 border-0",
   },
   cancelled: {
-    label: "Đã hủy",
+    label: "Cancelled",
     className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0",
   },
   past_due: {
-    label: "Quá hạn",
+    label: "Past Due",
     className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-0",
   },
 };
 
 const PAYMENT_STATUS_BADGES: Record<string, { label: string; className: string }> = {
   completed: {
-    label: "Hoàn thành",
+    label: "Completed",
     className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0",
   },
   pending: {
-    label: "Chờ xử lý",
+    label: "Pending",
     className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-0",
   },
   failed: {
-    label: "Thất bại",
+    label: "Failed",
     className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0",
   },
   refunded: {
-    label: "Hoàn tiền",
+    label: "Refunded",
     className: "bg-gray-100 text-gray-700 dark:bg-gray-800/30 dark:text-gray-400 border-0",
   },
 };
 
 const FEATURE_LABELS: Record<string, string> = {
-  custom_bot: "Bot riêng (tên, avatar tùy chỉnh)",
-  advanced_captcha: "Captcha nâng cao (hCaptcha / Turnstile)",
-  scheduled_backup: "Sao lưu tự động theo lịch",
-  backup_retention: "Lưu trữ backup lâu hơn",
-  remove_branding: "Ẩn thương hiệu Infinity Bot",
-  priority_support: "Hỗ trợ ưu tiên",
+  custom_bot: "Custom Bot (custom name & avatar)",
+  advanced_captcha: "Advanced Captcha (hCaptcha / Turnstile)",
+  scheduled_backup: "Scheduled automatic backup",
+  backup_retention: "Longer backup retention",
+  remove_branding: "Hide Infinity Bot branding",
+  priority_support: "Priority support",
 };
 
 /** Ordered feature keys for the comparison table */
@@ -170,7 +170,7 @@ const COMPARISON_FEATURE_KEYS = [
 function formatDate(dateStr?: string): string {
   if (!dateStr) return "—";
   const d = new Date(dateStr);
-  return d.toLocaleDateString("vi-VN", {
+  return d.toLocaleDateString("en-US", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -249,7 +249,7 @@ async function redeemCoupon(guildId: string, code: string) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { detail?: string }).detail ?? "Không thể kích hoạt coupon");
+    throw new Error((err as { detail?: string }).detail ?? "Failed to activate coupon");
   }
   return res.json() as Promise<{ days_granted: number; plan_name?: string; period_end: string }>;
 }
@@ -298,13 +298,13 @@ export function MyPlan() {
     mutationFn: (args: { id: number; data: Partial<GuildSubscription> }) =>
       updateSubscription(args.id, args.data),
     onSuccess: () => {
-      toast({ title: "Đã cập nhật" });
+      toast({ title: "Updated" });
       qc.invalidateQueries({
         queryKey: ["premium-subscription-guild", selectedGuildId],
       });
     },
     onError: () => {
-      toast({ title: "Cập nhật thất bại", variant: "destructive" });
+      toast({ title: "Update failed", variant: "destructive" });
     },
   });
 
@@ -315,8 +315,8 @@ export function MyPlan() {
     mutationFn: (code: string) => redeemCoupon(selectedGuildId!, code),
     onSuccess: (data) => {
       toast({
-        title: "🎉 Kích hoạt thành công!",
-        description: `Nhận ${data.days_granted} ngày ${data.plan_name ?? "Premium"} cho server.`,
+        title: "🎉 Activation successful!",
+        description: `Received ${data.days_granted} days of ${data.plan_name ?? "Premium"} for the server.`,
       });
       setCouponCode("");
       setCouponError("");
@@ -379,10 +379,10 @@ export function MyPlan() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
             <Crown className="h-6 w-6 text-primary" />
-            Gói Premium Server
+            Server Premium Plan
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Nâng cấp <span className="font-medium text-foreground">{guildName}</span> với các tính năng Premium dành cho toàn bộ server.
+            Upgrade <span className="font-medium text-foreground">{guildName}</span> with Premium features for the entire server.
           </p>
         </div>
 
@@ -391,10 +391,10 @@ export function MyPlan() {
           <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
-              <Users className="h-4 w-4" /> Gói Premium áp dụng cho toàn bộ server
+              <Users className="h-4 w-4" /> Premium plan applies to the entire server
             </p>
             <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
-              Khi admin mua gói, tất cả thành viên trong <span className="font-medium">{guildName}</span> đều được hưởng đầy đủ tính năng Premium ngay lập tức.
+              When an admin purchases a plan, all members in <span className="font-medium">{guildName}</span> get full Premium features immediately.
             </p>
           </div>
         </div>
@@ -405,10 +405,10 @@ export function MyPlan() {
             <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0" />
             <div>
               <p className="text-sm font-medium text-red-800 dark:text-red-300">
-                Gói Premium của server đã hết hạn
+                Server Premium plan has expired
               </p>
               <p className="text-xs text-red-600 dark:text-red-400">
-                Gia hạn ngay để toàn bộ server tiếp tục sử dụng các tính năng Premium.
+                Renew now so the entire server can continue using Premium features.
               </p>
             </div>
           </div>
@@ -419,11 +419,11 @@ export function MyPlan() {
           <CardContent className="pt-4 pb-4">
             <div className="flex items-center gap-2 mb-3">
               <Ticket className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Nhập mã coupon</span>
+              <span className="text-sm font-medium">Enter coupon code</span>
             </div>
             <div className="flex gap-2">
               <Input
-                placeholder="Nhập mã coupon..."
+                placeholder="Enter coupon code..."
                 value={couponCode}
                 onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(""); }}
                 onKeyDown={e => e.key === "Enter" && handleRedeem()}
@@ -435,7 +435,7 @@ export function MyPlan() {
                 disabled={redeemMutation.isPending || !couponCode.trim() || !selectedGuildId}
                 className="shrink-0"
               >
-                {redeemMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Kích hoạt"}
+                {redeemMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Activate"}
               </Button>
             </div>
             {couponError && (
@@ -451,10 +451,10 @@ export function MyPlan() {
           <div>
             <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              So sánh tính năng
+              Compare Features
             </h2>
             <p className="text-sm text-muted-foreground mb-4">
-              Xem nhanh những gì bạn nhận được ở mỗi gói.
+              Quick overview of what you get with each plan.
             </p>
 
             <div className="overflow-x-auto rounded-lg border">
@@ -462,12 +462,12 @@ export function MyPlan() {
                 <TableHeader>
                   <TableRow className="bg-muted/50">
                     <TableHead className="min-w-[200px] sticky left-0 bg-muted/50 z-10">
-                      Tính năng
+                      Feature
                     </TableHead>
                     <TableHead className="text-center min-w-[100px]">
                       <div className="flex flex-col items-center gap-1">
                         <span className="font-semibold text-muted-foreground">Free</span>
-                        <span className="text-xs text-muted-foreground">Miễn phí</span>
+                        <span className="text-xs text-muted-foreground">Free</span>
                       </div>
                     </TableHead>
                     {publicPlans.map((plan) => (
@@ -508,7 +508,7 @@ export function MyPlan() {
                       {/* Free column */}
                       <TableCell className="text-center">
                         {key === "backup_retention" ? (
-                          <span className="text-xs text-muted-foreground">7 ngày</span>
+                          <span className="text-xs text-muted-foreground">7 days</span>
                         ) : (
                           <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
                         )}
@@ -520,7 +520,7 @@ export function MyPlan() {
                           <TableCell key={plan.id} className="text-center">
                             {typeof value === "number" && value > 0 ? (
                               <span className="text-sm font-medium" style={{ color: plan.color || undefined }}>
-                                {value} ngày
+                                {value} days
                               </span>
                             ) : value === true ? (
                               <CheckCircle2
@@ -543,12 +543,12 @@ export function MyPlan() {
 
         {/* ── Plan Cards ────────────────────────────────────────────────── */}
         <div>
-          <h2 className="text-lg font-semibold mb-1">Các gói Premium</h2>
-          <p className="text-sm text-muted-foreground mb-4">Chọn gói phù hợp — liên hệ admin để kích hoạt cho server của bạn.</p>
+          <h2 className="text-lg font-semibold mb-1">Premium Plans</h2>
+          <p className="text-sm text-muted-foreground mb-4">Choose a suitable plan — contact admin to activate for your server.</p>
           {publicPlans.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                Chưa có gói Premium nào.
+                No Premium plans available.
               </CardContent>
             </Card>
           ) : (
@@ -621,7 +621,7 @@ export function MyPlan() {
                             <span>
                               {FEATURE_LABELS[key] || key}
                               {typeof value === "number" && value > 0
-                                ? `: ${value} ngày`
+                                ? `: ${value} days`
                                 : ""}
                             </span>
                           </div>
@@ -630,7 +630,7 @@ export function MyPlan() {
 
                     <Button className="w-full" variant="outline">
                       <Gem className="h-4 w-4 mr-2" />
-                      Liên hệ admin để kích hoạt
+                      Contact admin to activate
                     </Button>
                   </CardContent>
                 </Card>
@@ -645,25 +645,25 @@ export function MyPlan() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Info className="h-4 w-4 text-muted-foreground" />
-                Hướng dẫn thanh toán
+                Payment Instructions
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               {premiumConfig.manual_bank_name && (
                 <div className="flex gap-2">
-                  <span className="text-muted-foreground w-36 shrink-0">Ngân hàng:</span>
+                  <span className="text-muted-foreground w-36 shrink-0">Bank:</span>
                   <span className="font-medium">{premiumConfig.manual_bank_name}</span>
                 </div>
               )}
               {premiumConfig.manual_account_holder && (
                 <div className="flex gap-2">
-                  <span className="text-muted-foreground w-36 shrink-0">Chủ tài khoản:</span>
+                  <span className="text-muted-foreground w-36 shrink-0">Account Holder:</span>
                   <span className="font-medium">{premiumConfig.manual_account_holder}</span>
                 </div>
               )}
               {premiumConfig.manual_account_number && (
                 <div className="flex gap-2">
-                  <span className="text-muted-foreground w-36 shrink-0">Số tài khoản:</span>
+                  <span className="text-muted-foreground w-36 shrink-0">Account Number:</span>
                   <span className="font-mono font-medium">{premiumConfig.manual_account_number}</span>
                 </div>
               )}
@@ -693,10 +693,10 @@ export function MyPlan() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
           <Crown className="h-6 w-6 text-primary" />
-          Gói Premium Server
+          Server Premium Plan
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Gói đang hoạt động cho <span className="font-medium text-foreground">{guildName}</span> — toàn bộ thành viên được hưởng đầy đủ tính năng.
+          Active plan for <span className="font-medium text-foreground">{guildName}</span> — all members get full features.
         </p>
       </div>
 
@@ -704,7 +704,7 @@ export function MyPlan() {
       <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 px-4 py-2.5 flex items-center gap-3">
         <Users className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
         <p className="text-xs text-blue-700 dark:text-blue-300">
-          Gói Premium này được áp dụng cho <span className="font-semibold">{guildName}</span>. Tất cả thành viên trong server đều được hưởng lợi.
+          This Premium plan applies to <span className="font-semibold">{guildName}</span>. All members in the server benefit.
         </p>
       </div>
 
@@ -714,10 +714,10 @@ export function MyPlan() {
           <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
           <div>
             <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
-              Gói Premium của server sắp hết hạn
+              Server Premium plan is about to expire
             </p>
             <p className="text-xs text-amber-600 dark:text-amber-400">
-              Còn lại {daysRemaining} ngày. Gia hạn ngay để toàn bộ server không bị gián đoạn.
+              {daysRemaining} days remaining. Renew now to avoid disruption for the entire server.
             </p>
           </div>
         </div>
@@ -748,7 +748,7 @@ export function MyPlan() {
               )}
               <div>
                 <CardTitle className="text-lg">
-                  {currentPlan?.name ?? `Gói #${subscription.plan_id}`}
+                  {currentPlan?.name ?? `Plan #${subscription.plan_id}`}
                 </CardTitle>
                 {currentPlan?.badge_text && (
                   <Badge
@@ -771,13 +771,13 @@ export function MyPlan() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="rounded-lg bg-muted/50 px-3 py-2">
-              <p className="text-xs text-muted-foreground">Ngày bắt đầu</p>
+              <p className="text-xs text-muted-foreground">Start Date</p>
               <p className="text-sm font-medium">
                 {formatDate(subscription.current_period_start)}
               </p>
             </div>
             <div className="rounded-lg bg-muted/50 px-3 py-2">
-              <p className="text-xs text-muted-foreground">Ngày hết hạn</p>
+              <p className="text-xs text-muted-foreground">Expiry Date</p>
               <p className="text-sm font-medium">
                 {formatDate(subscription.current_period_end)}
               </p>
@@ -790,14 +790,14 @@ export function MyPlan() {
               }`}
             >
               <p className={`text-xs ${isExpiringSoon ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
-                Còn lại
+                Remaining
               </p>
               <p className={`text-sm font-medium ${isExpiringSoon ? "text-amber-700 dark:text-amber-300" : ""}`}>
-                {daysRemaining !== null ? `${daysRemaining} ngày` : "—"}
+                {daysRemaining !== null ? `${daysRemaining} days` : "—"}
               </p>
             </div>
             <div className="rounded-lg bg-muted/50 px-3 py-2">
-              <p className="text-xs text-muted-foreground">Phương thức</p>
+              <p className="text-xs text-muted-foreground">Method</p>
               <p className="text-sm font-medium">
                 {subscription.payment_provider}
               </p>
@@ -813,7 +813,7 @@ export function MyPlan() {
                 onCheckedChange={handleAutoRenewToggle}
                 disabled={updateSubMutation.isPending}
               />
-              <Label className="text-sm">Tự động gia hạn</Label>
+              <Label className="text-sm">Auto-renew</Label>
               {updateSubMutation.isPending && (
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
               )}
@@ -821,7 +821,7 @@ export function MyPlan() {
             {needsRenewal && (
               <Button size="sm">
                 <CalendarClock className="h-4 w-4 mr-2" />
-                Gia hạn
+                Renew
               </Button>
             )}
           </div>
@@ -833,11 +833,11 @@ export function MyPlan() {
         <CardContent className="pt-4 pb-4">
           <div className="flex items-center gap-2 mb-3">
             <Ticket className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">Nhập mã coupon</span>
+            <span className="text-sm font-medium">Enter coupon code</span>
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="Nhập mã coupon..."
+              placeholder="Enter coupon code..."
               value={couponCode}
               onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(""); }}
               onKeyDown={e => e.key === "Enter" && handleRedeem()}
@@ -849,7 +849,7 @@ export function MyPlan() {
               disabled={redeemMutation.isPending || !couponCode.trim() || !selectedGuildId}
               className="shrink-0"
             >
-              {redeemMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Kích hoạt"}
+              {redeemMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Activate"}
             </Button>
           </div>
           {couponError && (
@@ -865,10 +865,10 @@ export function MyPlan() {
         <div>
           <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            So sánh tính năng
+            Compare Features
           </h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Xem nhanh những gì bạn nhận được ở mỗi gói.
+            Quick overview of what you get with each plan.
           </p>
 
           <div className="overflow-x-auto rounded-lg border">
@@ -876,12 +876,12 @@ export function MyPlan() {
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead className="min-w-[200px] sticky left-0 bg-muted/50 z-10">
-                    Tính năng
+                    Feature
                   </TableHead>
                   <TableHead className="text-center min-w-[100px]">
                     <div className="flex flex-col items-center gap-1">
                       <span className="font-semibold text-muted-foreground">Free</span>
-                      <span className="text-xs text-muted-foreground">Miễn phí</span>
+                      <span className="text-xs text-muted-foreground">Free</span>
                     </div>
                   </TableHead>
                   {publicPlans.map((plan) => {
@@ -912,7 +912,7 @@ export function MyPlan() {
                           )}
                           {isCurrentPlan && (
                             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 leading-4">
-                              Hiện tại
+                              Current
                             </Badge>
                           )}
                         </div>
@@ -930,7 +930,7 @@ export function MyPlan() {
                     {/* Free column */}
                     <TableCell className="text-center">
                       {key === "backup_retention" ? (
-                        <span className="text-xs text-muted-foreground">7 ngày</span>
+                        <span className="text-xs text-muted-foreground">7 days</span>
                       ) : (
                         <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
                       )}
@@ -946,7 +946,7 @@ export function MyPlan() {
                         >
                           {typeof value === "number" && value > 0 ? (
                             <span className="text-sm font-medium" style={{ color: plan.color || undefined }}>
-                              {value} ngày
+                              {value} days
                             </span>
                           ) : value === true ? (
                             <CheckCircle2
@@ -969,8 +969,8 @@ export function MyPlan() {
 
       {/* Available Plans */}
       <div>
-        <h2 className="text-lg font-semibold mb-1">Các gói Premium</h2>
-        <p className="text-sm text-muted-foreground mb-4">Nâng cấp hoặc thay đổi gói cho server.</p>
+        <h2 className="text-lg font-semibold mb-1">Premium Plans</h2>
+        <p className="text-sm text-muted-foreground mb-4">Upgrade or change the plan for your server.</p>
         {publicPlans.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {publicPlans.map((plan) => {
@@ -1015,7 +1015,7 @@ export function MyPlan() {
                         </CardTitle>
                         {isCurrentPlan && (
                           <Badge variant="secondary" className="ml-auto">
-                            Hiện tại
+                            Current
                           </Badge>
                         )}
                       </div>
@@ -1053,7 +1053,7 @@ export function MyPlan() {
                               <span>
                                 {FEATURE_LABELS[key] || key}
                                 {typeof value === "number" && value > 0
-                                  ? `: ${value} ngày`
+                                  ? `: ${value} days`
                                   : ""}
                               </span>
                             </div>
@@ -1063,7 +1063,7 @@ export function MyPlan() {
                       {!isCurrentPlan && (
                         <Button className="w-full" variant="outline">
                           <Gem className="h-4 w-4 mr-2" />
-                          Liên hệ admin để chuyển gói
+                          Contact admin to change plan
                         </Button>
                       )}
                     </CardContent>
@@ -1076,18 +1076,18 @@ export function MyPlan() {
 
       {/* Payment History */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Lịch sử thanh toán</h2>
+        <h2 className="text-lg font-semibold mb-4">Payment History</h2>
         <Card>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Số tiền</TableHead>
-                  <TableHead>Gói</TableHead>
-                  <TableHead>Phương thức</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>Ngày thanh toán</TableHead>
-                  <TableHead>Chu kỳ</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Method</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Payment Date</TableHead>
+                  <TableHead>Cycle</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1097,7 +1097,7 @@ export function MyPlan() {
                       colSpan={6}
                       className="text-center py-8 text-muted-foreground"
                     >
-                      Chưa có thanh toán nào.
+                      No payments yet.
                     </TableCell>
                   </TableRow>
                 ) : (

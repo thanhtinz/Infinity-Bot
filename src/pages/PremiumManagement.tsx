@@ -138,55 +138,55 @@ interface CouponRedemption {
 
 const STATUS_BADGES: Record<string, { label: string; className: string }> = {
   active: {
-    label: "Hoạt động",
+    label: "Active",
     className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0",
   },
   trial: {
-    label: "Dùng thử",
+    label: "Trial",
     className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0",
   },
   expired: {
-    label: "Hết hạn",
+    label: "Expired",
     className: "bg-gray-100 text-gray-700 dark:bg-gray-800/30 dark:text-gray-400 border-0",
   },
   cancelled: {
-    label: "Đã hủy",
+    label: "Cancelled",
     className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0",
   },
   past_due: {
-    label: "Quá hạn",
+    label: "Past Due",
     className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-0",
   },
   manual_review: {
-    label: "Xét duyệt",
+    label: "Pending Review",
     className: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-0",
   },
 };
 
 const STATUS_OPTIONS = [
-  { value: "all", label: "Tất cả" },
-  { value: "active", label: "Hoạt động" },
-  { value: "trial", label: "Dùng thử" },
-  { value: "expired", label: "Hết hạn" },
-  { value: "cancelled", label: "Đã hủy" },
-  { value: "past_due", label: "Quá hạn" },
+  { value: "all", label: "All" },
+  { value: "active", label: "Active" },
+  { value: "trial", label: "Trial" },
+  { value: "expired", label: "Expired" },
+  { value: "cancelled", label: "Cancelled" },
+  { value: "past_due", label: "Past Due" },
 ];
 
 const PAYMENT_STATUS_BADGES: Record<string, { label: string; className: string }> = {
   completed: {
-    label: "Hoàn thành",
+    label: "Completed",
     className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0",
   },
   pending: {
-    label: "Chờ xử lý",
+    label: "Pending",
     className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-0",
   },
   failed: {
-    label: "Thất bại",
+    label: "Failed",
     className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0",
   },
   refunded: {
-    label: "Hoàn tiền",
+    label: "Refunded",
     className: "bg-gray-100 text-gray-700 dark:bg-gray-800/30 dark:text-gray-400 border-0",
   },
 };
@@ -194,7 +194,7 @@ const PAYMENT_STATUS_BADGES: Record<string, { label: string; className: string }
 function formatDate(dateStr?: string): string {
   if (!dateStr) return "—";
   const d = new Date(dateStr);
-  return d.toLocaleDateString("vi-VN", {
+  return d.toLocaleDateString("en-US", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -370,12 +370,12 @@ export function PremiumManagement() {
     mutationFn: (args: { id: number; data: Partial<GuildSubscription> }) =>
       updateSubscription(args.id, args.data),
     onSuccess: () => {
-      toast({ title: "Đã cập nhật đăng ký" });
+      toast({ title: "Subscription updated" });
       qc.invalidateQueries({ queryKey: ["premium-subscriptions"] });
       setEditSub(null);
     },
     onError: () => {
-      toast({ title: "Cập nhật thất bại", variant: "destructive" });
+      toast({ title: "Update failed", variant: "destructive" });
     },
   });
 
@@ -383,48 +383,48 @@ export function PremiumManagement() {
     mutationFn: (args: { id: number; days: number }) =>
       extendSubscription(args.id, args.days),
     onSuccess: () => {
-      toast({ title: "Đã gia hạn đăng ký" });
+      toast({ title: "Subscription extended" });
       qc.invalidateQueries({ queryKey: ["premium-subscriptions"] });
       setExtendDialogId(null);
     },
     onError: () => {
-      toast({ title: "Gia hạn thất bại", variant: "destructive" });
+      toast({ title: "Extension failed", variant: "destructive" });
     },
   });
 
   const cancelMutation = useMutation({
     mutationFn: cancelSubscription,
     onSuccess: () => {
-      toast({ title: "Đã hủy đăng ký" });
+      toast({ title: "Subscription cancelled" });
       qc.invalidateQueries({ queryKey: ["premium-subscriptions"] });
       setCancelDialogId(null);
     },
     onError: () => {
-      toast({ title: "Hủy thất bại", variant: "destructive" });
+      toast({ title: "Cancellation failed", variant: "destructive" });
     },
   });
 
   const createPaymentMutation = useMutation({
     mutationFn: createPayment,
     onSuccess: () => {
-      toast({ title: "Đã ghi nhận thanh toán" });
+      toast({ title: "Payment recorded" });
       qc.invalidateQueries({ queryKey: ["premium-payments"] });
       qc.invalidateQueries({ queryKey: ["premium-subscriptions"] });
       setPaymentDialogOpen(false);
       resetPaymentForm();
     },
     onError: () => {
-      toast({ title: "Ghi nhận thất bại", variant: "destructive" });
+      toast({ title: "Recording failed", variant: "destructive" });
     },
   });
 
   const scanMutation = useMutation({
     mutationFn: scanReminders,
     onSuccess: () => {
-      toast({ title: "Đã quét nhắc nhở" });
+      toast({ title: "Reminders scanned" });
     },
     onError: () => {
-      toast({ title: "Quét nhắc nhở thất bại", variant: "destructive" });
+      toast({ title: "Reminder scan failed", variant: "destructive" });
     },
   });
 
@@ -437,20 +437,20 @@ export function PremiumManagement() {
 
   const createCouponMutation = useMutation({
     mutationFn: createCoupon,
-    onSuccess: () => { toast({ title: "Đã tạo coupon" }); qc.invalidateQueries({ queryKey: ["premium-coupons"] }); setCouponDialogOpen(false); },
-    onError: (e: Error) => toast({ title: "Lỗi", description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: "Coupon created" }); qc.invalidateQueries({ queryKey: ["premium-coupons"] }); setCouponDialogOpen(false); },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const updateCouponMutation = useMutation({
     mutationFn: (args: { id: number; data: Record<string, unknown> }) => updateCoupon(args.id, args.data),
-    onSuccess: () => { toast({ title: "Đã cập nhật" }); qc.invalidateQueries({ queryKey: ["premium-coupons"] }); setCouponDialogOpen(false); },
-    onError: (e: Error) => toast({ title: "Lỗi", description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: "Updated" }); qc.invalidateQueries({ queryKey: ["premium-coupons"] }); setCouponDialogOpen(false); },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const deactivateCouponMutation = useMutation({
     mutationFn: deactivateCoupon,
-    onSuccess: () => { toast({ title: "Đã vô hiệu hóa coupon" }); qc.invalidateQueries({ queryKey: ["premium-coupons"] }); },
-    onError: (e: Error) => toast({ title: "Lỗi", description: e.message, variant: "destructive" }),
+    onSuccess: () => { toast({ title: "Coupon deactivated" }); qc.invalidateQueries({ queryKey: ["premium-coupons"] }); },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const resetPaymentForm = () => {
@@ -581,10 +581,10 @@ export function PremiumManagement() {
       {/* Page header */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          Quản lý Premium
+          Premium Management
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Quản lý đăng ký và thanh toán Premium.
+          Manage Premium subscriptions and payments.
         </p>
       </div>
 
@@ -592,11 +592,11 @@ export function PremiumManagement() {
         <TabsList>
           <TabsTrigger value="subscriptions" className="gap-1.5">
             <Users className="h-4 w-4" />
-            Đăng ký
+            Subscriptions
           </TabsTrigger>
           <TabsTrigger value="payments" className="gap-1.5">
             <CreditCard className="h-4 w-4" />
-            Thanh toán
+            Payments
           </TabsTrigger>
           <TabsTrigger value="coupons" className="gap-1.5">
             <Ticket className="h-4 w-4" />
@@ -610,7 +610,7 @@ export function PremiumManagement() {
           <div className="flex flex-wrap items-center gap-3">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Lọc trạng thái" />
+                <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
                 {STATUS_OPTIONS.map((o) => (
@@ -630,7 +630,7 @@ export function PremiumManagement() {
               ) : (
                 <Search className="h-4 w-4 mr-2" />
               )}
-              Quét nhắc nhở
+              Scan Reminders
             </Button>
           </div>
 
@@ -640,12 +640,12 @@ export function PremiumManagement() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Guild ID</TableHead>
-                    <TableHead>Gói</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead>Hết hạn</TableHead>
-                    <TableHead>Tự động</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Expires</TableHead>
+                    <TableHead>Auto</TableHead>
                     <TableHead>Provider</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -655,7 +655,7 @@ export function PremiumManagement() {
                         colSpan={7}
                         className="text-center py-8 text-muted-foreground"
                       >
-                        Không có đăng ký nào.
+                        No subscriptions yet.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -706,7 +706,7 @@ export function PremiumManagement() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                title="Gia hạn"
+                                title="Extend"
                                 onClick={() => {
                                   setExtendDialogId(sub.id);
                                   setExtendDays(30);
@@ -717,7 +717,7 @@ export function PremiumManagement() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                title="Hủy"
+                                title="Cancel"
                                 onClick={() => setCancelDialogId(sub.id)}
                               >
                                 <XCircle className="h-4 w-4" />
@@ -725,7 +725,7 @@ export function PremiumManagement() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                title="Chỉnh sửa"
+                                title="Edit"
                                 onClick={() => openEditDialog(sub)}
                               >
                                 <Pencil className="h-4 w-4" />
@@ -747,7 +747,7 @@ export function PremiumManagement() {
           <div className="flex justify-end">
             <Button onClick={() => setPaymentDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Ghi nhận thanh toán
+              Record Payment
             </Button>
           </div>
 
@@ -757,12 +757,12 @@ export function PremiumManagement() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Guild ID</TableHead>
-                    <TableHead>Gói</TableHead>
-                    <TableHead>Số tiền</TableHead>
-                    <TableHead>Phương thức</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead>Ngày thanh toán</TableHead>
-                    <TableHead>Ghi chú</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Method</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Payment Date</TableHead>
+                    <TableHead>Notes</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -772,7 +772,7 @@ export function PremiumManagement() {
                         colSpan={7}
                         className="text-center py-8 text-muted-foreground"
                       >
-                        Không có thanh toán nào.
+                        No payments yet.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -818,10 +818,10 @@ export function PremiumManagement() {
         <TabsContent value="coupons" className="space-y-4 mt-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Tạo mã coupon để cấp Premium theo gói + số ngày cho server.
+              Create a coupon code to grant Premium by plan + days to a server.
             </p>
             <Button size="sm" className="gap-1.5" onClick={openCreateCoupon}>
-              <Plus className="h-4 w-4" /> Tạo coupon
+              <Plus className="h-4 w-4" /> Create Coupon
             </Button>
           </div>
 
@@ -834,11 +834,11 @@ export function PremiumManagement() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Code</TableHead>
-                      <TableHead>Gói</TableHead>
-                      <TableHead>Thời hạn</TableHead>
-                      <TableHead>Đã dùng / Tối đa</TableHead>
-                      <TableHead>Hết hạn</TableHead>
-                      <TableHead>Trạng thái</TableHead>
+                      <TableHead>Plan</TableHead>
+                      <TableHead>Duration</TableHead>
+                      <TableHead>Used / Max</TableHead>
+                      <TableHead>Expires</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead className="w-24"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -846,7 +846,7 @@ export function PremiumManagement() {
                     {(couponsQuery.data ?? []).length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                          Chưa có coupon nào.
+                          No coupons yet.
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -861,12 +861,12 @@ export function PremiumManagement() {
                               <span className="text-sm">{c.plan_name ?? `Plan #${c.plan_id}`}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm">{c.duration_days} ngày</TableCell>
+                          <TableCell className="text-sm">{c.duration_days} days</TableCell>
                           <TableCell className="text-sm">
                             {c.used_count} / {c.max_uses === 0 ? "∞" : c.max_uses}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
-                            {c.expires_at ? new Date(c.expires_at).toLocaleDateString("vi-VN") : "—"}
+                            {c.expires_at ? new Date(c.expires_at).toLocaleDateString("en-US") : "—"}
                           </TableCell>
                           <TableCell>
                             <Badge className={c.active
@@ -879,16 +879,16 @@ export function PremiumManagement() {
                           <TableCell>
                             <div className="flex gap-1">
                               <Button size="icon" variant="ghost" className="h-7 w-7"
-                                onClick={() => setDetailCoupon(c.id)} title="Xem lịch sử">
+                                onClick={() => setDetailCoupon(c.id)} title="View history">
                                 <Eye className="h-3.5 w-3.5" />
                               </Button>
                               <Button size="icon" variant="ghost" className="h-7 w-7"
-                                onClick={() => openEditCoupon(c)} title="Sửa">
+                                onClick={() => openEditCoupon(c)} title="Edit">
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
                               {c.active && (
                                 <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive"
-                                  onClick={() => deactivateCouponMutation.mutate(c.id)} title="Vô hiệu hóa">
+                                  onClick={() => deactivateCouponMutation.mutate(c.id)} title="Deactivate">
                                   <XCircle className="h-3.5 w-3.5" />
                                 </Button>
                               )}
@@ -912,14 +912,14 @@ export function PremiumManagement() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Gia hạn đăng ký</DialogTitle>
+            <DialogTitle>Extend Subscription</DialogTitle>
             <DialogDescription>
-              Nhập số ngày muốn gia hạn thêm.
+              Enter the number of days to extend.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="extend-days">Số ngày gia hạn</Label>
+              <Label htmlFor="extend-days">Days to extend</Label>
               <Input
                 id="extend-days"
                 type="number"
@@ -936,7 +936,7 @@ export function PremiumManagement() {
               variant="outline"
               onClick={() => setExtendDialogId(null)}
             >
-              Hủy
+              Cancel
             </Button>
             <Button
               onClick={() => {
@@ -951,7 +951,7 @@ export function PremiumManagement() {
               {extendMutation.isPending && (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               )}
-              Gia hạn
+              Extend
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -964,10 +964,10 @@ export function PremiumManagement() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Hủy đăng ký</DialogTitle>
+            <DialogTitle>Cancel Subscription</DialogTitle>
             <DialogDescription>
-              Bạn có chắc muốn hủy đăng ký này? Hành động này không thể hoàn
-              tác.
+              Are you sure you want to cancel this subscription? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -975,7 +975,7 @@ export function PremiumManagement() {
               variant="outline"
               onClick={() => setCancelDialogId(null)}
             >
-              Đóng
+              Close
             </Button>
             <Button
               variant="destructive"
@@ -988,7 +988,7 @@ export function PremiumManagement() {
               {cancelMutation.isPending && (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               )}
-              Hủy đăng ký
+              Cancel Subscription
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -998,16 +998,16 @@ export function PremiumManagement() {
       <Dialog open={editSub !== null} onOpenChange={(open) => !open && setEditSub(null)}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Chỉnh sửa đăng ký</DialogTitle>
+            <DialogTitle>Edit Subscription</DialogTitle>
             <DialogDescription>
-              Cập nhật thông tin đăng ký Premium cho guild{" "}
+              Update Premium subscription info for guild{" "}
               <span className="font-mono">{editSub?.guild_id}</span>
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Trạng thái</Label>
+                <Label>Status</Label>
                 <Select value={editStatus} onValueChange={setEditStatus}>
                   <SelectTrigger>
                     <SelectValue />
@@ -1022,7 +1022,7 @@ export function PremiumManagement() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-period-end">Ngày hết hạn</Label>
+                <Label htmlFor="edit-period-end">Expiry Date</Label>
                 <Input
                   id="edit-period-end"
                   type="date"
@@ -1037,11 +1037,11 @@ export function PremiumManagement() {
                   checked={editAutoRenew}
                   onCheckedChange={setEditAutoRenew}
                 />
-                <Label>Tự động gia hạn</Label>
+                <Label>Auto-renew</Label>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-reminder-days">
-                  Nhắc nhở trước (ngày)
+                  Remind before (days)
                 </Label>
                 <Input
                   id="edit-reminder-days"
@@ -1055,7 +1055,7 @@ export function PremiumManagement() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-notes">Ghi chú</Label>
+              <Label htmlFor="edit-notes">Notes</Label>
               <Textarea
                 id="edit-notes"
                 value={editNotes}
@@ -1066,7 +1066,7 @@ export function PremiumManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditSub(null)}>
-              Hủy
+              Cancel
             </Button>
             <Button
               onClick={handleEditSave}
@@ -1075,7 +1075,7 @@ export function PremiumManagement() {
               {updateSubMutation.isPending && (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               )}
-              Lưu
+              Save
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1091,9 +1091,9 @@ export function PremiumManagement() {
       >
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Ghi nhận thanh toán</DialogTitle>
+            <DialogTitle>Record Payment</DialogTitle>
             <DialogDescription>
-              Thêm bản ghi thanh toán mới.
+              Add a new payment record.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -1108,13 +1108,13 @@ export function PremiumManagement() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="pay-plan-id">Gói</Label>
+                <Label htmlFor="pay-plan-id">Plan</Label>
                 <Select
                   value={payPlanId}
                   onValueChange={setPayPlanId}
                 >
                   <SelectTrigger id="pay-plan-id">
-                    <SelectValue placeholder="Chọn gói" />
+                    <SelectValue placeholder="Select plan" />
                   </SelectTrigger>
                   <SelectContent>
                     {plans.map((p) => (
@@ -1128,7 +1128,7 @@ export function PremiumManagement() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="pay-amount">Số tiền</Label>
+                <Label htmlFor="pay-amount">Amount</Label>
                 <Input
                   id="pay-amount"
                   type="number"
@@ -1140,7 +1140,7 @@ export function PremiumManagement() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Tiền tệ</Label>
+                <Label>Currency</Label>
                 <Select
                   value={payCurrency}
                   onValueChange={setPayCurrency}
@@ -1156,7 +1156,7 @@ export function PremiumManagement() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Phương thức</Label>
+                <Label>Method</Label>
                 <Select
                   value={payMethod}
                   onValueChange={setPayMethod}
@@ -1165,7 +1165,7 @@ export function PremiumManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="manual">Chuyển khoản</SelectItem>
+                    <SelectItem value="manual">Bank Transfer</SelectItem>
                     <SelectItem value="payos">PayOS</SelectItem>
                     <SelectItem value="paypal">PayPal</SelectItem>
                     <SelectItem value="crypto">Crypto</SelectItem>
@@ -1175,7 +1175,7 @@ export function PremiumManagement() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Trạng thái</Label>
+                <Label>Status</Label>
                 <Select
                   value={payStatus}
                   onValueChange={setPayStatus}
@@ -1184,16 +1184,16 @@ export function PremiumManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="completed">Hoàn thành</SelectItem>
-                    <SelectItem value="pending">Chờ xử lý</SelectItem>
-                    <SelectItem value="failed">Thất bại</SelectItem>
-                    <SelectItem value="refunded">Hoàn tiền</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="pay-notes">Ghi chú</Label>
+              <Label htmlFor="pay-notes">Notes</Label>
               <Textarea
                 id="pay-notes"
                 value={payNotes}
@@ -1207,7 +1207,7 @@ export function PremiumManagement() {
               variant="outline"
               onClick={() => setPaymentDialogOpen(false)}
             >
-              Hủy
+              Cancel
             </Button>
             <Button
               onClick={handleCreatePayment}
@@ -1216,7 +1216,7 @@ export function PremiumManagement() {
               {createPaymentMutation.isPending && (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               )}
-              Ghi nhận
+              Record
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1226,16 +1226,16 @@ export function PremiumManagement() {
       <Dialog open={couponDialogOpen} onOpenChange={setCouponDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editCoupon ? "Sửa coupon" : "Tạo coupon mới"}</DialogTitle>
+            <DialogTitle>{editCoupon ? "Edit Coupon" : "Create New Coupon"}</DialogTitle>
             <DialogDescription>
-              Coupon sẽ cấp Premium theo gói + số ngày khi guild nhập vào trang Gói Server.
+              The coupon will grant Premium by plan + days when a guild enters it on the Server Plan page.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             {/* Code */}
             {!editCoupon && (
               <div className="space-y-1.5">
-                <Label>Mã coupon <span className="text-destructive">*</span></Label>
+                <Label>Coupon Code <span className="text-destructive">*</span></Label>
                 <div className="flex gap-2">
                   <Input
                     value={cpCode}
@@ -1245,22 +1245,22 @@ export function PremiumManagement() {
                     className="font-mono tracking-wider uppercase"
                     maxLength={32}
                   />
-                  <Button variant="outline" size="sm" onClick={() => setCpCode(randomCode())} title="Tạo ngẫu nhiên">
+                  <Button variant="outline" size="sm" onClick={() => setCpCode(randomCode())} title="Generate randomly">
                     <RefreshCw className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">Chỉ chứa A-Z, 0-9, gạch dưới, gạch ngang</p>
+                <p className="text-xs text-muted-foreground">Only A-Z, 0-9, underscores, hyphens</p>
               </div>
             )}
             {editCoupon && (
               <div className="space-y-1.5">
-                <Label>Mã coupon</Label>
+                <Label>Coupon Code</Label>
                 <code className="block font-mono text-lg font-bold tracking-widest px-3 py-2 bg-muted rounded-md">{editCoupon.code}</code>
               </div>
             )}
             {/* Plan */}
             <div className="space-y-1.5">
-              <Label>Gói áp dụng <span className="text-destructive">*</span></Label>
+              <Label>Applicable Plan <span className="text-destructive">*</span></Label>
               <select
                 value={cpPlanId}
                 onChange={e => setCpPlanId(e.target.value)}
@@ -1273,7 +1273,7 @@ export function PremiumManagement() {
             </div>
             {/* Duration */}
             <div className="space-y-1.5">
-              <Label>Thời hạn (ngày) <span className="text-destructive">*</span></Label>
+              <Label>Duration (days) <span className="text-destructive">*</span></Label>
               <Input
                 type="number" min={1} max={3650}
                 value={cpDays}
@@ -1281,23 +1281,23 @@ export function PremiumManagement() {
               />
               {Number(cpDays) > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  ≈ {Math.floor(Number(cpDays)/30)} tháng {Number(cpDays)%30 > 0 ? `${Number(cpDays)%30} ngày` : ""}
+                  ≈ {Math.floor(Number(cpDays)/30)} month(s) {Number(cpDays)%30 > 0 ? `${Number(cpDays)%30} day(s)` : ""}
                 </p>
               )}
             </div>
             {/* Max uses */}
             <div className="space-y-1.5">
-              <Label>Số lần sử dụng tối đa</Label>
+              <Label>Max Uses</Label>
               <Input
                 type="number" min={0}
                 value={cpMaxUses}
                 onChange={e => setCpMaxUses(e.target.value)}
               />
-              <p className="text-xs text-muted-foreground">0 = không giới hạn</p>
+              <p className="text-xs text-muted-foreground">0 = unlimited</p>
             </div>
             {/* Expires */}
             <div className="space-y-1.5">
-              <Label>Hết hạn (tùy chọn)</Label>
+              <Label>Expires (optional)</Label>
               <Input
                 type="datetime-local"
                 value={cpExpiresAt}
@@ -1306,18 +1306,18 @@ export function PremiumManagement() {
             </div>
             {/* Note */}
             <div className="space-y-1.5">
-              <Label>Ghi chú nội bộ</Label>
-              <Input value={cpNote} onChange={e => setCpNote(e.target.value)} placeholder="Dành cho event tháng 6..." />
+              <Label>Internal Notes</Label>
+              <Input value={cpNote} onChange={e => setCpNote(e.target.value)} placeholder="For June event..." />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCouponDialogOpen(false)}>Hủy</Button>
+            <Button variant="outline" onClick={() => setCouponDialogOpen(false)}>Cancel</Button>
             <Button
               onClick={handleSaveCoupon}
               disabled={createCouponMutation.isPending || updateCouponMutation.isPending || !cpPlanId || !cpDays}
             >
               {(createCouponMutation.isPending || updateCouponMutation.isPending) && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
-              {editCoupon ? "Lưu thay đổi" : "Tạo coupon"}
+              {editCoupon ? "Save Changes" : "Create Coupon"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1327,25 +1327,25 @@ export function PremiumManagement() {
       <Dialog open={detailCoupon !== null} onOpenChange={open => { if (!open) setDetailCoupon(null); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Lịch sử sử dụng</DialogTitle>
+            <DialogTitle>Usage History</DialogTitle>
             {detailQuery.data && (
               <DialogDescription>
                 <code className="font-mono font-bold">{detailQuery.data.code}</code>
-                {" — "}{detailQuery.data.used_count}/{detailQuery.data.max_uses === 0 ? "∞" : detailQuery.data.max_uses} lần dùng
+                {" — "}{detailQuery.data.used_count}/{detailQuery.data.max_uses === 0 ? "∞" : detailQuery.data.max_uses} uses
               </DialogDescription>
             )}
           </DialogHeader>
           {detailQuery.isLoading ? (
             <div className="space-y-2 py-4">{Array.from({length:3}).map((_,i)=><Skeleton key={i} className="h-10 w-full"/>)}</div>
           ) : (detailQuery.data?.redemptions ?? []).length === 0 ? (
-            <p className="text-center text-muted-foreground py-8 text-sm">Chưa có server nào sử dụng mã này.</p>
+            <p className="text-center text-muted-foreground py-8 text-sm">No server has used this code yet.</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Guild ID</TableHead>
-                  <TableHead>Người dùng</TableHead>
-                  <TableHead>Thời gian</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>Time</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1354,7 +1354,7 @@ export function PremiumManagement() {
                     <TableCell className="font-mono text-xs">{r.guild_id}</TableCell>
                     <TableCell className="text-xs">{r.redeemed_by ?? "—"}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {r.redeemed_at ? new Date(r.redeemed_at).toLocaleString("vi-VN") : "—"}
+                      {r.redeemed_at ? new Date(r.redeemed_at).toLocaleString("en-US") : "—"}
                     </TableCell>
                   </TableRow>
                 ))}

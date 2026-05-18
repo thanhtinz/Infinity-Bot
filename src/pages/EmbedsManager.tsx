@@ -74,12 +74,12 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
       label: p.emoji ? `${p.emoji} ${p.name}` : p.name,
       labelEn: p.name,
       icon: Package,
-      desc: `Embed chi tiết cho sản phẩm "${p.name}"`,
+      desc: `Detail embed for product "${p.name}"`,
       descEn: `Detail embed for product "${p.name}"`,
     })), [products]);
 
   const productGroup = useMemo(() => ({
-    label: "Sản phẩm",
+    label: "Products",
     labelEn: "Products",
     keys: productEvents.map((e) => e.key),
   }), [productEvents]);
@@ -88,7 +88,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
   const allEvents = useMemo(() => [...EMBED_EVENTS, ...productEvents], [productEvents]);
   const allGroups = useMemo(() => {
     const groups = [...EVENT_GROUPS];
-    if (productGroup.keys.length > 0) groups.splice(1, 0, productGroup); // after "Đơn hàng"
+    if (productGroup.keys.length > 0) groups.splice(1, 0, productGroup); // after "Orders"
     return groups;
   }, [productGroup]);
 

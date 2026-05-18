@@ -53,10 +53,10 @@ export function ShopStats() {
 
   const fmtMoney = (n: number) =>
     n >= 1_000_000
-      ? `${(n / 1_000_000).toFixed(1)}M đ`
+      ? `${(n / 1_000_000).toFixed(1)}M VND`
       : n >= 1_000
-      ? `${(n / 1_000).toFixed(0)}K đ`
-      : `${n.toLocaleString("vi-VN")} đ`;
+      ? `${(n / 1_000).toFixed(0)}K VND`
+      : `${n.toLocaleString("en-US")} VND`;
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -106,7 +106,7 @@ export function ShopStats() {
                     tickFormatter={(v) => v >= 1000 ? `${v / 1000}K` : v}
                   />
                   <Tooltip
-                    formatter={(v: unknown) => [(v as number).toLocaleString("vi-VN") + " đ", t("shopStats_totalRevenue")]}
+                    formatter={(v: unknown) => [(v as number).toLocaleString("en-US") + " VND", t("shopStats_totalRevenue")]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} />
