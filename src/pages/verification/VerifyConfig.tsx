@@ -747,8 +747,8 @@ export function VerifyConfig() {
               <div className="rounded-xl border border-border bg-card p-5 space-y-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" />Effects</p>
                 {[
-                  { key: "typewriter_effect" as const, label: "Typewriter — Title", desc: "Gõ từng ký tự cho tiêu đề" },
-                  { key: "typewriter_desc_effect" as const, label: "Typewriter — Description", desc: "Gõ từng ký tự cho mô tả" },
+                  { key: "typewriter_effect" as const, label: "Typewriter — Title", desc: "Animate title with typing effect" },
+                  { key: "typewriter_desc_effect" as const, label: "Typewriter — Description", desc: "Animate description with typing effect" },
                   { key: "glow_effect" as const, label: "Glowing text effect", desc: "Add glow shadow to title" },
                   { key: "tilt_effect" as const, label: "Card tilting effect", desc: "3D tilt on mouse hover" },
                 ].map(({ key, label, desc }) => (
