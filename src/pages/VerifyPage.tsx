@@ -346,6 +346,16 @@ export function VerifyPage() {
   })();
   const cardBorder = config?.card_border_color || "#1a1d2e";
   const contentOpacity = ((config?.content_opacity ?? 100) / 100);
+
+  // Helper: apply contentOpacity on top of a hex color with alpha suffix (e.g. textColor + "50")
+  const tc = (alphaHex: string) => {
+    const hex = textColor.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const baseAlpha = parseInt(alphaHex, 16) / 255;
+    return `rgba(${r},${g},${b},${(baseAlpha * contentOpacity).toFixed(3)})`;
+  };
   const fontFamily = config?.font_family || "Inter";
   const bgImage = config?.page_background_url;
   const bgEffect = config?.bg_effect || "none";
@@ -488,7 +498,7 @@ export function VerifyPage() {
         )}
 
         <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl overflow-hidden border-2 shadow-lg"
-          style={{ borderColor: `${textColor}15` }}>
+          style={{ borderColor: tc("15") }}>
           {config?.page_logo_url || config?.server_icon ? (
             <img src={config.page_logo_url || config?.server_icon} alt="Server" className="h-full w-full object-cover" />
           ) : (
@@ -499,7 +509,7 @@ export function VerifyPage() {
         </div>
 
         {config?.server_name && (
-          <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: `${textColor}40` }}>
+          <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: tc("40") }}>
             {config.server_name}
           </p>
         )}
@@ -515,10 +525,10 @@ export function VerifyPage() {
         </h1>
 
         {config?.bio_description && (
-          <p className="text-sm mb-2" style={{ color: `${textColor}60` }}>{config.bio_description}</p>
+          <p className="text-sm mb-2" style={{ color: tc("60") }}>{config.bio_description}</p>
         )}
 
-        <p className="text-sm mb-6 leading-relaxed" style={{ color: `${textColor}50` }}>
+        <p className="text-sm mb-6 leading-relaxed" style={{ color: tc("50") }}>
           {descText}
           {config?.typewriter_desc_effect && descText.length < (config?.page_description || "Please verify your Discord account to gain access to the server.").length && (
             <span className="inline-block w-0.5 h-3.5 ml-0.5 align-middle animate-pulse" style={{ backgroundColor: btnColor }} />
@@ -529,11 +539,11 @@ export function VerifyPage() {
           <div className="mb-5 rounded-xl border border-white/10 bg-white/[0.04] p-4 text-left">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-medium" style={{ color: textColor }}>Human check</p>
-              {captchaToken ? <span className="text-xs text-emerald-400">Completed</span> : <span className="text-xs" style={{ color: `${textColor}50` }}>{config.captcha_type}</span>}
+              {captchaToken ? <span className="text-xs text-emerald-400">Completed</span> : <span className="text-xs" style={{ color: tc("50") }}>{config.captcha_type}</span>}
             </div>
 
             {captchaLoading && (
-              <div className="flex items-center gap-2 text-sm" style={{ color: `${textColor}60` }}>
+              <div className="flex items-center gap-2 text-sm" style={{ color: tc("60") }}>
                 <Loader2 className="h-4 w-4 animate-spin" /> Loading captcha...
               </div>
             )}
@@ -565,7 +575,7 @@ export function VerifyPage() {
 
                 {captcha.type === "emoji" && (
                   <>
-                    <p className="text-sm" style={{ color: `${textColor}70` }}>{captcha.message}</p>
+                    <p className="text-sm" style={{ color: tc("70") }}>{captcha.message}</p>
                     <div className="grid grid-cols-3 gap-2">
                       {captcha.options?.map((emoji) => (
                         <button
@@ -582,7 +592,7 @@ export function VerifyPage() {
 
                 {captcha.type === "math" && (
                   <>
-                    <p className="text-sm" style={{ color: `${textColor}70` }}>{captcha.question}</p>
+                    <p className="text-sm" style={{ color: tc("70") }}>{captcha.question}</p>
                     <div className="flex gap-2">
                       <input
                         value={mathAnswer}
@@ -603,7 +613,7 @@ export function VerifyPage() {
 
                 {captcha.type === "slider" && (
                   <>
-                    <p className="text-sm" style={{ color: `${textColor}70` }}>Drag to {captcha.target}%</p>
+                    <p className="text-sm" style={{ color: tc("70") }}>Drag to {captcha.target}%</p>
                     <input
                       type="range"
                       min={0}
@@ -612,7 +622,7 @@ export function VerifyPage() {
                       onChange={(e) => setSliderValue(parseInt(e.target.value))}
                       className="w-full"
                     />
-                    <div className="flex items-center justify-between text-xs" style={{ color: `${textColor}50` }}>
+                    <div className="flex items-center justify-between text-xs" style={{ color: tc("50") }}>
                       <span>Current: {sliderValue}%</span>
                       <span>Tolerance: ±{captcha.tolerance}%</span>
                     </div>
@@ -667,7 +677,7 @@ export function VerifyPage() {
         )}
 
         {config?.terms_url && (
-          <p className="mt-4 text-xs" style={{ color: `${textColor}30` }}>
+          <p className="mt-4 text-xs" style={{ color: tc("30") }}>
             By verifying you agree to the{" "}
             <a href={config.terms_url} target="_blank" rel="noopener noreferrer" className="underline hover:opacity-60">
               Terms of Service
@@ -675,7 +685,7 @@ export function VerifyPage() {
           </p>
         )}
 
-        <p className="mt-6 text-xs" style={{ color: `${textColor}25` }}>
+        <p className="mt-6 text-xs" style={{ color: tc("25") }}>
           {config?.page_footer_text || "Powered by Infinity Bot"}
         </p>
         </div>
