@@ -1,6 +1,6 @@
 import { useT } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
-import { Bot, Gift, Hash, Heart, HelpCircle, Info, MessageCircle, MoreHorizontal, Mic2, Package, Pin, Search, Settings2, Shield, ShoppingBag, Smile, Tags, TerminalSquare, Trophy, UserPlus, UserCog, Users, Wrench, Zap } from "lucide-react";
+import { Bot, Gift, Heart, HelpCircle, Info, MoreHorizontal, Mic2, Pin, Search, Settings2, Shield, ShoppingBag, Smile, TerminalSquare, Trophy, UserPlus, UserCog, Users, Wrench, Zap } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 interface Command { name: string; description: string; usage?: string; admin?: boolean; }
