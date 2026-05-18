@@ -248,7 +248,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
     }));
   };
 
-  const currentEvent = EMBED_EVENTS.find((e) => e.key === selectedKey);
+  const currentEvent = allEvents.find((e) => e.key === selectedKey);
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
@@ -328,7 +328,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                 <SelectGroup key={group.label}>
                   <SelectLabel className="text-xs uppercase tracking-wide">{botLang === "en" ? (group.labelEn ?? group.label) : group.label}</SelectLabel>
                   {group.keys.map((key) => {
-                    const ev = EMBED_EVENTS.find((e) => e.key === key);
+                    const ev = allEvents.find((e) => e.key === key);
                     if (!ev) return null;
                     const Icon = ev.icon;
                     const saved = savedMap.has(ev.key);
