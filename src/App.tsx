@@ -39,7 +39,6 @@ const SelectMenuRoleEditPage = lazy(() => import("./pages/select-roles/SelectMen
 const AutoResponder = lazy(() => import("./pages/AutoResponder").then(m => ({ default: m.AutoResponder })));
 const AutoResponderEditPage = lazy(() => import("./pages/auto-responder/AutoResponderEditPage").then(m => ({ default: m.AutoResponderEditPage })));
 const SecurityConfig = lazy(() => import("./pages/SecurityConfig").then(m => ({ default: m.SecurityConfig })));
-const FirewallRules = lazy(() => import("./pages/firewall/FirewallRules").then(m => ({ default: m.FirewallRules })));
 const FirewallLogs = lazy(() => import("./pages/firewall/FirewallLogs").then(m => ({ default: m.FirewallLogs })));
 const AlertsConfig = lazy(() => import("./pages/AlertsConfig").then(m => ({ default: m.AlertsConfig })));
 const VerificationPage = lazy(() => import("./pages/verification/VerificationPage"));
@@ -141,7 +140,7 @@ const navGroups: NavGroup[] = [
     label: "nav_security",
     items: [
       { to: "/verification", icon: CheckCircle, label: "Verification" },
-      { to: "/firewall/rules", icon: ShieldAlert, label: "Firewall" },
+      { to: "/firewall/logs", icon: ShieldAlert, label: "Firewall Logs" },
       { to: "/alerts", icon: Bell, label: "Server Alerts" },
     ],
   },
@@ -174,7 +173,6 @@ const navGroups: NavGroup[] = [
     label: "nav_botSettings",
     items: [
       { to: "/bot-settings", icon: Settings, label: "nav_botSettings" },
-      { to: "/guild-bot", icon: Bot, label: "Custom Bot" },
       { to: "/config/payments", icon: CreditCard, label: "Payments", feature: "shop" },
       { to: "/staff-permissions", icon: UserCog, label: "Staff Permissions" },
       { to: "/my-plan", icon: Crown, label: "My Plan" },
@@ -670,7 +668,6 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/verification" element={<VerificationPage />} />
         <Route path="/backup" element={<BackupPage />} />
         <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
-        <Route path="/firewall/rules" element={<FirewallRules />} />
         <Route path="/firewall/logs" element={<FirewallLogs />} />
         <Route path="/alerts" element={<AlertsConfig />} />
         <Route path="/staff-permissions" element={<StaffPermissions />} />

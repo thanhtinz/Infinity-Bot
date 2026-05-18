@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,14 +9,37 @@ import { ChannelSelect } from "@/components/ChannelSelect";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Select as UISelect,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Settings2, Save, Loader2, ExternalLink, Shield, Eye,
-  Link2, Copy, Check, ChevronDown,
+  Save, Loader2, ExternalLink, Shield, Eye,
+  Link2, Copy, Check, Globe,
   Image, Paintbrush, Palette, Sparkles, Type, Share2,
-  Lock, Code2, KeyRound, XCircle, Plus,
-  Send, Tv, Globe, ShoppingCart,
+  KeyRound, Code2,
+  Send, Tv, ShoppingCart,
   Bot, ShieldCheck, TriangleAlert, Trash2,
+  Settings2, Upload, X, Music, Hash,
+  Plus, XCircle, Search, User, Flag, Mail, Network,
+  MessageSquare,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useGuild } from "@/contexts/GuildContext";
@@ -23,6 +47,8 @@ import { deleteGuildBot, fetchConfig, fetchGuildBot, updateConfig, updateGuildBo
 import type { VerificationConfig } from "./shared";
 import { PremiumBadge } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
+import { apiFetch } from "@/hooks/useApi";
+import { formatDistanceToNow } from "date-fns";
 
 /* ── Constants ──────────────────────────────────────── */
 const FONTS = [
@@ -66,28 +92,114 @@ const SOCIALS: { key: string; label: string; icon: LucideIcon; placeholder: stri
   { key: "website", label: "Website", icon: Globe, placeholder: "https://example.com", color: "#6366f1" },
 ];
 
-/* ── Collapsible Section ────────────────────────────── */
-function Section({ title, icon: Icon, children, defaultOpen = false }: {
-  title: string; icon: LucideIcon; children: React.ReactNode; defaultOpen?: boolean;
+type FirewallRule = {
+  id: number;
+  rule_type: "block" | "allow";
+  target_type: "user_id" | "ip" | "country" | "email_domain" | "asn";
+  target_value: string;
+  reason: string | null;
+  created_by: string | null;
+  created_at: string | null;
+};
+type TargetType = FirewallRule["target_type"];
+const TARGET_TYPE_CONFIG: Record<TargetType, { label: string; icon: LucideIcon; placeholder: string }> = {
+  user_id: { label: "User ID", icon: User, placeholder: "123456789012345678" },
+  ip: { label: "IP Address", icon: Globe, placeholder: "192.168.1.1" },
+  country: { label: "Country Code", icon: Flag, placeholder: "VN" },
+  email_domain: { label: "Email Domain", icon: Mail, placeholder: "example.com" },
+  asn: { label: "ASN", icon: Network, placeholder: "AS13335" },
+};
+
+/* ── MediaUpload Component ──────────────────────────── */
+function MediaUpload({
+  label,
+  value,
+  onChange,
+  accept = "image/*",
+  placeholder = "https://example.com/image.png",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  accept?: string;
+  placeholder?: string;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  async function handleFile(file: File) {
+    setUploading(true);
+    setProgress(20);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      setProgress(50);
+      const res = await apiFetch("/api/files/upload", { method: "POST", body: fd });
+      setProgress(90);
+      onChange(res.url);
+      setProgress(100);
+    } catch (e: unknown) {
+      toast({ title: "Upload failed", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally {
+      setTimeout(() => { setUploading(false); setProgress(0); }, 600);
+    }
+  }
+
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="flex items-center justify-between w-full px-5 py-4 text-left hover:bg-muted/30 transition-colors"
-      >
-        <div className="flex items-center gap-2.5">
-          <Icon className="w-4 h-4 text-muted-foreground" />
-          <span className="font-semibold text-sm text-foreground">{title}</span>
-        </div>
-        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <div className="px-5 pb-5 space-y-4 border-t border-border pt-4">
-          {children}
+    <div className="space-y-1.5">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+
+      {/* Preview strip */}
+      {value && (
+        <div className="relative flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+          {accept.startsWith("audio") ? (
+            <Music className="h-4 w-4 text-muted-foreground shrink-0" />
+          ) : (
+            <img
+              src={value}
+              alt=""
+              className="h-8 w-8 rounded object-cover shrink-0 border border-border"
+              onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          )}
+          <span className="flex-1 text-xs text-muted-foreground font-mono truncate">{value}</span>
+          <button onClick={() => onChange("")} className="text-muted-foreground hover:text-destructive transition-colors">
+            <X className="h-3.5 w-3.5" />
+          </button>
         </div>
       )}
+
+      {/* Upload progress */}
+      {uploading && <Progress value={progress} className="h-1" />}
+
+      {/* Input row */}
+      <div className="flex gap-2">
+        <Input
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="text-xs flex-1"
+        />
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          className="hidden"
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="shrink-0 px-3"
+          disabled={uploading}
+          onClick={() => inputRef.current?.click()}
+        >
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -98,7 +210,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
     <div>
       <Label className="text-xs text-muted-foreground mb-1.5 block">{label}</Label>
       <div className="rounded-lg overflow-hidden border border-border">
-        <div className="h-12 w-full" style={{ backgroundColor: value }} />
+        <div className="h-10 w-full" style={{ backgroundColor: value }} />
         <div className="flex items-center gap-2 px-3 py-2 bg-muted/50">
           <input type="color" value={value} onChange={e => onChange(e.target.value)}
             className="w-6 h-6 rounded border-0 cursor-pointer bg-transparent" />
@@ -115,106 +227,70 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
   const activeSocials = SOCIALS.filter(s => c.socials?.[s.key]);
   return (
     <div className="relative w-full rounded-xl overflow-hidden border border-border" style={{ minHeight: 500 }}>
-      {/* Background */}
-      <div className="absolute inset-0" style={{ backgroundColor: c.bg_color || "#0b0d14" }}>
-        {c.page_background_url && (
-          <img src={c.page_background_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        )}
-        {c.page_background_url && <div className="absolute inset-0 bg-black/50" />}
-        {/* BG effect hint */}
-        {c.bg_effect !== "none" && (
-          <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-white/10 text-[10px] text-white/40">
-            {BG_EFFECTS.find(e => e.value === c.bg_effect)?.label}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundColor: c.bg_color || "#0f0f17",
+          backgroundImage: c.page_background_url ? `url(${c.page_background_url})` : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+      {c.page_background_url && <div className="absolute inset-0 bg-black/50" />}
+
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-[500px] p-8 text-center"
+        style={{ fontFamily: c.font_family, color: c.text_color || "#ffffff" }}>
+
+        {c.page_logo_url && (
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden border border-border">
+            <img src={c.page_logo_url} alt="Logo" className="h-full w-full object-cover" />
           </div>
         )}
-      </div>
 
-      {/* Card */}
-      <div className="relative flex items-center justify-center p-6" style={{ minHeight: 500, fontFamily: c.font_family }}>
-        <div
-          className="w-full max-w-xs rounded-xl backdrop-blur-xl p-6 text-center shadow-2xl"
+        <h1 className="text-2xl font-bold mb-2" style={{
+          textShadow: c.glow_effect ? `0 0 20px ${c.text_color || "#fff"}` : undefined,
+        }}>
+          {c.page_title || "Verify Your Account"}
+        </h1>
+
+        {c.page_description && (
+          <p className="text-sm mb-4 opacity-70">{c.page_description}</p>
+        )}
+
+        <button
+          className="px-6 py-2.5 rounded-lg font-medium text-sm transition-all"
           style={{
-            backgroundColor: `${c.card_bg_color || "#1a1d2e"}e6`,
-            borderColor: c.card_border_color || "#1a1d2e",
-            borderWidth: 1,
-            borderStyle: "solid",
+            backgroundColor: c.btn_color || "#5865F2",
+            color: "#fff",
+            border: `1px solid ${c.btn_border_color || "transparent"}`,
           }}
         >
-          {/* Banner */}
-          {c.banner_url && (
-            <div className="w-full h-20 rounded-lg overflow-hidden mb-4 -mt-1">
-              <img src={c.banner_url} alt="" className="w-full h-full object-cover" />
-            </div>
-          )}
+          {c.button_text || "Verify with Discord"}
+        </button>
 
-          {/* Logo */}
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl overflow-hidden border border-border">
-            {c.page_logo_url ? (
-              <img src={c.page_logo_url} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: `${c.btn_color}30` }}>
-                <Shield className="h-8 w-8" style={{ color: c.btn_color }} />
-              </div>
-            )}
+        {activeSocials.length > 0 && (
+          <div className="flex gap-2 mt-4">
+            {activeSocials.map(s => {
+              const Icon = s.icon;
+              return (
+                <a key={s.key} href={c.socials[s.key]} target="_blank" rel="noopener noreferrer"
+                  className="w-7 h-7 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors">
+                  <Icon className="w-3.5 h-3.5" style={{ color: s.color }} />
+                </a>
+              );
+            })}
           </div>
+        )}
 
-          <h2
-            className={`text-lg font-bold mb-1 ${c.glow_effect ? "drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" : ""}`}
-            style={{ color: c.text_color }}
-          >
-            {c.page_title || "Verify Your Account"}
-          </h2>
-
-          {c.bio_description && (
-            <p className="text-xs mb-2 opacity-60" style={{ color: c.text_color }}>
-              {c.bio_description}
-            </p>
-          )}
-
-          <p className="text-xs mb-5 leading-relaxed opacity-50" style={{ color: c.text_color }}>
-            {c.page_description || "Please verify your Discord account to gain access."}
+        {c.terms_url && (
+          <p className="mt-3 text-[10px] opacity-30" style={{ color: c.text_color }}>
+            By verifying you agree to the <span className="underline">Terms</span>
           </p>
+        )}
 
-          {/* Button */}
-          <div
-            className="inline-flex items-center justify-center gap-1.5 w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition-all"
-            style={{
-              backgroundColor: c.btn_color,
-              borderColor: c.btn_border_color,
-              borderWidth: 1,
-              borderStyle: "solid",
-              boxShadow: `0 4px 16px ${c.btn_color}30`,
-            }}
-          >
-            <ExternalLink className="h-4 w-4" />
-            {c.button_text || "Verify with Discord"}
-          </div>
-
-          {/* Socials */}
-          {activeSocials.length > 0 && (
-            <div className="flex justify-center gap-3 mt-4">
-              {activeSocials.map(s => {
-                const Icon = s.icon;
-                return (
-                  <a key={s.key} href={c.socials[s.key]} target="_blank" rel="noopener noreferrer"
-                    className="w-7 h-7 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors">
-                    <Icon className="w-3.5 h-3.5" style={{ color: s.color }} />
-                  </a>
-                );
-              })}
-            </div>
-          )}
-
-          {c.terms_url && (
-            <p className="mt-3 text-[10px] opacity-30" style={{ color: c.text_color }}>
-              By verifying you agree to the <span className="underline">Terms</span>
-            </p>
-          )}
-
-          <p className="mt-4 text-[10px] opacity-20" style={{ color: c.text_color }}>
-            {c.page_footer_text || "Powered by Infinity Bot"}
-          </p>
-        </div>
+        <p className="mt-4 text-[10px] opacity-20" style={{ color: c.text_color }}>
+          {c.page_footer_text || "Powered by Infinity Bot"}
+        </p>
       </div>
     </div>
   );
@@ -223,448 +299,355 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
 /* ── Main Component ─────────────────────────────────── */
 export function VerifyConfig() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const { selectedGuildId } = useGuild();
   const [copied, setCopied] = useState(false);
   const [configForm, setConfigForm] = useState<VerificationConfig | null>(null);
   const [guildBotForm, setGuildBotForm] = useState({ client_id: "", bot_token: "", client_secret: "" });
+  const [domainDialogOpen, setDomainDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("general");
+  const [fwSearch, setFwSearch] = useState("");
+  const [fwFilterType, setFwFilterType] = useState("all");
+  const [fwAddOpen, setFwAddOpen] = useState(false);
+  const [fwNewRule, setFwNewRule] = useState<{ rule_type: "block" | "allow"; target_type: TargetType; target_value: string; reason: string }>({
+    rule_type: "block", target_type: "user_id", target_value: "", reason: "",
+  });
   const { hasFeature } = useEntitlements();
 
-  const configQuery = useQuery({
-    queryKey: ["verification-config"],
-    queryFn: fetchConfig,
-  });
-
+  const configQuery = useQuery({ queryKey: ["verification-config"], queryFn: fetchConfig });
   const domainStatusQuery = useQuery({
     queryKey: ["verification-domain-status", selectedGuildId],
     queryFn: async () => {
       const r = await fetch(`/api/verification/domain-status?guild_id=${selectedGuildId}`, { credentials: "include" });
       if (!r.ok) throw new Error("Failed");
-      return r.json() as Promise<{
-        domain: string; status: string; cname_target: string | null;
-        railway_configured: boolean; dns_records?: unknown[]; error?: string;
-      }>;
+      return r.json() as Promise<{ domain: string; status: string; cname_target: string | null; railway_configured: boolean; error?: string }>;
     },
     enabled: !!selectedGuildId,
     refetchInterval: false,
   });
-
   const guildBotQuery = useQuery({
     queryKey: ["verification-guild-bot", selectedGuildId],
     queryFn: fetchGuildBot,
     enabled: !!selectedGuildId,
   });
+  const firewallQuery = useQuery({
+    queryKey: ["firewall-rules", selectedGuildId],
+    queryFn: () => apiFetch("/api/firewall/rules") as Promise<FirewallRule[]>,
+    enabled: !!selectedGuildId,
+  });
 
+  useEffect(() => { if (configQuery.data && !configForm) setConfigForm(configQuery.data); }, [configQuery.data, configForm]);
   useEffect(() => {
-    if (configQuery.data && !configForm) {
-      setConfigForm(configQuery.data);
-    }
-  }, [configQuery.data, configForm]);
-
-  useEffect(() => {
-    if (guildBotQuery.data) {
-      setGuildBotForm({
-        client_id: guildBotQuery.data.client_id || "",
-        bot_token: "",
-        client_secret: "",
-      });
-    }
+    if (guildBotQuery.data) setGuildBotForm({ client_id: guildBotQuery.data.client_id || "", bot_token: "", client_secret: "" });
   }, [guildBotQuery.data]);
 
   const guildBotSaveMutation = useMutation({
     mutationFn: () => updateGuildBot(guildBotForm),
-    onSuccess: () => {
-      toast({ title: "Custom bot saved" });
-      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
-      setGuildBotForm((prev) => ({ ...prev, bot_token: "", client_secret: "" }));
-    },
+    onSuccess: () => { toast({ title: "Custom bot saved" }); qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] }); setGuildBotForm(p => ({ ...p, bot_token: "", client_secret: "" })); },
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
-
   const guildBotValidateMutation = useMutation({
     mutationFn: validateGuildBot,
-    onSuccess: () => {
-      toast({ title: "Custom bot validated" });
-      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
-    },
+    onSuccess: () => { toast({ title: "Custom bot validated" }); qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] }); },
     onError: (err) => toast({ title: "Validation failed", description: err.message, variant: "destructive" }),
   });
-
   const guildBotDeleteMutation = useMutation({
     mutationFn: deleteGuildBot,
-    onSuccess: () => {
-      toast({ title: "Reverted to main bot" });
-      qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] });
-      setGuildBotForm({ client_id: "", bot_token: "", client_secret: "" });
-    },
+    onSuccess: () => { toast({ title: "Reverted to main bot" }); qc.invalidateQueries({ queryKey: ["verification-guild-bot", selectedGuildId] }); setGuildBotForm({ client_id: "", bot_token: "", client_secret: "" }); },
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
-
   const configMutation = useMutation({
     mutationFn: updateConfig,
     onSuccess: () => {
       toast({ title: "Configuration saved" });
       qc.invalidateQueries({ queryKey: ["verification-config"] });
-      // Re-check domain status after saving
       setTimeout(() => qc.invalidateQueries({ queryKey: ["verification-domain-status", selectedGuildId] }), 1500);
     },
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+  const fwDeleteMutation = useMutation({
+    mutationFn: (id: number) => apiFetch(`/api/firewall/rules/${id}`, { method: "DELETE" }),
+    onSuccess: () => { toast({ title: "Rule deleted" }); qc.invalidateQueries({ queryKey: ["firewall-rules", selectedGuildId] }); },
+    onError: (err) => toast({ title: "Error", description: err instanceof Error ? err.message : String(err), variant: "destructive" }),
+  });
+  const fwAddMutation = useMutation({
+    mutationFn: () => apiFetch("/api/firewall/rules", { method: "POST", body: JSON.stringify(fwNewRule) }),
+    onSuccess: () => {
+      toast({ title: "Rule added" });
+      qc.invalidateQueries({ queryKey: ["firewall-rules", selectedGuildId] });
+      setFwAddOpen(false);
+      setFwNewRule({ rule_type: "block", target_type: "user_id", target_value: "", reason: "" });
+    },
+    onError: (err) => toast({ title: "Error", description: err instanceof Error ? err.message : String(err), variant: "destructive" }),
   });
 
   function update(patch: Partial<VerificationConfig>) {
     if (!configForm) return;
     setConfigForm({ ...configForm, ...patch });
   }
-
   function updateSocial(key: string, value: string) {
     if (!configForm) return;
     setConfigForm({ ...configForm, socials: { ...configForm.socials, [key]: value } });
   }
 
   const verifyUrl = selectedGuildId ? `${window.location.origin}/verify/${selectedGuildId}` : "";
-  function copyUrl() {
-    navigator.clipboard.writeText(verifyUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
+  function copyUrl() { navigator.clipboard.writeText(verifyUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }
 
   const activeSocialCount = configForm ? SOCIALS.filter(s => configForm.socials?.[s.key]).length : 0;
+  const filteredRules = (firewallQuery.data || []).filter(r => {
+    const matchSearch = !fwSearch || r.target_value.toLowerCase().includes(fwSearch.toLowerCase()) || r.reason?.toLowerCase().includes(fwSearch.toLowerCase());
+    const matchType = fwFilterType === "all" || r.target_type === fwFilterType;
+    return matchSearch && matchType;
+  });
 
   if (configQuery.isLoading || !configForm) {
-    return (
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
+    return <div className="space-y-4 p-6"><Skeleton className="h-10 w-full" /><Skeleton className="h-64 w-full" /></div>;
   }
 
+  const domainStatus = domainStatusQuery.data;
+  const statusMap: Record<string, { label: string; variant: "default" | "destructive" | "secondary" | "outline" }> = {
+    verified: { label: "✓ Active", variant: "default" },
+    pending: { label: "⏳ Pending DNS", variant: "secondary" },
+    not_found: { label: "Not registered", variant: "outline" },
+    unknown: { label: "Unknown", variant: "outline" },
+    none: { label: "No domain set", variant: "outline" },
+  };
+
   return (
-    <div className="space-y-4 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-            <Settings2 className="w-5 h-5 text-indigo-400" />
-          </div>
-          <div className="flex items-center gap-2">
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">Customize</h1>
-              </div>
-              <p className="text-sm text-muted-foreground">Customize your verification page</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          {verifyUrl && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={verifyUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4 mr-1.5" />Preview
-              </a>
-            </Button>
-          )}
-          <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
-            {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
-            Save
-          </Button>
-        </div>
+    <div className="space-y-4 p-4 md:p-6">
+
+      {/* ── Action buttons row ── */}
+      <div className="grid grid-cols-2 gap-2">
+        <Button
+          variant="outline"
+          className="h-10 gap-2 justify-start"
+          onClick={() => setDomainDialogOpen(true)}
+        >
+          <Globe className="h-4 w-4 text-blue-500" />
+          <span className="font-medium text-sm">Custom Domain</span>
+          {domainStatus?.status === "verified" && <Badge variant="secondary" className="ml-auto text-[10px] py-0">Active</Badge>}
+        </Button>
+
+        <Button
+          variant="outline"
+          className="h-10 gap-2 justify-start"
+          onClick={() => navigate("/embeds?event=welcome")}
+        >
+          <MessageSquare className="h-4 w-4 text-indigo-500" />
+          <span className="font-medium text-sm">Verify Message</span>
+        </Button>
       </div>
 
-      {/* Verify Link */}
+      {/* ── Verify link bar ── */}
       {verifyUrl && (
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3">
+        <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5">
           <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
-          <Input value={verifyUrl} readOnly className="text-xs font-mono border-0 bg-transparent h-7" />
+          <Input value={verifyUrl} readOnly className="text-xs font-mono border-0 bg-transparent h-7 p-0" />
           <Button variant="ghost" size="icon" className="shrink-0 h-7 w-7" onClick={copyUrl}>
             {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
           </Button>
+          {verifyUrl && (
+            <Button variant="ghost" size="icon" className="shrink-0 h-7 w-7" asChild>
+              <a href={verifyUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5" /></a>
+            </Button>
+          )}
         </div>
       )}
 
-      {/* Enable toggle */}
-      <div className="flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4">
-        <div>
-          <p className="font-semibold text-sm">Enable Verification</p>
-          <p className="text-xs text-muted-foreground">Require members to verify via OAuth2</p>
-        </div>
-        <Switch checked={configForm.enabled} onCheckedChange={v => update({ enabled: v })} />
-      </div>
+      {/* ── 6-tab icon bar ── */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-6 h-11">
+          {[
+            { value: "general", icon: Settings2, title: "General" },
+            { value: "custom", icon: Paintbrush, title: "Customize" },
+            { value: "security", icon: Shield, title: "Security" },
+            { value: "firewall", icon: KeyRound, title: "Firewall" },
+            { value: "channels", icon: Hash, title: "Roles & Channels" },
+            { value: "advanced", icon: Code2, title: "Advanced" },
+          ].map(({ value, icon: Icon, title }) => (
+            <TabsTrigger key={value} value={value} title={title} className="flex flex-col gap-0.5 px-1 py-1.5 text-[10px] h-full">
+              <Icon className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:block truncate">{title}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Left: Customize sections */}
-        <div className="space-y-3">
-          {/* Media */}
-          <Section title="Media" icon={Image} defaultOpen>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Profile Image</Label>
-                <Input value={configForm.page_logo_url} onChange={e => update({ page_logo_url: e.target.value })}
-                  placeholder="Image URL" className="text-xs" />
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Banner Image</Label>
-                <Input value={configForm.banner_url} onChange={e => update({ banner_url: e.target.value })}
-                  placeholder="Image URL" className="text-xs" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Background Image</Label>
-                <Input value={configForm.page_background_url} onChange={e => update({ page_background_url: e.target.value })}
-                  placeholder="Image URL" className="text-xs" />
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Mouse Cursor</Label>
-                <Input value={configForm.cursor_url} onChange={e => update({ cursor_url: e.target.value })}
-                  placeholder="Cursor image URL" className="text-xs" />
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Background Music</Label>
-                <Input value={configForm.music_url || ""} onChange={e => update({ music_url: e.target.value })}
-                  placeholder="Audio URL (mp3, ogg, wav)" className="text-xs" />
-                <p className="text-[10px] text-muted-foreground mt-1">Auto-plays muted, user can unmute. Leave empty to disable.</p>
-              </div>
-            </div>
-          </Section>
-
-          {/* Appearance */}
-          <Section title="Appearance" icon={Paintbrush}>
+        {/* ─── GENERAL ─── */}
+        <TabsContent value="general" className="space-y-4 pt-4">
+          {/* Enable toggle */}
+          <div className="flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4">
             <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Font Family</Label>
-              <select
-                value={configForm.font_family}
-                onChange={e => update({ font_family: e.target.value })}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              >
-                {FONTS.map(f => <option key={f} value={f} className="bg-popover">{f}</option>)}
-              </select>
+              <p className="font-semibold text-sm">Enable Verification</p>
+              <p className="text-xs text-muted-foreground">Require members to verify via OAuth2</p>
             </div>
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Background Effects</Label>
-              <select
-                value={configForm.bg_effect}
-                onChange={e => update({ bg_effect: e.target.value })}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              >
-                {BG_EFFECTS.map(e => <option key={e.value} value={e.value} className="bg-popover">{e.label}</option>)}
-              </select>
-            </div>
-          </Section>
+            <Switch checked={configForm.enabled} onCheckedChange={v => update({ enabled: v })} />
+          </div>
 
-          {/* Colors */}
-          <Section title="Colors" icon={Palette}>
-            <div className="grid grid-cols-2 gap-4">
-              <ColorField label="Background Color" value={configForm.bg_color} onChange={v => update({ bg_color: v })} />
-              <ColorField label="Text Color" value={configForm.text_color} onChange={v => update({ text_color: v })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <ColorField label="Button Color" value={configForm.btn_color} onChange={v => update({ btn_color: v })} />
-              <ColorField label="Button Border" value={configForm.btn_border_color} onChange={v => update({ btn_border_color: v })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <ColorField label="Card Background" value={configForm.card_bg_color} onChange={v => update({ card_bg_color: v })} />
-              <ColorField label="Card Border" value={configForm.card_border_color} onChange={v => update({ card_border_color: v })} />
-            </div>
-          </Section>
-
-          {/* Effects & Options */}
-          <Section title="Effects & Options" icon={Sparkles}>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Text Effects</p>
-            <div className="flex items-center justify-between">
+          <div className="space-y-4 rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">On Verify Action</p>
+            <p className="text-xs text-muted-foreground -mt-2">Both settings apply if saved.</p>
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-sm font-medium">Typewriter text effect</p>
-                <p className="text-xs text-muted-foreground">Animate title text with typing effect</p>
-              </div>
-              <Switch checked={configForm.typewriter_effect} onCheckedChange={v => update({ typewriter_effect: v })} />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Glowing text effect</p>
-                <p className="text-xs text-muted-foreground">Add glow shadow to title</p>
-              </div>
-              <Switch checked={configForm.glow_effect} onCheckedChange={v => update({ glow_effect: v })} />
-            </div>
-            <Separator className="opacity-10" />
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Animation</p>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Card tilting effect</p>
-                <p className="text-xs text-muted-foreground">3D tilt on mouse hover</p>
-              </div>
-              <Switch checked={configForm.tilt_effect} onCheckedChange={v => update({ tilt_effect: v })} />
-            </div>
-          </Section>
-
-          {/* Content */}
-          <Section title="Content" icon={Type}>
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Page Title</Label>
-              <Input value={configForm.page_title} onChange={e => update({ page_title: e.target.value })} placeholder="Verify Your Account" />
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Description</Label>
-              <Input value={configForm.page_description} onChange={e => update({ page_description: e.target.value })}
-                placeholder="Please verify your Discord account..." />
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Bio Description</Label>
-              <textarea
-                value={configForm.bio_description}
-                onChange={e => update({ bio_description: e.target.value })}
-                placeholder="Short bio shown below the title"
-                rows={2}
-                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Button Text</Label>
-                <Input value={configForm.button_text} onChange={e => update({ button_text: e.target.value })} placeholder="Verify with Discord" />
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Give Role</Label>
+                <RoleSelect value={configForm.verified_role_id ?? ""} onChange={val => update({ verified_role_id: val })} placeholder="Verified role" />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Footer Text</Label>
-                <Input value={configForm.page_footer_text} onChange={e => update({ page_footer_text: e.target.value })} placeholder="Powered by Infinity Bot" />
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Remove Role</Label>
+                <RoleSelect value={configForm.unverified_role_id ?? ""} onChange={val => update({ unverified_role_id: val })} placeholder="Unverified role" />
               </div>
             </div>
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Success Message</Label>
-              <Input value={configForm.success_message} onChange={e => update({ success_message: e.target.value })}
-                placeholder="You have been verified successfully!" />
-            </div>
-          </Section>
+            <p className="text-[10px] text-muted-foreground">NOTE: Roles above the bot or other bot roles will NOT show. Put bot ABOVE your verified role in Discord settings.</p>
+          </div>
 
-          {/* Socials */}
-          <Section title="Socials" icon={Share2}>
-            <p className="text-xs text-muted-foreground">{activeSocialCount} of {SOCIALS.length} active</p>
-            <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-muted/20">
-              {SOCIALS.map(s => {
-                const active = !!configForm.socials?.[s.key];
-                const Icon = s.icon;
-                return (
-                  <button
-                    key={s.key}
-                    onClick={() => {
-                      if (active) updateSocial(s.key, "");
-                      else updateSocial(s.key, s.placeholder);
-                    }}
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-                      active ? "bg-primary/15 border border-primary/20" : "bg-muted/30 border border-transparent hover:bg-muted/50"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" style={{ color: active ? s.color : "#6b7280" }} />
-                  </button>
-                );
-              })}
+          <div className="space-y-3 rounded-xl border border-border bg-card p-5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Channels</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Verify Channel</Label>
+                <ChannelSelect value={configForm.verify_channel_id ?? ""} onChange={val => update({ verify_channel_id: val })} placeholder="Select channel" filter="text" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Log Channel</Label>
+                <ChannelSelect value={configForm.log_channel_id ?? ""} onChange={val => update({ log_channel_id: val })} placeholder="Select channel" filter="text" />
+              </div>
             </div>
-            {SOCIALS.filter(s => configForm.socials?.[s.key]).map(s => {
-              const Icon = s.icon;
-              return (
-                <div key={s.key} className="flex items-center gap-3">
-                  <Icon className="w-5 h-5 shrink-0" style={{ color: s.color }} />
-                  <div className="flex-1">
-                    <Label className="text-xs font-medium mb-1 block">{s.label}</Label>
-                    <Input
-                      value={configForm.socials?.[s.key] || ""}
-                      onChange={e => updateSocial(s.key, e.target.value)}
-                      placeholder={s.placeholder}
-                      className="text-xs"
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </Section>
+          </div>
 
-          {/* Custom Bot */}
-          <Section title="Custom Bot" icon={Bot}>
-            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">
-              <div className="flex items-start justify-between gap-3">
+          <div className="flex justify-end">
+            <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
+              {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
+              Save
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* ─── CUSTOM ─── */}
+        <TabsContent value="custom" className="pt-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              {/* Media */}
+              <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Image className="h-3.5 w-3.5" />Media</p>
+                <MediaUpload label="Profile Image" value={configForm.page_logo_url} onChange={v => update({ page_logo_url: v })} />
+                <MediaUpload label="Banner Image" value={configForm.banner_url} onChange={v => update({ banner_url: v })} />
+                <MediaUpload label="Background Image" value={configForm.page_background_url} onChange={v => update({ page_background_url: v })} />
+                <MediaUpload label="Mouse Cursor" value={configForm.cursor_url} onChange={v => update({ cursor_url: v })} placeholder="Cursor image URL" />
+                <MediaUpload label="Background Music" value={configForm.music_url || ""} onChange={v => update({ music_url: v })} accept="audio/*" placeholder="Audio URL (mp3, ogg, wav)" />
+              </div>
+
+              {/* Appearance */}
+              <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Paintbrush className="h-3.5 w-3.5" />Appearance</p>
                 <div>
-                  <p className="text-sm font-medium">Per-guild Discord bot</p>
-                  <p className="text-xs text-muted-foreground">Use a dedicated bot token and OAuth app for this guild's verification flow.</p>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Font Family</Label>
+                  <select value={configForm.font_family} onChange={e => update({ font_family: e.target.value })}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                    {FONTS.map(f => <option key={f} value={f} className="bg-popover">{f}</option>)}
+                  </select>
                 </div>
-                <div className="flex items-center gap-2">
-                  {guildBotQuery.data?.status === "active" && <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[10px] text-emerald-400"><ShieldCheck className="h-3 w-3" />Active</span>}
-                  {guildBotQuery.data?.status === "error" && <span className="inline-flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/10 px-2 py-1 text-[10px] text-red-400"><TriangleAlert className="h-3 w-3" />Error</span>}
-                  {(!guildBotQuery.data || guildBotQuery.data.status === "inactive") && <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/30 px-2 py-1 text-[10px] text-muted-foreground">Main bot</span>}
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Background Effect</Label>
+                  <select value={configForm.bg_effect} onChange={e => update({ bg_effect: e.target.value })}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                    {BG_EFFECTS.map(e => <option key={e.value} value={e.value} className="bg-popover">{e.label}</option>)}
+                  </select>
                 </div>
               </div>
 
-              {guildBotQuery.data?.bot_name && (
-                <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2">
-                  {guildBotQuery.data.bot_avatar_url ? (
-                    <img src={guildBotQuery.data.bot_avatar_url} alt="Bot avatar" className="h-10 w-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500/10 border border-indigo-500/20">
-                      <Bot className="h-5 w-5 text-indigo-400" />
+              {/* Colors */}
+              <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Palette className="h-3.5 w-3.5" />Colors</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <ColorField label="Background" value={configForm.bg_color} onChange={v => update({ bg_color: v })} />
+                  <ColorField label="Text" value={configForm.text_color} onChange={v => update({ text_color: v })} />
+                  <ColorField label="Button" value={configForm.btn_color} onChange={v => update({ btn_color: v })} />
+                  <ColorField label="Button Border" value={configForm.btn_border_color} onChange={v => update({ btn_border_color: v })} />
+                  <ColorField label="Card Background" value={configForm.card_bg_color} onChange={v => update({ card_bg_color: v })} />
+                  <ColorField label="Card Border" value={configForm.card_border_color} onChange={v => update({ card_border_color: v })} />
+                </div>
+              </div>
+
+              {/* Effects */}
+              <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" />Effects</p>
+                {[
+                  { key: "typewriter_effect" as const, label: "Typewriter text effect", desc: "Animate title with typing effect" },
+                  { key: "glow_effect" as const, label: "Glowing text effect", desc: "Add glow shadow to title" },
+                  { key: "tilt_effect" as const, label: "Card tilting effect", desc: "3D tilt on mouse hover" },
+                ].map(({ key, label, desc }) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <div><p className="text-sm font-medium">{label}</p><p className="text-xs text-muted-foreground">{desc}</p></div>
+                    <Switch checked={configForm[key]} onCheckedChange={v => update({ [key]: v })} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Content */}
+              <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Type className="h-3.5 w-3.5" />Content</p>
+                <div><Label className="text-xs text-muted-foreground mb-1.5 block">Page Title</Label><Input value={configForm.page_title} onChange={e => update({ page_title: e.target.value })} placeholder="Verify Your Account" /></div>
+                <div><Label className="text-xs text-muted-foreground mb-1.5 block">Description</Label><Input value={configForm.page_description} onChange={e => update({ page_description: e.target.value })} placeholder="Please verify..." /></div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Bio</Label>
+                  <textarea value={configForm.bio_description} onChange={e => update({ bio_description: e.target.value })} rows={2}
+                    className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label className="text-xs text-muted-foreground mb-1.5 block">Button Text</Label><Input value={configForm.button_text} onChange={e => update({ button_text: e.target.value })} placeholder="Verify with Discord" /></div>
+                  <div><Label className="text-xs text-muted-foreground mb-1.5 block">Footer Text</Label><Input value={configForm.page_footer_text} onChange={e => update({ page_footer_text: e.target.value })} placeholder="Powered by Infinity Bot" /></div>
+                </div>
+                <div><Label className="text-xs text-muted-foreground mb-1.5 block">Success Message</Label><Input value={configForm.success_message} onChange={e => update({ success_message: e.target.value })} placeholder="Verified successfully!" /></div>
+              </div>
+
+              {/* Socials */}
+              <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Share2 className="h-3.5 w-3.5" />Socials <span className="normal-case font-normal">({activeSocialCount}/{SOCIALS.length} active)</span></p>
+                <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-muted/20">
+                  {SOCIALS.map(s => {
+                    const active = !!configForm.socials?.[s.key];
+                    const Icon = s.icon;
+                    return (
+                      <button key={s.key} onClick={() => active ? updateSocial(s.key, "") : updateSocial(s.key, s.placeholder)}
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${active ? "bg-primary/15 border border-primary/20" : "bg-muted/30 border border-transparent hover:bg-muted/50"}`}>
+                        <Icon className="w-4 h-4" style={{ color: active ? s.color : undefined }} />
+                      </button>
+                    );
+                  })}
+                </div>
+                {SOCIALS.filter(s => configForm.socials?.[s.key]).map(s => {
+                  const Icon = s.icon;
+                  return (
+                    <div key={s.key} className="flex items-center gap-3">
+                      <Icon className="w-5 h-5 shrink-0" style={{ color: s.color }} />
+                      <div className="flex-1"><Label className="text-xs font-medium mb-1 block">{s.label}</Label>
+                        <Input value={configForm.socials?.[s.key] || ""} onChange={e => updateSocial(s.key, e.target.value)} placeholder={s.placeholder} className="text-xs" /></div>
                     </div>
-                  )}
-                  <div>
-                    <p className="text-sm font-medium">{guildBotQuery.data.bot_name}</p>
-                    <p className="text-xs text-muted-foreground">Client ID: {guildBotQuery.data.client_id || "—"}</p>
-                  </div>
-                </div>
-              )}
-
-              {guildBotQuery.data?.error_message && (
-                <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-                  {guildBotQuery.data.error_message}
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 gap-3">
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1.5 block">Client ID</Label>
-                  <Input value={guildBotForm.client_id} onChange={e => setGuildBotForm(prev => ({ ...prev, client_id: e.target.value }))} placeholder="Discord application client ID" />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1.5 block">Bot Token</Label>
-                  <Input type="password" value={guildBotForm.bot_token} onChange={e => setGuildBotForm(prev => ({ ...prev, bot_token: e.target.value }))} placeholder={guildBotQuery.data?.has_token ? "Saved — enter new token to replace" : "Discord bot token"} />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1.5 block">Client Secret</Label>
-                  <Input type="password" value={guildBotForm.client_secret} onChange={e => setGuildBotForm(prev => ({ ...prev, client_secret: e.target.value }))} placeholder={guildBotQuery.data?.has_secret ? "Saved — enter new secret to replace" : "Discord OAuth client secret"} />
-                </div>
+                  );
+                })}
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => guildBotSaveMutation.mutate()}
-                  disabled={guildBotSaveMutation.isPending}
-                >
-                  {guildBotSaveMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Save className="mr-1.5 h-4 w-4" />}
-                  Save bot
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => guildBotValidateMutation.mutate()}
-                  disabled={guildBotValidateMutation.isPending || !guildBotQuery.data?.configured}
-                >
-                  {guildBotValidateMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-1.5 h-4 w-4" />}
-                  Validate
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-red-500/20 text-red-300 hover:bg-red-500/10 hover:text-red-200"
-                  onClick={() => guildBotDeleteMutation.mutate()}
-                  disabled={guildBotDeleteMutation.isPending || !guildBotQuery.data?.configured}
-                >
-                  {guildBotDeleteMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Trash2 className="mr-1.5 h-4 w-4" />}
-                  Revert to main bot
+              <div className="flex justify-end">
+                <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
+                  {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}Save
                 </Button>
               </div>
             </div>
-          </Section>
 
-          {/* Security */}
-          <Section title="Security" icon={Lock}>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Account Requirements</p>
+            {/* Right: Live Preview */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground"><Eye className="h-4 w-4" /><span className="font-medium">Live Preview</span></div>
+              <div className="sticky top-4"><VerifyPreview config={configForm} /></div>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* ─── SECURITY ─── */}
+        <TabsContent value="security" className="space-y-4 pt-4">
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Account Requirements</p>
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-2">
                 <Label className="text-sm font-medium">Minimum account age</Label>
                 <div className="flex items-center gap-1.5">
                   <Input type="number" min={0} max={365} value={configForm.min_account_age_days}
@@ -675,348 +658,368 @@ export function VerifyConfig() {
               </div>
               <input type="range" min={0} max={365} value={configForm.min_account_age_days}
                 onChange={e => update({ min_account_age_days: parseInt(e.target.value) })}
-                className="w-full h-1.5 rounded-full appearance-none bg-white/10 accent-indigo-500" />
-              <p className="text-xs text-muted-foreground text-right mt-1">
-                {configForm.min_account_age_days >= 30
-                  ? `${Math.floor(configForm.min_account_age_days / 30)} month${Math.floor(configForm.min_account_age_days / 30) > 1 ? "s" : ""}`
-                  : `${configForm.min_account_age_days} days`}
-              </p>
+                className="w-full h-1.5 rounded-full appearance-none bg-muted accent-primary" />
             </div>
+          </div>
 
-            <Separator className="opacity-10" />
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">User Experience</p>
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">CAPTCHA</p>
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Require CAPTCHA to verify</p>
-                <p className="text-xs text-muted-foreground">Members must complete a captcha</p>
-              </div>
+              <div><p className="text-sm font-medium">Require CAPTCHA</p><p className="text-xs text-muted-foreground">Members must complete a challenge</p></div>
               <Switch checked={configForm.captcha_enabled} onCheckedChange={v => update({ captcha_enabled: v, captcha_type: v ? (configForm.captcha_type === "none" ? "button" : configForm.captcha_type) : "none" })} />
             </div>
             {configForm.captcha_enabled && (
-              <div className="space-y-3 pl-2 border-l-2 border-indigo-500/30 ml-1">
+              <div className="space-y-3 pl-3 border-l-2 border-primary/30">
                 <div>
                   <div className="flex items-center gap-1.5 mb-1.5">
-                    <Label className="text-xs text-muted-foreground">Captcha Type</Label>
-                    <PremiumBadge size="sm" />
-                    <span className="text-[10px] text-muted-foreground">(hCaptcha, Turnstile)</span>
+                    <Label className="text-xs text-muted-foreground">Type</Label>
+                    <PremiumBadge size="sm" /><span className="text-[10px] text-muted-foreground">(hCaptcha, Turnstile)</span>
                   </div>
-                  <select
-                    value={configForm.captcha_type}
-                    onChange={e => {
-                      const val = e.target.value as VerificationConfig["captcha_type"];
-                      const isPremiumType = val === "hcaptcha" || val === "turnstile";
-                      if (isPremiumType && !hasFeature("advanced_captcha")) return;
-                      update({ captcha_type: val });
-                    }}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  >
-                    {CAPTCHA_TYPES.filter(t => t.value !== "none").map(type => (
-                      <option
-                        key={type.value}
-                        value={type.value}
-                        className="bg-popover"
-                        disabled={type.premium && !hasFeature("advanced_captcha")}
-                      >
-                        {type.label}{type.premium && !hasFeature("advanced_captcha") ? " 🔒" : ""}
+                  <select value={configForm.captcha_type} onChange={e => { const val = e.target.value as VerificationConfig["captcha_type"]; if ((val === "hcaptcha" || val === "turnstile") && !hasFeature("advanced_captcha")) return; update({ captcha_type: val }); }}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                    {CAPTCHA_TYPES.filter(t => t.value !== "none").map(t => (
+                      <option key={t.value} value={t.value} className="bg-popover" disabled={t.premium && !hasFeature("advanced_captcha")}>
+                        {t.label}{t.premium && !hasFeature("advanced_captcha") ? " 🔒" : ""}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1.5 block">Captcha Difficulty</Label>
-                  <select
-                    value={configForm.captcha_difficulty}
-                    onChange={e => update({ captcha_difficulty: e.target.value as VerificationConfig["captcha_difficulty"] })}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  >
-                    {CAPTCHA_DIFFICULTIES.map(level => (
-                      <option key={level.value} value={level.value} className="bg-popover">{level.label}</option>
-                    ))}
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Difficulty</Label>
+                  <select value={configForm.captcha_difficulty} onChange={e => update({ captcha_difficulty: e.target.value as VerificationConfig["captcha_difficulty"] })}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm">
+                    {CAPTCHA_DIFFICULTIES.map(d => <option key={d.value} value={d.value} className="bg-popover">{d.label}</option>)}
                   </select>
                 </div>
               </div>
             )}
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Close page when complete</p>
-                <p className="text-xs text-muted-foreground">Auto-close after successful verification</p>
-              </div>
-              <Switch checked={configForm.close_page_after_verify} onCheckedChange={v => update({ close_page_after_verify: v })} />
-            </div>
+          </div>
 
-            <Separator className="opacity-10" />
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Protection</p>
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Block VPN networks</p>
-              <Switch checked={configForm.block_vpn} onCheckedChange={v => update({ block_vpn: v })} />
-            </div>
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Protection</p>
+            {[
+              { key: "block_vpn" as const, label: "Block VPN networks" },
+              { key: "block_mobile" as const, label: "Block mobile/wireless networks" },
+              { key: "block_scammers" as const, label: "Block known scammers" },
+              { key: "deny_alt_role" as const, label: "Don't give role to alt accounts" },
+              { key: "auto_ban_alts" as const, label: "Auto-ban alt accounts on verify" },
+              { key: "kick_on_deauth" as const, label: "Kick when user de-authorizes bot" },
+              { key: "close_page_after_verify" as const, label: "Close page after successful verify" },
+            ].map(({ key, label }) => (
+              <div key={key} className="flex items-center justify-between">
+                <p className="text-sm font-medium">{label}</p>
+                <Switch checked={configForm[key]} onCheckedChange={v => update({ [key]: v })} />
+              </div>
+            ))}
             {configForm.block_vpn && (
-              <div className="space-y-3 pl-2 border-l-2 border-blue-500/30 ml-1">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">VPN Detection Provider</Label>
-                  <select
-                    value={configForm.vpn_api_provider || "proxycheck"}
-                    onChange={e => update({ vpn_api_provider: e.target.value })}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
-                  >
+              <div className="space-y-3 pl-3 border-l-2 border-blue-500/40 mt-2">
+                <div>
+                  <Label className="text-xs mb-1.5 block">VPN Detection Provider</Label>
+                  <select value={configForm.vpn_api_provider || "proxycheck"} onChange={e => update({ vpn_api_provider: e.target.value })}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm">
                     <option value="proxycheck">proxycheck.io</option>
                     <option value="ipqualityscore">IPQualityScore</option>
                   </select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">API Key</Label>
-                  <Input
-                    type="password"
-                    value={configForm.vpn_api_key || ""}
-                    onChange={e => update({ vpn_api_key: e.target.value })}
-                    placeholder="Enter your API key..."
-                  />
-                  <p className="text-[10px] text-muted-foreground">
-                    {configForm.vpn_api_provider === "ipqualityscore"
-                      ? "Get a free key at ipqualityscore.com"
-                      : "Get a free key at proxycheck.io"}
-                  </p>
+                <div>
+                  <Label className="text-xs mb-1.5 block">API Key</Label>
+                  <Input type="password" value={configForm.vpn_api_key || ""} onChange={e => update({ vpn_api_key: e.target.value })} placeholder="Enter API key..." />
                 </div>
               </div>
             )}
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Block mobile/wireless networks</p>
-              <Switch checked={configForm.block_mobile} onCheckedChange={v => update({ block_mobile: v })} />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Remove role from unauthorized members</p>
-                <p className="text-xs text-muted-foreground">Kick when user de-authorizes the bot</p>
-              </div>
-              <Switch checked={configForm.kick_on_deauth} onCheckedChange={v => update({ kick_on_deauth: v })} />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Block scammers from verification</p>
-                <p className="text-xs text-muted-foreground">Block known scammer accounts</p>
-              </div>
-              <Switch checked={configForm.block_scammers} onCheckedChange={v => update({ block_scammers: v })} />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">{"Don't give role to alts"}</p>
-                <p className="text-xs text-muted-foreground">Detected alt accounts won't get verified role</p>
-              </div>
-              <Switch checked={configForm.deny_alt_role} onCheckedChange={v => update({ deny_alt_role: v })} />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Automatically ban alt accounts</p>
-                <p className="text-xs text-muted-foreground">Ban detected alts on verification</p>
-              </div>
-              <Switch checked={configForm.auto_ban_alts} onCheckedChange={v => update({ auto_ban_alts: v })} />
-            </div>
+          </div>
 
-            <Separator className="opacity-10" />
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Privacy</p>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">{"Don't save IP address"}</p>
-                <p className="text-xs text-muted-foreground">IP addresses will not be stored</p>
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Privacy & Permissions</p>
+            {[
+              { key: "no_save_ip" as const, label: "Don't save IP addresses" },
+              { key: "guild_join_enabled" as const, label: "Enable \"Join servers for you\" permission" },
+              { key: "force_all_permissions" as const, label: "Force members to accept all permissions" },
+            ].map(({ key, label }) => (
+              <div key={key} className="flex items-center justify-between">
+                <p className="text-sm font-medium">{label}</p>
+                <Switch checked={configForm[key]} onCheckedChange={v => update({ [key]: v })} />
               </div>
-              <Switch checked={configForm.no_save_ip} onCheckedChange={v => update({ no_save_ip: v })} />
-            </div>
+            ))}
+          </div>
 
-            <Separator className="opacity-10" />
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Permissions</p>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">{"Enable \"Join servers for you\" permission"}</p>
-                <p className="text-xs text-muted-foreground">Allow bot to add members to guilds</p>
-              </div>
-              <Switch checked={configForm.guild_join_enabled} onCheckedChange={v => update({ guild_join_enabled: v })} />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Force members to accept all permissions</p>
-                <p className="text-xs text-muted-foreground">Users cannot uncheck OAuth scopes</p>
-              </div>
-              <Switch checked={configForm.force_all_permissions} onCheckedChange={v => update({ force_all_permissions: v })} />
-            </div>
-          </Section>
+          <div className="flex justify-end">
+            <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
+              {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}Save
+            </Button>
+          </div>
+        </TabsContent>
 
-          {/* Firewall — Passwords */}
-          <Section title="Firewall" icon={KeyRound}>
-            <p className="text-xs text-muted-foreground mb-2">
-              Create password-protected verification links. Users will need the correct password to verify.
-            </p>
+        {/* ─── FIREWALL ─── */}
+        <TabsContent value="firewall" className="space-y-4 pt-4">
+          {/* Verify passwords */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><KeyRound className="h-3.5 w-3.5" />Password-Protected Links</p>
+            <p className="text-xs text-muted-foreground">Create password-protected verification links. Users need the correct password to verify.</p>
             {(configForm.verify_passwords || []).map((pw, idx) => (
               <div key={idx} className="flex items-center gap-2">
-                <Input value={pw.label} placeholder="Label"
-                  onChange={e => {
-                    const arr = [...(configForm.verify_passwords || [])];
-                    arr[idx] = { ...arr[idx], label: e.target.value };
-                    update({ verify_passwords: arr });
-                  }} className="flex-1 text-xs" />
-                <Input value={pw.password} placeholder="Password"
-                  onChange={e => {
-                    const arr = [...(configForm.verify_passwords || [])];
-                    arr[idx] = { ...arr[idx], password: e.target.value };
-                    update({ verify_passwords: arr });
-                  }} className="flex-1 text-xs" />
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-red-400 hover:text-red-300"
-                  onClick={() => {
-                    const arr = (configForm.verify_passwords || []).filter((_, i) => i !== idx);
-                    update({ verify_passwords: arr });
-                  }}>
+                <Input value={pw.label} placeholder="Label" onChange={e => { const arr = [...(configForm.verify_passwords || [])]; arr[idx] = { ...arr[idx], label: e.target.value }; update({ verify_passwords: arr }); }} className="flex-1 text-xs" />
+                <Input value={pw.password} placeholder="Password" onChange={e => { const arr = [...(configForm.verify_passwords || [])]; arr[idx] = { ...arr[idx], password: e.target.value }; update({ verify_passwords: arr }); }} className="flex-1 text-xs" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                  onClick={() => update({ verify_passwords: (configForm.verify_passwords || []).filter((_, i) => i !== idx) })}>
                   <XCircle className="w-4 h-4" />
                 </Button>
               </div>
             ))}
-            <Button variant="outline" size="sm" className="w-full"
-              onClick={() => update({ verify_passwords: [...(configForm.verify_passwords || []), { password: "", label: "" }] })}>
-              <Plus className="w-4 h-4 mr-1.5" /> Add Password
+            <Button variant="outline" size="sm" className="w-full" onClick={() => update({ verify_passwords: [...(configForm.verify_passwords || []), { password: "", label: "" }] })}>
+              <Plus className="w-4 h-4 mr-1.5" />Add Password
             </Button>
-          </Section>
+            <div className="flex justify-end pt-2">
+              <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
+                {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}Save
+              </Button>
+            </div>
+          </div>
 
-          {/* Roles & Channels */}
-          <Section title="Roles & Channels" icon={Shield}>
+          {/* Block rules */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold">Block / Allow Rules</p>
+                <p className="text-xs text-muted-foreground">Block or allow specific users, IPs, countries, email domains, or ASNs</p>
+              </div>
+              <Button size="sm" onClick={() => setFwAddOpen(true)} className="gap-1.5"><Plus className="h-4 w-4" />Add Rule</Button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search rules..." value={fwSearch} onChange={e => setFwSearch(e.target.value)} className="pl-8" />
+              </div>
+              <UISelect value={fwFilterType} onValueChange={setFwFilterType}>
+                <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Filter type" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All types</SelectItem>
+                  {Object.entries(TARGET_TYPE_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+                </SelectContent>
+              </UISelect>
+            </div>
+
+            {firewallQuery.isLoading ? (
+              <div className="space-y-2">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
+            ) : filteredRules.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-sm">No rules found</div>
+            ) : (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Value</TableHead>
+                      <TableHead>Action</TableHead>
+                      <TableHead>Added</TableHead>
+                      <TableHead className="w-10" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredRules.map(rule => {
+                      const cfg = TARGET_TYPE_CONFIG[rule.target_type];
+                      const Icon = cfg.icon;
+                      return (
+                        <TableRow key={rule.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5 text-xs"><Icon className="h-3.5 w-3.5 text-muted-foreground" />{cfg.label}</div>
+                          </TableCell>
+                          <TableCell className="text-xs font-mono max-w-[160px] truncate">{rule.target_value}</TableCell>
+                          <TableCell>
+                            <Badge variant={rule.rule_type === "block" ? "destructive" : "default"} className="text-[10px]">
+                              {rule.rule_type === "block" ? "Block" : "Allow"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {rule.created_at ? formatDistanceToNow(new Date(rule.created_at), { addSuffix: true }) : "—"}
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => fwDeleteMutation.mutate(rule.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* ─── CHANNELS ─── */}
+        <TabsContent value="channels" className="space-y-4 pt-4">
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Roles</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Verified Role</Label><RoleSelect value={configForm.verified_role_id ?? ""} onChange={val => update({ verified_role_id: val })} placeholder="Select role" /></div>
+              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Unverified Role</Label><RoleSelect value={configForm.unverified_role_id ?? ""} onChange={val => update({ unverified_role_id: val })} placeholder="Select role" /></div>
+            </div>
+            <Separator />
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Channels</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Verify Channel</Label><ChannelSelect value={configForm.verify_channel_id ?? ""} onChange={val => update({ verify_channel_id: val })} placeholder="Select channel" filter="text" /></div>
+              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Log Channel</Label><ChannelSelect value={configForm.log_channel_id ?? ""} onChange={val => update({ log_channel_id: val })} placeholder="Select channel" filter="text" /></div>
+            </div>
+            <Separator />
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notify Roles</p>
+            <div><Label className="text-xs text-muted-foreground mb-1.5 block">On successful verification</Label>
+              <MultiRoleSelect value={(configForm.notify_success_role_id ?? "").split(",").filter(Boolean)} onChange={vals => update({ notify_success_role_id: vals.join(",") })} placeholder="Select roles to ping" /></div>
+            <div><Label className="text-xs text-muted-foreground mb-1.5 block">On blocked event</Label>
+              <MultiRoleSelect value={(configForm.notify_blocked_role_id ?? "").split(",").filter(Boolean)} onChange={vals => update({ notify_blocked_role_id: vals.join(",") })} placeholder="Select roles to ping" /></div>
+          </div>
+          <div className="flex justify-end">
+            <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
+              {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}Save
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* ─── ADVANCED ─── */}
+        <TabsContent value="advanced" className="space-y-4 pt-4">
+          {/* Custom Bot */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div><p className="text-sm font-semibold">Custom Bot</p><p className="text-xs text-muted-foreground">Use a dedicated bot token and OAuth app for this guild's verification flow.</p></div>
+              <div className="flex items-center gap-2">
+                {guildBotQuery.data?.status === "active" && <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 bg-emerald-500/10 text-[10px]"><ShieldCheck className="h-3 w-3 mr-1" />Active</Badge>}
+                {guildBotQuery.data?.status === "error" && <Badge variant="destructive" className="text-[10px]"><TriangleAlert className="h-3 w-3 mr-1" />Error</Badge>}
+              </div>
+            </div>
+            {guildBotQuery.data?.bot_name && (
+              <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-3 py-2">
+                {guildBotQuery.data.bot_avatar_url ? <img src={guildBotQuery.data.bot_avatar_url} alt="Bot" className="h-10 w-10 rounded-full object-cover" /> : <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 border border-border"><Bot className="h-5 w-5 text-primary" /></div>}
+                <div><p className="text-sm font-medium">{guildBotQuery.data.bot_name}</p><p className="text-xs text-muted-foreground">Client ID: {guildBotQuery.data.client_id || "—"}</p></div>
+              </div>
+            )}
+            {guildBotQuery.data?.error_message && <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">{guildBotQuery.data.error_message}</div>}
+            <div className="grid gap-3">
+              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Client ID</Label><Input value={guildBotForm.client_id} onChange={e => setGuildBotForm(p => ({ ...p, client_id: e.target.value }))} placeholder="Discord application client ID" /></div>
+              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Bot Token</Label><Input type="password" value={guildBotForm.bot_token} onChange={e => setGuildBotForm(p => ({ ...p, bot_token: e.target.value }))} placeholder={guildBotQuery.data?.has_token ? "Saved — enter new token to replace" : "Discord bot token"} /></div>
+              <div><Label className="text-xs text-muted-foreground mb-1.5 block">Client Secret</Label><Input type="password" value={guildBotForm.client_secret} onChange={e => setGuildBotForm(p => ({ ...p, client_secret: e.target.value }))} placeholder={guildBotQuery.data?.has_secret ? "Saved — enter new secret to replace" : "Discord OAuth client secret"} /></div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" onClick={() => guildBotSaveMutation.mutate()} disabled={guildBotSaveMutation.isPending}>
+                {guildBotSaveMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Save className="mr-1.5 h-4 w-4" />}Save bot
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => guildBotValidateMutation.mutate()} disabled={guildBotValidateMutation.isPending || !guildBotQuery.data?.configured}>
+                {guildBotValidateMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-1.5 h-4 w-4" />}Validate
+              </Button>
+              <Button size="sm" variant="outline" className="text-destructive border-destructive/20 hover:bg-destructive/10" onClick={() => guildBotDeleteMutation.mutate()} disabled={guildBotDeleteMutation.isPending || !guildBotQuery.data?.configured}>
+                {guildBotDeleteMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Trash2 className="mr-1.5 h-4 w-4" />}Revert to main
+              </Button>
+            </div>
+          </div>
+
+          {/* Misc advanced */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Misc</p>
+            <div><Label className="text-xs text-muted-foreground mb-1.5 block">Pull Cooldown (hours)</Label>
+              <Input type="number" min={0} max={720} value={configForm.pull_cooldown_hours ?? 10} onChange={e => update({ pull_cooldown_hours: parseInt(e.target.value) || 0 })} />
+              <p className="text-xs text-muted-foreground mt-1">0 = no cooldown</p></div>
+            <div><Label className="text-xs text-muted-foreground mb-1.5 block">Gateway Server ID</Label>
+              <Input value={configForm.gateway_guild_id} onChange={e => update({ gateway_guild_id: e.target.value })} placeholder="Add members to extra server on verify" /></div>
+            <div><Label className="text-xs text-muted-foreground mb-1.5 block">Redirect URL (after verify)</Label>
+              <Input value={configForm.redirect_url} onChange={e => update({ redirect_url: e.target.value })} placeholder="https://..." /></div>
+            <div><Label className="text-xs text-muted-foreground mb-1.5 block">Terms of Service URL</Label>
+              <Input value={configForm.terms_url} onChange={e => update({ terms_url: e.target.value })} placeholder="https://..." /></div>
+            <div><Label className="text-xs text-muted-foreground mb-1.5 block">Custom CSS</Label>
+              <textarea value={configForm.custom_css} onChange={e => update({ custom_css: e.target.value })} placeholder="/* Custom styles */" rows={4}
+                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-xs font-mono placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" /></div>
+          </div>
+
+          <div className="flex justify-end">
+            <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
+              {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}Save
+            </Button>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* ── Custom Domain Dialog ── */}
+      <Dialog open={domainDialogOpen} onOpenChange={setDomainDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-blue-500" />Custom Domain</DialogTitle>
+            <DialogDescription>Point a CNAME record to host your verify page on your own domain.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Domain</Label>
+              <Input value={configForm.custom_domain || ""} onChange={e => update({ custom_domain: e.target.value })} placeholder="verify.yourdomain.com" />
+            </div>
+            {domainStatus?.cname_target && (
+              <div className="rounded-lg bg-muted/30 border border-border p-3 space-y-2">
+                <p className="text-xs font-medium">Point a CNAME record to:</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-xs text-primary bg-muted/40 rounded px-2 py-1.5 font-mono truncate">{domainStatus.cname_target}</code>
+                  <button onClick={() => navigator.clipboard.writeText(domainStatus.cname_target!)} className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"><Copy className="w-3.5 h-3.5" /></button>
+                </div>
+                {configForm.custom_domain && (() => {
+                  const s = domainStatus.status;
+                  const info = statusMap[s ?? "unknown"] ?? statusMap.unknown;
+                  return (
+                    <div className="flex items-center justify-between">
+                      <Badge variant={info.variant} className="text-[10px]">{info.label}</Badge>
+                      <button onClick={() => qc.invalidateQueries({ queryKey: ["verification-domain-status", selectedGuildId] })} className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2">
+                        {domainStatusQuery.isFetching ? "Checking…" : "Check DNS"}
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setDomainDialogOpen(false)}>Cancel</Button>
+              <Button size="sm" onClick={() => { configMutation.mutate(configForm); setDomainDialogOpen(false); }}>Save</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Add Firewall Rule Dialog ── */}
+      <Dialog open={fwAddOpen} onOpenChange={setFwAddOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Firewall Rule</DialogTitle>
+            <DialogDescription>Block or allow a user, IP, country, email domain, or ASN.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Verified Role ID</Label>
-                <RoleSelect value={configForm.verified_role_id ?? ""} onChange={val => update({ verified_role_id: val })} placeholder="Select verified role" />
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Action</Label>
+                <UISelect value={fwNewRule.rule_type} onValueChange={v => setFwNewRule(p => ({ ...p, rule_type: v as "block" | "allow" }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="block">Block</SelectItem><SelectItem value="allow">Allow</SelectItem></SelectContent>
+                </UISelect>
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Unverified Role ID</Label>
-                <RoleSelect value={configForm.unverified_role_id ?? ""} onChange={val => update({ unverified_role_id: val })} placeholder="Select unverified role" />
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Verify Channel ID</Label>
-                <ChannelSelect value={configForm.verify_channel_id ?? ""} onChange={val => update({ verify_channel_id: val })} placeholder="Select channel" filter="text" />
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1.5 block">Log Channel ID</Label>
-                <ChannelSelect value={configForm.log_channel_id ?? ""} onChange={val => update({ log_channel_id: val })} placeholder="Select channel" filter="text" />
+                <Label className="text-xs text-muted-foreground mb-1.5 block">Target Type</Label>
+                <UISelect value={fwNewRule.target_type} onValueChange={v => setFwNewRule(p => ({ ...p, target_type: v as TargetType }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(TARGET_TYPE_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
+                </UISelect>
               </div>
             </div>
-            <Separator className="opacity-10" />
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Notify Roles</p>
             <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Notify roles for successful verifications</Label>
-              <MultiRoleSelect
-                value={(configForm.notify_success_role_id ?? "").split(",").filter(Boolean)}
-                onChange={vals => update({ notify_success_role_id: vals.join(",") })}
-                placeholder="Select roles — pinged when member verifies"
-              />
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Value</Label>
+              <Input value={fwNewRule.target_value} onChange={e => setFwNewRule(p => ({ ...p, target_value: e.target.value }))} placeholder={TARGET_TYPE_CONFIG[fwNewRule.target_type].placeholder} />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Notify roles for blocked events</Label>
-              <MultiRoleSelect
-                value={(configForm.notify_blocked_role_id ?? "").split(",").filter(Boolean)}
-                onChange={vals => update({ notify_blocked_role_id: vals.join(",") })}
-                placeholder="Select roles — pinged when member is blocked"
-              />
+              <Label className="text-xs text-muted-foreground mb-1.5 block">Reason (optional)</Label>
+              <Input value={fwNewRule.reason} onChange={e => setFwNewRule(p => ({ ...p, reason: e.target.value }))} placeholder="Why this rule?" />
             </div>
-          </Section>
-
-          {/* Extra / Advanced */}
-          <Section title="Advanced" icon={Code2}>
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Custom Domain</Label>
-              <Input value={configForm.custom_domain || ""} onChange={e => update({ custom_domain: e.target.value })}
-                placeholder="verify.yourdomain.com" />
-
-              {/* CNAME instruction */}
-              {domainStatusQuery.data?.cname_target && (
-                <div className="mt-2 rounded-lg bg-muted/30 border border-border p-3 space-y-2">
-                  <p className="text-xs text-muted-foreground font-medium">Point a CNAME record to:</p>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 text-xs text-primary bg-muted/40 rounded px-2 py-1.5 font-mono truncate">
-                      {domainStatusQuery.data.cname_target}
-                    </code>
-                    <button
-                      onClick={() => { navigator.clipboard.writeText(domainStatusQuery.data!.cname_target!); }}
-                      className="p-1.5 rounded hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {/* Status badge */}
-                  {configForm.custom_domain && (() => {
-                    const s = domainStatusQuery.data?.status;
-                    const statusMap: Record<string, { label: string; cls: string }> = {
-                      verified: { label: "✓ Active", cls: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-                      pending:  { label: "⏳ Pending DNS", cls: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
-                      not_found: { label: "Not registered", cls: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
-                      unknown:  { label: "Unknown", cls: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
-                      none:     { label: "No domain set", cls: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
-                    };
-                    const info = statusMap[s ?? "unknown"] ?? statusMap.unknown;
-                    return (
-                      <div className="flex items-center justify-between">
-                        <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${info.cls}`}>{info.label}</span>
-                        <button
-                          onClick={() => qc.invalidateQueries({ queryKey: ["verification-domain-status", selectedGuildId] })}
-                          className="text-xs text-muted-foreground hover:text-white underline underline-offset-2 transition-colors"
-                        >
-                          {domainStatusQuery.isFetching ? "Checking…" : "Check DNS"}
-                        </button>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-
-              {!domainStatusQuery.data?.cname_target && configForm.custom_domain && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Point a CNAME to your Railway app URL, then save to register automatically.
-                </p>
-              )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setFwAddOpen(false)}>Cancel</Button>
+              <Button size="sm" onClick={() => fwAddMutation.mutate()} disabled={!fwNewRule.target_value || fwAddMutation.isPending}>
+                {fwAddMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Plus className="mr-1.5 h-4 w-4" />}Add Rule
+              </Button>
             </div>
-            <Separator className="opacity-10" />
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Pull Cooldown (hours)</Label>
-              <Input type="number" min={0} max={720} value={configForm.pull_cooldown_hours ?? 10}
-                onChange={e => update({ pull_cooldown_hours: parseInt(e.target.value) || 0 })} />
-              <p className="text-xs text-muted-foreground mt-1">0 = no cooldown. Prevents spamming member pulls.</p>
-            </div>
-            <Separator className="opacity-10" />
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Gateway Server ID</Label>
-              <Input value={configForm.gateway_guild_id} onChange={e => update({ gateway_guild_id: e.target.value })}
-                placeholder="Add members to an extra server on verify" />
-              <p className="text-xs text-muted-foreground mt-1">Optional — members will also be added to this server</p>
-            </div>
-            <Separator className="opacity-10" />
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Redirect URL (after verify)</Label>
-              <Input value={configForm.redirect_url} onChange={e => update({ redirect_url: e.target.value })} placeholder="https://..." />
-              <p className="text-xs text-muted-foreground mt-1">Leave empty to show success message</p>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Terms of Service URL</Label>
-              <Input value={configForm.terms_url} onChange={e => update({ terms_url: e.target.value })} placeholder="https://..." />
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Custom CSS</Label>
-              <textarea
-                value={configForm.custom_css}
-                onChange={e => update({ custom_css: e.target.value })}
-                placeholder="/* Custom styles */"
-                rows={4}
-                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-xs font-mono placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              />
-            </div>
-          </Section>
-        </div>
-
-        {/* Right: Live Preview */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Eye className="h-4 w-4" />
-            <span className="font-medium">Live Preview</span>
           </div>
-          <div className="sticky top-4">
-            <VerifyPreview config={configForm} />
-          </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
