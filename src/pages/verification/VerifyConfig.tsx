@@ -404,10 +404,9 @@ export function VerifyConfig() {
     }, 600);
   }
   function applySlug() {
-    if (slugStatus === "available" || (slugInput === configForm?.verify_slug)) {
-      update({ verify_slug: slugInput || "" });
-      configMutation.mutate({ ...configForm!, verify_slug: slugInput || "" });
-    }
+    if (!slugInput) return;
+    update({ verify_slug: slugInput });
+    configMutation.mutate({ ...configForm!, verify_slug: slugInput });
   }
 
   function updateSocial(key: string, value: string) {
@@ -540,7 +539,7 @@ export function VerifyConfig() {
                 size="sm"
                 variant="ghost"
                 className="rounded-none border-l border-input px-3 shrink-0"
-                disabled={slugStatus !== "available" && slugInput !== configForm.verify_slug}
+                disabled={!slugInput || slugStatus === "taken" || slugStatus === "invalid" || slugStatus === "checking"}
                 onClick={applySlug}
               >
                 {configMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
