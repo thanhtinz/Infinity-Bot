@@ -109,6 +109,31 @@ def get_guild_by_slug(slug: str, db: Session = Depends(get_db)):
 
 
 # ── Public config for verify page branding (no auth) ──
+@router.get("/verify/{guild_id}/debug-appearance")
+def debug_appearance(guild_id: str, db: Session = Depends(get_db)):
+    """Debug endpoint: returns raw appearance column values from DB (no auth)."""
+    cfg = db.execute(
+        select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
+    ).scalars().first()
+    if not cfg:
+        return {"error": "No config row found for this guild_id"}
+    return {
+        "guild_id": guild_id,
+        "enabled": cfg.enabled,
+        "bg_effect": getattr(cfg, "bg_effect", "__missing__"),
+        "bg_color": getattr(cfg, "bg_color", "__missing__"),
+        "text_color": getattr(cfg, "text_color", "__missing__"),
+        "btn_color": getattr(cfg, "btn_color", "__missing__"),
+        "btn_border_color": getattr(cfg, "btn_border_color", "__missing__"),
+        "card_bg_color": getattr(cfg, "card_bg_color", "__missing__"),
+        "card_border_color": getattr(cfg, "card_border_color", "__missing__"),
+        "typewriter_effect": getattr(cfg, "typewriter_effect", "__missing__"),
+        "glow_effect": getattr(cfg, "glow_effect", "__missing__"),
+        "tilt_effect": getattr(cfg, "tilt_effect", "__missing__"),
+        "font_family": getattr(cfg, "font_family", "__missing__"),
+    }
+
+
 @router.get("/verify/{guild_id}/config")
 def get_verify_page_config(guild_id: str, db: Session = Depends(get_db)):
     cfg = db.execute(
