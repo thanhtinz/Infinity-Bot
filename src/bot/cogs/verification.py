@@ -98,7 +98,7 @@ class VerificationCog(commands.Cog):
             embed = build_embed("verify_panel", session, vars={
                 "server": ctx.guild.name,
                 "server.name": ctx.guild.name,
-            })
+            }, guild_id=str(self.guild_id))
             # Override with config values if user hasn't customized via embed builder
             if cfg.page_title:
                 embed.title = cfg.page_title
@@ -295,7 +295,7 @@ class VerificationCog(commands.Cog):
                 "user": str(member), "user.mention": member.mention,
                 "user.id": str(member.id), "reason": reason,
                 "mod": str(ctx.author), "mod.mention": ctx.author.mention,
-            })
+            }, guild_id=str(self.guild_id))
             await ctx.respond(embed=embed)
         finally:
             session.close()
@@ -327,7 +327,7 @@ class VerificationCog(commands.Cog):
                 "user": str(member), "user.mention": member.mention,
                 "user.id": str(member.id),
                 "mod": str(ctx.author), "mod.mention": ctx.author.mention,
-            })
+            }, guild_id=str(self.guild_id))
             await ctx.respond(embed=embed)
         finally:
             session.close()

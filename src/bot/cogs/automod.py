@@ -77,7 +77,7 @@ class AutoModCog(discord.Cog):
                     "user": str(member), "user.mention": member.mention,
                     "reason": reason, "channel": channel.mention,
                     "content": content[:500],
-                })
+                }, guild_id=str(message.guild.id))
 
             elif action == "mute":
                 try:
@@ -88,7 +88,7 @@ class AutoModCog(discord.Cog):
                     "user": str(member), "user.mention": member.mention,
                     "reason": reason, "channel": channel.mention,
                     "duration": "5 minutes", "content": content[:500],
-                })
+                }, guild_id=str(message.guild.id))
 
             elif action == "kick":
                 try:
@@ -98,14 +98,14 @@ class AutoModCog(discord.Cog):
                 embed = build_embed("automod_kick", session, vars={
                     "user": str(member), "user.mention": member.mention,
                     "reason": reason, "content": content[:500],
-                })
+                }, guild_id=str(message.guild.id))
 
             else:
                 embed = build_embed("automod_delete", session, vars={
                     "user": str(member), "user.mention": member.mention,
                     "reason": reason, "channel": channel.mention,
                     "content": content[:500],
-                })
+                }, guild_id=str(message.guild.id))
 
             # Send to log channel
             if cfg.log_channel_id:

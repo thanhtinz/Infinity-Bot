@@ -66,7 +66,7 @@ class FeedbackModal(discord.ui.Modal):
                 "product.name": self.product.name,
                 "stars": star_str,
                 "content": self.content_input.value or "",
-            })
+            }, guild_id=str(ctx.guild_id))
             embed.set_thumbnail(url=interaction.user.display_avatar.url)
 
             sent_msg = None
@@ -327,7 +327,7 @@ class ShopCog(discord.Cog):
                 "time_label": time_map[thoi_gian],
                 "leaderboard_lines": "\n".join(lines),
                 "updated_at": datetime.datetime.utcnow().strftime("%H:%M %d/%m/%Y"),
-            })
+            }, guild_id=str(ctx.guild_id))
             await ctx.respond(embed=embed)
         finally:
             session.close()

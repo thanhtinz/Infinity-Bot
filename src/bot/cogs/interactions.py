@@ -116,7 +116,7 @@ def _get_prefix(session) -> str:
     return (config.command_prefix if config and config.command_prefix else "!")
 
 
-async def _send_interaction(channel, author, reaction_key: str, meta: dict, target: discord.Member | None = None):
+async def _send_interaction(channel, author, reaction_key: str, meta: dict, target: discord.Member | None = None, guild_id: str | None = None):
     """Core logic shared by slash and prefix commands."""
     gif_url = await _fetch_gif(reaction_key)
     session = get_session()
@@ -132,7 +132,7 @@ async def _send_interaction(channel, author, reaction_key: str, meta: dict, targ
             vars_dict["target"] = str(target.display_name)
             vars_dict["target.mention"] = target.mention
 
-        result = build_embed(f"interact_{reaction_key}", session, vars=vars_dict)
+        result = build_embed(f"interact_{reaction_key}", session, vars=vars_dict, guild_id=guild_id)
     finally:
         session.close()
 
@@ -197,7 +197,7 @@ class InteractionCog(discord.Cog):
                 )
                 return
 
-        await _send_interaction(message.channel, message.author, cmd_name, meta, target)
+        await _send_interaction(message.channel, message.author, cmd_name, meta, target, guild_id=str(message.guild.id))
 
     # ── Admin command: set prefix ─────────────────────────────────────────
     @discord.slash_command(name="setprefix", description="🔧 Set interaction command prefix (Admin)")
@@ -250,7 +250,7 @@ def _make_command(reaction_key: str, meta: dict):
                     "action": meta["label"],
                     "emoji": meta["emoji"],
                     "gif_url": gif_url or "",
-                })
+                }, guild_id=str(guild_id) if guild_id else None)
             finally:
                 session.close()
             if isinstance(result, str):
@@ -273,7 +273,7 @@ def _make_command(reaction_key: str, meta: dict):
                     "action": meta["label"],
                     "emoji": meta["emoji"],
                     "gif_url": gif_url or "",
-                })
+                }, guild_id=str(guild_id) if guild_id else None)
             finally:
                 session.close()
             if isinstance(result, str):

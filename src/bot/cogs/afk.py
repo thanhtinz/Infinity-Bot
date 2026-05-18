@@ -74,7 +74,7 @@ class AFKCog(discord.Cog):
                 "user": str(ctx.author),
                 "user.mention": ctx.author.mention,
                 "reason": reason,
-            })
+            }, guild_id=str(ctx.guild.id))
             await ctx.respond(embed=embed)
         finally:
             session.close()
@@ -114,7 +114,7 @@ class AFKCog(discord.Cog):
                     "user": str(message.author),
                     "user.mention": message.author.mention,
                     "duration": duration_text,
-                })
+                }, guild_id=str(ctx.guild.id))
                 await message.channel.send(embed=embed, delete_after=10)
 
             # Check if any mentioned users are AFK

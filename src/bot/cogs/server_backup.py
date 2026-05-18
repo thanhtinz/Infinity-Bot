@@ -357,7 +357,7 @@ class ServerBackupCog(commands.Cog):
                 "role_count": str(len(discord_data.get("roles", []))),
                 "member_count": str(len(members_data)),
                 "config_count": str(config_count),
-            })
+            }, guild_id=str(guild.id))
             if not embed:
                 embed = discord.Embed(
                     title="✅ Backup completed",
@@ -683,7 +683,7 @@ class ServerBackupCog(commands.Cog):
                 "channels": str(results["channels_restored"]),
                 "roles": str(results["roles_restored"]),
                 "unbans": str(results["unbans"]),
-            })
+            }, guild_id=str(guild.id))
             if results["errors"]:
                 embed.add_field(
                     name="⚠️ Errors",

@@ -112,7 +112,7 @@ class ModerationExtCog(discord.Cog):
                 "user": str(user), "user.mention": user.mention, "user.id": str(user.id),
                 "duration": _format_duration(secs), "reason": reason,
                 "mod": ctx.author.mention, "moderator": ctx.author.mention, "server": ctx.guild.name,
-            })
+            }, guild_id=str(ctx.guild.id))
             await ctx.respond(embed=embed)
         finally:
             session.close()
@@ -209,7 +209,7 @@ class ModerationExtCog(discord.Cog):
                 "user": str(user), "user.mention": user.mention, "user.id": str(user.id),
                 "reason": reason, "mod": ctx.author.mention, "mod.name": str(ctx.author),
                 "moderator": ctx.author.mention, "server": ctx.guild.name,
-            })
+            }, guild_id=str(ctx.guild.id))
             embed.title = "🔨 Softbanned"
             await ctx.respond(embed=embed)
         finally:

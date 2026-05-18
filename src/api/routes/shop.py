@@ -34,7 +34,7 @@ async def _refresh_bang_gia(db):
         products = db.execute(
             select(Product).where(Product.active == True).order_by(Product.id)
         ).scalars().all()
-        embed = build_embed("bang_gia", db)
+        embed = build_embed("bang_gia", db, guild_id=guild_id)
         view = BangGiaView(products)
         msg = await channel.fetch_message(int(config.bang_gia_message_id))
         await msg.edit(embed=embed, view=view)
@@ -393,7 +393,7 @@ async def deliver_order(order_id: int, body: dict, db=Depends(get_db), guild_id:
                         "package": order.package_name or "",
                         "order.total": f"{order.total_price:,.0f}",
                     }
-                    dm_embed = build_embed("giao_hang", db, vars=dm_vars)
+                    dm_embed = build_embed("giao_hang", db, vars=dm_vars, guild_id=guild_id)
                     if dm_content:
                         dm_embed.add_field(name="Content", value=dm_content, inline=False)
                     await discord_user.send(embed=dm_embed)
@@ -736,7 +736,7 @@ async def payos_webhook(request: Request, db=Depends(get_db)):
                             "product.name": order.product.name if order.product else (order.package_name or ""),
                             "package": order.package_name or "",
                             "order.total": f"{order.total_price:,.0f}",
-                        })
+                        }, guild_id=guild_id)
                         await discord_user.send(embed=dm_embed)
                         # Send product note if available
                         product_note = order.product.note if order.product else None

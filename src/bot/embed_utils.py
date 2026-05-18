@@ -759,12 +759,13 @@ def build_embed(
     event_type: str,
     db: Session,
     vars: dict | None = None,
+    guild_id: str | int | None = None,
 ) -> discord.Embed:
     """
     Load template from DB (or use default), apply variable substitution, return discord.Embed.
     Always returns an Embed — if you need text mode, use build_response() instead.
     """
-    result = build_response(event_type, db, vars)
+    result = build_response(event_type, db, vars, guild_id=guild_id)
     if isinstance(result, discord.Embed):
         return result
     # Fallback: wrap text in a minimal embed
@@ -775,11 +776,13 @@ def build_response(
     event_type: str,
     db: Session,
     vars: dict | None = None,
+    guild_id: str | int | None = None,
 ) -> discord.Embed | str:
     """
     Load template from DB (or use default), apply variable substitution.
     Returns discord.Embed if response_mode == "embed", or str if "text".
 
+    guild_id: scope template lookup to a specific guild.
     vars can contain any key. Standard variables:
         user, user.id, user.mention, order.id, order.total,
         product.name, package, date, server, member_count,
@@ -794,10 +797,19 @@ def build_response(
     vars.setdefault("date", datetime.datetime.now().strftime("%d/%m/%Y %H:%M"))
     vars.setdefault("server", "Server")
 
-    # Find template in DB
-    tmpl = db.execute(
-        select(EmbedTemplate).where(EmbedTemplate.event_type == event_type)
-    ).scalars().first()
+    # Find template in DB — always scope by guild_id when provided
+    gid = str(guild_id) if guild_id else None
+    if gid:
+        tmpl = db.execute(
+            select(EmbedTemplate).where(
+                EmbedTemplate.event_type == event_type,
+                EmbedTemplate.guild_id == gid,
+            )
+        ).scalars().first()
+    else:
+        tmpl = db.execute(
+            select(EmbedTemplate).where(EmbedTemplate.event_type == event_type)
+        ).scalars().first()
 
     # Check text mode
     response_mode = "embed"

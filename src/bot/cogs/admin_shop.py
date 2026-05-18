@@ -171,7 +171,7 @@ class OrderPayView(discord.ui.View):
                     "order.id": str(self.order_id),
                     "user": interaction.user.name,
                     "product.name": "Cancelled by admin",
-                })
+                }, guild_id=str(interaction.guild_id))
             finally:
                 session2.close()
             if self.message:
@@ -254,7 +254,7 @@ class OrderPayView(discord.ui.View):
                     expire_embed = build_embed("don_hang_het_han", session2, vars={
                         "order.id": str(self.order_id),
                         "product.name": "",
-                    })
+                    }, guild_id=str(interaction.guild_id))
                 finally:
                     session2.close()
                 await self.message.edit(embed=expire_embed, view=None)
@@ -344,7 +344,7 @@ class BangGiaSelect(discord.ui.Select):
                 "package.name": first_pkg.get("name", ""),
                 "package.price": fmt_price(first_pkg.get('price', 0), currency_symbol, currency) if first_pkg else "",
                 "package.description": first_pkg.get("description", "") if first_pkg else "Contact admin for pricing.",
-            })
+            }, guild_id=str(interaction.guild_id))
 
             if pkgs and not db_has_fields:
                 for pk in pkgs:
@@ -549,7 +549,7 @@ class AdminShopCog(discord.Cog):
             if config.don_hang_channel_id:
                 don_hang_ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
                 if don_hang_ch:
-                    order_embed = build_embed("don_hang_moi", session, vars=order_vars)
+                    order_embed = build_embed("don_hang_moi", session, vars=order_vars, guild_id=str(interaction.guild_id))
                     await don_hang_ch.send(
                         content=f"{user.mention} You have a new order!",
                         embed=order_embed,
@@ -569,7 +569,7 @@ class AdminShopCog(discord.Cog):
                 **order_vars,
                 "qr_url": checkout_url or "",
                 "transfer_content": f"Order {order.id}",
-            })
+            }, guild_id=str(interaction.guild_id))
 
             # Manual payment: set QR image if available
             if method == "manual" and result.raw and result.raw.get("qr_image_id"):
@@ -672,7 +672,7 @@ class AdminShopCog(discord.Cog):
                 "package.name": first_pkg.get("name", ""),
                 "package.price": fmt_price(first_pkg.get('price', 0), currency_symbol, currency) if first_pkg else "",
                 "package.description": first_pkg.get("description", "") if first_pkg else "Contact admin for pricing.",
-            })
+            }, guild_id=str(interaction.guild_id))
 
             if pkgs and not db_has_fields:
                 for pk in pkgs:
@@ -712,7 +712,7 @@ class AdminShopCog(discord.Cog):
                 return
 
             from src.bot.embed_utils import build_embed
-            embed = build_embed("bang_gia", session)
+            embed = build_embed("bang_gia", session, guild_id=str(interaction.guild_id))
             if not embed.footer:
                 embed.set_footer(text="Click a product name below to view package details")
 
@@ -874,7 +874,7 @@ class AdminShopCog(discord.Cog):
             if config.don_hang_channel_id:
                 don_hang_ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
                 if don_hang_ch:
-                    order_embed = build_embed("don_hang_moi", session, vars=order_vars)
+                    order_embed = build_embed("don_hang_moi", session, vars=order_vars, guild_id=str(interaction.guild_id))
                     if ghi_chu:
                         order_embed.add_field(name="Note", value=ghi_chu, inline=False)
                     await don_hang_ch.send(
@@ -894,7 +894,7 @@ class AdminShopCog(discord.Cog):
                 **order_vars,
                 "qr_url": checkout_url or "",
                 "transfer_content": f"Order {order.id}",
-            })
+            }, guild_id=str(interaction.guild_id))
 
             # Manual payment: set QR image if available
             if method == "manual" and result.raw and result.raw.get("qr_image_id"):

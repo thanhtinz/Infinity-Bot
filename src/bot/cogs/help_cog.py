@@ -548,7 +548,7 @@ class CategorySelect(discord.ui.Select):
                 "category_name": _cat_name(cat),
                 "commands_list": _commands_list_text(cat, is_admin),
                 "bot_name": interaction.client.user.display_name if interaction.client.user else "Bot",
-            })
+            }, guild_id=interaction.guild_id)
         finally:
             session.close()
 
@@ -592,7 +592,7 @@ class CommandSelect(discord.ui.Select):
                 "command_desc": _desc(cmd_info),
                 "command_usage": cmd_info["usage"],
                 "bot_name": interaction.client.user.display_name if interaction.client.user else "Bot",
-            })
+            }, guild_id=interaction.guild_id)
         finally:
             session.close()
 
@@ -636,7 +636,7 @@ class BackToCategoriesButton(discord.ui.Button):
             embed = build_embed("help_menu", session, vars={
                 "user.mention": interaction.user.mention,
                 "bot_name": interaction.client.user.display_name if interaction.client.user else "Bot",
-            })
+            }, guild_id=interaction.guild_id)
         finally:
             session.close()
         await interaction.response.edit_message(embed=embed, view=HelpMenuView(is_admin))
@@ -658,7 +658,7 @@ class BackToCategoryButton(discord.ui.Button):
                 "category_name": _cat_name(cat),
                 "commands_list": _commands_list_text(cat, is_admin),
                 "bot_name": interaction.client.user.display_name if interaction.client.user else "Bot",
-            })
+            }, guild_id=interaction.guild_id)
         finally:
             session.close()
         await interaction.response.edit_message(embed=embed, view=CommandSelectView(cat, is_admin))
@@ -678,7 +678,7 @@ class HelpCog(commands.Cog):
             embed = build_embed("help_menu", session, vars={
                 "user.mention": ctx.author.mention,
                 "bot_name": ctx.bot.user.display_name if ctx.bot.user else "Bot",
-            })
+            }, guild_id=interaction.guild_id)
         finally:
             session.close()
         await ctx.respond(embed=embed, view=HelpMenuView(is_admin))

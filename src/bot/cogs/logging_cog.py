@@ -123,7 +123,7 @@ class LoggingCog(discord.Cog):
                     "user.id": str(message.author.id),
                     "channel": message.channel.mention, "channel.name": message.channel.name,
                     "content": content,
-                })
+                }, guild_id=guild_id)
                 await self._send_log(message.guild, cfg.message_log_channel_id, embed)
         finally:
             db.close()
@@ -161,7 +161,7 @@ class LoggingCog(discord.Cog):
                     "before": before_content,
                     "after": after_content,
                     "message.url": after.jump_url,
-                })
+                }, guild_id=guild_id)
                 await self._send_log(before.guild, cfg.message_log_channel_id, embed)
         finally:
             db.close()
@@ -187,7 +187,7 @@ class LoggingCog(discord.Cog):
                 embed = build_embed("log_message_bulk_delete", db, vars={
                     "count": str(len(messages)),
                     "channel": messages[0].channel.mention,
-                })
+                }, guild_id=guild_id)
                 await self._send_log(messages[0].guild, cfg.message_log_channel_id, embed)
         finally:
             db.close()
@@ -222,19 +222,19 @@ class LoggingCog(discord.Cog):
                 event_type = "log_voice_join"
                 desc = f"Join voice {after.channel.name}"
                 details = {"channel": after.channel.name}
-                embed = build_embed("log_voice_join", db, vars={**vars_base, "channel": after.channel.mention})
+                embed = build_embed("log_voice_join", db, vars={**vars_base, "channel": after.channel.mention}, guild_id=guild_id)
             elif before.channel is not None and after.channel is None:
                 event_type = "log_voice_leave"
                 desc = f"Leave voice {before.channel.name}"
                 details = {"channel": before.channel.name}
-                embed = build_embed("log_voice_leave", db, vars={**vars_base, "channel": before.channel.mention})
+                embed = build_embed("log_voice_leave", db, vars={**vars_base, "channel": before.channel.mention}, guild_id=guild_id)
             elif before.channel != after.channel:
                 event_type = "log_voice_move"
                 desc = f"Moved voice {before.channel.name} → {after.channel.name}"
                 details = {"from": before.channel.name, "to": after.channel.name}
                 embed = build_embed("log_voice_move", db, vars={
                     **vars_base, "from": before.channel.mention, "to": after.channel.mention,
-                })
+                }, guild_id=guild_id)
             else:
                 return
 
@@ -267,7 +267,7 @@ class LoggingCog(discord.Cog):
                     "user.id": str(member.id),
                     "account_age": f"<t:{int(member.created_at.timestamp())}:R>",
                     "member_count": str(member.guild.member_count),
-                })
+                }, guild_id=guild_id)
                 await self._send_log(member.guild, cfg.member_log_channel_id, embed)
         finally:
             db.close()
@@ -293,7 +293,7 @@ class LoggingCog(discord.Cog):
                     "user.id": str(member.id),
                     "roles": roles_mention,
                     "member_count": str(member.guild.member_count),
-                })
+                }, guild_id=guild_id)
                 await self._send_log(member.guild, cfg.member_log_channel_id, embed)
         finally:
             db.close()
@@ -324,7 +324,7 @@ class LoggingCog(discord.Cog):
                     embed = build_embed("log_nickname_change", db, vars={
                         "user": str(after), "user.mention": after.mention,
                         "before": old_nick, "after": new_nick,
-                    })
+                    }, guild_id=guild_id)
                     await self._send_log(before.guild, cfg.member_log_channel_id, embed)
 
             # Role change
@@ -351,7 +351,7 @@ class LoggingCog(discord.Cog):
                         embed = build_embed("log_role_update", db, vars={
                             "user": str(after), "user.mention": after.mention,
                             "changes": "\n".join(parts_mention),
-                        })
+                        }, guild_id=guild_id)
                         await self._send_log(before.guild, cfg.member_log_channel_id, embed)
         finally:
             db.close()
@@ -376,7 +376,7 @@ class LoggingCog(discord.Cog):
                 embed = build_embed("log_channel_create", db, vars={
                     "channel": channel.mention, "channel.name": channel.name,
                     "type": str(channel.type),
-                })
+                }, guild_id=guild_id)
                 await self._send_log(channel.guild, cfg.server_log_channel_id, embed)
         finally:
             db.close()
@@ -397,7 +397,7 @@ class LoggingCog(discord.Cog):
             if cfg.server_log_channel_id:
                 embed = build_embed("log_channel_delete", db, vars={
                     "channel.name": channel.name, "type": str(channel.type),
-                })
+                }, guild_id=guild_id)
                 await self._send_log(channel.guild, cfg.server_log_channel_id, embed)
         finally:
             db.close()

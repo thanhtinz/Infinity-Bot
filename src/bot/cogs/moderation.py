@@ -36,7 +36,7 @@ class ModerationCog(discord.Cog):
                     "user": str(user), "user.mention": user.mention, "user.id": str(user.id),
                     "reason": reason, "mod": ctx.author.mention, "mod.name": str(ctx.author),
                     "moderator": ctx.author.mention, "server": ctx.guild.name,
-                })
+                }, guild_id=str(ctx.guild.id))
                 await ctx.respond(embed=embed)
             finally:
                 session.close()
@@ -59,7 +59,7 @@ class ModerationCog(discord.Cog):
                 embed = build_embed("unban", session, vars={
                     "user": str(user), "user.mention": user.mention, "user.id": str(user.id),
                     "reason": reason, "moderator": ctx.author.mention, "server": ctx.guild.name,
-                })
+                }, guild_id=str(ctx.guild.id))
                 await ctx.respond(embed=embed)
             finally:
                 session.close()
@@ -84,7 +84,7 @@ class ModerationCog(discord.Cog):
                     "user": str(user), "user.mention": user.mention, "user.id": str(user.id),
                     "reason": reason, "mod": ctx.author.mention, "mod.name": str(ctx.author),
                     "moderator": ctx.author.mention, "server": ctx.guild.name,
-                })
+                }, guild_id=str(ctx.guild.id))
                 await ctx.respond(embed=embed)
             finally:
                 session.close()
@@ -122,7 +122,7 @@ class ModerationCog(discord.Cog):
                 "user": str(user), "user.mention": user.mention, "user.id": str(user.id),
                 "reason": reason, "warn_count": str(count),
                 "mod": ctx.author.mention, "moderator": ctx.author.mention, "server": ctx.guild.name,
-            })
+            }, guild_id=str(ctx.guild.id))
             await ctx.respond(embed=embed)
 
             # DM user using embed template from DB
@@ -134,7 +134,7 @@ class ModerationCog(discord.Cog):
                     "reason": reason,
                     "warn_count": str(count),
                     "server": ctx.guild.name,
-                })
+                }, guild_id=str(ctx.guild.id))
                 await user.send(embed=dm_embed)
             except Exception:
                 pass
