@@ -1,147 +1,80 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import {
-  RefreshCw,
-  Trash2,
-  ArrowRightLeft,
-  Search,
-  ShieldCheck,
-  Ban,
-  ChevronLeft,
-  ChevronRight,
-  Mail,
-  Globe,
-  Eye,
-  AlertTriangle,
-  Hash,
-  Square,
-  Loader2,
-  Users,
+  RefreshCw, Trash2, Search, ShieldCheck, Ban,
+  ChevronLeft, ChevronRight, Mail, Globe, Eye,
+  AlertTriangle, Hash, Users, ArrowRightLeft, Loader2,
 } from "lucide-react";
 import {
-  fetchMembers,
-  blacklistMember,
-  deleteMember,
-  deleteUnauthorized,
-  transferMembers,
-  fetchStats,
-  startPull,
-  stopPull,
-  fetchPullStatus,
-  formatDate,
-  riskBadge,
+  fetchMembers, blacklistMember, deleteMember,
+  deleteUnauthorized, transferMembers, formatDate, riskBadge,
 } from "./shared";
 import type { VerifiedMember } from "./shared";
+
+const PER_PAGE = 20;
 
 export function VerifyMembers() {
   const { toast } = useToast();
   const qc = useQueryClient();
 
-  // ── State ──────────────────────────────────────────────────────────────
-  const [memberSearch, setMemberSearch] = useState("");
+  const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [memberPage, setMemberPage] = useState(1);
+  const [page, setPage] = useState(1);
+  const [showBlacklisted, setShowBlacklisted] = useState(false);
   const [selectedMember, setSelectedMember] = useState<VerifiedMember | null>(null);
-  const [memberDetailOpen, setMemberDetailOpen] = useState(false);
-  const [showDeauthorized, setShowDeauthorized] = useState(false);
-
-  // Pull dialog
-  const [pullDialogOpen, setPullDialogOpen] = useState(false);
-  const [pullRestoreRoles, setPullRestoreRoles] = useState(true);
-  const [pullDelay, setPullDelay] = useState(5);
-
-  // Delete unauthorized dialog
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  // Transfer dialog
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [deleteUnauthorizedOpen, setDeleteUnauthorizedOpen] = useState(false);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
-  const [transferGuildId, setTransferGuildId] = useState("");
+  const [transferSource, setTransferSource] = useState("");
 
-  const perPage = 50;
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  // ── Debounced search ───────────────────────────────────────────────────
-  const handleSearchChange = useCallback((value: string) => {
-    setMemberSearch(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setDebouncedSearch(value);
-      setMemberPage(1);
-    }, 300);
-  }, []);
-
+  // Debounce search
   useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
-
-  // ── Queries ────────────────────────────────────────────────────────────
-  const statsQuery = useQuery({
-    queryKey: ["verification-stats"],
-    queryFn: fetchStats,
-  });
+    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
 
   const membersQuery = useQuery({
-    queryKey: ["verification-members", memberPage, debouncedSearch, showDeauthorized],
-    queryFn: () => fetchMembers(memberPage, perPage, debouncedSearch, showDeauthorized || undefined),
+    queryKey: ["verification-members", page, PER_PAGE, debouncedSearch, showBlacklisted],
+    queryFn: () => fetchMembers(page, PER_PAGE, debouncedSearch, showBlacklisted ? true : undefined),
+    placeholderData: (prev) => prev,
   });
 
-  const pullStatusQuery = useQuery({
-    queryKey: ["member-pull-status"],
-    queryFn: fetchPullStatus,
-    refetchInterval: 3000,
-  });
-
-  // ── Mutations ──────────────────────────────────────────────────────────
   const blacklistMutation = useMutation({
     mutationFn: ({ id, blacklisted }: { id: number; blacklisted: boolean }) =>
       blacklistMember(id, blacklisted),
-    onSuccess: () => {
-      toast({ title: "Member updated" });
+    onSuccess: (_, vars) => {
+      toast({ title: vars.blacklisted ? "Member blacklisted" : "Member unblacklisted" });
       qc.invalidateQueries({ queryKey: ["verification-members"] });
+      setDetailOpen(false);
     },
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
-  const deleteMemberMutation = useMutation({
-    mutationFn: deleteMember,
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => deleteMember(id),
     onSuccess: () => {
       toast({ title: "Member deleted" });
-      setMemberDetailOpen(false);
-      setSelectedMember(null);
       qc.invalidateQueries({ queryKey: ["verification-members"] });
+      setDetailOpen(false);
     },
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
@@ -149,513 +82,221 @@ export function VerifyMembers() {
   const deleteUnauthorizedMutation = useMutation({
     mutationFn: deleteUnauthorized,
     onSuccess: (data) => {
-      toast({ title: `Deleted ${data.deleted} unauthorized member${data.deleted !== 1 ? "s" : ""}` });
-      setDeleteDialogOpen(false);
+      toast({ title: `Deleted ${data.deleted} unauthorized member(s)` });
       qc.invalidateQueries({ queryKey: ["verification-members"] });
-      qc.invalidateQueries({ queryKey: ["verification-stats"] });
+      setDeleteUnauthorizedOpen(false);
     },
     onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
   const transferMutation = useMutation({
-    mutationFn: transferMembers,
+    mutationFn: () => transferMembers(transferSource),
     onSuccess: (data) => {
-      toast({ title: `Transferred ${data.transferred} member${data.transferred !== 1 ? "s" : ""}`, description: `${data.skipped} skipped` });
-      setTransferDialogOpen(false);
-      setTransferGuildId("");
+      toast({ title: `Transferred ${data.transferred}, skipped ${data.skipped}` });
       qc.invalidateQueries({ queryKey: ["verification-members"] });
-      qc.invalidateQueries({ queryKey: ["verification-stats"] });
+      setTransferDialogOpen(false);
+      setTransferSource("");
     },
-    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+    onError: (err) => toast({ title: "Transfer failed", description: err.message, variant: "destructive" }),
   });
 
-  const startPullMutation = useMutation({
-    mutationFn: startPull,
-    onSuccess: () => {
-      toast({ title: "Member pull started" });
-      setPullDialogOpen(false);
-      qc.invalidateQueries({ queryKey: ["member-pull-status"] });
-    },
-    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-  });
-
-  const stopPullMutation = useMutation({
-    mutationFn: stopPull,
-    onSuccess: () => {
-      toast({ title: "Member pull stopped" });
-      qc.invalidateQueries({ queryKey: ["member-pull-status"] });
-    },
-    onError: (err) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-  });
-
-  // ── Helpers ────────────────────────────────────────────────────────────
-  function openMemberDetail(m: VerifiedMember) {
+  const openDetail = useCallback((m: VerifiedMember) => {
     setSelectedMember(m);
-    setMemberDetailOpen(true);
-  }
+    setDetailOpen(true);
+  }, []);
 
-  const pullActive = pullStatusQuery.data?.active ?? false;
-  const pullProgress = pullStatusQuery.data
-    ? pullStatusQuery.data.total_members > 0
-      ? Math.round((pullStatusQuery.data.pulled_members / pullStatusQuery.data.total_members) * 100)
-      : 0
-    : 0;
+  const totalPages = membersQuery.data
+    ? Math.ceil(membersQuery.data.total / PER_PAGE)
+    : 1;
 
-  // ── Render ─────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-6">
-      {/* ── Action Buttons ──────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-3">
-        {pullActive ? (
-          <div className="flex items-center gap-3 flex-1 min-w-[300px]">
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-sm font-medium">
-                  Pulling members… {pullStatusQuery.data?.pulled_members ?? 0}/{pullStatusQuery.data?.total_members ?? 0}
-                </span>
-                <span className="text-sm text-muted-foreground">{pullProgress}%</span>
-              </div>
-              <Progress value={pullProgress} className="h-2" />
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => stopPullMutation.mutate()}
-              disabled={stopPullMutation.isPending}
-              className="gap-1.5 shrink-0"
-            >
-              {stopPullMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Square className="h-4 w-4" />
-              )}
-              Stop
-            </Button>
-          </div>
-        ) : (
-          <Button
-            onClick={() => setPullDialogOpen(true)}
-            className="gap-2 bg-[#5865F2] hover:bg-[#4752C4] text-white"
-            size="lg"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Pull members
-          </Button>
-        )}
-
+    <div className="space-y-4">
+      {/* ── Toolbar ── */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by ID, username, email…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Switch
+            id="show-blacklisted"
+            checked={showBlacklisted}
+            onCheckedChange={(v) => { setShowBlacklisted(v); setPage(1); }}
+          />
+          <Label htmlFor="show-blacklisted">Blacklisted only</Label>
+        </div>
         <Button
           variant="outline"
-          onClick={() => setDeleteDialogOpen(true)}
+          size="sm"
           className="gap-2"
-          size="lg"
+          onClick={() => setDeleteUnauthorizedOpen(true)}
         >
           <Trash2 className="h-4 w-4" />
           Delete Unauthorized
         </Button>
-
         <Button
           variant="outline"
-          onClick={() => setTransferDialogOpen(true)}
+          size="sm"
           className="gap-2"
-          size="lg"
+          onClick={() => setTransferDialogOpen(true)}
         >
           <ArrowRightLeft className="h-4 w-4" />
-          Transfer members
+          Transfer
         </Button>
-      </div>
-
-      {/* ── Stats Card ──────────────────────────────────────────────────── */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Pullable:</span>
-              <span className="text-lg font-bold text-emerald-500">
-                {statsQuery.isLoading ? <Skeleton className="inline-block h-6 w-8" /> : statsQuery.data?.pullable ?? 0}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Deauthorized:</span>
-              <span className="text-lg font-bold text-orange-500">
-                {statsQuery.isLoading ? <Skeleton className="inline-block h-6 w-8" /> : statsQuery.data?.deauthorized ?? 0}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Total:</span>
-              <span className="text-lg font-bold">
-                {statsQuery.isLoading ? <Skeleton className="inline-block h-6 w-8" /> : statsQuery.data?.total ?? 0}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setShowDeauthorized((prev) => !prev);
-                setMemberPage(1);
-              }}
-              className="text-sm text-[#5865F2] hover:underline ml-auto"
-            >
-              {showDeauthorized ? "View all members" : "View deauthorized"}
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ── Search Bar ──────────────────────────────────────────────────── */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Enter Discord ID, username, IP address, or email"
-            value={memberSearch}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-9"
-          />
-        </div>
         <Button
-          variant="outline"
-          onClick={() => {
-            setDebouncedSearch(memberSearch);
-            setMemberPage(1);
-          }}
-          className="gap-1.5 shrink-0"
+          variant="ghost"
+          size="icon"
+          onClick={() => qc.invalidateQueries({ queryKey: ["verification-members"] })}
         >
-          <Search className="h-4 w-4" />
-          Search
+          <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* ── Member Table ────────────────────────────────────────────────── */}
+      {/* ── Total badge ── */}
+      {membersQuery.data && (
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">
+            {membersQuery.data.total.toLocaleString()} member{membersQuery.data.total !== 1 ? "s" : ""}
+          </span>
+        </div>
+      )}
+
+      {/* ── Table ── */}
       {membersQuery.isLoading ? (
         <div className="space-y-2">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-14 w-full" />
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full" />
           ))}
         </div>
       ) : !membersQuery.data?.members.length ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-medium">No members found</h3>
+            <Users className="h-12 w-12 text-muted-foreground/40 mb-4" />
+            <p className="text-lg font-medium">No members found</p>
             <p className="text-sm text-muted-foreground mt-1">
-              {debouncedSearch ? "Try a different search term." : "Members will appear here once they verify."}
+              {debouncedSearch
+                ? "Try a different search term."
+                : "Members appear here once they verify."}
             </p>
           </CardContent>
         </Card>
       ) : (
-        <>
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Discord ID</TableHead>
-                  <TableHead>Username</TableHead>
-                  <TableHead className="hidden md:table-cell">Verified</TableHead>
-                  <TableHead className="hidden lg:table-cell">Risk</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {membersQuery.data.members.map((m) => {
-                  const risk = riskBadge(m.risk_score);
-                  return (
-                    <TableRow
-                      key={m.id}
-                      className="cursor-pointer"
-                      onClick={() => openMemberDetail(m)}
-                    >
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {m.discord_id}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-7 w-7">
-                            {m.avatar ? (
-                              <AvatarImage src={m.avatar} alt={m.username} />
-                            ) : null}
-                            <AvatarFallback className="text-[10px]">
-                              {m.username.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">{m.username}</span>
-                          {m.is_blacklisted && (
-                            <Ban className="h-3.5 w-3.5 text-red-500" />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
-                        {formatDate(m.verified_at)}
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        <Badge variant="outline" className={`text-xs ${risk.cls}`}>
-                          {risk.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0"
-                            onClick={() => openMemberDetail(m)}
-                            title="View details"
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0"
-                            onClick={() =>
-                              blacklistMutation.mutate({
-                                id: m.id,
-                                blacklisted: !m.is_blacklisted,
-                              })
-                            }
-                            title={m.is_blacklisted ? "Unblacklist" : "Blacklist"}
-                          >
-                            {m.is_blacklisted ? (
-                              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                            ) : (
-                              <Ban className="h-3.5 w-3.5 text-red-500" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                            onClick={() => deleteMemberMutation.mutate(m.id)}
-                            title="Delete"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Card>
-
-          {/* Pagination */}
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {membersQuery.data.total} member{membersQuery.data.total !== 1 ? "s" : ""} total
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={memberPage <= 1}
-                onClick={() => setMemberPage((p) => Math.max(1, p - 1))}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm">
-                Page {memberPage} of {Math.max(1, Math.ceil(membersQuery.data.total / perPage))}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={memberPage >= Math.ceil(membersQuery.data.total / perPage)}
-                onClick={() => setMemberPage((p) => p + 1)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </>
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead className="hidden md:table-cell">Discord ID</TableHead>
+                <TableHead className="hidden md:table-cell">Email</TableHead>
+                <TableHead className="hidden lg:table-cell">Verified</TableHead>
+                <TableHead className="hidden lg:table-cell">Risk</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {membersQuery.data.members.map((m) => {
+                const risk = riskBadge(m.risk_score);
+                return (
+                  <TableRow key={m.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openDetail(m)}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-7 w-7">
+                          {m.avatar && <AvatarImage src={m.avatar} alt={m.username} />}
+                          <AvatarFallback className="text-[10px]">
+                            {m.username.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium text-sm">{m.username}</span>
+                        {m.is_blacklisted && (
+                          <Badge variant="destructive" className="text-[10px] py-0">Blacklisted</Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground hidden md:table-cell">
+                      {m.discord_id}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground hidden md:table-cell">
+                      {m.email ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">
+                      {formatDate(m.verified_at)}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <Badge variant="outline" className={`text-[10px] ${risk.cls}`}>
+                        {m.risk_score} — {risk.label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={(e) => { e.stopPropagation(); openDetail(m); }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Card>
       )}
 
-      {/* ── Pull Members Dialog ─────────────────────────────────────────── */}
-      <Dialog open={pullDialogOpen} onOpenChange={setPullDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Pull Members</DialogTitle>
-            <DialogDescription>
-              Pull members from your Discord server into the verification database.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6 py-2">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Restore roles</Label>
-                <p className="text-xs text-muted-foreground">Re-assign roles to returning members</p>
-              </div>
-              <Switch
-                checked={pullRestoreRoles}
-                onCheckedChange={setPullRestoreRoles}
-              />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>Join delay</Label>
-                <span className="text-sm text-muted-foreground">{pullDelay}s</span>
-              </div>
-              <Slider
-                value={[pullDelay]}
-                onValueChange={([v]) => setPullDelay(v)}
-                min={1}
-                max={10}
-                step={1}
-              />
-              <p className="text-xs text-muted-foreground">
-                Delay between each member join (1–10 seconds)
-              </p>
-            </div>
+      {/* ── Pagination ── */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
+        </div>
+      )}
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPullDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() =>
-                startPullMutation.mutate({
-                  restore_roles: pullRestoreRoles,
-                  join_delay_seconds: pullDelay,
-                })
-              }
-              disabled={startPullMutation.isPending}
-              className="gap-1.5 bg-[#5865F2] hover:bg-[#4752C4] text-white"
-            >
-              {startPullMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
-              Start Pull
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Delete Unauthorized Dialog ──────────────────────────────────── */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+      {/* ── Member Detail Dialog ── */}
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete Unauthorized Members</DialogTitle>
-            <DialogDescription>
-              This will permanently remove all deauthorized members from the database. This action cannot be undone.
-            </DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              Member Detail
+            </DialogTitle>
           </DialogHeader>
-
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => deleteUnauthorizedMutation.mutate()}
-              disabled={deleteUnauthorizedMutation.isPending}
-              className="gap-1.5"
-            >
-              {deleteUnauthorizedMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4" />
-              )}
-              Delete All Unauthorized
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Transfer Members Dialog ─────────────────────────────────────── */}
-      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Transfer Members</DialogTitle>
-            <DialogDescription>
-              Import verified members from another Discord server.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3 py-2">
-            <Label htmlFor="transfer-guild-id">Source Server ID</Label>
-            <Input
-              id="transfer-guild-id"
-              placeholder="Enter source guild ID"
-              value={transferGuildId}
-              onChange={(e) => setTransferGuildId(e.target.value)}
-              className="font-mono"
-            />
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setTransferDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => transferMutation.mutate(transferGuildId)}
-              disabled={!transferGuildId.trim() || transferMutation.isPending}
-              className="gap-1.5"
-            >
-              {transferMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ArrowRightLeft className="h-4 w-4" />
-              )}
-              Transfer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Member Detail Dialog ────────────────────────────────────────── */}
-      <Dialog open={memberDetailOpen} onOpenChange={setMemberDetailOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Member Details</DialogTitle>
-            <DialogDescription>Detailed information about this verified member.</DialogDescription>
-          </DialogHeader>
-
           {selectedMember && (
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  {selectedMember.avatar ? (
-                    <AvatarImage src={selectedMember.avatar} alt={selectedMember.username} />
-                  ) : null}
-                  <AvatarFallback className="text-lg">
-                    {selectedMember.username.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12">
+                  {selectedMember.avatar && <AvatarImage src={selectedMember.avatar} />}
+                  <AvatarFallback>{selectedMember.username.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-lg font-semibold">{selectedMember.username}</h3>
-                  <p className="text-sm text-muted-foreground font-mono">{selectedMember.discord_id}</p>
-                  {selectedMember.is_blacklisted && (
-                    <Badge variant="outline" className="mt-1 bg-red-500/15 text-red-600 border-red-500/30">
-                      <Ban className="h-3 w-3 mr-1" /> Blacklisted
-                    </Badge>
-                  )}
+                  <p className="font-semibold">{selectedMember.username}</p>
+                  <p className="text-xs font-mono text-muted-foreground">{selectedMember.discord_id}</p>
                 </div>
+                {selectedMember.is_blacklisted && <Badge variant="destructive" className="ml-auto">Blacklisted</Badge>}
               </div>
-
-              <Separator />
-
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Email:</span>
-                  <span className="font-medium truncate">{selectedMember.email || "—"}</span>
+                  <span className="truncate text-muted-foreground">{selectedMember.email ?? "No email"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">IP:</span>
-                  <span className="font-mono text-xs">{selectedMember.ip_address || "—"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Verified:</span>
-                  <span>{formatDate(selectedMember.verified_at)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Last seen:</span>
-                  <span>{formatDate(selectedMember.last_seen)}</span>
+                  <span className="truncate text-muted-foreground">{selectedMember.ip_address ?? "No IP"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-muted-foreground" />
@@ -670,54 +311,108 @@ export function VerifyMembers() {
                   <Badge variant="outline">{selectedMember.roles.length}</Badge>
                 </div>
               </div>
-
               {selectedMember.roles.length > 0 && (
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Role IDs</Label>
                   <div className="flex flex-wrap gap-1">
                     {selectedMember.roles.map((r) => (
-                      <Badge key={r} variant="outline" className="text-xs font-mono">
-                        {r}
-                      </Badge>
+                      <Badge key={r} variant="outline" className="text-xs font-mono">{r}</Badge>
                     ))}
                   </div>
                 </div>
               )}
+              <div className="text-xs text-muted-foreground space-y-0.5">
+                <p>Verified: {formatDate(selectedMember.verified_at)}</p>
+                <p>Last seen: {formatDate(selectedMember.last_seen)}</p>
+              </div>
             </div>
           )}
-
           <DialogFooter className="gap-2">
             {selectedMember && (
               <>
                 <Button
                   variant="outline"
-                  onClick={() =>
-                    blacklistMutation.mutate({
-                      id: selectedMember.id,
-                      blacklisted: !selectedMember.is_blacklisted,
-                    })
-                  }
+                  disabled={blacklistMutation.isPending}
+                  onClick={() => blacklistMutation.mutate({ id: selectedMember.id, blacklisted: !selectedMember.is_blacklisted })}
                   className="gap-1.5"
                 >
-                  {selectedMember.is_blacklisted ? (
-                    <>
-                      <ShieldCheck className="h-4 w-4" /> Unblacklist
-                    </>
-                  ) : (
-                    <>
-                      <Ban className="h-4 w-4" /> Blacklist
-                    </>
-                  )}
+                  {blacklistMutation.isPending
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : selectedMember.is_blacklisted
+                      ? <><ShieldCheck className="h-4 w-4" /> Unblacklist</>
+                      : <><Ban className="h-4 w-4" /> Blacklist</>
+                  }
                 </Button>
                 <Button
                   variant="destructive"
-                  onClick={() => deleteMemberMutation.mutate(selectedMember.id)}
+                  disabled={deleteMutation.isPending}
+                  onClick={() => deleteMutation.mutate(selectedMember.id)}
                   className="gap-1.5"
                 >
-                  <Trash2 className="h-4 w-4" /> Delete
+                  {deleteMutation.isPending
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <><Trash2 className="h-4 w-4" /> Delete</>
+                  }
                 </Button>
               </>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Delete Unauthorized AlertDialog ── */}
+      <AlertDialog open={deleteUnauthorizedOpen} onOpenChange={setDeleteUnauthorizedOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Unauthorized Members</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will delete all members who are no longer in the Discord server. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteUnauthorizedMutation.mutate()}
+              disabled={deleteUnauthorizedMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteUnauthorizedMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Transfer Dialog ── */}
+      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ArrowRightLeft className="h-4 w-4" />
+              Transfer Members
+            </DialogTitle>
+            <DialogDescription>
+              Import verified members from another guild into this one.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Source Guild ID</Label>
+            <Input
+              placeholder="e.g. 123456789012345678"
+              value={transferSource}
+              onChange={(e) => setTransferSource(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTransferDialogOpen(false)}>Cancel</Button>
+            <Button
+              disabled={!transferSource.trim() || transferMutation.isPending}
+              onClick={() => transferMutation.mutate()}
+              className="gap-2"
+            >
+              {transferMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRightLeft className="h-4 w-4" />}
+              Transfer
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
