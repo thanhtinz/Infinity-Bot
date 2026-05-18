@@ -162,19 +162,23 @@ function DigitalRain() {
   );
 }
 
-function useTypewriter(text: string, enabled: boolean, speed = 50) {
+function useTypewriter(text: string, enabled: boolean, speed = 50, delay = 0) {
   const [displayed, setDisplayed] = useState(enabled ? "" : text);
   useEffect(() => {
     if (!enabled) { setDisplayed(text); return; }
     setDisplayed("");
     let i = 0;
-    const timer = setInterval(() => {
-      i++;
-      setDisplayed(text.slice(0, i));
-      if (i >= text.length) clearInterval(timer);
-    }, speed);
-    return () => clearInterval(timer);
-  }, [text, enabled, speed]);
+    let timer: ReturnType<typeof setInterval>;
+    const startTimer = () => {
+      timer = setInterval(() => {
+        i++;
+        setDisplayed(text.slice(0, i));
+        if (i >= text.length) clearInterval(timer);
+      }, speed);
+    };
+    const delayTimer = delay > 0 ? setTimeout(startTimer, delay) : (startTimer(), undefined);
+    return () => { clearInterval(timer); if (delayTimer) clearTimeout(delayTimer); };
+  }, [text, enabled, speed, delay]);
   return displayed;
 }
 
@@ -334,6 +338,12 @@ export function VerifyPage() {
     config?.page_title || "Verify Your Account",
     config?.typewriter_effect ?? false,
   );
+  const descText = useTypewriter(
+    config?.page_description || "Please verify your Discord account to gain access to the server.",
+    config?.typewriter_effect ?? false,
+    30, // faster speed for description
+    config?.typewriter_effect ? ((config?.page_title || "Verify Your Account").length * 50 + 300) : 0,
+  );
   const tiltRef = useTilt(config?.tilt_effect ?? false);
 
   const activeSocials = config?.socials
@@ -487,7 +497,10 @@ export function VerifyPage() {
         )}
 
         <p className="text-sm mb-6 leading-relaxed" style={{ color: `${textColor}50` }}>
-          {config?.page_description || "Please verify your Discord account to gain access to the server."}
+          {descText}
+          {config?.typewriter_effect && descText.length < (config?.page_description || "Please verify your Discord account to gain access to the server.").length && (
+            <span className="inline-block w-0.5 h-3.5 ml-0.5 align-middle animate-pulse" style={{ backgroundColor: btnColor }} />
+          )}
         </p>
 
         {config?.captcha_enabled && config.captcha_type !== "none" && (
