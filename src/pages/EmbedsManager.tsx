@@ -134,9 +134,10 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
 
   // ── Fetch embeds ──
   const { data: embeds = [] } = useQuery<EmbedTemplate[]>({
-    queryKey: ["embeds"],
+    queryKey: ["embeds", selectedGuildId],
     queryFn: () => apiFetch("/api/embeds").then((r) => r.json()),
     staleTime: 300_000,
+    enabled: !!selectedGuildId,
   });
 
   // Map of saved templates by event_type

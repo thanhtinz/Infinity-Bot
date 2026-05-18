@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 async def _refresh_bang_gia(db):
-    """Tự động cập nhật message bảng giá sau khi sản phẩm thay đổi."""
+    """Auto-refresh price list message after product changes."""
     try:
         from src.bot.manager import get_bot_client
         from src.bot.cogs.admin_shop import BangGiaView
@@ -54,7 +54,7 @@ def get_products(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
 async def upload_product_image(file: UploadFile = File(...), db=Depends(get_db)):
     content = await file.read()
     if len(content) > 10 * 1024 * 1024:
-        raise HTTPException(400, "File quá lớn (tối đa 10MB).")
+        raise HTTPException(400, "File too large (max 10MB).")
     ext = os.path.splitext(file.filename or "img.jpg")[1] or ".jpg"
     file_id = uuid.uuid4().hex
     from src.models.models import UploadedFile
@@ -84,19 +84,22 @@ async def create_product(product_in: ProductBase, db=Depends(get_db), guild_id: 
     from src.models.models import EmbedTemplate
     event_type = f"product_{product.id}"
     existing = db.execute(
-        select(EmbedTemplate).where(EmbedTemplate.event_type == event_type)
+        select(EmbedTemplate).where(
+            EmbedTemplate.event_type == event_type,
+            EmbedTemplate.guild_id == guild_id,
+        )
     ).scalars().first()
     if not existing:
         tmpl = EmbedTemplate(
             guild_id=guild_id,
-            name=product.name or f"Sản phẩm #{product.id}",
+            name=product.name or f"Product #{product.id}",
             event_type=event_type,
             title=f"📦 {{product.name}}",
             description="{product.description}",
             color="#57F287",
-            footer="Liên hệ admin để đặt hàng",
+            footer="Contact an admin to place an order",
             thumbnail_url=product.image_url or "",
-            fields=[{"name": "🔹 {package.name}", "value": "💰 **{package.price}đ**\n{package.description}", "inline": False}],
+            fields=[{"name": "🔹 {package.name}", "value": "💰 **{package.price}**\n{package.description}", "inline": False}],
             enabled=True,
         )
         db.add(tmpl)
@@ -111,7 +114,7 @@ async def update_product(product_id: int, product_in: ProductBase, db=Depends(ge
     result = db.execute(select(Product).where(Product.id == product_id, Product.guild_id == guild_id))
     product = result.scalars().first()
     if not product:
-        raise HTTPException(status_code=404, detail="Sản phẩm không tồn tại")
+        raise HTTPException(status_code=404, detail="Product not found")
     for key, value in product_in.model_dump().items():
         setattr(product, key, value)
     db.commit()
@@ -125,11 +128,14 @@ async def delete_product(product_id: int, db=Depends(get_db), guild_id: str = De
     result = db.execute(select(Product).where(Product.id == product_id, Product.guild_id == guild_id))
     product = result.scalars().first()
     if not product:
-        raise HTTPException(status_code=404, detail="Sản phẩm không tồn tại")
+        raise HTTPException(status_code=404, detail="Product not found")
     # Clean up per-product embed template
     from src.models.models import EmbedTemplate
     tmpl = db.execute(
-        select(EmbedTemplate).where(EmbedTemplate.event_type == f"product_{product_id}")
+        select(EmbedTemplate).where(
+            EmbedTemplate.event_type == f"product_{product_id}",
+            EmbedTemplate.guild_id == guild_id,
+        )
     ).scalars().first()
     if tmpl:
         db.delete(tmpl)
@@ -150,19 +156,22 @@ async def ensure_product_embeds(db=Depends(get_db), guild_id: str = Depends(get_
     for p in products:
         event_type = f"product_{p.id}"
         existing = db.execute(
-            select(EmbedTemplate).where(EmbedTemplate.event_type == event_type)
+            select(EmbedTemplate).where(
+                EmbedTemplate.event_type == event_type,
+                EmbedTemplate.guild_id == guild_id,
+            )
         ).scalars().first()
         if not existing:
             tmpl = EmbedTemplate(
                 guild_id=guild_id,
-                name=p.name or f"Sản phẩm #{p.id}",
+                name=p.name or f"Product #{p.id}",
                 event_type=event_type,
                 title=f"📦 {{product.name}}",
                 description="{product.description}",
                 color="#57F287",
-                footer="Liên hệ admin để đặt hàng",
+                footer="Contact an admin to place an order",
                 thumbnail_url=p.image_url or "",
-                fields=[{"name": "🔹 {package.name}", "value": "💰 **{package.price}đ**\n{package.description}", "inline": False}],
+                fields=[{"name": "🔹 {package.name}", "value": "💰 **{package.price}**\n{package.description}", "inline": False}],
                 enabled=True,
             )
             db.add(tmpl)
@@ -204,7 +213,7 @@ def get_orders(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
 
 @router.post("/orders")
 def create_order(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
-    """Tạo đơn hàng thủ công từ Discord UID. Hỗ trợ custom product."""
+    """Create an order manually from Discord UID. Supports custom product."""
     discord_uid = str(body.get("discord_uid", "")).strip()
     product_id = body.get("product_id")
     package_name = body.get("package_name")
@@ -213,9 +222,9 @@ def create_order(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gui
     send_qr_channel_id = str(body.get("send_qr_channel_id", "")).strip()
 
     if not discord_uid:
-        raise HTTPException(status_code=400, detail="Discord UID không được để trống")
+        raise HTTPException(status_code=400, detail="Discord UID is required")
     if not product_id and not custom_product_name:
-        raise HTTPException(status_code=400, detail="Chọn sản phẩm hoặc nhập tên sản phẩm custom")
+        raise HTTPException(status_code=400, detail="Select a product or enter a custom product name")
 
     user = db.execute(select(User).where(User.discord_id == discord_uid)).scalars().first()
     if not user:
@@ -260,7 +269,7 @@ def create_order(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gui
                     api_key=config.payos_api_key,
                     checksum_key=config.payos_checksum_key,
                 )
-                product_display = custom_product_name or (package_name or f"Đơn #{order.id}")
+                product_display = custom_product_name or (package_name or f"Order #{order.id}")
                 item = _ItemData(name=product_display[:40], quantity=1, price=int(float(total_price)))
                 payment_data = _PaymentData(
                     orderCode=order.id,
@@ -286,15 +295,15 @@ def create_order(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gui
                         if not ch:
                             return
                         embed = _discord.Embed(
-                            title="🛒 Đơn hàng mới",
-                            description="Vui lòng thanh toán để hoàn tất đơn hàng.\n⏰ Hết hạn sau **15 phút**.",
+                            title="🛒 New Order",
+                            description="Please complete payment to finalize your order.\n⏰ Expires in **15 minutes**.",
                             color=_discord.Color.gold(),
                         )
-                        embed.add_field(name="🔢 ID Đơn", value=f"#{order.id}", inline=True)
+                        embed.add_field(name="🔢 Order ID", value=f"#{order.id}", inline=True)
                         embed.add_field(name="👤 Discord", value=f"<@{discord_uid}>", inline=True)
-                        embed.add_field(name="📦 Sản phẩm", value=product_display, inline=False)
-                        embed.add_field(name="💰 Số tiền", value=f"{float(total_price):,.0f} VNĐ", inline=True)
-                        embed.set_footer(text="⏳ Đang chờ thanh toán...")
+                        embed.add_field(name="📦 Product", value=product_display, inline=False)
+                        embed.add_field(name="💰 Amount", value=f"{float(total_price):,.0f}", inline=True)
+                        embed.set_footer(text="⏳ Awaiting payment...")
                         import datetime as _dt
                         embed.timestamp = _dt.datetime.utcnow()
 
@@ -306,7 +315,7 @@ def create_order(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gui
                             admin_id=None,
                         )
                         msg = await ch.send(
-                            content=f"<@{discord_uid}> Bạn có đơn hàng mới!",
+                            content=f"<@{discord_uid}> You have a new order!",
                             embed=embed,
                             view=view,
                         )
@@ -338,11 +347,11 @@ def update_order_status(order_id: int, body: dict, db=Depends(get_db), guild_id:
     result = db.execute(select(Order).where(Order.id == order_id, Order.guild_id == guild_id))
     order = result.scalars().first()
     if not order:
-        raise HTTPException(status_code=404, detail="Đơn hàng không tồn tại")
+        raise HTTPException(status_code=404, detail="Order not found")
     new_status = body.get("status")
     valid = ["PENDING", "PAID", "DELIVERING", "DELIVERED", "CANCELLED", "ERROR"]
     if new_status not in valid:
-        raise HTTPException(status_code=400, detail="Trạng thái không hợp lệ")
+        raise HTTPException(status_code=400, detail="Invalid status")
     order.status = new_status
     db.commit()
     return {"ok": True, "status": new_status}
@@ -356,7 +365,7 @@ async def deliver_order(order_id: int, body: dict, db=Depends(get_db), guild_id:
     )
     order = result.unique().scalars().first()
     if not order:
-        raise HTTPException(status_code=404, detail="Đơn hàng không tồn tại")
+        raise HTTPException(status_code=404, detail="Order not found")
 
     dm_content = body.get("dm_content", "").strip()
     order.status = "DELIVERED"
@@ -386,7 +395,7 @@ async def deliver_order(order_id: int, body: dict, db=Depends(get_db), guild_id:
                     }
                     dm_embed = build_embed("giao_hang", db, vars=dm_vars)
                     if dm_content:
-                        dm_embed.add_field(name="Nội dung", value=dm_content, inline=False)
+                        dm_embed.add_field(name="Content", value=dm_content, inline=False)
                     await discord_user.send(embed=dm_embed)
             except Exception as e:
                 logger.error(f"deliver DM error: {e}")
@@ -402,7 +411,7 @@ async def deliver_order(order_id: int, body: dict, db=Depends(get_db), guild_id:
                     if msg and msg.embeds:
                         embed = msg.embeds[0].copy()
                         embed.color = _discord.Color.green()
-                        embed.set_footer(text="✅ Đã giao hàng thành công!")
+                        embed.set_footer(text="✅ Delivered successfully!")
                         await msg.edit(embed=embed, view=None)
             except Exception as e:
                 logger.error(f"deliver embed update error: {e}")
@@ -431,10 +440,10 @@ def get_coupons(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
 def create_coupon(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     code = str(body.get("code", "")).strip().upper()
     if not code:
-        raise HTTPException(status_code=400, detail="Code không được trống")
+        raise HTTPException(status_code=400, detail="Code is required")
     existing = db.execute(select(Coupon).where(Coupon.code == code, Coupon.guild_id == guild_id)).scalars().first()
     if existing:
-        raise HTTPException(status_code=400, detail="Code đã tồn tại")
+        raise HTTPException(status_code=400, detail="Code already exists")
     coupon = Coupon(
         guild_id=guild_id,
         code=code,
@@ -453,7 +462,7 @@ def create_coupon(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gu
 def update_coupon(coupon_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     coupon = db.execute(select(Coupon).where(Coupon.id == coupon_id, Coupon.guild_id == guild_id)).scalars().first()
     if not coupon:
-        raise HTTPException(status_code=404, detail="Không tìm thấy coupon")
+        raise HTTPException(status_code=404, detail="Coupon not found")
     for field in ("discount_percent", "discount_amount", "max_uses", "is_public"):
         if field in body:
             val = body[field]
@@ -468,7 +477,7 @@ def update_coupon(coupon_id: int, body: dict, db=Depends(get_db), guild_id: str 
 def delete_coupon(coupon_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     coupon = db.execute(select(Coupon).where(Coupon.id == coupon_id, Coupon.guild_id == guild_id)).scalars().first()
     if not coupon:
-        raise HTTPException(status_code=404, detail="Không tìm thấy coupon")
+        raise HTTPException(status_code=404, detail="Coupon not found")
     db.delete(coupon)
     db.commit()
     return {"ok": True}
@@ -530,7 +539,7 @@ def get_leaderboard(
     }
     since = since_map.get(time)
 
-    # Lấy mốc mới hơn giữa reset_at và time filter
+    # Use the more recent of reset_at and time filter
     if shop_reset_at and since:
         since = max(since, shop_reset_at)
     elif shop_reset_at:
@@ -570,7 +579,7 @@ def get_leaderboard(
 def reset_shop_leaderboard(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     sys_cfg = db.execute(select(SystemConfig).where(SystemConfig.guild_id == guild_id)).scalars().first()
     if not sys_cfg:
-        raise HTTPException(status_code=404, detail="Chưa cấu hình bot")
+        raise HTTPException(status_code=404, detail="Bot not configured")
     sys_cfg.shop_leaderboard_reset_at = datetime.datetime.utcnow()
     db.commit()
     return {"ok": True, "reset_at": sys_cfg.shop_leaderboard_reset_at.isoformat()}
@@ -596,7 +605,7 @@ def save_payos_config(body: dict, db=Depends(get_db), guild_id: str = Depends(ge
         select(SystemConfig).where(SystemConfig.guild_id == guild_id)
     ).scalars().first()
     if not config:
-        raise HTTPException(status_code=404, detail="Chưa có cấu hình cho guild này")
+        raise HTTPException(status_code=404, detail="No config found for this guild")
     if "payos_client_id" in body and body["payos_client_id"] is not None:
         config.payos_client_id = body["payos_client_id"] or None
     if "payos_api_key" in body and body["payos_api_key"]:
@@ -617,7 +626,7 @@ def test_payos_connection(db=Depends(get_db), guild_id: str = Depends(get_guild_
         select(SystemConfig).where(SystemConfig.guild_id == guild_id)
     ).scalars().first()
     if not config or not all([config.payos_client_id, config.payos_api_key, config.payos_checksum_key]):
-        raise HTTPException(status_code=400, detail="PayOS chưa được cấu hình đầy đủ")
+        raise HTTPException(status_code=400, detail="PayOS is not fully configured")
     try:
         payos = PayOS(
             client_id=config.payos_client_id,
@@ -625,14 +634,14 @@ def test_payos_connection(db=Depends(get_db), guild_id: str = Depends(get_guild_
             checksum_key=config.payos_checksum_key,
         )
         payos.confirmWebhook("https://example.com/webhook")
-        return {"ok": True, "message": "Kết nối PayOS thành công"}
+        return {"ok": True, "message": "PayOS connection successful"}
     except Exception as e:
         err_msg = str(e)
         if "Unauthorized" in err_msg or "401" in err_msg:
-            raise HTTPException(status_code=400, detail="API Key hoặc Client ID không đúng")
+            raise HTTPException(status_code=400, detail="Invalid API Key or Client ID")
         if "checksum" in err_msg.lower():
-            raise HTTPException(status_code=400, detail="Checksum Key không đúng")
-        raise HTTPException(status_code=400, detail=f"Lỗi kết nối: {err_msg}")
+            raise HTTPException(status_code=400, detail="Invalid Checksum Key")
+        raise HTTPException(status_code=400, detail=f"Connection error: {err_msg}")
 
 
 @router.post("/paypal/test")
@@ -710,7 +719,7 @@ async def payos_webhook(request: Request, db=Depends(get_db)):
                         if msg and msg.embeds:
                             paid_embed = msg.embeds[0].copy()
                             paid_embed.color = discord.Color.green()
-                            paid_embed.set_footer(text="Trạng thái: ✅ Đã thanh toán thành công!")
+                            paid_embed.set_footer(text="Status: ✅ Payment successful!")
                             await msg.edit(embed=paid_embed, view=None)
                 except Exception as e:
                     logger.error(f"Discord embed update error: {e}")
@@ -729,16 +738,16 @@ async def payos_webhook(request: Request, db=Depends(get_db)):
                             "order.total": f"{order.total_price:,.0f}",
                         })
                         await discord_user.send(embed=dm_embed)
-                        # Gửi ghi chú sản phẩm nếu có
+                        # Send product note if available
                         product_note = order.product.note if order.product else None
                         if product_note and product_note.strip():
                             note_embed = discord.Embed(
-                                title="📋 Hướng dẫn / Thông tin nhận hàng",
+                                title="📋 Product Information / Delivery Instructions",
                                 description=product_note.strip(),
                                 color=discord.Color.blue(),
                             )
                             if order.product and order.product.name:
-                                note_embed.set_footer(text=f"Sản phẩm: {order.product.name}")
+                                note_embed.set_footer(text=f"Product: {order.product.name}")
                             await discord_user.send(embed=note_embed)
                 except Exception as e:
                     logger.error(f"PayOS webhook DM error: {e}")
@@ -833,6 +842,6 @@ async def check_spending_milestones(user: User, guild_id: str, db):
             role = guild.get_role(int(m.role_id))
             if role and role not in member.roles:
                 try:
-                    await member.add_roles(role, reason=f"Mốc chi tiêu: {m.name} ({m.threshold:,.0f}đ)")
+                    await member.add_roles(role, reason=f"Spending milestone: {m.name} ({m.threshold:,.0f})")
                 except Exception as e:
                     logger.warning(f"Failed to add milestone role {m.name}: {e}")
