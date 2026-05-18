@@ -59,7 +59,10 @@ class CouponModal(discord.ui.Modal):
             payment_methods = getattr(config, "payment_methods", None) or ["payos"]
 
             coupon = session.execute(
-                select(Coupon).where(Coupon.code == code)
+                select(Coupon).where(
+                    Coupon.code == code,
+                    Coupon.guild_id == str(interaction.guild_id),
+                )
             ).scalars().first()
 
             if not coupon:
