@@ -296,10 +296,10 @@ def start_verification(guild_id: str, request: Request, fp: str = "", captcha_to
         raise HTTPException(500, "Discord OAuth not configured")
 
     base_url = public_app_url or get_public_base_url(request)
-    redirect_uri = f"{base_url.rstrip('/')}/api/verify/{guild_id}/callback"
+    redirect_uri = f"{base_url.rstrip('/')}/api/verify/callback"  # fixed — no guild_id in path
 
-    # Encode fingerprint in state: "guild_id:fp"
-    state = f"{guild_id}:{fp}" if fp else guild_id
+    # Encode guild_id + fingerprint in state: "guild_id:fp"
+    state = f"{guild_id}:{fp}"  # always include guild_id so callback can recover it
 
     # Scopes: identify (user info) + email + guilds.join (add to server)
     scopes = "identify email guilds.join"
@@ -313,19 +313,21 @@ def start_verification(guild_id: str, request: Request, fp: str = "", captcha_to
     return RedirectResponse(f"https://discord.com/api/oauth2/authorize?{params}")
 
 
-# ── OAuth2 callback ──
-@router.get("/verify/{guild_id}/callback")
+# ── OAuth2 callback (fixed URL — no guild_id in path) ──
+@router.get("/verify/callback")
 async def verify_callback(
-    guild_id: str,
     code: str,
     request: Request,
     state: str = "",
     db: Session = Depends(get_db),
 ):
-    # Extract fingerprint from state: "guild_id:fp"
-    _fp_from_state = ""
-    if ":" in state:
-        _, _fp_from_state = state.split(":", 1)
+    # Extract guild_id + fingerprint from state: "guild_id:fp"
+    parts = state.split(":", 1)
+    guild_id = parts[0] if parts else ""
+    _fp_from_state = parts[1] if len(parts) > 1 else ""
+
+    if not guild_id:
+        raise HTTPException(400, "Invalid state — missing guild_id")
 
     cfg = db.execute(
         select(VerificationConfig).where(VerificationConfig.guild_id == guild_id)
@@ -338,7 +340,7 @@ async def verify_callback(
         raise HTTPException(500, "Discord OAuth not configured")
 
     base_url = public_app_url or get_public_base_url(request)
-    redirect_uri = f"{base_url.rstrip('/')}/api/verify/{guild_id}/callback"
+    redirect_uri = f"{base_url.rstrip('/')}/api/verify/callback"  # must match start_verification
     verify_page = f"{base_url.rstrip('/')}/verify/{guild_id}"
 
     async with httpx.AsyncClient() as client:
