@@ -684,6 +684,9 @@ function MusicPlayer({ url, color }: { url: string; color: string }) {
     a.addEventListener("waiting", onWaiting);
     a.addEventListener("playing", onPlaying);
     a.addEventListener("error",   onError);
+    // Attempt autoplay — browser may block it (autoplay policy), that's fine
+    setAudioState("loading");
+    a.play().catch(() => setAudioState("idle"));
     return () => {
       a.removeEventListener("play",    onPlay);
       a.removeEventListener("pause",   onPause);
