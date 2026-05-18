@@ -791,7 +791,11 @@ export function VerifyConfig() {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Protection</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Protection</p>
+              <PremiumBadge size="xs" />
+            </div>
+            <PremiumGate feature="verification_protection" featureLabel="Verification Protection" hasAccess={hasFeature("verification_protection")} isLoading={entLoading}>
             {[
               { key: "block_vpn" as const, label: "Block VPN networks", premiumKey: "vpn_block" },
               { key: "block_mobile" as const, label: "Block mobile/cellular networks (LTE, 5G, 6G)", premiumKey: "vpn_block" },
@@ -800,19 +804,13 @@ export function VerifyConfig() {
               { key: "auto_ban_alts" as const, label: "Auto-ban alt accounts on verify", premiumKey: "alt_detection" },
               { key: "kick_on_deauth" as const, label: "Kick when user de-authorizes bot", premiumKey: "kick_unauthorized" },
               { key: "close_page_after_verify" as const, label: "Close page after successful verify", premiumKey: null },
-            ].map(({ key, label, premiumKey }) => (
+            ].map(({ key, label }) => (
               <div key={key} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">{label}</p>
-                  {premiumKey && !hasFeature(premiumKey) && <PremiumBadge size="xs" />}
-                </div>
-                <PremiumGate feature={premiumKey ?? ""} hasAccess={!premiumKey || hasFeature(premiumKey)} isLoading={entLoading} mode="inline">
-                  <Switch checked={configForm[key]} onCheckedChange={v => update({ [key]: v })} />
-                </PremiumGate>
+                <p className="text-sm font-medium">{label}</p>
+                <Switch checked={configForm[key]} onCheckedChange={v => update({ [key]: v })} />
               </div>
             ))}
             {configForm.block_vpn && (
-              <PremiumGate feature="vpn_block" featureLabel="VPN/Proxy/Hosting Detection" hasAccess={hasFeature("vpn_block")} isLoading={entLoading}>
               <div className="space-y-3 pl-3 border-l-2 border-blue-500/40 mt-2">
                 <div>
                   <Label className="text-xs mb-1.5 block">VPN Detection Provider</Label>
@@ -827,8 +825,8 @@ export function VerifyConfig() {
                   <Input type="password" value={configForm.vpn_api_key || ""} onChange={e => update({ vpn_api_key: e.target.value })} placeholder="Enter API key..." />
                 </div>
               </div>
-              </PremiumGate>
             )}
+            </PremiumGate>
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5 space-y-3">
