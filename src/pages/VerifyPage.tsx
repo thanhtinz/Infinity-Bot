@@ -335,7 +335,15 @@ export function VerifyPage() {
   const textColor = config?.text_color || "#ffffff";
   const btnColor = config?.btn_color || config?.page_color || "#5865F2";
   const btnBorder = config?.btn_border_color || btnColor;
-  const cardBg = config?.card_bg_color || "#1a1d2e";
+  const cardBgHex = config?.card_bg_color || "#1a1d2e";
+  const cardOpacity = (config?.card_opacity ?? 95) / 100;
+  const cardBg = (() => {
+    const hex = cardBgHex.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r},${g},${b},${cardOpacity})`;
+  })();
   const cardBorder = config?.card_border_color || "#1a1d2e";
   const contentOpacity = ((config?.content_opacity ?? 100) / 100);
   const fontFamily = config?.font_family || "Inter";

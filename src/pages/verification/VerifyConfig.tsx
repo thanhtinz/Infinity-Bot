@@ -242,7 +242,15 @@ function VerifyPreview({ config: c }: { config: VerificationConfig }) {
   const bgColor = c.bg_color || "#0b0d14";
   const textColor = c.text_color || "#ffffff";
   const btnColor = c.btn_color || "#5865F2";
-  const cardBg = c.card_bg_color || "#1a1d2e";
+  const cardBgHex = c.card_bg_color || "#1a1d2e";
+  const cardOpacity = (c.card_opacity ?? 95) / 100;
+  const cardBg = (() => {
+    const hex = cardBgHex.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r},${g},${b},${cardOpacity})`;
+  })();
   const cardBorder = c.card_border_color || "#2a2d3e";
   const contentOpacity = (c.content_opacity ?? 100) / 100;
 
