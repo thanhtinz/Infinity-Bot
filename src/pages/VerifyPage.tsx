@@ -172,8 +172,13 @@ function useTilt(enabled: boolean) {
 }
 
 export function VerifyPage() {
-  const { guildId } = useParams<{ guildId: string }>();
+  const { guildId: guildIdParam } = useParams<{ guildId: string }>();
   const [searchParams] = useSearchParams();
+
+  // guildId may be a slug (e.g. "infinitymall") or a numeric Discord guild ID
+  const [guildId, setGuildId] = useState<string | undefined>(
+    /^\d+$/.test(guildIdParam ?? "") ? guildIdParam : undefined
+  );
 
   const [config, setConfig] = useState<VerifyConfig | null>(null);
   const [loading, setLoading] = useState(true);
@@ -185,6 +190,16 @@ export function VerifyPage() {
   const [captchaToken, setCaptchaToken] = useState("");
   const [mathAnswer, setMathAnswer] = useState("");
   const [sliderValue, setSliderValue] = useState(50);
+
+  // Resolve slug → guild_id if param is not numeric
+  useEffect(() => {
+    if (!guildIdParam) return;
+    if (/^\d+$/.test(guildIdParam)) { setGuildId(guildIdParam); return; }
+    apiFetch(`/api/verify/by-slug/${encodeURIComponent(guildIdParam)}`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => setGuildId(data.guild_id))
+      .catch(() => { setError("Unable to load verification page."); setLoading(false); });
+  }, [guildIdParam]);
 
   const isSuccess = searchParams.get("success") === "true";
   const urlError = searchParams.get("error");
@@ -221,7 +236,7 @@ export function VerifyPage() {
   }, []);
 
   useEffect(() => {
-    if (!guildId) { setError("Invalid verification link."); setLoading(false); return; }
+    if (!guildId) return; // wait for slug resolution
     fetchVerifyConfig(guildId)
       .then(data => { setConfig(data); setError(null); })
       .catch(() => setError("Unable to load verification page."))
