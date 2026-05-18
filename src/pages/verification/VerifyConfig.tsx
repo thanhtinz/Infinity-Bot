@@ -421,7 +421,7 @@ export function VerifyConfig() {
     }
   }
 
-  function updateSocial(key: string, value: string) {(key: string, value: string) {
+  function updateSocial(key: string, value: string) {
     if (!configForm) return;
     setConfigForm({ ...configForm, socials: { ...configForm.socials, [key]: value } });
   }
