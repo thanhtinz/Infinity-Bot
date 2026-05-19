@@ -229,15 +229,17 @@ export function FirewallRules() {
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-primary" />
           <h1 className="text-xl font-semibold">Firewall Rules</h1>
         </div>
-        <Button onClick={() => setAddDialogOpen(true)} className="gap-1.5">
-          <Plus className="h-4 w-4" />
-          Add Rule
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={() => setAddDialogOpen(true)} className="gap-1.5">
+            <Plus className="h-4 w-4" />
+            Add Rule
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}

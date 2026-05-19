@@ -124,15 +124,17 @@ export function BackupPage() {
   return (
     <div className="space-y-6">
       {/* ── Header ── */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">Backup & Restore</h2>
           <PremiumBadge />
         </div>
-        <Button onClick={() => setCreateOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Backup
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={() => setCreateOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Backup
+          </Button>
+        </div>
       </div>
 
       <PremiumGate feature="scheduled_backup" featureLabel="Backup & Restore" hasAccess={hasFeature("scheduled_backup")} isLoading={entLoading}>

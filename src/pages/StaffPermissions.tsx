@@ -131,7 +131,7 @@ export function StaffPermissions() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="space-y-3">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Shield className="h-6 w-6 text-blue-500" />
@@ -141,9 +141,11 @@ export function StaffPermissions() {
             Grant dashboard access to specific roles without giving full admin
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4 mr-1" /> Add Role
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={openCreate}>
+            <Plus className="h-4 w-4 mr-1" /> Add Role
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

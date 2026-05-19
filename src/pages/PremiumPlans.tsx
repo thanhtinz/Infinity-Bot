@@ -323,7 +323,7 @@ export function PremiumPlans() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
             Premium Plan Management
@@ -332,10 +332,12 @@ export function PremiumPlans() {
             Create and manage Premium subscription plans.
           </p>
         </div>
-        <Button onClick={openCreateDialog}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create New Plan
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={openCreateDialog}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Plan
+          </Button>
+        </div>
       </div>
 
       {/* Plans table */}

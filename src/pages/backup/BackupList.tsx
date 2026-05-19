@@ -151,19 +151,21 @@ export function BackupList() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Database className="h-5 w-5 text-primary" />
           <h2 className="text-2xl font-bold tracking-tight">Server Backup</h2>
         </div>
-        <Button onClick={() => setCreateOpen(true)} className="gap-1.5">
-          <Plus className="h-4 w-4" />
-          Create Backup
-        </Button>
+        <p className="text-muted-foreground text-sm">
+          Create and manage full server backups including channels, roles, members, and configuration.
+        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={() => setCreateOpen(true)} className="gap-1.5">
+            <Plus className="h-4 w-4" />
+            Create Backup
+          </Button>
+        </div>
       </div>
-      <p className="text-muted-foreground text-sm -mt-4">
-        Create and manage full server backups including channels, roles, members, and configuration.
-      </p>
 
       {/* Backup list */}
       {backupsQuery.isLoading ? (
