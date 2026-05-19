@@ -395,26 +395,6 @@ async def _execute_actions(
                         pass
 
 
-            # ── Shop Actions ──────────────────────────────────────────────
-            elif action_type == "give_balance" and member:
-                from src.models.models import ShopUser
-                db = get_session()
-                try:
-                    su = db.execute(
-                        select(ShopUser).where(
-                            ShopUser.guild_id == str(guild.id),
-                            ShopUser.discord_id == str(member.id),
-                        )
-                    ).scalars().first()
-                    if su:
-                        amount = int(cfg.get("amount", 0))
-                        su.balance = (su.balance or 0) + amount
-                        db.commit()
-                except Exception as e:
-                    logger.warning(f"Shop action error: {e}")
-                finally:
-                    db.close()
-
             # ── System Actions ────────────────────────────────────────────
             elif action_type == "wait":
                 seconds = min(float(cfg.get("seconds", 1)), 10.0)

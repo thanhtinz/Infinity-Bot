@@ -4,8 +4,7 @@ import {
   Variable, Hash, Clock, Sparkles,
   Terminal, Users, Rocket, Building2, MessageSquare, Smile, Mic, Shield, GitBranch,
   Calendar, Mic2, ShieldAlert, BarChart2, Mail, ClipboardList, Tag,
-  User, ShoppingBag, Settings, SmilePlus,
-} from "lucide-react";
+  User, ShoppingBag, Settings, SmilePlus,} from "lucide-react";
 
 // ─── Variable Reference ──────────────────────────────────────────────────────
 
@@ -434,13 +433,6 @@ export const ACTION_GROUPS: { group: string; icon: LucideIcon; actions: { type: 
     actions: [
       { type: "add_reaction", label: "Add reaction", fields: [{ key: "emoji", label: "Emoji", type: "text", placeholder: "⭐" }] },
       { type: "remove_reaction", label: "Remove reaction", fields: [{ key: "emoji", label: "Emoji", type: "text" }] },
-    ],
-  },
-  {
-    group: "Shop",
-    icon: ShoppingBag,
-    actions: [
-      { type: "give_balance", label: "Give balance", fields: [{ key: "amount", label: "Amount", type: "text", placeholder: "1000" }] },
     ],
   },
   {
