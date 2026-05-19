@@ -15,6 +15,15 @@ import {
 import { DEFAULT_CONFIG } from "./shared";
 import type { AIChatConfig } from "./shared";
 
+function SaveBtn({ onClick, pending }: { onClick: () => void; pending: boolean }) {
+  return (
+    <Button variant="outline" size="sm" onClick={onClick} disabled={pending} className="gap-1.5 ml-auto shrink-0">
+      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+      <span className="hidden sm:inline">Save</span>
+    </Button>
+  );
+}
+
 export function AIImageGenPage() {
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -75,12 +84,17 @@ export function AIImageGenPage() {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Image className="h-4 w-4" />Image Generation
-          </CardTitle>
-          <CardDescription>
-            Allow users to generate images with <code className="text-xs bg-muted px-1 rounded">/ai imagine</code>
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Image className="h-4 w-4" />Image Generation
+              </CardTitle>
+              <CardDescription>
+                Allow users to generate images with <code className="text-xs bg-muted px-1 rounded">/ai imagine</code>
+              </CardDescription>
+            </div>
+            <SaveBtn onClick={() => saveMutation.mutate({ image_gen_enabled: form.image_gen_enabled, image_provider: form.image_provider, image_api_key: form.image_api_key })} pending={saveMutation.isPending} />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-2">
@@ -163,13 +177,6 @@ export function AIImageGenPage() {
           )}
         </CardContent>
       </Card>
-
-      <div className="flex justify-end">
-        <Button onClick={() => saveMutation.mutate(form)} disabled={saveMutation.isPending} className="gap-2">
-          {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Save
-        </Button>
-      </div>
     </div>
   );
 }

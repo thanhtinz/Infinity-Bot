@@ -21,6 +21,15 @@ import { cn } from "@/lib/utils";
 import { PROVIDERS, DEFAULT_CONFIG } from "./shared";
 import type { AIChatConfig } from "./shared";
 
+function SaveBtn({ onClick, pending }: { onClick: () => void; pending: boolean }) {
+  return (
+    <Button variant="outline" size="sm" onClick={onClick} disabled={pending} className="gap-1.5 ml-auto shrink-0">
+      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+      <span className="hidden sm:inline">Save</span>
+    </Button>
+  );
+}
+
 export function AIConfigPage() {
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -81,6 +90,12 @@ export function AIConfigPage() {
 
   const currentModels = modelsData?.providers[form.provider] ?? [];
 
+  const saveFields = (...keys: (keyof AIChatConfig)[]) => {
+    const partial: Partial<AIChatConfig> = {};
+    for (const k of keys) (partial as Record<string, unknown>)[k] = form[k];
+    saveMutation.mutate(partial);
+  };
+
   const toggleChannel = (id: string) =>
     setForm(f => ({
       ...f,
@@ -127,9 +142,12 @@ export function AIConfigPage() {
       {/* Provider */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Bot className="h-4 w-4" />AI Provider & Model
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Bot className="h-4 w-4" />AI Provider & Model
+            </CardTitle>
+            <SaveBtn onClick={() => saveFields("provider", "model", "max_history", "api_key")} pending={saveMutation.isPending} />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Provider cards */}
@@ -225,9 +243,12 @@ export function AIConfigPage() {
       {/* Channels & Triggers */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />Channels & Triggers
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />Channels & Triggers
+            </CardTitle>
+            <SaveBtn onClick={() => saveFields("respond_to_mention", "respond_prefix", "listen_channels", "ai_manager_role", "ticket_auto_reply")} pending={saveMutation.isPending} />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-6">
@@ -299,12 +320,17 @@ export function AIConfigPage() {
       {form.ticket_auto_reply && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />Ticket AI Configuration
-            </CardTitle>
-            <CardDescription>
-              AI will auto-reply to user messages in ticket channels created by external bots (Ticket Tool, TicketBot, etc.)
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />Ticket AI Configuration
+                </CardTitle>
+                <CardDescription>
+                  AI will auto-reply to user messages in ticket channels created by external bots (Ticket Tool, TicketBot, etc.)
+                </CardDescription>
+              </div>
+              <SaveBtn onClick={() => saveFields("ticket_reply_mode", "ticket_category_ids")} pending={saveMutation.isPending} />
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Reply mode */}
@@ -367,10 +393,15 @@ export function AIConfigPage() {
       {/* System Prompt */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Sparkles className="h-4 w-4" />Personality / System Prompt
-          </CardTitle>
-          <CardDescription>Define how the AI behaves. Training documents are appended automatically.</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />Personality / System Prompt
+              </CardTitle>
+              <CardDescription>Define how the AI behaves. Training documents are appended automatically.</CardDescription>
+            </div>
+            <SaveBtn onClick={() => saveFields("system_prompt")} pending={saveMutation.isPending} />
+          </div>
         </CardHeader>
         <CardContent>
           <Textarea
@@ -381,13 +412,6 @@ export function AIConfigPage() {
           />
         </CardContent>
       </Card>
-
-      <div className="flex justify-end">
-        <Button onClick={() => saveMutation.mutate(form)} disabled={saveMutation.isPending} className="gap-2">
-          {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Save Configuration
-        </Button>
-      </div>
     </div>
   );
 }
