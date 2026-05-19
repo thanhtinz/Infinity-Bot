@@ -316,44 +316,76 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#1E1E2D]">
-      {/* Logo */}
-      <div className="px-5 py-5 border-b border-white/10 flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-[#009DB5]/20 flex items-center justify-center">
-          <Bot className="w-4.5 h-4.5 text-[#009DB5]" />
+    <div className="flex flex-col h-full bg-[#262932]">
+      {/* ── Logo area (Yuri-style) ── */}
+      <div className="h-[76px] px-5 flex items-center gap-3 border-b border-[rgba(106,113,133,0.2)]">
+        <div className="w-9 h-9 rounded-xl bg-[#009DB5] flex items-center justify-center shadow-lg shadow-[#009DB5]/20">
+          <Bot className="w-5 h-5 text-white" />
         </div>
-        <h1 className="font-bold text-[15px] text-white tracking-tight">Infinity Bot</h1>
+        <div>
+          <h1 className="font-bold text-[15px] text-white leading-tight tracking-tight">Infinity Bot</h1>
+          <span className="text-[11px] text-[#9FA8C1]/60">Dashboard</span>
+        </div>
       </div>
 
-      {/* Guild selector */}
-      <div className="px-3 py-3 border-b border-white/10">
+      {/* ── User profile section (Yuri-style) ── */}
+      {user && (
+        <div className="px-5 py-4 border-b border-[rgba(106,113,133,0.2)]">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <img
+                src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`}
+                alt=""
+                className="w-10 h-10 rounded-full ring-2 ring-[#009DB5]/30"
+              />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-[#262932]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{user.username}</p>
+              <p className="text-[11px] text-[#9FA8C1]/70">{user.is_owner ? "Bot Owner" : "Staff"}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Guild selector ── */}
+      <div className="px-3 py-3 border-b border-[rgba(106,113,133,0.2)]">
         <GuildSelector />
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto sidebar-scroll">
+      {/* ── Navigation ── */}
+      <nav className="flex-1 py-2 overflow-y-auto sidebar-scroll">
         {!selectedGuildId ? (
           <div className="text-center py-8">
             <p className="text-sm text-[#9FA8C1]/60">Select a server to continue</p>
           </div>
         ) : (
         <>
+        {/* Section title */}
+        <div className="sidebar-section-title">General</div>
+
         {/* Bot Settings — standalone */}
-        <Link
-          to="/bot-settings"
-          onClick={onClose}
-          className={cn(
-            "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200",
-            location.pathname === "/bot-settings"
-              ? "text-white bg-[#009DB5]/15 border-l-[3px] border-[#009DB5] pl-[9px]"
-              : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.06]"
-          )}
-        >
-          <Settings className="w-4 h-4 shrink-0" />
-          {t("nav_botSettings")}
-        </Link>
+        <div className="px-3">
+          <Link
+            to="/bot-settings"
+            onClick={onClose}
+            className={cn(
+              "flex items-center gap-3 px-4 py-[10px] rounded-lg text-[14px] font-medium transition-all duration-300",
+              location.pathname === "/bot-settings"
+                ? "text-[#009DB5] bg-[#009DB5]/10"
+                : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.04]"
+            )}
+          >
+            <Settings className="w-[18px] h-[18px] shrink-0" />
+            {t("nav_botSettings")}
+          </Link>
+        </div>
+
+        {/* Section title */}
+        <div className="sidebar-section-title mt-2">Features</div>
 
         {/* Grouped nav */}
+        <div className="px-3 space-y-px">
         {filteredGroups.map((group) => {
           const isOpen = openGroups.has(group.key);
           const isActive = group.items.some((item) => item.to === location.pathname);
@@ -369,13 +401,13 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 to={item.to}
                 onClick={onClose}
                 className={cn(
-                  "flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200",
+                  "flex items-center gap-3 px-4 py-[10px] rounded-lg text-[14px] font-medium transition-all duration-300",
                   isItemActive
-                    ? "text-white bg-[#009DB5]/15 border-l-[3px] border-[#009DB5] pl-[9px]"
-                    : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.06]"
+                    ? "text-[#009DB5] bg-[#009DB5]/10"
+                    : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.04]"
                 )}
               >
-                <ItemIcon className="w-4 h-4 shrink-0" />
+                <ItemIcon className="w-[18px] h-[18px] shrink-0" />
                 {t(group.label as Parameters<typeof t>[0])}
               </Link>
             );
@@ -386,26 +418,26 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               <button
                 onClick={() => toggleGroup(group.key)}
                 className={cn(
-                  "flex items-center justify-between w-full px-3 py-2 text-[13px] font-medium cursor-pointer rounded-lg transition-all duration-200",
+                  "flex items-center justify-between w-full px-4 py-[10px] text-[14px] font-medium cursor-pointer rounded-lg transition-all duration-300",
                   isActive
-                    ? "text-white bg-white/[0.06]"
-                    : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.06]"
+                    ? "text-[#009DB5]"
+                    : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.04]"
                 )}
               >
-                <span className="flex items-center gap-2.5">
-                  <GroupIcon className="w-4 h-4 shrink-0" />
+                <span className="flex items-center gap-3">
+                  <GroupIcon className="w-[18px] h-[18px] shrink-0" />
                   {t(group.label as Parameters<typeof t>[0])}
                 </span>
-                <ChevronDown className={cn(
-                  "h-3.5 w-3.5 shrink-0 opacity-50 transition-transform duration-200",
-                  !isOpen && "-rotate-90"
+                <ChevronRight className={cn(
+                  "h-4 w-4 shrink-0 text-[#9FA8C1]/40 transition-transform duration-300",
+                  isOpen && "rotate-90"
                 )} />
               </button>
               <div className={cn(
-                "overflow-hidden transition-all duration-200",
+                "overflow-hidden transition-all duration-300 ease-in-out",
                 isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
               )}>
-                <div className="mt-0.5 ml-4 pl-3 border-l border-white/10 space-y-0.5">
+                <div className="py-1 ml-[18px] pl-4 border-l border-[rgba(106,113,133,0.3)]">
                   {group.items.map((item) => {
                     const ItemIcon = item.icon;
                     const isItemActive = location.pathname === item.to;
@@ -415,13 +447,16 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                         to={item.to}
                         onClick={onClose}
                         className={cn(
-                          "flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
+                          "flex items-center gap-3 px-3 py-[8px] rounded-md text-[13px] transition-all duration-300",
                           isItemActive
-                            ? "text-white bg-[#009DB5]/15 font-medium"
-                            : "text-[#9FA8C1]/80 hover:text-white hover:bg-white/[0.06]"
+                            ? "text-[#009DB5] font-semibold"
+                            : "text-[#9FA8C1]/70 hover:text-white"
                         )}
                       >
-                        <ItemIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span className={cn(
+                          "w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-300",
+                          isItemActive ? "bg-[#009DB5]" : "bg-[#9FA8C1]/30"
+                        )} />
                         {t(item.label as Parameters<typeof t>[0])}
                       </Link>
                     );
@@ -431,19 +466,15 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             </div>
           );
         })}
+        </div>
 
         {/* Owner section */}
         {ownerGroups.length > 0 && (
-          <div className="mt-4 pt-3">
-            <div className="flex items-center gap-2 px-3 mb-2">
-              <div className="h-px flex-1 bg-amber-500/30" />
-              <span className="text-[10px] font-semibold tracking-widest uppercase text-amber-500/70 select-none">
-                Owner
-              </span>
-              <div className="h-px flex-1 bg-amber-500/30" />
-            </div>
+          <div className="sidebar-section-title mt-3">
+            <span className="text-amber-500/70">Owner Only</span>
           </div>
         )}
+        <div className="px-3 space-y-px">
         {ownerGroups.map((group) => {
           const isOpen = openGroups.has(group.key);
           const isActive = group.items.some((item) => item.to === location.pathname);
@@ -453,26 +484,26 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               <button
                 onClick={() => toggleGroup(group.key)}
                 className={cn(
-                  "flex items-center justify-between w-full px-3 py-2 text-[13px] font-medium cursor-pointer rounded-lg transition-all duration-200",
+                  "flex items-center justify-between w-full px-4 py-[10px] text-[14px] font-medium cursor-pointer rounded-lg transition-all duration-300",
                   isActive
-                    ? "text-amber-400 bg-amber-500/10"
-                    : "text-amber-400/60 hover:text-amber-400 hover:bg-amber-500/10"
+                    ? "text-amber-400"
+                    : "text-amber-400/60 hover:text-amber-400 hover:bg-amber-500/5"
                 )}
               >
-                <span className="flex items-center gap-2.5">
-                  <GroupIcon className="w-4 h-4 shrink-0" />
+                <span className="flex items-center gap-3">
+                  <GroupIcon className="w-[18px] h-[18px] shrink-0" />
                   {t(group.label as Parameters<typeof t>[0])}
                 </span>
-                <ChevronDown className={cn(
-                  "h-3.5 w-3.5 shrink-0 opacity-50 transition-transform duration-200",
-                  !isOpen && "-rotate-90"
+                <ChevronRight className={cn(
+                  "h-4 w-4 shrink-0 text-amber-500/40 transition-transform duration-300",
+                  isOpen && "rotate-90"
                 )} />
               </button>
               <div className={cn(
-                "overflow-hidden transition-all duration-200",
+                "overflow-hidden transition-all duration-300 ease-in-out",
                 isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
               )}>
-                <div className="mt-0.5 ml-4 pl-3 border-l border-amber-500/30 space-y-0.5">
+                <div className="py-1 ml-[18px] pl-4 border-l border-amber-500/20">
                   {group.items.map((item) => {
                     const ItemIcon = item.icon;
                     const isItemActive = location.pathname === item.to;
@@ -482,13 +513,16 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                         to={item.to}
                         onClick={onClose}
                         className={cn(
-                          "flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-[13px] transition-all duration-200",
+                          "flex items-center gap-3 px-3 py-[8px] rounded-md text-[13px] transition-all duration-300",
                           isItemActive
-                            ? "bg-amber-500 text-white font-medium"
-                            : "text-[#9FA8C1]/70 hover:text-amber-400 hover:bg-amber-500/10"
+                            ? "text-amber-400 font-semibold"
+                            : "text-[#9FA8C1]/60 hover:text-amber-400"
                         )}
                       >
-                        <ItemIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span className={cn(
+                          "w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-300",
+                          isItemActive ? "bg-amber-400" : "bg-[#9FA8C1]/30"
+                        )} />
                         {t(item.label as Parameters<typeof t>[0])}
                       </Link>
                     );
@@ -498,6 +532,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             </div>
           );
         })}
+        </div>
         </>
         )}
       </nav>
@@ -555,24 +590,29 @@ function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 flex items-center justify-between px-4 md:px-6 gap-4">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-sm min-w-0">
-        <span className="text-muted-foreground shrink-0">Dashboard</span>
-        {breadcrumb.group && (
-          <>
-            <ChevronRight className="w-3 h-3 text-muted-foreground/50 shrink-0" />
-            <span className="text-muted-foreground shrink-0">{breadcrumb.group}</span>
-          </>
-        )}
-        <ChevronRight className="w-3 h-3 text-muted-foreground/50 shrink-0" />
-        <span className="font-medium text-foreground truncate">{breadcrumb.page}</span>
+    <header className="sticky top-0 z-40 h-[76px] border-b bg-card/95 backdrop-blur-sm supports-[backdrop-filter]:bg-card/80 flex items-center justify-between px-6 gap-4">
+      {/* Left: Page title + Breadcrumb (Yuri layout) */}
+      <div className="flex items-center gap-6 min-w-0">
+        <div className="page-title-section">
+          <h2 className="text-lg font-bold text-foreground leading-tight">{breadcrumb.page}</h2>
+          <nav className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-xs text-muted-foreground">Dashboard</span>
+            {breadcrumb.group && (
+              <>
+                <span className="text-xs text-muted-foreground/50">/</span>
+                <span className="text-xs text-muted-foreground">{breadcrumb.group}</span>
+              </>
+            )}
+            <span className="text-xs text-muted-foreground/50">/</span>
+            <span className="text-xs text-primary font-medium">{breadcrumb.page}</span>
+          </nav>
+        </div>
       </div>
 
-      {/* Right actions */}
-      <div className="flex items-center gap-1">
-        {/* Search placeholder */}
-        <Button variant="ghost" size="sm" className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-foreground h-9 px-3">
+      {/* Right: Search + Theme + Notifications + User */}
+      <div className="flex items-center gap-1.5">
+        {/* Search */}
+        <Button variant="ghost" size="sm" className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-foreground h-9 px-3 rounded-lg">
           <Search className="w-4 h-4" />
           <span className="text-xs">Search...</span>
           <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
@@ -581,25 +621,29 @@ function Header() {
         </Button>
 
         {/* Theme toggle */}
-        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={cycleTheme} title={`Theme: ${theme}`}>
-          {resolved === "dark" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg" onClick={cycleTheme} title={`Theme: ${theme}`}>
+          {resolved === "dark" ? <Moon className="w-[18px] h-[18px]" /> : <Sun className="w-[18px] h-[18px]" />}
         </Button>
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="h-9 w-9 relative">
-          <Bell className="w-4 h-4" />
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg relative">
+          <Bell className="w-[18px] h-[18px]" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#F94C8E] rounded-full" />
         </Button>
 
         {/* User dropdown */}
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-accent transition-colors">
-                <Avatar className="h-7 w-7">
+              <button className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 hover:bg-accent/80 transition-colors ml-1">
+                <Avatar className="h-8 w-8 ring-2 ring-primary/10">
                   <AvatarImage src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`} />
-                  <AvatarFallback className="text-xs">{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:block text-sm font-medium max-w-[100px] truncate">{user.username}</span>
+                <div className="hidden sm:block text-left">
+                  <p className="text-sm font-semibold leading-tight max-w-[100px] truncate">{user.username}</p>
+                  <p className="text-[11px] text-muted-foreground leading-tight">{user.is_owner ? "Owner" : "Staff"}</p>
+                </div>
                 <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:block" />
               </button>
             </DropdownMenuTrigger>
@@ -654,14 +698,12 @@ function Header() {
 
 function DashboardFooter() {
   return (
-    <footer className="border-t px-4 md:px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-      <span>© 2025 Infinity Bot</span>
-      <div className="flex items-center gap-3">
-        <a href="#" className="hover:text-foreground transition-colors">Support</a>
-        <span className="text-border">·</span>
-        <a href="#" className="hover:text-foreground transition-colors">Docs</a>
-        <span className="text-border">·</span>
-        <a href="/status" className="hover:text-foreground transition-colors">Status</a>
+    <footer className="border-t px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[13px] text-muted-foreground">
+      <span>© 2025 <span className="font-semibold text-foreground">Infinity Bot</span>. All rights reserved.</span>
+      <div className="flex items-center gap-4">
+        <a href="#" className="hover:text-primary transition-colors">Support</a>
+        <a href="#" className="hover:text-primary transition-colors">Docs</a>
+        <a href="/status" className="hover:text-primary transition-colors">Status</a>
       </div>
     </footer>
   );
@@ -671,7 +713,7 @@ function DashboardFooter() {
 
 function Sidebar() {
   return (
-    <div className="w-64 h-screen hidden md:flex flex-col fixed left-0 top-0 z-50">
+    <div className="w-[265px] h-screen hidden md:flex flex-col fixed left-0 top-0 z-50">
       <SidebarContent />
     </div>
   );
@@ -695,7 +737,7 @@ function MobileNav() {
               <Menu className="w-5 h-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64 flex flex-col border-0">
+          <SheetContent side="left" className="p-0 w-[265px] flex flex-col border-0">
             <SheetTitle className="sr-only">Menu điều hướng</SheetTitle>
             <div className="flex flex-col h-full overflow-hidden">
               <SidebarContent onClose={() => setOpen(false)} />
@@ -745,7 +787,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       {/* Desktop sidebar — fixed left */}
       <Sidebar />
       {/* Content wrapper */}
-      <div className="flex flex-col md:ml-64 min-h-screen min-w-0 overflow-x-hidden">
+      <div className="flex flex-col md:ml-[265px] min-h-screen min-w-0 overflow-x-hidden">
         {/* Mobile header */}
         <MobileNav />
         {/* Desktop header */}
@@ -753,7 +795,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
           <Header />
         </div>
         {needsGuild && (
-          <div className="sticky top-14 md:top-16 z-30 flex items-center justify-between gap-3 bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-sm text-amber-600 dark:text-amber-400">
+          <div className="sticky top-14 md:top-[76px] z-30 flex items-center justify-between gap-3 bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-sm text-amber-600 dark:text-amber-400">
             <span>No server selected</span>
             <button
               onClick={() => navigate("/select-guild")}
@@ -764,7 +806,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
           </div>
         )}
         <main className={cn(
-          "flex-1 p-4 md:p-6",
+          "flex-1 px-[13px] py-[25px] md:px-6 md:py-[25px]",
           needsGuild && "pointer-events-none opacity-60"
         )}>
           {children}

@@ -5,48 +5,47 @@
 @layer base {
   :root {
     /* ── Yuri Admin Light Theme ─────────────────────────── */
-    --background: 220 20% 97.1%;
-    --foreground: 240 22.2% 10.6%;
+    --background: 210 33% 98%;         /* #F9FAFC */
+    --foreground: 240 22% 10.6%;       /* #151521 */
     --card: 0 0% 100%;
-    --card-foreground: 240 22.2% 10.6%;
+    --card-foreground: 240 22% 10.6%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 22.2% 10.6%;
-    --primary: 188 100% 35.5%;
+    --popover-foreground: 240 22% 10.6%;
+    --primary: 188 100% 35.5%;         /* #009DB5 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 337.1 93.5% 63.7%;
+    --secondary: 337.1 93.5% 63.7%;    /* #F94C8E */
     --secondary-foreground: 0 0% 100%;
     --muted: 220 20% 95%;
-    --muted-foreground: 225.5 12.3% 53.9%;
+    --muted-foreground: 228 11% 55%;   /* #7B8298 */
     --accent: 220 20% 95%;
-    --accent-foreground: 240 22.2% 10.6%;
+    --accent-foreground: 240 22% 10.6%;
     --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 58.3% 95.3%;
-    --input: 210 58.3% 95.3%;
+    --border: 210 25% 93%;             /* #ECF3FA */
+    --input: 210 25% 93%;
     --ring: 188 100% 35.5%;
-    --radius: 0.625rem;
+    --radius: 10px;
 
     /* ── Sidebar (always dark) ──────────────────────────── */
-    --sidebar-bg: 240 20% 14.7%;
-    --sidebar-text: 224.1 21.5% 69%;
-    --sidebar-active: 188 100% 35.5%;
+    --sidebar-bg: 225 12% 17%;         /* #262932 */
+    --sidebar-text: 224 21% 69%;       /* #9FA8C1 */
+    --sidebar-active: 188 100% 35.5%;  /* #009DB5 */
     --sidebar-border: 0 0% 100% / 0.1;
     --sidebar-muted: 225 15% 40%;
     --sidebar-hover-bg: 0 0% 100% / 0.06;
 
-    /* ── Card shadow ────────────────────────────────────── */
-    --card-shadow: 0px 8px 17px rgba(0, 157, 181, 0.07);
+    /* ── Card shadow (Yuri exact) ───────────────────────── */
+    --card-shadow: 0px 7.8px 17.3px rgba(0, 157, 181, 0.07);
     --card-shadow-hover: 0 0 40px rgba(8, 21, 66, 0.05);
 
     /* ── Header ─────────────────────────────────────────── */
-    --header-height: 64px;
+    --header-height: 76px;
   }
 
   .dark {
-    /* ── Yuri Admin Dark Theme ──────────────────────────── */
-    --background: 233.3 13.4% 13.1%;
+    --background: 233.3 13.4% 13.1%;   /* #1E1E2D */
     --foreground: 0 0% 87%;
-    --card: 225 13.6% 17.3%;
+    --card: 225 13.6% 17.3%;           /* #262932 */
     --card-foreground: 0 0% 87%;
     --popover: 225 13.6% 17.3%;
     --popover-foreground: 0 0% 87%;
@@ -60,8 +59,8 @@
     --accent-foreground: 0 0% 87%;
     --destructive: 4 90% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214.5 23.1% 28%;
-    --input: 214.5 23.1% 28%;
+    --border: 225 15% 25%;
+    --input: 225 15% 25%;
     --ring: 188 100% 35.5%;
 
     --card-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
@@ -85,32 +84,24 @@
     max-width: 100vw;
     margin: 0;
     padding: 0;
-    font-family: "Inter", "Segoe UI", sans-serif;
+    font-family: "Nunito", "Inter", "Segoe UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: hsl(var(--foreground));
   }
 }
 
-/* ── Yuri Card Styling ──────────────────────────────────────── */
-@layer components {
-  .card-yuri {
-    border-radius: var(--radius);
-    box-shadow: var(--card-shadow);
-    border: none;
-    transition: box-shadow 0.3s ease;
-  }
-  .card-yuri:hover {
-    box-shadow: var(--card-shadow-hover);
-  }
-}
-
-/* ── Global card override — Yuri shadows ────────────────────── */
+/* ── Yuri Global Card Styling ───────────────────────────────── */
 @layer base {
   [data-slot="card"],
   .card,
-  div[class*="rounded-lg border bg-card"] {
+  div[class*="rounded-lg border bg-card"],
+  div[class*="rounded-xl border bg-card"] {
     box-shadow: var(--card-shadow);
-    border-color: hsl(var(--border));
-    border-radius: var(--radius);
+    border: none !important;
+    border-radius: var(--radius) !important;
     transition: box-shadow 0.3s ease;
+    margin-bottom: 0;
   }
 }
 
@@ -127,6 +118,25 @@
     border-bottom-color: hsl(var(--primary));
     color: hsl(var(--primary));
   }
+}
+
+/* ── Yuri-style section title ───────────────────────────────── */
+.sidebar-section-title {
+  padding: 12px 20px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  user-select: none;
+}
+
+/* ── Yuri-style page title in header ────────────────────────── */
+.page-title-section h2 {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: hsl(var(--foreground));
 }
 
 /* ── Scrollbar ──────────────────────────────────────────────── */
@@ -153,4 +163,15 @@
   background: rgba(255, 255, 255, 0.25);
 }
 
-/* datetime-local input: vừa nội dung, không tràn */
+/* ── Yuri-style badges ──────────────────────────────────────── */
+.badge-primary {
+  background-color: hsl(var(--primary));
+  color: white;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+}
+
+/* ── Nunito font import ─────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
