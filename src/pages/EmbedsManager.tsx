@@ -338,7 +338,6 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                     return (
                       <SelectItem key={ev.key} value={ev.key}>
                         <span className="flex items-center gap-2">
-                          <Icon className="h-3.5 w-3.5" />
                           {botLang === "en" ? (ev.labelEn ?? ev.label) : ev.label}
                           {saved && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
                         </span>

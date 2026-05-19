@@ -588,7 +588,7 @@ function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 h-[76px] border-b bg-card/95 backdrop-blur-sm supports-[backdrop-filter]:bg-card/80 flex items-center justify-between px-6 gap-4">
+    <header className="sticky top-0 z-40 h-[76px] border-b bg-white dark:bg-card/95 backdrop-blur-sm supports-[backdrop-filter]:bg-white/95 dark:supports-[backdrop-filter]:bg-card/80 flex items-center justify-between px-6 gap-4">
       {/* Left: Page title + Breadcrumb (Yuri layout) */}
       <div className="flex items-center gap-6 min-w-0">
         <div className="page-title-section">
@@ -727,7 +727,7 @@ function MobileNav() {
   };
 
   return (
-    <div className="md:hidden border-b bg-card px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+    <div className="md:hidden border-b bg-white dark:bg-card px-4 py-3 flex items-center justify-between sticky top-0 z-40">
       <div className="flex items-center gap-3">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
