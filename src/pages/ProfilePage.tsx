@@ -182,15 +182,15 @@ export function ProfilePage() {
       </SectionCard>
 
       {/* Backup & Restore */}
-      <SectionCard title="Sao lưu & Khôi phục" icon={Database} accent="amber">
+      <SectionCard title="Backup & Restore" icon={Database} accent="amber">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-[14px] text-card-foreground font-medium">Quản lý bản sao lưu cấu hình bot của bạn</p>
-            <p className="text-[12px] text-muted-foreground mt-1">Chưa có bản sao lưu nào</p>
+            <p className="text-[14px] text-card-foreground font-medium">Manage your bot configuration backups</p>
+            <p className="text-[12px] text-muted-foreground mt-1">No backups yet</p>
           </div>
           <Button asChild variant="outline" className="shrink-0">
             <Link to="/backup">
-              Quản lý sao lưu
+              Manage Backups
               <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
           </Button>
