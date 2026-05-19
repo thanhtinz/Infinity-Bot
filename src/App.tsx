@@ -748,6 +748,9 @@ function MobileNav() {
         </div>
       </div>
       <div className="flex items-center gap-1">
+        <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
+          <Link to="/profile"><User className="w-4 h-4" /></Link>
+        </Button>
         <Button variant="ghost" size="icon" className="h-9 w-9" onClick={cycleTheme}>
           {resolved === "dark" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
         </Button>
