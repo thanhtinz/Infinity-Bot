@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { GuildProvider, useGuild } from "@/contexts/GuildContext";
 import { GuildSelector } from "@/components/GuildSelector";
 import { I18nProvider, useT } from "@/i18n";
+import { apiFetch } from "@/hooks/useApi";
 
 // ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
 const ConfigDiscord = lazy(() => import("./pages/ConfigDiscord").then(m => ({ default: m.ConfigDiscord })));
@@ -246,14 +247,15 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
   const { hasFeature } = useEntitlements();
 
+  const { selectedGuildId } = useGuild();
+
   const { data: features } = useQuery<{ key: string; enabled: boolean }[]>({
-    queryKey: ["features"],
-    queryFn: () => fetch("/api/features", { credentials: "include" }).then(r => r.ok ? r.json() : []),
+    queryKey: ["features", selectedGuildId],
+    queryFn: () => apiFetch("/api/features").then(r => r.ok ? r.json() : []),
+    enabled: !!selectedGuildId,
     retry: false,
     staleTime: 30_000,
   });
-
-  const { selectedGuildId } = useGuild();
   const { perms, memberRoles } = useStaffAccess();
 
   // Persist member roles to localStorage so apiFetch can send X-Member-Roles header
@@ -721,11 +723,14 @@ class PageErrorBoundary extends Component<{ children: ReactNode }, EBState> {
   static getDerivedStateFromError(error: unknown): EBState {
     // Promises thrown by Suspense should NOT be caught here — ignore them
     if (typeof (error as Promise<unknown>)?.then === "function") return { hasError: false };
-    return { hasError: true, error: error instanceof Error ? error : new Error(String(error)) };
+    const msg = error instanceof Error ? error.message : JSON.stringify(error);
+    return { hasError: true, error: error instanceof Error ? error : new Error(msg) };
   }
   componentDidCatch(error: unknown, info: ErrorInfo) {
     if (typeof (error as Promise<unknown>)?.then === "function") return;
-    console.error("[PageErrorBoundary]", error, info);
+    const msg = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : "";
+    console.error("[PageErrorBoundary]", msg, stack, info);
   }
   render() {
     if (this.state.hasError) {

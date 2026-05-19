@@ -160,6 +160,13 @@ async def public_commands():
         "invites":     "Invites",
         "voice":       "Temp Voice",
         "utility":     "Utility",
+        "autorole":       "Auto Role",
+        "forms":          "Forms",
+        "reminders":      "Reminders",
+        "polls":          "Polls",
+        "social_feeds":   "Social Feeds",
+        "stats_channels": "Stats Channels",
+        "ai_chat":        "AI Chat",
     }
 
     categories = []

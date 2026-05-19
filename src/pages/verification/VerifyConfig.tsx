@@ -414,7 +414,7 @@ export function VerifyConfig() {
   const domainStatusQuery = useQuery({
     queryKey: ["verification-domain-status", selectedGuildId],
     queryFn: async () => {
-      const r = await fetch(`/api/verification/domain-status?guild_id=${selectedGuildId}`, { credentials: "include" });
+      const r = await apiFetch("/api/verification/domain-status");
       if (!r.ok) throw new Error("Failed");
       return r.json() as Promise<{ domain: string; status: string; cname_target: string | null; railway_configured: boolean; error?: string }>;
     },

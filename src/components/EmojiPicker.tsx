@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Smile } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -146,7 +147,7 @@ export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
   const { data: emojis = [] } = useQuery<DiscordEmoji[]>({
     queryKey: ["managed-emojis"],
     queryFn: () =>
-      fetch("/api/managed-emojis", { credentials: "include" }).then((r) => {
+      apiFetch("/api/managed-emojis").then((r) => {
         if (!r.ok) throw new Error("Failed to load emojis");
         return r.json();
       }),

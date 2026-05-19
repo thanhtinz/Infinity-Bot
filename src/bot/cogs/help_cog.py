@@ -8,181 +8,77 @@ from src.bot.embed_utils import build_embed
 from src.database.config import SessionLocal
 
 # ── Help data ────────────────────────────────────────────────────────────────
-# Each category: emoji, name, list of (name, description, usage)
-HELP_CATEGORIES: list[dict] = [
-    {
-        "key": "shop",
-        "emoji": "🛒",
-        "name": "Shopping",
-        "commands": [
-            {"name": "san_pham",       "emoji": "📦", "desc": "Browse products and product details",               "usage": "`/san_pham [product]`"},
-            {"name": "orders",         "emoji": "📋", "desc": "View your orders",                         "usage": "`/orders` or `/orders id:<id>`"},
-            {"name": "feedback",       "emoji": "⭐", "desc": "Leave product feedback",                     "usage": "`/feedback`"},
-            {"name": "support",        "emoji": "🆘", "desc": "Contact server support",                               "usage": "`/support`"},
-            {"name": "bxh",            "emoji": "📊", "desc": "Shop leaderboard",                       "usage": "`/bxh`"},
-            {"name": "tao_don",        "emoji": "🧾", "desc": "Create an order for a member",                        "usage": "`/tao_don`", "admin": True},
-            {"name": "tao_don_custom", "emoji": "✏️", "desc": "Create a custom order with a custom name",                   "usage": "`/tao_don_custom`", "admin": True},
-            {"name": "bang_gia",       "emoji": "💰", "desc": "Send the product price list to a channel",               "usage": "`/bang_gia [#channel]`", "admin": True},
-        ],
-    },
-    {
-        "key": "giveaway",
-        "emoji": "🎉",
-        "name": "Giveaway",
-        "commands": [
-            {"name": "giveaway",        "emoji": "🎁", "desc": "Create a new giveaway (admin)",              "usage": "`/giveaway <duration> <winners> <prize>`", "admin": True},
-            {"name": "giveaway_list",   "emoji": "📋", "desc": "View active giveaways",       "usage": "`/giveaway_list`"},
-            {"name": "giveaway_reroll", "emoji": "🔁", "desc": "Reroll a giveaway winner (admin)",  "usage": "`/giveaway_reroll <message_id>`", "admin": True},
-            {"name": "giveaway_end",    "emoji": "🏁", "desc": "End a giveaway early (admin)",          "usage": "`/giveaway_end <message_id>`", "admin": True},
-            {"name": "giveaway_ban",    "emoji": "🚫", "desc": "Ban user tham gia giveaway (admin)",     "usage": "`/giveaway_ban <@user>`", "admin": True},
-            {"name": "giveaway_unban",  "emoji": "✅", "desc": "Unban a member from giveaways (admin)",      "usage": "`/giveaway_unban <@user>`", "admin": True},
-        ],
-    },
-    {
-        "key": "moderation",
-        "emoji": "🛡️",
-        "name": "Moderation",
-        "commands": [
-            {"name": "warn",      "emoji": "⚠️", "desc": "Warn a member (admin)",         "usage": "`/warn <@user> <reason>`", "admin": True},
-            {"name": "unwarn",    "emoji": "🗑️", "desc": "Delete warnings (admin)",                "usage": "`/unwarn <@user> <id>`", "admin": True},
-            {"name": "warnings",  "emoji": "📋", "desc": "View warning history (admin)",        "usage": "`/warnings <@user>`", "admin": True},
-            {"name": "kick",      "emoji": "👢", "desc": "Kick a member (admin)",              "usage": "`/kick <@user> [reason]`", "admin": True},
-            {"name": "ban",       "emoji": "🔨", "desc": "Ban a member (admin)",               "usage": "`/ban <@user> [reason]`", "admin": True},
-            {"name": "unban",     "emoji": "🔓", "desc": "Unban a user (admin)",             "usage": "`/unban <user_id>`", "admin": True},
-            {"name": "snipe",     "emoji": "👁️", "desc": "View last deleted message (admin)","usage": "`/snipe`", "admin": True},
-            {"name": "editsnipe", "emoji": "✏️", "desc": "View last edited message (admin)","usage": "`/editsnipe`", "admin": True},
-        ],
-    },
-    {
-        "key": "channel_admin",
-        "emoji": "⚙️",
-        "name": "Channel Admin",
-        "commands": [
-            {"name": "purge",           "emoji": "🗑️",  "desc": "Bulk delete messages in channel",                   "usage": "`/purge <amount> [@user]`",          "admin": True},
-            {"name": "nuke",            "emoji": "💣",  "desc": "Delete all messages by cloning the channel",       "usage": "`/nuke [reason]`",                      "admin": True},
-            {"name": "lock",            "emoji": "🔒",  "desc": "Lock channel, prevent members from sending",             "usage": "`/lock [#channel] [reason]`",              "admin": True},
-            {"name": "unlock",          "emoji": "🔓",  "desc": "Unlock a channel",                                        "usage": "`/unlock [#channel]`",                    "admin": True},
-            {"name": "hide_channel",    "emoji": "🫥",  "desc": "Hide channel from regular members",            "usage": "`/hide_channel [#channel]`",              "admin": True},
-            {"name": "show_channel",    "emoji": "👁️",  "desc": "Show a previously hidden channel",                              "usage": "`/show_channel [#channel]`",              "admin": True},
-            {"name": "block_channel",   "emoji": "🚫",  "desc": "Block a member/role from a specific channel",           "usage": "`/block_channel <@user/role> [#channel]`","admin": True},
-            {"name": "unblock_channel", "emoji": "✅",  "desc": "Unblock a member/role in a channel",                  "usage": "`/unblock_channel <@user/role> [#channel]`","admin": True},
-            {"name": "slowmode",        "emoji": "⏱️",  "desc": "Set slowmode for a channel",                 "usage": "`/slowmode <seconds> [#channel]`",           "admin": True},
-            {"name": "image_only",      "emoji": "🖼️",  "desc": "Set channel to images/video only",                  "usage": "`/image_only [#channel]`",                "admin": True},
-            {"name": "announce",        "emoji": "📢",  "desc": "Send an announcement with a nice embed",                "usage": "`/announce <content> [#channel] [@role]`","admin": True},
-            {"name": "move_message",    "emoji": "➡️",  "desc": "Move a message to another channel via link",          "usage": "`/move_message <link> <#target_channel>`",  "admin": True},
-            {"name": "clear_reactions", "emoji": "🧹",  "desc": "Clear all reactions from a message",              "usage": "`/clear_reactions <link>`",            "admin": True},
-            {"name": "pin_message",     "emoji": "📌",  "desc": "Pin a message via link",                                "usage": "`/pin_message <link>`",                "admin": True},
-            {"name": "unpin_message",   "emoji": "📍",  "desc": "Unpin a message via link",                             "usage": "`/unpin_message <link>`",              "admin": True},
-            {"name": "role_add",        "emoji": "➕",  "desc": "Add a role to a member",                             "usage": "`/role_add <@user> <@role>`",          "admin": True},
-            {"name": "role_remove",     "emoji": "➖",  "desc": "Remove a role from a member",                             "usage": "`/role_remove <@user> <@role>`",       "admin": True},
-            {"name": "nick",            "emoji": "✏️",  "desc": "Change or clear a member nickname",                    "usage": "`/nick <@user> [nickname]`",           "admin": True},
-        ],
-    },
-    {
-        "key": "invites",
-        "emoji": "📨",
-        "name": "Invite Tracking",
-        "commands": [
-            {"name": "invites me",          "emoji": "📊", "desc": "View your invite stats",             "usage": "`/invites me`"},
-            {"name": "invites info",        "emoji": "👤", "desc": "View invite stats for another member", "usage": "`/invites info <@user>`"},
-            {"name": "invites leaderboard", "emoji": "🏆", "desc": "Server invite leaderboard",                       "usage": "`/invites leaderboard`"},
-            {"name": "invites fake",        "emoji": "🚫", "desc": "Mark a member's invites as fake (admin)", "usage": "`/invites fake <@user>`", "admin": True},
-        ],
-    },
-    {
-        "key": "utility",
-        "emoji": "🔧",
-        "name": "Utility",
-        "commands": [
-            {"name": "afk",        "emoji": "💤", "desc": "Set AFK status",          "usage": "`/afk [reason]`"},
-            {"name": "avatar",     "emoji": "🖼️", "desc": "View member avatar",       "usage": "`/avatar [@user]`"},
-            {"name": "banner",     "emoji": "🎨", "desc": "View member banner",        "usage": "`/banner [@user]`"},
-            {"name": "userinfo",   "emoji": "ℹ️",  "desc": "View member info",   "usage": "`/userinfo [@user]`"},
-            {"name": "serverinfo", "emoji": "🏠",  "desc": "View server info",       "usage": "`/serverinfo`"},
-            {"name": "poll",       "emoji": "📊",  "desc": "Create a quick poll",        "usage": "`/poll <question> <options...>`"},
-            {"name": "qr",         "emoji": "📷",  "desc": "Generate QR code from text/link", "usage": "`/qr <content>`"},
-            {"name": "setprefix",  "emoji": "⚙️",  "desc": "Set interaction command prefix (admin)", "usage": "`/setprefix <prefix>`", "admin": True},
-        ],
-    },
-    {
-        "key": "interactions",
-        "emoji": "🎭",
-        "name": "Actions",
-        "commands": [
-            # Interactions with other members
-            {"name": "hug",        "emoji": "🫂", "desc": "Hug another member",             "usage": "`/hug <@user>`"},
-            {"name": "pat",        "emoji": "🤚", "desc": "Pat another member",                 "usage": "`/pat <@user>`"},
-            {"name": "kiss",       "emoji": "💋", "desc": "Kiss another member",                     "usage": "`/kiss <@user>`"},
-            {"name": "slap",       "emoji": "🫲", "desc": "Slap another member",                     "usage": "`/slap <@user>`"},
-            {"name": "punch",      "emoji": "👊", "desc": "Punch another member",                     "usage": "`/punch <@user>`"},
-            {"name": "wave",       "emoji": "👋", "desc": "Wave at another member",            "usage": "`/wave <@user>`"},
-            {"name": "cuddle",     "emoji": "🤗", "desc": "Cuddle another member",                   "usage": "`/cuddle <@user>`"},
-            {"name": "poke",       "emoji": "👉", "desc": "Poke another member",                    "usage": "`/poke <@user>`"},
-            {"name": "tickle",     "emoji": "🤭", "desc": "Tickle another member",                      "usage": "`/tickle <@user>`"},
-            {"name": "bite",       "emoji": "😬", "desc": "Bite another member",                     "usage": "`/bite <@user>`"},
-            {"name": "lick",       "emoji": "👅", "desc": "Lick another member",                    "usage": "`/lick <@user>`"},
-            {"name": "wink",       "emoji": "😉", "desc": "Wink at another member",            "usage": "`/wink <@user>`"},
-            {"name": "stare",      "emoji": "👀", "desc": "Stare at another member",          "usage": "`/stare <@user>`"},
-            {"name": "brofist",    "emoji": "🤜", "desc": "Brofist another member",             "usage": "`/brofist <@user>`"},
-            {"name": "handhold",   "emoji": "🤝", "desc": "Hold hands with another member",                 "usage": "`/handhold <@user>`"},
-            {"name": "nuzzle",     "emoji": "🥰", "desc": "Nuzzle another member",              "usage": "`/nuzzle <@user>`"},
-            {"name": "smack",      "emoji": "💥", "desc": "Smack another member",                    "usage": "`/smack <@user>`"},
-            {"name": "airkiss",    "emoji": "😘", "desc": "Send an air kiss to another member",     "usage": "`/airkiss <@user>`"},
-            {"name": "angrystare", "emoji": "😠", "desc": "Give an angry stare at another member",            "usage": "`/angrystare <@user>`"},
-            {"name": "pinch",      "emoji": "🤏", "desc": "Pinch another member",                     "usage": "`/pinch <@user>`"},
-            {"name": "nom",        "emoji": "😋", "desc": "Nom another member (lol)",                "usage": "`/nom <@user>`"},
-            {"name": "peek",       "emoji": "🫣", "desc": "Peek at another member",               "usage": "`/peek <@user>`"},
-        ],
-    },
-    {
-        "key": "expressions",
-        "emoji": "😄",
-        "name": "Expressions",
-        "commands": [
-            {"name": "blush",      "emoji": "😊", "desc": "Blush",                            "usage": "`/blush`"},
-            {"name": "cry",        "emoji": "😢", "desc": "Cry",                               "usage": "`/cry`"},
-            {"name": "dance",      "emoji": "💃", "desc": "Dance",                               "usage": "`/dance`"},
-            {"name": "laugh",      "emoji": "😂", "desc": "Laugh",                               "usage": "`/laugh`"},
-            {"name": "smile",      "emoji": "😊", "desc": "Smile",                          "usage": "`/smile`"},
-            {"name": "happy",      "emoji": "😄", "desc": "Be happy",                             "usage": "`/happy`"},
-            {"name": "sad",        "emoji": "😞", "desc": "Be sad",                               "usage": "`/sad`"},
-            {"name": "sleep",      "emoji": "😴", "desc": "Sleep",                                "usage": "`/sleep`"},
-            {"name": "yawn",       "emoji": "🥱", "desc": "Yawn",                               "usage": "`/yawn`"},
-            {"name": "shrug",      "emoji": "🤷", "desc": "Shrug",                           "usage": "`/shrug`"},
-            {"name": "facepalm",   "emoji": "🤦", "desc": "Facepalm",                           "usage": "`/facepalm`"},
-            {"name": "clap",       "emoji": "👏", "desc": "Clap",                             "usage": "`/clap`"},
-            {"name": "celebrate",  "emoji": "🎉", "desc": "Celebrate",                            "usage": "`/celebrate`"},
-            {"name": "thumbsup",   "emoji": "👍", "desc": "Thumbs up",                              "usage": "`/thumbsup`"},
-            {"name": "sorry",      "emoji": "🙏", "desc": "Apologize",                            "usage": "`/sorry`"},
-            {"name": "confused",   "emoji": "😕", "desc": "Be confused",                            "usage": "`/confused`"},
-            {"name": "nervous",    "emoji": "😰", "desc": "Be nervous",                            "usage": "`/nervous`"},
-            {"name": "scared",     "emoji": "😱", "desc": "Be scared",                             "usage": "`/scared`"},
-            {"name": "surprised",  "emoji": "😲", "desc": "Be surprised",                         "usage": "`/surprised`"},
-            {"name": "cool",       "emoji": "😎", "desc": "Look cool",                               "usage": "`/cool`"},
-            {"name": "love",       "emoji": "❤️", "desc": "Be in love",                               "usage": "`/love`"},
-            {"name": "run",        "emoji": "🏃", "desc": "Run",                               "usage": "`/run`"},
-            {"name": "shy",        "emoji": "🙈", "desc": "Be shy",                         "usage": "`/shy`"},
-            {"name": "smug",       "emoji": "😏", "desc": "Look smug",                             "usage": "`/smug`"},
-            {"name": "yay",        "emoji": "🥳", "desc": "Yay!",                               "usage": "`/yay`"},
-        ],
-    },
-]
 
-
-# Public/help category model used by the bot and landing command catalog.
-# Keep labels in English; the landing page maps these keys to icons.
-_LEGACY_HELP_CATEGORIES = HELP_CATEGORIES
-_LEGACY_COMMANDS = {
-    cmd["name"]: cmd
-    for cat in _LEGACY_HELP_CATEGORIES
-    for cmd in cat["commands"]
+_EMOJI_MAP: dict[str, str] = {
+    # Shop
+    "san_pham": "📦", "orders": "📋", "feedback": "⭐", "support": "🆘",
+    "bxh": "📊", "tao_don": "🧾", "tao_don_custom": "✏️", "bang_gia": "💰",
+    # Giveaway
+    "giveaway": "🎁", "giveaway_list": "📋", "giveaway_reroll": "🔁",
+    "giveaway_end": "🏁", "giveaway_ban": "🚫", "giveaway_unban": "✅",
+    # Moderation
+    "warn": "⚠️", "unwarn": "🗑️", "warnings": "📋", "kick": "👢",
+    "ban": "🔨", "unban": "🔓", "snipe": "👁️", "editsnipe": "✏️",
+    # Channel Admin
+    "purge": "🗑️", "nuke": "💣", "lock": "🔒", "unlock": "🔓",
+    "hide_channel": "🫥", "show_channel": "👁️", "block_channel": "🚫",
+    "unblock_channel": "✅", "slowmode": "⏱️", "image_only": "🖼️",
+    "announce": "📢", "move_message": "➡️", "clear_reactions": "🧹",
+    "pin_message": "📌", "unpin_message": "📍", "role_add": "➕",
+    "role_remove": "➖", "nick": "✏️",
+    # Invites
+    "invites me": "📊", "invites info": "👤", "invites leaderboard": "🏆",
+    "invites fake": "🚫",
+    # Utility
+    "afk": "💤", "avatar": "🖼️", "banner": "🎨", "userinfo": "ℹ️",
+    "serverinfo": "🏠", "poll": "📊", "qr": "📷", "setprefix": "⚙️",
+    # Interactions
+    "hug": "🫂", "pat": "🤚", "kiss": "💋", "slap": "🫲", "punch": "👊",
+    "wave": "👋", "cuddle": "🤗", "poke": "👉", "tickle": "🤭", "bite": "😬",
+    "lick": "👅", "wink": "😉", "stare": "👀", "brofist": "🤜", "handhold": "🤝",
+    "nuzzle": "🥰", "smack": "💥", "airkiss": "😘", "angrystare": "😠",
+    "pinch": "🤏", "nom": "😋", "peek": "🫣",
+    # Expressions
+    "blush": "😊", "cry": "😢", "dance": "💃", "laugh": "😂", "smile": "😊",
+    "happy": "😄", "sad": "😞", "sleep": "😴", "yawn": "🥱", "shrug": "🤷",
+    "facepalm": "🤦", "clap": "👏", "celebrate": "🎉", "thumbsup": "👍",
+    "sorry": "🙏", "confused": "😕", "nervous": "😰", "scared": "😱",
+    "surprised": "😲", "cool": "😎", "love": "❤️", "run": "🏃", "shy": "🙈",
+    "smug": "😏", "yay": "🥳",
+    # Fun
+    "space": "🚀", "dadjoke": "😂", "cat": "🐱", "dog": "🐕", "pug": "🐶",
+    "norris": "💪", "pokemon": "🎮", "itunes": "🎵",
+    # Info
+    "invites me": "📊", "invites info": "👤", "invites leaderboard": "🏆",
+    "invites fake": "🚫",
+    # Misc
+    "afk": "💤", "poll": "📊", "qr": "📷", "setprefix": "⚙️",
+    # Sticky
+    "sticky create": "📝", "sticky embed": "📋", "sticky edit": "✏️",
+    "sticky remove": "🗑️", "sticky enable": "✅", "sticky disable": "❌",
+    "sticky list": "📋", "sticky view": "👁️", "sticky clear": "🧹",
+    "sticky interval": "⏱️", "sticky messages": "💬", "sticky color": "🎨",
+    "sticky image": "🖼️", "sticky thumbnail": "🖼️", "sticky footer": "📝",
+    "sticky pin": "📌", "sticky unpin": "📍", "sticky sync": "🔄",
+    "sticky expire": "⏳", "sticky move": "➡️", "sticky copy": "📋",
+    "sticky stats": "📊", "sticky channel": "📢",
+    # Moderator
+    "delwarn": "🗑️", "mute": "🔇", "softban": "🔨", "deafen": "🔇",
+    "undeafen": "🔊", "clean": "🧹", "members": "👥", "rolepersist": "🔄",
+    "temprole": "⏳", "note": "📝", "notes": "📋", "delnote": "🗑️",
+    "editnote": "✏️", "clearnotes": "🧹", "modlogs": "📋", "moderations": "🛡️",
+    "case": "📁", "reason": "📝", "duration": "⏱️",
+    # Modtools
+    "modstats": "📊", "lockdown": "🔒", "ignored": "🚫", "diagnose": "🔍",
+    # Role
+    "roles deploy-button": "🔘", "roles deploy-select": "📋",
+    # Other
+    "help": "📚",
 }
 
 
 def _help_cmd(name: str, desc: str, usage: str | None = None, admin: bool | None = None) -> dict:
-    base = dict(_LEGACY_COMMANDS.get(name, {"name": name, "emoji": "▫️"}))
-    base["desc"] = desc
-    base["usage"] = usage or f"`/{name}`"
+    base = {"name": name, "emoji": _EMOJI_MAP.get(name, "▫️"), "desc": desc, "usage": usage or f"`/{name}`"}
     if admin is not None:
         base["admin"] = admin
     return base
@@ -419,6 +315,82 @@ HELP_CATEGORIES = [
             _help_cmd("nick", "Change or clear a member nickname.", "`/nick <@user> [nickname]`", True),
             _help_cmd("roles deploy-button", "Deploy a button role panel.", "`/roles deploy-button`", True),
             _help_cmd("roles deploy-select", "Deploy a select-menu role panel.", "`/roles deploy-select`", True),
+        ],
+    },
+    {
+        "key": "autorole",
+        "emoji": "👤",
+        "name": "autorole",
+        "commands": [
+            _help_cmd("autorole add", "Add a role to auto-assign on join.", "`/autorole add <@role> [delay] [for_bots]`", True),
+            _help_cmd("autorole remove", "Remove an auto role by ID.", "`/autorole remove <id>`", True),
+            _help_cmd("autorole list", "List all configured auto roles.", "`/autorole list`"),
+        ],
+    },
+    {
+        "key": "forms",
+        "emoji": "📋",
+        "name": "forms",
+        "commands": [
+            _help_cmd("form apply", "Apply for a form.", "`/form apply <template_id>`"),
+            _help_cmd("form list", "List active form templates.", "`/form list`"),
+            _help_cmd("form submissions", "View pending submissions.", "`/form submissions <template_id>`", True),
+            _help_cmd("form review", "Approve or reject a submission.", "`/form review <id> <approve|reject>`", True),
+        ],
+    },
+    {
+        "key": "reminders",
+        "emoji": "⏰",
+        "name": "reminders",
+        "commands": [
+            _help_cmd("remind set", "Set a reminder.", "`/remind set <time> <message>`"),
+            _help_cmd("remind list", "List your active reminders.", "`/remind list`"),
+            _help_cmd("remind cancel", "Cancel a reminder.", "`/remind cancel <id>`"),
+            _help_cmd("todo add", "Add a todo item.", "`/todo add <content>`"),
+            _help_cmd("todo list", "List your todo items.", "`/todo list`"),
+            _help_cmd("todo done", "Mark a todo as done.", "`/todo done <id>`"),
+            _help_cmd("todo remove", "Remove a todo item.", "`/todo remove <id>`"),
+        ],
+    },
+    {
+        "key": "polls",
+        "emoji": "📊",
+        "name": "polls",
+        "commands": [
+            _help_cmd("poll create", "Create a new poll.", "`/poll create <question> <options...> [duration]`"),
+            _help_cmd("poll end", "End a poll early.", "`/poll end <poll_id>`"),
+            _help_cmd("poll results", "Show current poll results.", "`/poll results <poll_id>`"),
+        ],
+    },
+    {
+        "key": "social_feeds",
+        "emoji": "📡",
+        "name": "social_feeds",
+        "commands": [
+            _help_cmd("feed add", "Add a social feed to monitor.", "`/feed add <platform> <url> <#channel>`", True),
+            _help_cmd("feed remove", "Remove a social feed.", "`/feed remove <id>`", True),
+            _help_cmd("feed list", "List configured social feeds.", "`/feed list`"),
+        ],
+    },
+    {
+        "key": "stats_channels",
+        "emoji": "📈",
+        "name": "stats_channels",
+        "commands": [
+            _help_cmd("stats-channel add", "Add a stats voice channel.", "`/stats-channel add <#channel> <type> [format]`", True),
+            _help_cmd("stats-channel remove", "Remove a stats channel.", "`/stats-channel remove <id>`", True),
+            _help_cmd("stats-channel list", "List configured stats channels.", "`/stats-channel list`"),
+        ],
+    },
+    {
+        "key": "ai_chat",
+        "emoji": "🤖",
+        "name": "ai_chat",
+        "commands": [
+            _help_cmd("ai ask", "Ask the AI assistant a question.", "`/ai ask <question>`"),
+            _help_cmd("ai imagine", "Generate an image with AI.", "`/ai imagine <prompt>`"),
+            _help_cmd("ai reset", "Reset your AI conversation history.", "`/ai reset`"),
+            _help_cmd("ai status", "Check AI Chat status for this server.", "`/ai status`"),
         ],
     },
     {

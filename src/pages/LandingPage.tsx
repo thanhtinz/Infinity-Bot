@@ -1,16 +1,19 @@
 import { useT } from "@/i18n";
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Gift, Shield, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight } from "lucide-react";
+import { ShoppingBag, Gift, Shield, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight, BrainCircuit, BarChart3, ClipboardList } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 /* ── Terminal typing animation ───────────────────────────────── */
 const COMMANDS = [
   { cmd: "/shop", out: "→  Opening server shop..." },
-  { cmd: "/verify setup", out: "→  Verification enabled ✓" },
+  { cmd: "/ai ask", out: "→  Thinking..." },
   { cmd: "/giveaway start", out: "→  Giveaway started! 🎉" },
+  { cmd: "/poll create", out: "→  Poll created ✓" },
+  { cmd: "/verify setup", out: "→  Verification enabled ✓" },
+  { cmd: "/remind set 2h", out: "→  Reminder set for 2 hours" },
+  { cmd: "/form apply", out: "→  Opening application form..." },
   { cmd: "/moderation cases", out: "→  Showing case list..." },
-  { cmd: "/backup create", out: "→  Backup created ✓" },
 ];
 
 function Terminal() {
@@ -119,7 +122,11 @@ const FEATURES = [
   { icon: Gift, titleKey: "landing_giveaway", descKey: "landing_giveawayDesc", color: "#f59e0b" },
   { icon: Shield, titleKey: "landing_moderation", descKey: "landing_moderationDesc", color: "#ef4444" },
   { icon: Users, titleKey: "landing_verification", descKey: "landing_verificationDesc", color: "#a855f7" },
+  { icon: BrainCircuit, titleKey: "landing_aiChat", descKey: "landing_aiChatDesc", color: "#06b6d4" },
   { icon: Palette, titleKey: "landing_embedBuilder", descKey: "landing_embedBuilderDesc", color: "#ec4899" },
+  { icon: BarChart3, titleKey: "landing_polls", descKey: "landing_pollsDesc", color: "#10b981" },
+  { icon: ClipboardList, titleKey: "landing_forms", descKey: "landing_formsDesc", color: "#f97316" },
+  { icon: Activity, titleKey: "landing_leveling", descKey: "landing_levelingDesc", color: "#8b5cf6" },
 ];
 
 /* ── Main Landing Page ───────────────────────────────────────── */

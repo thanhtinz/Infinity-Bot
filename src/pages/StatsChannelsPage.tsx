@@ -55,6 +55,15 @@ const STAT_TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }
   avg_rating: Star,
 };
 
+const STAT_TYPE_LABELS: Record<string, string> = {
+  members: "Members",
+  online: "Online",
+  boosts: "Boosts",
+  roles: "Roles",
+  channels: "Channels",
+  avg_rating: "Feedback Rating",
+};
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function StatsChannelsPage() {
@@ -80,7 +89,15 @@ export function StatsChannelsPage() {
 
   const { data: statTypes = [] } = useQuery<StatTypeOption[]>({
     queryKey: ["stats-channels-types", selectedGuildId],
-    queryFn: () => apiFetch("/api/stats-channels/types").then((r) => r.json()),
+    queryFn: async () => {
+      const r = await apiFetch("/api/stats-channels/types");
+      const data = await r.json();
+      // API returns string[] — normalise to { key, label }[]
+      if (Array.isArray(data) && typeof data[0] === "string") {
+        return data.map((k: string) => ({ key: k, label: STAT_TYPE_LABELS[k] ?? k.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) }));
+      }
+      return data;
+    },
     enabled: !!selectedGuildId,
   });
 
@@ -133,7 +150,7 @@ export function StatsChannelsPage() {
 
   const statTypeLabel = (key: string) => {
     const found = statTypes.find((t) => t.key === key);
-    return found ? found.label : key;
+    return found ? found.label : STAT_TYPE_LABELS[key] ?? key;
   };
 
   // ── Render ───────────────────────────────────────────────────────────────
@@ -243,7 +260,7 @@ export function StatsChannelsPage() {
                     { key: "boosts", label: "Boosts" },
                     { key: "roles", label: "Roles" },
                     { key: "channels", label: "Channels" },
-                    { key: "avg_rating", label: "Avg Rating" },
+                    { key: "avg_rating", label: "⭐ Feedback Rating" },
                   ]).map((t) => (
                     <SelectItem key={t.key} value={t.key}>{t.label}</SelectItem>
                   ))}

@@ -3,6 +3,7 @@ import {
   Bot, Gift, Heart, Info, MoreHorizontal, Pin,
   Search, Settings2, Shield, ShoppingBag, Smile, Terminal,
   UserPlus, UserCog, Wrench, Zap, SearchX,
+  UserCheck, ClipboardList, Bell, BarChart3, Rss, Activity, BrainCircuit,
 } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
@@ -24,6 +25,13 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
   role: UserCog,
   invites: UserPlus,
   utility: Terminal,
+  autorole: UserCheck,
+  forms: ClipboardList,
+  reminders: Bell,
+  polls: BarChart3,
+  social_feeds: Rss,
+  stats_channels: Activity,
+  ai_chat: BrainCircuit,
   other: Bot,
 };
 

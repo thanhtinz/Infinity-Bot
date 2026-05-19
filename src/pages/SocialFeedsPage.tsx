@@ -16,7 +16,7 @@ import { useDiscordChannels } from "@/hooks/useDiscordData";
 import type { DiscordChannel } from "@/hooks/useDiscordData";
 import { useGuild } from "@/contexts/GuildContext";
 import {
-  Rss, Plus, Trash2, Loader2, Youtube, Tv, Globe, Hash,
+  Rss, Plus, Trash2, Loader2, Play, Tv, Globe, Hash,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +36,7 @@ interface SocialFeed {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const PLATFORM_CONFIG: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
-  youtube: { label: "YouTube", icon: Youtube, color: "bg-red-500/15 text-red-600 dark:text-red-400" },
+  youtube: { label: "YouTube", icon: Play, color: "bg-red-500/15 text-red-600 dark:text-red-400" },
   twitch: { label: "Twitch", icon: Tv, color: "bg-purple-500/15 text-purple-600 dark:text-purple-400" },
   rss: { label: "RSS", icon: Globe, color: "bg-orange-500/15 text-orange-600 dark:text-orange-400" },
 };
