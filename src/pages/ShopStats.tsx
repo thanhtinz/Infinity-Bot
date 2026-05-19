@@ -1,6 +1,7 @@
 import { useT } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { useGuild } from "@/contexts/GuildContext";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AreaChart, Area, BarChart, Bar,
@@ -46,6 +47,7 @@ function StatCard({
 export function ShopStats() {
   const { t } = useT();
   const { selectedGuildId } = useGuild();
+  const { formatPriceCompact, formatPrice } = useCurrency();
   const { data: stats, isLoading } = useQuery<Stats>({
     queryKey: ["stats", selectedGuildId],
     queryFn: () => apiFetch("/api/stats").then((r) => r.json()),
@@ -54,12 +56,7 @@ export function ShopStats() {
     enabled: !!selectedGuildId,
   });
 
-  const fmtMoney = (n: number) =>
-    n >= 1_000_000
-      ? `${(n / 1_000_000).toFixed(1)}M VND`
-      : n >= 1_000
-      ? `${(n / 1_000).toFixed(0)}K VND`
-      : `${n.toLocaleString("en-US")} VND`;
+  const fmtMoney = (n: number) => formatPriceCompact(n);
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -109,7 +106,7 @@ export function ShopStats() {
                     tickFormatter={(v) => v >= 1000 ? `${v / 1000}K` : v}
                   />
                   <Tooltip
-                    formatter={(v: unknown) => [(v as number).toLocaleString("en-US") + " VND", t("shopStats_totalRevenue")]}
+                    formatter={(v: unknown) => [formatPrice(v as number), t("shopStats_totalRevenue")]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#revGrad)" strokeWidth={2} />

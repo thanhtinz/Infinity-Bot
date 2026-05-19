@@ -118,6 +118,16 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
   })();
   const [selectedKey, setSelectedKey] = useState<string>(initialEventKey);
 
+  // When eventKeys is provided (e.g. product embed tab), sync selectedKey once
+  // visibleEvents becomes non-empty (products load async)
+  useEffect(() => {
+    if (eventKeys && visibleEvents.length > 0 && !visibleEvents.some((e) => e.key === selectedKey)) {
+      const k = visibleEvents[0].key;
+      setSelectedKey(k);
+      setForm(defaultForm(k, botLang));
+    }
+  }, [visibleEvents, selectedKey, eventKeys, botLang]);
+
   // Form state
   const [form, setForm] = useState<FormState>(defaultForm(initialEventKey, botLang));
 
@@ -266,6 +276,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
       )}
 
       {/* ── Tab Switcher ── */}
+      {!eventKeys && (
       <div className="sticky top-0 z-10 flex items-center gap-2 px-4 py-2 border-b bg-card">
         <button
           type="button"
@@ -294,8 +305,9 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
           {t("messages")}
         </button>
       </div>
+      )}
 
-      {activeTab === "custom" ? (
+      {activeTab === "custom" && !eventKeys ? (
         <div className="flex-1 min-h-0">
           <CustomMessagesTab />
         </div>

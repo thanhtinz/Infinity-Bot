@@ -84,7 +84,8 @@ export interface VerificationConfig {
   // Passwords
   verify_passwords: { password: string; label: string }[];
   // VPN config (per-guild)
-  vpn_api_key: string;
+  has_vpn_api_key: boolean;
+  vpn_api_key: string;  // write-only: only sent to server when user enters a new key
   vpn_api_provider: string;
   custom_domain: string;
   music_url: string;

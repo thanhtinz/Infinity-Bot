@@ -121,7 +121,7 @@ const en = {
   nav_botStatus: "Status & Controls",
   nav_discordBot: "Discord Bot (Token)",
   nav_backup: "Backup & Restore",
-  nav_shopChannels: "Channel Config",
+  nav_shopChannels: "Shop Config",
   // Dashboard
   dashboard_title: "Dashboard",
   dashboard_welcome: "Hello",

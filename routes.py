@@ -34,10 +34,11 @@ def create_app(static_dir: str) -> FastAPI:
         path = request.url.path
         # Exclude public API paths
         public_paths = [
-            "/api/health", 
-            "/api/auth/login", 
+            "/api/health",
+            "/api/auth/login",
             "/api/auth/callback",
             "/api/payos/webhook",
+            "/api/paypal/webhook",
             "/api/setup/status",
             "/api/public/status",
             "/api/public/commands",
@@ -48,7 +49,7 @@ def create_app(static_dir: str) -> FastAPI:
         if path.startswith("/static/") or path.startswith("/api/files/"):
             return await call_next(request)
         
-        if path in ["/api/config"]:
+        if path in ["/api/config"] and request.method == "GET":
             from sqlalchemy import select
             from src.database.config import SessionLocal
             from src.models.models import SystemConfig

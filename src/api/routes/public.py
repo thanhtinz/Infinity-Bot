@@ -46,7 +46,6 @@ def _memory_mb() -> float | None:
         return None
 
 
-
 @router.get("/status")
 async def public_status():
     """Return public bot status without auth."""

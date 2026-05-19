@@ -12,6 +12,7 @@ import type { Product } from "../types";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
 import { useGuild } from "@/contexts/GuildContext";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function ProductsManager() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export function ProductsManager() {
   const { t } = useT();
   const queryClient = useQueryClient();
   const { selectedGuildId } = useGuild();
+  const { formatPrice } = useCurrency();
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
   const { data: products = [], isLoading } = useQuery<Product[]>({
@@ -109,7 +111,7 @@ export function ProductsManager() {
                     {p.packages.map((pkg, i) => (
                       <div key={i} className={cn("flex items-center justify-between text-xs rounded px-2 py-1 bg-muted/50", !pkg.active && "opacity-50 line-through")}>
                         <span>{pkg.name}</span>
-                        <span className="font-medium">{pkg.price.toLocaleString()} VND</span>
+                        <span className="font-medium">{formatPrice(pkg.price)}</span>
                       </div>
                     ))}
                   </div>

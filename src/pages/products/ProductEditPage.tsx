@@ -10,13 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PackagePlus, X, ArrowLeft, Info, MessageSquare, Save, Loader2, Warehouse, Zap } from "lucide-react";
+import { PackagePlus, X, ArrowLeft, Save, Loader2, Warehouse, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import type { Product, ProductPackage } from "../../types";
 import { apiFetch } from "@/hooks/useApi";
-import { EmbedsManager } from "@/pages/EmbedsManager";
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -153,44 +151,17 @@ export function ProductEditPage() {
           />
         </div>
       ) : (
-        /* ── Edit mode: Info + Embed tabs ── */
-        <Tabs defaultValue="info" className="flex flex-col h-[calc(100vh-73px)]">
-          <div className="border-b bg-card px-6">
-            <TabsList className="h-10 bg-transparent gap-1 p-0">
-              <TabsTrigger
-                value="info"
-                className="h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 gap-1.5"
-              >
-                <Info className="h-3.5 w-3.5" />
-                Info
-              </TabsTrigger>
-              <TabsTrigger
-                value="embed"
-                className="h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-3 gap-1.5"
-              >
-                <MessageSquare className="h-3.5 w-3.5" />
-                Embed
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="info" className="flex-1 overflow-auto m-0">
-            <div className="max-w-2xl mx-auto p-6 space-y-6">
-              <ProductInfoForm
-                form={form}
-                packages={packages}
-                addPkg={addPkg}
-                updatePkg={updatePkg}
-                removePkg={removePkg}
-                onSubmit={onSubmit}
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="embed" className="flex-1 overflow-hidden m-0">
-            <EmbedsManager eventKeys={[`product_${id}`]} />
-          </TabsContent>
-        </Tabs>
+        /* ── Edit mode: Info only (no Embed tab) ── */
+        <div className="max-w-2xl mx-auto p-6 space-y-6">
+          <ProductInfoForm
+            form={form}
+            packages={packages}
+            addPkg={addPkg}
+            updatePkg={updatePkg}
+            removePkg={removePkg}
+            onSubmit={onSubmit}
+          />
+        </div>
       )}
     </div>
   );
@@ -275,62 +246,70 @@ function ProductInfoForm({ form, packages, addPkg, updatePkg, removePkg, onSubmi
               <PackagePlus className="mr-1 h-3.5 w-3.5" /> Add Package
             </Button>
           </div>
+          <div className="space-y-2">
           {packages.map((pkg, i) => (
-            <div key={i} className="flex items-center gap-2 p-2 rounded-md border bg-muted/30">
-              <Input
-                placeholder="Name package"
-                value={pkg.name}
-                onChange={(e) => updatePkg(i, "name", e.target.value)}
-                className="flex-1 h-8 text-sm"
-              />
-              <Input
-                type="number"
-                placeholder="Price"
-                value={pkg.price || ""}
-                onChange={(e) => updatePkg(i, "price", parseFloat(e.target.value) || 0)}
-                className="w-28 h-8 text-sm"
-              />
-              <div className="flex items-center gap-1.5">
-                <Switch
-                  checked={pkg.active}
-                  onCheckedChange={(v) => updatePkg(i, "active", v)}
-                  title="Toggle package"
+            <div key={i} className="rounded-lg border bg-card p-3 space-y-3">
+              {/* Row 1: Name + Price + Delete */}
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Package name"
+                  value={pkg.name}
+                  onChange={(e) => updatePkg(i, "name", e.target.value)}
+                  className="flex-1 h-8 text-sm"
                 />
-              </div>
-              <div className="flex items-center gap-1.5 border-l pl-2">
-                <Warehouse className="h-3.5 w-3.5 text-muted-foreground" />
-                <Switch
-                  checked={pkg.use_inventory ?? false}
-                  onCheckedChange={(v) => updatePkg(i, "use_inventory", v)}
-                  title="Inventory"
+                <Input
+                  type="number"
+                  placeholder="Price"
+                  value={pkg.price || ""}
+                  onChange={(e) => updatePkg(i, "price", parseFloat(e.target.value) || 0)}
+                  className="w-28 h-8 text-sm"
                 />
-                {pkg.use_inventory && (
-                  <span className="text-[10px] font-medium text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded">Auto-delivery</span>
-                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive shrink-0"
+                  onClick={() => removePkg(i)}
+                  disabled={packages.length === 1}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
               </div>
-              <div className="flex items-center gap-1.5 border-l pl-2">
-                <Zap className="h-3.5 w-3.5 text-muted-foreground" />
-                <Switch
-                  checked={pkg.auto_buy ?? false}
-                  onCheckedChange={(v) => updatePkg(i, "auto_buy", v)}
-                  title="Auto-buy"
-                />
-                {pkg.auto_buy && (
-                  <span className="text-[10px] font-medium text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 px-1.5 py-0.5 rounded">Auto-buy</span>
-                )}
+              {/* Row 2: Toggles */}
+              <div className="flex items-center gap-4 flex-wrap">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <Switch
+                    checked={pkg.active}
+                    onCheckedChange={(v) => updatePkg(i, "active", v)}
+                  />
+                  <span className="text-xs text-muted-foreground">Active</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <Switch
+                    checked={pkg.use_inventory ?? false}
+                    onCheckedChange={(v) => updatePkg(i, "use_inventory", v)}
+                  />
+                  <Warehouse className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Inventory</span>
+                  {pkg.use_inventory && (
+                    <span className="text-[10px] font-medium text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded">Auto-delivery</span>
+                  )}
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <Switch
+                    checked={pkg.auto_buy ?? false}
+                    onCheckedChange={(v) => updatePkg(i, "auto_buy", v)}
+                  />
+                  <Zap className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Auto-buy</span>
+                  {pkg.auto_buy && (
+                    <span className="text-[10px] font-medium text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 px-1.5 py-0.5 rounded">Auto-buy</span>
+                  )}
+                </label>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-destructive shrink-0"
-                onClick={() => removePkg(i)}
-                disabled={packages.length === 1}
-              >
-                <X className="h-3.5 w-3.5" />
-              </Button>
             </div>
           ))}
+          </div>
         </div>
 
         <Separator />

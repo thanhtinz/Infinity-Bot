@@ -27,6 +27,30 @@ export interface SystemConfig {
   command_prefix?: string;
   public_app_url?: string;
   support_server_url?: string;
+  language?: string;
+  // VPN / Security
+  has_vpn_api_key?: boolean;
+  vpn_api_provider?: string;
+  // Currency & Payment
+  currency?: string;
+  currency_symbol?: string;
+  payment_methods?: string[];
+  has_paypal_client_id?: boolean;
+  has_paypal_client_secret?: boolean;
+  paypal_mode?: string;
+  has_crypto_api_key?: boolean;
+  crypto_provider?: string;
+  manual_qr_image_id?: string;
+  manual_bank_name?: string;
+  manual_account_holder?: string;
+  manual_account_number?: string;
+  manual_instructions?: string;
+  // Flash Sale + Leaderboard + Inventory
+  flash_sale_channel_id?: string;
+  spending_leaderboard_channel_id?: string;
+  spending_leaderboard_schedule?: string;
+  spending_leaderboard_time?: string;
+  inventory_low_stock_threshold?: number;
 }
 
 export interface ProductPackage {

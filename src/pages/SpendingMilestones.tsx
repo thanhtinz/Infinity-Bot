@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,11 +41,12 @@ export default function SpendingMilestones() {
   const [form, setForm] = useState(emptyForm);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const { data: milestones = [], isLoading } = useQuery<Milestone[]>({
+  const { data: milestonesRaw, isLoading } = useQuery<Milestone[]>({
     queryKey: ["milestones", selectedGuildId],
-    queryFn: () => apiFetch("/api/shop/milestones").then((r) => r.json()),
+    queryFn: () => apiFetch("/api/shop/milestones").then((r) => r.ok ? r.json() : []),
     enabled: !!selectedGuildId,
   });
+  const milestones: Milestone[] = Array.isArray(milestonesRaw) ? milestonesRaw : [];
 
   const save = useMutation({
     mutationFn: async () => {
@@ -105,9 +107,7 @@ export default function SpendingMilestones() {
     setDialogOpen(true);
   }
 
-  function formatVND(n: number) {
-    return new Intl.NumberFormat("en-US").format(n) + " VND";
-  }
+  const { formatPrice, currency } = useCurrency();
 
   const sorted = [...milestones].sort((a, b) => a.threshold - b.threshold);
 
@@ -165,7 +165,7 @@ export default function SpendingMilestones() {
                     )}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Milestone {formatVND(m.threshold)} → Role: {m.role_id}
+                    Milestone {formatPrice(m.threshold)} → Role: {m.role_id}
                   </div>
                 </div>
 
@@ -212,7 +212,7 @@ export default function SpendingMilestones() {
             </div>
 
             <div className="space-y-2">
-              <Label>Spending Threshold (VND)</Label>
+              <Label>Spending Threshold ({currency})</Label>
               <Input
                 type="number"
                 placeholder="500000"

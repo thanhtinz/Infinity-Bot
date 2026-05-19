@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import type { ChangeEvent } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -106,6 +107,17 @@ const CURRENCIES: { code: string; symbol: string; label: string }[] = [
 const CURRENCY_MAP = Object.fromEntries(
   CURRENCIES.filter((c) => c.code !== "custom").map((c) => [c.code, c.symbol])
 );
+
+// No-decimal currencies
+const NO_DECIMAL_CURRENCIES = new Set(["VND", "JPY", "KRW"]);
+
+function formatPreview(currency: string, symbol: string): string {
+  const noDecimal = NO_DECIMAL_CURRENCIES.has(currency);
+  if (noDecimal) {
+    return `${symbol}${(299000).toLocaleString("vi-VN")}`;
+  }
+  return `${symbol}29.99`;
+}
 
 // ── API ────────────────────────────────────────────────────────────────────
 
@@ -236,6 +248,7 @@ export function PaymentConfig() {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const [qrPreviewUrl, setQrPreviewUrl] = useState<string | null>(null);
   const [uploadingQR, setUploadingQR] = useState(false);
+  const [savingCard, setSavingCard] = useState<string | null>(null);
 
   const configQuery = useQuery({
     queryKey: ["payment-config"],
@@ -323,67 +336,81 @@ export function PaymentConfig() {
     setQrPreviewUrl(null);
   };
 
-  const handleSave = () => {
-    if (!form) return;
-
+  const buildMethods = (f: FormState) => {
     const methods: string[] = [];
-    if (form.payos_enabled) methods.push("payos");
-    if (form.paypal_enabled) methods.push("paypal");
-    if (form.crypto_enabled) methods.push("crypto");
-    if (form.manual_enabled) methods.push("manual");
-
-    const payload: Record<string, unknown> = {
-      currency: form.currency,
-      currency_symbol: form.currency_symbol,
-      payment_methods: methods,
-    };
-
-    // PayOS fields
-    if (form.payos_enabled) {
-      if (form.payos_client_id) payload.payos_client_id = form.payos_client_id;
-      if (form.payos_api_key) payload.payos_api_key = form.payos_api_key;
-      if (form.payos_checksum_key)
-        payload.payos_checksum_key = form.payos_checksum_key;
-    }
-
-    // PayPal fields
-    if (form.paypal_enabled) {
-      if (form.paypal_client_id)
-        payload.paypal_client_id = form.paypal_client_id;
-      if (form.paypal_client_secret)
-        payload.paypal_client_secret = form.paypal_client_secret;
-      payload.paypal_mode = form.paypal_mode;
-    }
-
-    // Crypto fields
-    if (form.crypto_enabled) {
-      if (form.crypto_api_key) payload.crypto_api_key = form.crypto_api_key;
-      payload.crypto_provider = form.crypto_provider;
-    }
-
-    // Manual fields
-    if (form.manual_enabled) {
-      payload.manual_qr_image_id = form.manual_qr_image_id;
-      payload.manual_bank_name = form.manual_bank_name;
-      payload.manual_account_holder = form.manual_account_holder;
-      payload.manual_account_number = form.manual_account_number;
-      payload.manual_instructions = form.manual_instructions;
-    }
-
-    saveMutation.mutate(payload);
+    if (f.payos_enabled) methods.push("payos");
+    if (f.paypal_enabled) methods.push("paypal");
+    if (f.crypto_enabled) methods.push("crypto");
+    if (f.manual_enabled) methods.push("manual");
+    return methods;
   };
 
-  const saveMutation = useMutation({
-    mutationFn: saveConfig,
-    onSuccess: () => {
-      toast({ title: "Payment settings saved" });
+  const saveCard = async (cardId: string, payload: Record<string, unknown>) => {
+    setSavingCard(cardId);
+    try {
+      await saveConfig(payload);
+      toast({ title: "Saved" });
       qc.invalidateQueries({ queryKey: ["payment-config"] });
       qc.invalidateQueries({ queryKey: ["config"] });
-    },
-    onError: () => {
-      toast({ title: "Failed to save settings", variant: "destructive" });
-    },
-  });
+      qc.invalidateQueries({ queryKey: ["currency-config"] });
+    } catch {
+      toast({ title: "Failed to save", variant: "destructive" });
+    } finally {
+      setSavingCard(null);
+    }
+  };
+
+  const handleSaveCurrency = () => {
+    if (!form) return;
+    saveCard("currency", {
+      currency: form.currency,
+      currency_symbol: form.currency_symbol,
+    });
+  };
+
+  const handleSavePayOS = () => {
+    if (!form) return;
+    const payload: Record<string, unknown> = {
+      payment_methods: buildMethods(form),
+    };
+    if (form.payos_client_id) payload.payos_client_id = form.payos_client_id;
+    if (form.payos_api_key) payload.payos_api_key = form.payos_api_key;
+    if (form.payos_checksum_key) payload.payos_checksum_key = form.payos_checksum_key;
+    saveCard("payos", payload);
+  };
+
+  const handleSavePayPal = () => {
+    if (!form) return;
+    const payload: Record<string, unknown> = {
+      payment_methods: buildMethods(form),
+      paypal_mode: form.paypal_mode,
+    };
+    if (form.paypal_client_id) payload.paypal_client_id = form.paypal_client_id;
+    if (form.paypal_client_secret) payload.paypal_client_secret = form.paypal_client_secret;
+    saveCard("paypal", payload);
+  };
+
+  const handleSaveCrypto = () => {
+    if (!form) return;
+    const payload: Record<string, unknown> = {
+      payment_methods: buildMethods(form),
+      crypto_provider: form.crypto_provider,
+    };
+    if (form.crypto_api_key) payload.crypto_api_key = form.crypto_api_key;
+    saveCard("crypto", payload);
+  };
+
+  const handleSaveManual = () => {
+    if (!form) return;
+    saveCard("manual", {
+      payment_methods: buildMethods(form),
+      manual_qr_image_id: form.manual_qr_image_id,
+      manual_bank_name: form.manual_bank_name,
+      manual_account_holder: form.manual_account_holder,
+      manual_account_number: form.manual_account_number,
+      manual_instructions: form.manual_instructions,
+    });
+  };
 
   // ── Loading ────────────────────────────────────────────────────────────
 
@@ -420,7 +447,7 @@ export function PaymentConfig() {
   const cryptoConfigured = configQuery.data?.has_crypto_api_key ?? false;
 
   const previewSymbol = form.currency_symbol || "?";
-  const previewPrice = `${previewSymbol}29.99`;
+  const previewPrice = formatPreview(form.currency, previewSymbol);
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -486,6 +513,12 @@ export function PaymentConfig() {
             </p>
           </div>
         </CardContent>
+        <CardFooter className="border-t pt-4 flex justify-end">
+          <Button size="sm" onClick={handleSaveCurrency} disabled={savingCard === "currency"}>
+            {savingCard === "currency" ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Save className="h-4 w-4 mr-1.5" />}
+            Save
+          </Button>
+        </CardFooter>
       </Card>
 
       {/* ── Section 2: Payment Methods ────────────────────────────────── */}
@@ -578,14 +611,15 @@ export function PaymentConfig() {
                       placeholder="Enter Checksum Key"
                     />
                   </div>
-                  {payosConfigured && (
-                    <TestConnectionButton
-                      endpoint="/api/payos/test"
-                      label="Test PayOS"
-                    />
-                  )}
+                  <TestConnectionButton endpoint="/api/payos/test" label="Test PayOS" />
                 </div>
               </CardContent>
+              <CardFooter className="border-t pt-4 flex justify-end">
+                <Button size="sm" onClick={handleSavePayOS} disabled={savingCard === "payos"}>
+                  {savingCard === "payos" ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Save className="h-4 w-4 mr-1.5" />}
+                  Save
+                </Button>
+              </CardFooter>
             </CollapsibleContent>
           )}
         </Card>
@@ -688,14 +722,15 @@ export function PaymentConfig() {
                       Use Sandbox for testing, Live for production.
                     </p>
                   </div>
-                  {paypalConfigured && (
-                    <TestConnectionButton
-                      endpoint="/api/paypal/test"
-                      label="Test PayPal"
-                    />
-                  )}
+                  <TestConnectionButton endpoint="/api/paypal/test" label="Test PayPal" />
                 </div>
               </CardContent>
+              <CardFooter className="border-t pt-4 flex justify-end">
+                <Button size="sm" onClick={handleSavePayPal} disabled={savingCard === "paypal"}>
+                  {savingCard === "paypal" ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Save className="h-4 w-4 mr-1.5" />}
+                  Save
+                </Button>
+              </CardFooter>
             </CollapsibleContent>
           )}
         </Card>
@@ -782,6 +817,12 @@ export function PaymentConfig() {
                   </div>
                 </div>
               </CardContent>
+              <CardFooter className="border-t pt-4 flex justify-end">
+                <Button size="sm" onClick={handleSaveCrypto} disabled={savingCard === "crypto"}>
+                  {savingCard === "crypto" ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Save className="h-4 w-4 mr-1.5" />}
+                  Save
+                </Button>
+              </CardFooter>
             </CollapsibleContent>
           )}
         </Card>
@@ -942,26 +983,16 @@ export function PaymentConfig() {
                   </div>
                 </div>
               </CardContent>
+              <CardFooter className="border-t pt-4 flex justify-end">
+                <Button size="sm" onClick={handleSaveManual} disabled={savingCard === "manual"}>
+                  {savingCard === "manual" ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Save className="h-4 w-4 mr-1.5" />}
+                  Save
+                </Button>
+              </CardFooter>
             </CollapsibleContent>
           )}
         </Card>
       </Collapsible>
-
-      {/* ── Save Button ───────────────────────────────────────────────── */}
-      <div className="flex justify-end pt-2">
-        <Button
-          onClick={handleSave}
-          disabled={saveMutation.isPending}
-          className="gap-1.5 min-w-[120px]"
-        >
-          {saveMutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4" />
-          )}
-          <span className="hidden sm:inline">Save</span>
-        </Button>
-      </div>
     </div>
   );
 }

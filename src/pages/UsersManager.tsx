@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,9 +66,7 @@ export function UsersManager() {
     ERROR: t("error"),
   };
 
-  function formatVND(n: number) {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
-  }
+  const { formatPrice } = useCurrency();
 
   function formatDate(s: string) {
     return new Date(s).toLocaleDateString("vi-VN");
@@ -178,7 +177,7 @@ export function UsersManager() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">{t("users_totalRevenue")}</p>
-              <p className="text-xl font-bold">{formatVND(totalRevenue)}</p>
+              <p className="text-xl font-bold">{formatPrice(totalRevenue)}</p>
             </div>
           </CardContent>
         </Card>
@@ -231,7 +230,7 @@ export function UsersManager() {
                     <TableCell>
                       <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{user.discord_id}</code>
                     </TableCell>
-                    <TableCell className="text-right font-medium">{formatVND(user.total_spent)}</TableCell>
+                    <TableCell className="text-right font-medium">{formatPrice(user.total_spent)}</TableCell>
                     <TableCell className="text-center">{user.order_count}</TableCell>
                     <TableCell className="text-sm">{formatDate(user.created_at)}</TableCell>
                     <TableCell>
@@ -305,7 +304,7 @@ export function UsersManager() {
                     <TableCell className="font-medium">{order.product_name}</TableCell>
                     <TableCell>{order.package_name || "—"}</TableCell>
                     <TableCell className="text-center">{order.quantity}</TableCell>
-                    <TableCell className="text-right">{formatVND(order.total_price)}</TableCell>
+                    <TableCell className="text-right">{formatPrice(order.total_price)}</TableCell>
                     <TableCell>
                       <Badge className={cn("text-[10px]", STATUS_CLS[order.status] || "bg-gray-500/15 text-gray-600")}>
                         {STATUS_LABEL[order.status] || order.status}

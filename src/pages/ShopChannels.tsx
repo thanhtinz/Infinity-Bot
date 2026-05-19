@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChannelSelect } from "@/components/ChannelSelect";
@@ -8,8 +8,8 @@ import { apiFetch } from "@/hooks/useApi";
 import { toast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
 import { Save, Loader2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ShopChannelsConfig {
@@ -23,9 +23,28 @@ interface ShopChannelsConfig {
   spending_leaderboard_schedule: string;
   spending_leaderboard_time: string;
   inventory_low_stock_threshold: number;
+  timezone: string;
 }
 
-const FIELDS: { key: keyof ShopChannelsConfig; label: string }[] = [
+const TIMEZONES = [
+  { value: "Asia/Ho_Chi_Minh", label: "Asia/Ho_Chi_Minh (UTC+7)" },
+  { value: "Asia/Bangkok",     label: "Asia/Bangkok (UTC+7)" },
+  { value: "Asia/Singapore",   label: "Asia/Singapore (UTC+8)" },
+  { value: "Asia/Tokyo",       label: "Asia/Tokyo (UTC+9)" },
+  { value: "Asia/Seoul",       label: "Asia/Seoul (UTC+9)" },
+  { value: "Asia/Shanghai",    label: "Asia/Shanghai (UTC+8)" },
+  { value: "Asia/Jakarta",     label: "Asia/Jakarta (UTC+7)" },
+  { value: "Asia/Kolkata",     label: "Asia/Kolkata (UTC+5:30)" },
+  { value: "Asia/Dubai",       label: "Asia/Dubai (UTC+4)" },
+  { value: "Europe/London",    label: "Europe/London (UTC+0/+1)" },
+  { value: "Europe/Paris",     label: "Europe/Paris (UTC+1/+2)" },
+  { value: "America/New_York", label: "America/New_York (UTC-5/-4)" },
+  { value: "America/Chicago",  label: "America/Chicago (UTC-6/-5)" },
+  { value: "America/Los_Angeles", label: "America/Los_Angeles (UTC-8/-7)" },
+  { value: "UTC",              label: "UTC (UTC+0)" },
+];
+
+const CHANNEL_FIELDS: { key: keyof ShopChannelsConfig; label: string }[] = [
   { key: "orders_channel_id", label: "Orders channel" },
   { key: "feedback_channel_id", label: "Feedback channel" },
   { key: "coupon_log_channel_id", label: "Coupon log channel" },
@@ -51,9 +70,10 @@ export function ShopChannels() {
     spending_leaderboard_schedule: "daily",
     spending_leaderboard_time: "00:00",
     inventory_low_stock_threshold: 5,
+    timezone: "Asia/Ho_Chi_Minh",
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [savingCard, setSavingCard] = useState<string | null>(null);
 
   useEffect(() => {
     if (!selectedGuildId) return;
@@ -72,6 +92,7 @@ export function ShopChannels() {
           spending_leaderboard_schedule: data.spending_leaderboard_schedule || "daily",
           spending_leaderboard_time: data.spending_leaderboard_time || "00:00",
           inventory_low_stock_threshold: data.inventory_low_stock_threshold ?? 5,
+          timezone: data.timezone || "Asia/Ho_Chi_Minh",
         });
       })
       .catch(() => toast({ title: t("error"), variant: "destructive" }))
@@ -81,39 +102,86 @@ export function ShopChannels() {
   const set = (key: keyof ShopChannelsConfig, value: string | number) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  const handleSave = async () => {
-    setIsSaving(true);
+  const saveCard = async (cardId: string, payload: Partial<ShopChannelsConfig>) => {
+    setSavingCard(cardId);
     try {
       const r = await apiFetch("/api/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!r.ok) throw new Error();
       toast({ title: "Saved" });
     } catch {
       toast({ title: t("error"), variant: "destructive" });
     } finally {
-      setIsSaving(false);
+      setSavingCard(null);
     }
   };
 
-  if (isLoading) return <div className="space-y-4"><Skeleton className="h-10 w-full" /><Skeleton className="h-60 w-full" /></div>;
+  const SaveBtn = ({ cardId }: { cardId: string }) => (
+    <Button
+      size="sm"
+      onClick={() => {
+        const channelKeys: (keyof ShopChannelsConfig)[] = [
+          "orders_channel_id", "feedback_channel_id", "coupon_log_channel_id",
+          "price_list_channel_id", "welcome_channel_id", "flash_sale_channel_id",
+          "spending_leaderboard_channel_id",
+        ];
+        const leaderboardKeys: (keyof ShopChannelsConfig)[] = [
+          "spending_leaderboard_channel_id",
+          "spending_leaderboard_schedule",
+          "spending_leaderboard_time",
+        ];
+        const inventoryKeys: (keyof ShopChannelsConfig)[] = [
+          "inventory_low_stock_threshold",
+        ];
+
+        const keyMap: Record<string, (keyof ShopChannelsConfig)[]> = {
+          channels: channelKeys,
+          leaderboard: leaderboardKeys,
+          inventory: inventoryKeys,
+          timezone: ["timezone"],
+        };
+
+        const keys = keyMap[cardId] ?? [];
+        const payload = Object.fromEntries(
+          keys.map((k) => [k, form[k]])
+        ) as Partial<ShopChannelsConfig>;
+        saveCard(cardId, payload);
+      }}
+      disabled={savingCard === cardId}
+    >
+      {savingCard === cardId
+        ? <Loader2 className="h-4 w-4 animate-spin" />
+        : <Save className="h-4 w-4 mr-2" />}
+      {savingCard === cardId ? t("saving") : t("save")}
+    </Button>
+  );
+
+  if (isLoading) return (
+    <div className="space-y-4">
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-60 w-full" />
+      <Skeleton className="h-40 w-full" />
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Shop Channels</h1>
+      <h1 className="text-2xl font-bold">Shop Config</h1>
 
+      {/* Card 1: Shop Channels */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Channel Configuration</CardTitle>
+          <CardTitle className="text-base">Shop Channels</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {FIELDS.map(({ key, label }) => (
+          {CHANNEL_FIELDS.map(({ key, label }) => (
             <div key={key} className="space-y-2">
               <label className="text-sm font-medium">{label}</label>
               <ChannelSelect
-                value={form[key]}
+                value={form[key] as string}
                 onChange={(v) => set(key, v)}
                 guildId={guildId}
                 filter="text"
@@ -122,8 +190,12 @@ export function ShopChannels() {
             </div>
           ))}
         </CardContent>
+        <CardFooter className="border-t pt-4">
+          <SaveBtn cardId="channels" />
+        </CardFooter>
       </Card>
 
+      {/* Card 2: Auto Leaderboard */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Auto Leaderboard Config</CardTitle>
@@ -147,36 +219,98 @@ export function ShopChannels() {
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium">Time</Label>
-            <Input
-              type="time"
-              value={form.spending_leaderboard_time}
-              onChange={(e) => set("spending_leaderboard_time", e.target.value)}
-            />
+            <div className="flex items-center gap-2">
+              <Select
+                value={form.spending_leaderboard_time.split(":")[0] || "00"}
+                onValueChange={(h) => {
+                  const m = form.spending_leaderboard_time.split(":")[1] || "00";
+                  set("spending_leaderboard_time", `${h}:${m}`);
+                }}
+              >
+                <SelectTrigger className="w-[90px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-56 overflow-y-auto">
+                  {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0")).map((h) => (
+                    <SelectItem key={h} value={h}>{h}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-muted-foreground font-medium">:</span>
+              <Select
+                value={form.spending_leaderboard_time.split(":")[1] || "00"}
+                onValueChange={(m) => {
+                  const h = form.spending_leaderboard_time.split(":")[0] || "00";
+                  set("spending_leaderboard_time", `${h}:${m}`);
+                }}
+              >
+                <SelectTrigger className="w-[90px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-56 overflow-y-auto">
+                  {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0")).map((m) => (
+                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
+        <CardFooter className="border-t pt-4">
+          <SaveBtn cardId="leaderboard" />
+        </CardFooter>
       </Card>
 
+      {/* Card 3: Inventory */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Inventory</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Low stock threshold</Label>
+            <Label className="text-sm font-medium">Low stock warning threshold</Label>
             <Input
               type="number"
               min={0}
+              className="w-32"
               value={form.inventory_low_stock_threshold}
               onChange={(e) => set("inventory_low_stock_threshold", Number(e.target.value))}
             />
           </div>
         </CardContent>
+        <CardFooter className="border-t pt-4">
+          <SaveBtn cardId="inventory" />
+        </CardFooter>
       </Card>
 
-      <Button onClick={handleSave} disabled={isSaving}>
-        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 sm:mr-2" />}
-        <span className="hidden sm:inline">{isSaving ? t("saving") : t("save")}</span>
-      </Button>
+      {/* Card 4: Timezone */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Timezone</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Múi giờ</Label>
+            <Select
+              value={form.timezone}
+              onValueChange={(v) => set("timezone", v)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TIMEZONES.map((tz) => (
+                  <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+        <CardFooter className="border-t pt-4">
+          <SaveBtn cardId="timezone" />
+        </CardFooter>
+      </Card>
+
     </div>
   );
 }

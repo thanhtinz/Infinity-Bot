@@ -78,7 +78,6 @@ async def _do_resend(bot: discord.Bot, sticky: StickyMessage, session) -> bool:
         return False
 
 
-
 # ── Cog ──────────────────────────────────────────────────────────────────────
 
 class StickyCog(discord.Cog):

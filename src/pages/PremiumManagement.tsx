@@ -335,8 +335,8 @@ export function PremiumManagement() {
   const [payGuildId, setPayGuildId] = useState("");
   const [payPlanId, setPayPlanId] = useState("");
   const [payAmount, setPayAmount] = useState(0);
-  const [payCurrency, setPayCurrency] = useState("VND");
-  const [payMethod, setPayMethod] = useState("manual");
+  const [payCurrency] = useState("USD");
+  const [payMethod, setPayMethod] = useState("paypal");
   const [payStatus, setPayStatus] = useState("completed");
   const [payNotes, setPayNotes] = useState("");
 
@@ -458,8 +458,7 @@ export function PremiumManagement() {
     setPayGuildId("");
     setPayPlanId("");
     setPayAmount(0);
-    setPayCurrency("VND");
-    setPayMethod("manual");
+    setPayMethod("paypal");
     setPayStatus("completed");
     setPayNotes("");
   };
@@ -791,10 +790,10 @@ export function PremiumManagement() {
                             {plan ? plan.name : <span className="text-muted-foreground">—</span>}
                           </TableCell>
                           <TableCell>
-                            {pay.amount.toLocaleString()} {pay.currency}
+                            ${pay.amount.toFixed(2)} USD
                           </TableCell>
                           <TableCell className="text-sm">
-                            {pay.payment_method}
+                            PayPal
                           </TableCell>
                           <TableCell>
                             <Badge className={statusInfo.className}>
@@ -1142,36 +1141,15 @@ export function PremiumManagement() {
               </div>
               <div className="space-y-2">
                 <Label>Currency</Label>
-                <Select
-                  value={payCurrency}
-                  onValueChange={setPayCurrency}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="VND">VND</SelectItem>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center h-9 px-3 rounded-md border border-input bg-muted text-sm text-muted-foreground">
+                  USD
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Method</Label>
-                <Select
-                  value={payMethod}
-                  onValueChange={setPayMethod}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="manual">Bank Transfer</SelectItem>
-                    <SelectItem value="payos">PayOS</SelectItem>
-                    <SelectItem value="paypal">PayPal</SelectItem>
-                    <SelectItem value="crypto">Crypto</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center h-9 px-3 rounded-md border border-input bg-muted text-sm text-muted-foreground">
+                  PayPal
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -1,4 +1,5 @@
 import os
+import logging
 import httpx
 import jwt
 import datetime
@@ -8,9 +9,15 @@ from sqlalchemy import select
 from src.database.config import get_db
 from src.models.models import SystemConfig
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
-JWT_SECRET = os.environ.get("JWT_SECRET_KEY") or os.environ.get("GEMINI_WORKSHOP_API_KEY", "fallback-secret-jwt-2025")
+JWT_SECRET = os.environ.get("JWT_SECRET_KEY") or os.environ.get("GEMINI_WORKSHOP_API_KEY")
+if not JWT_SECRET:
+    import secrets as _secrets
+    JWT_SECRET = _secrets.token_hex(32)
+    logger.warning("JWT_SECRET_KEY env var not set — using ephemeral random secret. Sessions will be invalidated on restart. Set JWT_SECRET_KEY for persistence.")
 
 
 def get_public_base_url(request: Request) -> str:

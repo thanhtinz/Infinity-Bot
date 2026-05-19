@@ -73,12 +73,6 @@ const INTERVAL_LABELS: Record<string, string> = {
   lifetime: "Lifetime",
 };
 
-const CURRENCY_OPTIONS = [
-  { code: "VND", label: "VND" },
-  { code: "USD", label: "USD" },
-  { code: "EUR", label: "EUR" },
-];
-
 const INTERVAL_OPTIONS = [
   { value: "monthly", label: "Monthly" },
   { value: "quarterly", label: "Quarterly" },
@@ -115,7 +109,7 @@ const EMPTY_PLAN: PlanFormState = {
   name: "",
   description: "",
   price: 0,
-  currency: "VND",
+  currency: "USD",
   interval: "monthly",
   badge_text: "",
   color: "#6366f1",
@@ -377,7 +371,7 @@ export function PremiumPlans() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      {plan.price.toLocaleString()} {plan.currency} / {INTERVAL_LABELS[plan.interval] || plan.interval}
+                      ${plan.price.toFixed(2)} USD / {INTERVAL_LABELS[plan.interval] || plan.interval}
                     </TableCell>
                     <TableCell>
                       {plan.badge_text ? (
@@ -498,21 +492,9 @@ export function PremiumPlans() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="plan-currency">Currency</Label>
-                <Select
-                  value={form.currency}
-                  onValueChange={(v) => updateField("currency", v)}
-                >
-                  <SelectTrigger id="plan-currency">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CURRENCY_OPTIONS.map((c) => (
-                      <SelectItem key={c.code} value={c.code}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center h-9 px-3 rounded-md border border-input bg-muted text-sm text-muted-foreground">
+                  USD — PayPal only
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="plan-interval">Interval</Label>

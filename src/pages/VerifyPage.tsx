@@ -277,17 +277,6 @@ export function VerifyPage() {
     if (!guildId) return; // wait for slug resolution
     fetchVerifyConfig(guildId)
       .then(data => {
-        console.log("[VerifyPage] appearance config:", {
-          bg_effect: data.bg_effect,
-          bg_color: data.bg_color,
-          text_color: data.text_color,
-          btn_color: data.btn_color,
-          card_bg_color: data.card_bg_color,
-          card_border_color: data.card_border_color,
-          typewriter_effect: data.typewriter_effect,
-          glow_effect: data.glow_effect,
-          tilt_effect: data.tilt_effect,
-        });
         setConfig(data);
         setError(null);
       })

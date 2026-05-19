@@ -1,6 +1,6 @@
 """Shop routes: Products, Orders, Coupons, Users, Stats, Leaderboard, PayOS."""
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
-from sqlalchemy import select, func
+from sqlalchemy import select, func, case
 from sqlalchemy.orm import joinedload
 import os, uuid, shutil, logging, datetime
 
@@ -1233,7 +1233,7 @@ def get_inventory_stats(db=Depends(get_db), guild_id: str = Depends(get_guild_id
             InventoryItem.product_id,
             InventoryItem.package_name,
             func.count(InventoryItem.id).label("total"),
-            func.sum(func.cast(InventoryItem.delivered_order_id == None, func.Integer)).label("available"),
+            func.sum(case((InventoryItem.delivered_order_id == None, 1), else_=0)).label("available"),
         )
         .where(InventoryItem.guild_id == guild_id)
         .group_by(InventoryItem.product_id, InventoryItem.package_name)

@@ -18,12 +18,14 @@ import type { Order, Product } from "../types";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
 import { useGuild } from "@/contexts/GuildContext";
+import { useCurrency } from "@/hooks/useCurrency";
 
 
 export function OrdersManager() {
   const { t } = useT();
   const { toast } = useToast();
   const { selectedGuildId } = useGuild();
+  const { formatPrice } = useCurrency();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<string>("ALL");
   const [createOpen, setCreateOpen] = useState(false);
@@ -168,7 +170,7 @@ export function OrdersManager() {
           { label: t("orders_title"), value: counts.ALL, cls: "" },
           { label: t("orders_pending"), value: counts.PENDING, cls: "text-yellow-600" },
           { label: t("orders_paid") + " + " + t("orders_delivered"), value: paidAndDelivered, cls: "text-green-600" },
-          { label: t("orders_amount"), value: totalPaid.toLocaleString() + " VND", cls: "text-primary" },
+          { label: t("orders_amount"), value: formatPrice(totalPaid), cls: "text-primary" },
         ].map(({ label, value, cls }) => (
           <Card key={label}>
             <CardContent className="p-3 text-center">
@@ -237,7 +239,7 @@ export function OrdersManager() {
 
                   {/* Right: price + status changer */}
                   <div className="flex flex-col items-end gap-2 shrink-0">
-                    <span className="font-bold text-sm">{order.total_price.toLocaleString()} VND</span>
+                    <span className="font-bold text-sm">{formatPrice(order.total_price)}</span>
                     <Select
                       value={order.status}
                       onValueChange={(s) => updateStatusMutation.mutate({ id: order.id, status: s })}
@@ -359,7 +361,7 @@ export function OrdersManager() {
                   <SelectContent>
                     {activePackages.map((pk) => (
                       <SelectItem key={pk.name} value={pk.name}>
-                        {pk.name} — {pk.price.toLocaleString()} VND
+                        {pk.name} — {formatPrice(pk.price)}
                       </SelectItem>
                     ))}
                   </SelectContent>

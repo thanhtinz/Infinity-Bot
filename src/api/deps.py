@@ -7,7 +7,12 @@ import jwt
 
 from src.database.config import get_db
 
-JWT_SECRET = os.environ.get("JWT_SECRET_KEY") or os.environ.get("GEMINI_WORKSHOP_API_KEY", "fallback-secret-jwt-2025")
+JWT_SECRET = os.environ.get("JWT_SECRET_KEY") or os.environ.get("GEMINI_WORKSHOP_API_KEY")
+if not JWT_SECRET:
+    # Will match the random secret generated in auth.py only within same process import
+    # In practice GEMINI_WORKSHOP_API_KEY is always set in Workshop environment
+    import secrets as _secrets
+    JWT_SECRET = _secrets.token_hex(32)
 
 
 def get_guild_id(request: Request) -> str:

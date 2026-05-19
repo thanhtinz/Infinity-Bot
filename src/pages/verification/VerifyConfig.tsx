@@ -943,7 +943,7 @@ export function VerifyConfig() {
                 </div>
                 <div>
                   <Label className="text-xs mb-1.5 block">API Key</Label>
-                  <Input type="password" value={configForm.vpn_api_key || ""} onChange={e => update({ vpn_api_key: e.target.value })} placeholder="Enter API key..." />
+                  <Input type="password" value={configForm.vpn_api_key || ""} onChange={e => update({ vpn_api_key: e.target.value })} placeholder={configForm.has_vpn_api_key ? "••••••••  (set — enter new key to replace)" : "Enter API key..."} />
                 </div>
               </div>
             )}

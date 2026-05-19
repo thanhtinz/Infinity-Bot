@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useT } from "@/i18n";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ function StatCard({
 
 export function DashboardHome() {
   const { t } = useT();
+  const { formatPriceCompact, formatPrice } = useCurrency();
   const { data: config, isLoading: configLoading } = useQuery<SystemConfig>({
     queryKey: ["config"],
     queryFn: () => apiFetch("/api/config").then((r) => r.json()),
@@ -66,12 +68,7 @@ export function DashboardHome() {
 
   const isRunning = config?.bot_status === "running";
 
-  const fmtMoney = (n: number) =>
-    n >= 1_000_000
-      ? `${(n / 1_000_000).toFixed(1)}M VND`
-      : n >= 1_000
-      ? `${(n / 1_000).toFixed(0)}K VND`
-      : `${n.toLocaleString("en-US")} VND`;
+  const fmtMoney = (n: number) => formatPriceCompact(n);
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
@@ -122,7 +119,7 @@ export function DashboardHome() {
                     tickFormatter={(v) => v >= 1000 ? `${v / 1000}K` : v}
                   />
                   <Tooltip
-                    formatter={(v: unknown) => [(v as number).toLocaleString("en-US") + " VND", t("dashboard_revenue")]}
+                    formatter={(v: unknown) => [formatPrice(v as number), t("dashboard_revenue")]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Area

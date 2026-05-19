@@ -91,7 +91,8 @@ def get_config(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_
         # Passwords
         "verify_passwords": getattr(cfg, "verify_passwords", []) or [],
         # VPN config (per-guild)
-        "vpn_api_key": getattr(cfg, "vpn_api_key", "") or "",
+        "has_vpn_api_key": bool(getattr(cfg, "vpn_api_key", None)),
+        "vpn_api_key": "",  # never expose the actual key
         "vpn_api_provider": getattr(cfg, "vpn_api_provider", "proxycheck") or "proxycheck",
         "custom_domain": getattr(cfg, "custom_domain", "") or "",
         "music_url": getattr(cfg, "music_url", "") or "",
@@ -154,6 +155,9 @@ async def update_config(body: dict, guild_id: str = Depends(get_guild_id), db: S
 
     for field in allowed:
         if field in body:
+            # Skip vpn_api_key if sent as empty string (user didn't change it)
+            if field == "vpn_api_key" and not (body[field] or "").strip():
+                continue
             setattr(cfg, field, body[field])
     db.commit()
 

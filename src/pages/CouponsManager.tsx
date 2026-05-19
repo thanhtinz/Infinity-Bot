@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useT } from "@/i18n";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ export function CouponsManager() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<Coupon | null>(null);
+  const { formatPrice } = useCurrency();
 
   const { data: coupons = [], isLoading } = useQuery<Coupon[]>({
     queryKey: ["coupons", selectedGuildId],
@@ -106,7 +108,7 @@ export function CouponsManager() {
                         {c.discount_percent
                           ? `${c.discount_percent}%`
                           : c.discount_amount
-                          ? `${c.discount_amount.toLocaleString()}₫`
+                          ? formatPrice(c.discount_amount)
                           : "—"}
                       </p>
                     </div>

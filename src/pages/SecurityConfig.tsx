@@ -37,7 +37,7 @@ import {
 // ── Types ──────────────────────────────────────────────────────────────────
 
 interface SecurityConfigData {
-  vpn_api_key: string;
+  has_vpn_api_key: boolean;
   vpn_api_provider: string;
 }
 
@@ -48,7 +48,7 @@ async function fetchConfig(): Promise<SecurityConfigData> {
   if (!res.ok) throw new Error("Failed to load config");
   const data = await res.json();
   return {
-    vpn_api_key: data.vpn_api_key ?? "",
+    has_vpn_api_key: data.has_vpn_api_key ?? false,
     vpn_api_provider: data.vpn_api_provider ?? "proxycheck.io",
   };
 }
@@ -70,6 +70,7 @@ export function SecurityConfig() {
   const { selectedGuildId } = useGuild();
 
   const [form, setForm] = useState<SecurityConfigData | null>(null);
+  const [newApiKey, setNewApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
   const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
 
@@ -96,11 +97,13 @@ export function SecurityConfig() {
 
   function handleSave() {
     if (!form) return;
-    saveMutation.mutate(form);
+    const payload: Record<string, unknown> = { vpn_api_provider: form.vpn_api_provider };
+    if (newApiKey.trim()) payload.vpn_api_key = newApiKey.trim();
+    saveMutation.mutate(payload as unknown as SecurityConfigData);
   }
 
   function handleTestConnection() {
-    if (!form?.vpn_api_key) {
+    if (!form?.has_vpn_api_key && !newApiKey.trim()) {
       toast({ title: "API Key required", description: "Enter an API key before testing.", variant: "destructive" });
       return;
     }
@@ -174,11 +177,9 @@ export function SecurityConfig() {
                 <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type={showApiKey ? "text" : "password"}
-                  value={form.vpn_api_key}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setForm({ ...form, vpn_api_key: e.target.value })
-                  }
-                  placeholder="Enter your API key"
+                  value={newApiKey}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setNewApiKey(e.target.value)}
+                  placeholder={form.has_vpn_api_key ? "••••••••  (set — enter new key to replace)" : "Enter your API key"}
                   className="pl-9 pr-10"
                 />
                 <Button
@@ -207,7 +208,7 @@ export function SecurityConfig() {
             <Button
               variant="outline"
               onClick={handleTestConnection}
-              disabled={testStatus === "testing" || !form.vpn_api_key}
+              disabled={testStatus === "testing" || (!form.has_vpn_api_key && !newApiKey.trim())}
               className="gap-1.5"
             >
               {testStatus === "testing" ? (

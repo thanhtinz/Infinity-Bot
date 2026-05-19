@@ -362,7 +362,7 @@ def _config_to_safe(config) -> SystemConfigSafe:
         has_payos_checksum_key=bool(config.payos_checksum_key),
         bot_invisible=bool(config.bot_invisible),
         language=config.language or "en",
-        vpn_api_key=config.vpn_api_key,
+        has_vpn_api_key=bool(config.vpn_api_key),
         vpn_api_provider=config.vpn_api_provider or "proxycheck",
         currency=getattr(config, "currency", None) or "VND",
         currency_symbol=getattr(config, "currency_symbol", None) or "₫",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Loader2, Zap } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { useCurrency } from "@/hooks/useCurrency";
 import type { Product } from "@/types";
 
 interface FlashSale {
@@ -82,13 +83,76 @@ function toDatetimeLocal(iso: string) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+// Date/time state helpers
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i));
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i));
+const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1));
+const MONTHS = [
+  { v: "1", l: "Jan" }, { v: "2", l: "Feb" }, { v: "3", l: "Mar" },
+  { v: "4", l: "Apr" }, { v: "5", l: "May" }, { v: "6", l: "Jun" },
+  { v: "7", l: "Jul" }, { v: "8", l: "Aug" }, { v: "9", l: "Sep" },
+  { v: "10", l: "Oct" }, { v: "11", l: "Nov" }, { v: "12", l: "Dec" },
+];
+const CUR_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: 20 }, (_, i) => String(CUR_YEAR - 1 + i));
+
+function buildDatetime(year: string, month: string, day: string, hour: string, min: string) {
+  if (!year || !month || !day) return "";
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T${hour.padStart(2, "0")}:${min.padStart(2, "0")}`;
+}
+
+function parseDt(iso: string) {
+  if (!iso) return { y: String(CUR_YEAR), mo: "1", d: "1", h: "0", m: "0" };
+  const dt = toDatetimeLocal(iso);
+  const [datePart, timePart] = dt.split("T");
+  const [y, mo, d] = (datePart ?? "").split("-");
+  const [hh, mm] = (timePart ?? "00:00").split(":");
+  return {
+    y: y ?? String(CUR_YEAR),
+    mo: String(parseInt(mo || "1")),
+    d: String(parseInt(d || "1")),
+    h: String(parseInt(hh || "0")),
+    m: String(parseInt(mm || "0")),
+  };
+}
+
 export function FlashSales() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { formatPrice } = useCurrency();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<FlashSale | null>(null);
   const [form, setForm] = useState<FlashSaleForm>(emptyForm);
   const [deleteTarget, setDeleteTarget] = useState<FlashSale | null>(null);
+
+  // Date/time parts state
+  const [startDay, setStartDay]   = useState("1");
+  const [startMonth, setStartMonth] = useState("1");
+  const [startYear, setStartYear] = useState(String(CUR_YEAR));
+  const [startHour, setStartHour] = useState("0");
+  const [startMin, setStartMin]   = useState("0");
+  const [endDay, setEndDay]       = useState("1");
+  const [endMonth, setEndMonth]   = useState("1");
+  const [endYear, setEndYear]     = useState(String(CUR_YEAR));
+  const [endHour, setEndHour]     = useState("0");
+  const [endMin, setEndMin]       = useState("0");
+
+  // Sync date/time parts khi open edit dialog
+  useEffect(() => {
+    if (editing) {
+      const s = parseDt(editing.starts_at);
+      setStartDay(s.d); setStartMonth(s.mo); setStartYear(s.y);
+      setStartHour(s.h); setStartMin(s.m);
+      const e = parseDt(editing.ends_at);
+      setEndDay(e.d); setEndMonth(e.mo); setEndYear(e.y);
+      setEndHour(e.h); setEndMin(e.m);
+    } else {
+      setStartDay("1"); setStartMonth("1"); setStartYear(String(CUR_YEAR));
+      setStartHour("0"); setStartMin("0");
+      setEndDay("1"); setEndMonth("1"); setEndYear(String(CUR_YEAR));
+      setEndHour("0"); setEndMin("0");
+    }
+  }, [editing]);
 
   const { data: sales = [], isLoading } = useQuery<FlashSale[]>({
     queryKey: ["flash-sales"],
@@ -174,14 +238,24 @@ export function FlashSales() {
     setDialogOpen(false);
     setEditing(null);
     setForm(emptyForm);
+    setStartDay("1"); setStartMonth("1"); setStartYear(String(CUR_YEAR));
+    setStartHour("0"); setStartMin("0");
+    setEndDay("1"); setEndMonth("1"); setEndYear(String(CUR_YEAR));
+    setEndHour("0"); setEndMin("0");
   }
 
   function handleSubmit() {
-    const payload = { ...form, quantity_limit: form.quantity_limit || null };
+    const payload = {
+      ...form,
+      quantity_limit: form.quantity_limit || 0,
+      starts_at: buildDatetime(startYear, startMonth, startDay, startHour, startMin),
+      ends_at: buildDatetime(endYear, endMonth, endDay, endHour, endMin),
+    };
+    const apiPayload = { ...payload, quantity_limit: payload.quantity_limit || null };
     if (editing) {
-      updateMutation.mutate({ ...payload, id: editing.id });
+      updateMutation.mutate({ ...apiPayload, id: editing.id } as FlashSaleForm & { id: number });
     } else {
-      createMutation.mutate(payload);
+      createMutation.mutate(apiPayload as FlashSaleForm);
     }
   }
 
@@ -233,7 +307,7 @@ export function FlashSales() {
                     <TableCell>
                       {sale.discount_type === "percent"
                         ? `${sale.discount_value}%`
-                        : `${sale.discount_value.toLocaleString()} VND`}
+                        : formatPrice(sale.discount_value)}
                     </TableCell>
                     <TableCell>
                       {sale.quantity_used} / {sale.quantity_limit ?? "∞"}
@@ -266,7 +340,7 @@ export function FlashSales() {
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={(v) => { if (!v) closeDialog(); else setDialogOpen(true); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit Flash Sale" : "New Flash Sale"}</DialogTitle>
           </DialogHeader>
@@ -299,7 +373,7 @@ export function FlashSales() {
                 <SelectTrigger><SelectValue placeholder="Select package" /></SelectTrigger>
                 <SelectContent>
                   {packages.map((pkg) => (
-                    <SelectItem key={pkg.name} value={pkg.name}>{pkg.name} — {pkg.price.toLocaleString()} VND</SelectItem>
+                    <SelectItem key={pkg.name} value={pkg.name}>{pkg.name} — {formatPrice(pkg.price)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -353,20 +427,54 @@ export function FlashSales() {
 
             <div className="space-y-2">
               <Label>Start Date/Time</Label>
-              <Input
-                type="datetime-local"
-                value={form.starts_at}
-                onChange={(e) => setForm((f) => ({ ...f, starts_at: e.target.value }))}
-              />
+              <div className="flex gap-1.5">
+                <Select value={startDay} onValueChange={setStartDay}>
+                  <SelectTrigger className="w-[58px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{DAYS.map((d) => <SelectItem key={d} value={d}>{d.padStart(2,"0")}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={startMonth} onValueChange={setStartMonth}>
+                  <SelectTrigger className="flex-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{MONTHS.map((m) => <SelectItem key={m.v} value={m.v}>{m.l}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={startYear} onValueChange={setStartYear}>
+                  <SelectTrigger className="w-[90px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{YEARS.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={startHour} onValueChange={setStartHour}>
+                  <SelectTrigger className="w-[62px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{HOURS.map((h) => <SelectItem key={h} value={h}>{h.padStart(2,"0")}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={startMin} onValueChange={setStartMin}>
+                  <SelectTrigger className="w-[62px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{MINUTES.map((m) => <SelectItem key={m} value={m}>{m.padStart(2,"0")}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
               <Label>End Date/Time</Label>
-              <Input
-                type="datetime-local"
-                value={form.ends_at}
-                onChange={(e) => setForm((f) => ({ ...f, ends_at: e.target.value }))}
-              />
+              <div className="flex gap-1.5">
+                <Select value={endDay} onValueChange={setEndDay}>
+                  <SelectTrigger className="w-[58px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{DAYS.map((d) => <SelectItem key={d} value={d}>{d.padStart(2,"0")}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={endMonth} onValueChange={setEndMonth}>
+                  <SelectTrigger className="flex-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{MONTHS.map((m) => <SelectItem key={m.v} value={m.v}>{m.l}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={endYear} onValueChange={setEndYear}>
+                  <SelectTrigger className="w-[90px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{YEARS.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={endHour} onValueChange={setEndHour}>
+                  <SelectTrigger className="w-[62px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{HOURS.map((h) => <SelectItem key={h} value={h}>{h.padStart(2,"0")}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={endMin} onValueChange={setEndMin}>
+                  <SelectTrigger className="w-[62px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{MINUTES.map((m) => <SelectItem key={m} value={m}>{m.padStart(2,"0")}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <DialogFooter>
