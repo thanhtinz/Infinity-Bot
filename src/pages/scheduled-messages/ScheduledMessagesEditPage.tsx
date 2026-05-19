@@ -26,6 +26,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 import type { EmbedField, ScheduledMessage, FormState } from "./smTypes";
 import { emptyEmbed, emptyForm, toDatetimeLocal } from "./smConstants";
@@ -193,7 +194,7 @@ export function ScheduledMessagesEditPage() {
           </Button>
         </div>
       </div>
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <PageContainer size="sm">
         {/* ── Section 1: Send settings ── */}
         <div className="space-y-4">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
@@ -399,7 +400,7 @@ export function ScheduledMessagesEditPage() {
             />
           </>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

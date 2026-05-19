@@ -38,6 +38,7 @@ import {
   RefreshCw, Play, Square, Eye, Info, RotateCcw,
   Users,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { PremiumGate } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { apiFetch } from "@/hooks/useApi";
@@ -193,7 +194,8 @@ export function VerifyMembersPage() {
   const pullActive = pullStatusQuery.data?.active ?? false;
 
   return (
-    <div className="space-y-3 max-w-3xl">
+    <PageContainer size="md">
+      <PageHeader title="Verified Members" icon={Users} description="Manage verified members, pull, transfer, and cleanup." />
 
       {/* ── Pull members button ── */}
       <div>
@@ -847,6 +849,6 @@ export function VerifyMembersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

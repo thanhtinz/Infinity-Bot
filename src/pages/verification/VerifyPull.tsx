@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import {
-  ArrowDownToLine,
   Users,
   CheckCircle2,
   Loader2,
@@ -93,16 +92,6 @@ export function VerifyPull() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <ArrowDownToLine className="h-6 w-6" />
-          Member Pull
-        </h2>
-        <p className="text-muted-foreground text-sm mt-1">
-          Pull verified members back into the Discord server.
-        </p>
-      </div>
-
       {/* Stats cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>

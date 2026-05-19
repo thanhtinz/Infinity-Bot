@@ -16,6 +16,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { apiFetch } from "@/hooks/useApi";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -324,7 +325,7 @@ export function StickyEditPage() {
           </Button>
         </div>
       </div>
-      <div className="max-w-2xl mx-auto p-6 space-y-4">
+      <PageContainer size="sm">
         {/* Channel select */}
         <div className="space-y-2">
           <Label>Channel</Label>
@@ -520,7 +521,7 @@ export function StickyEditPage() {
             }
           />
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 }

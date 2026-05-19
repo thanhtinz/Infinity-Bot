@@ -5,7 +5,6 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  BarChart3,
   Users,
   CheckCircle2,
   Clock,
@@ -22,16 +21,6 @@ export function VerifyStats() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <BarChart3 className="h-6 w-6" />
-          Verification Statistics
-        </h2>
-        <p className="text-muted-foreground text-sm mt-1">
-          Overview of verification activity and member status.
-        </p>
-      </div>
-
       {statsQuery.isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5].map((i) => (
