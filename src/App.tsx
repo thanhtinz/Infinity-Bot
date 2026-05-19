@@ -170,6 +170,7 @@ const navGroups: NavGroup[] = [
       { to: "/button-roles", icon: MousePointer, label: "nav_panels" },
       { to: "/select-roles", icon: List, label: "Select Menu Roles" },
       { to: "/reaction-roles", icon: Smile, label: "nav_rr" },
+      { to: "/autorole", icon: UserCheck, label: "Auto Role", feature: "autorole" },
     ],
   },
   {
@@ -206,16 +207,6 @@ const navGroups: NavGroup[] = [
       { to: "/ai-chat/training", icon: BookOpen, label: "Training" },
       { to: "/ai-chat/history", icon: History, label: "History" },
       { to: "/ai-chat/images", icon: Image, label: "Image Gen" },
-    ],
-  },
-  {
-    key: "autorole",
-    icon: UserCheck,
-    label: "Auto Role",
-    feature: "autorole",
-    staffPerm: "can_utilities",
-    items: [
-      { to: "/autorole", icon: UserCheck, label: "Auto Role" },
     ],
   },
   {
