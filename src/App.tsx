@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, Lock, Zap, Warehouse, BrainCircuit } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, Lock, Zap, Warehouse, BrainCircuit, Settings2, BookOpen, History, Image } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense, Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -67,7 +67,10 @@ const PremiumPaymentConfig = lazy(() => import("./pages/PremiumPaymentConfig").t
 const PremiumPlans = lazy(() => import("./pages/PremiumPlans").then(m => ({ default: m.PremiumPlans })));
 const PremiumManagement = lazy(() => import("./pages/PremiumManagement").then(m => ({ default: m.PremiumManagement })));
 const MyPlan = lazy(() => import("./pages/MyPlan").then(m => ({ default: m.MyPlan })));
-const AIChatPage = lazy(() => import("./pages/AIChatPage").then(m => ({ default: m.AIChatPage })));
+const AIConfigPage = lazy(() => import("./pages/ai-chat/AIConfigPage").then(m => ({ default: m.AIConfigPage })));
+const AITrainingPage = lazy(() => import("./pages/ai-chat/AITrainingPage").then(m => ({ default: m.AITrainingPage })));
+const AIHistoryPage = lazy(() => import("./pages/ai-chat/AIHistoryPage").then(m => ({ default: m.AIHistoryPage })));
+const AIImageGenPage = lazy(() => import("./pages/ai-chat/AIImageGenPage").then(m => ({ default: m.AIImageGenPage })));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -193,7 +196,10 @@ const navGroups: NavGroup[] = [
     feature: "ai_chat",
     staffPerm: "can_ai",
     items: [
-      { to: "/ai-chat", icon: BrainCircuit, label: "AI Chat" },
+      { to: "/ai-chat/config", icon: Settings2, label: "AI Config" },
+      { to: "/ai-chat/training", icon: BookOpen, label: "Training" },
+      { to: "/ai-chat/history", icon: History, label: "History" },
+      { to: "/ai-chat/images", icon: Image, label: "Image Gen" },
     ],
   },
   {
@@ -800,7 +806,10 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/custom-commands" element={<CustomCommands />} />
         <Route path="/custom-commands/new" element={<CustomCommandEditPage />} />
         <Route path="/custom-commands/:id/edit" element={<CustomCommandEditPage />} />
-        <Route path="/ai-chat" element={<AIChatPage />} />
+        <Route path="/ai-chat/config" element={<AIConfigPage />} />
+        <Route path="/ai-chat/training" element={<AITrainingPage />} />
+        <Route path="/ai-chat/history" element={<AIHistoryPage />} />
+        <Route path="/ai-chat/images" element={<AIImageGenPage />} />
         <Route path="/autoresponder" element={<AutoResponder />} />
         <Route path="/autoresponder/new" element={<AutoResponderEditPage />} />
         <Route path="/autoresponder/:id/edit" element={<AutoResponderEditPage />} />
