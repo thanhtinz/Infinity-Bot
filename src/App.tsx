@@ -806,7 +806,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
           </div>
         )}
         <main className={cn(
-          "flex-1 px-[13px] py-[25px] md:px-6 md:py-[25px]",
+          "flex-1 px-[13px] py-4 md:px-6 md:py-5",
           needsGuild && "pointer-events-none opacity-60"
         )}>
           {children}

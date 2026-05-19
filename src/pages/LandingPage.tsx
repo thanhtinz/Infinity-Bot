@@ -33,7 +33,7 @@ export function LandingPage() {
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#009DB5]/8 rounded-full blur-[120px]" />
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-[#F94C8E]/5 rounded-full blur-[120px]" />
 
-        <div className="relative max-w-6xl mx-auto px-6 pt-24 pb-32 text-center">
+        <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-24 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#009DB5]/10 border border-[#009DB5]/20 mb-8">
             <Star className="w-3.5 h-3.5 text-[#009DB5]" />
             <span className="text-xs font-semibold text-[#009DB5]">All-in-one Discord Bot Platform</span>
