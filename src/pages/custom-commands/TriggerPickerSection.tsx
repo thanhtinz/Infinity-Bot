@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronDown, ChevronRight, Zap } from "lucide-react";
-import type { CommandForm, TriggerType } from "./ccTypes";
+import type { CommandForm, TriggerType, TriggerConfigField } from "./ccTypes";
 import { TRIGGER_GROUPS, TRIGGER_BY_TYPE } from "./ccConstants";
 
 interface Props {
@@ -106,8 +106,8 @@ export function TriggerPickerSection({ form, onFormChange }: Props) {
               <div className="max-h-72 overflow-y-auto">
                 {filtered.map((g) => (
                   <div key={g.group}>
-                    <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 sticky top-0">
-                      {g.emoji} {g.group}
+                    <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground bg-muted/50 sticky top-0 flex items-center gap-1">
+                      <g.icon className="h-3 w-3" /> {g.group}
                     </div>
                     {g.triggers.map((t) => (
                       <button
@@ -159,7 +159,7 @@ export function TriggerPickerSection({ form, onFormChange }: Props) {
 // ── Trigger config sub-form ───────────────────────────────────────────────────
 
 interface ConfigFieldsProps {
-  configFields: NonNullable<ReturnType<typeof TRIGGER_BY_TYPE[string]["configFields"]>>;
+  configFields: TriggerConfigField[];
   triggerConfig: Record<string, unknown>;
   onChange: (cfg: Record<string, unknown>) => void;
 }

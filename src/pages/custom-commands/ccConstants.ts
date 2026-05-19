@@ -2,9 +2,9 @@ import type { EmbedField, ResponseEmbed, CommandForm, TriggerMeta } from "./ccTy
 import type { LucideIcon } from "lucide-react";
 import {
   Variable, Hash, Clock, Sparkles,
-  Terminal, Users, Rocket, Building2, MessageSquare, Smile, Mic, Shield, GitBranch,
+  Terminal, Users, Rocket, Building2, MessageSquare, Smile, Mic, GitBranch,
   Calendar, Mic2, ShieldAlert, BarChart2, Mail, ClipboardList, Tag,
-  User, ShoppingBag, Settings, SmilePlus,} from "lucide-react";
+  User, Settings, SmilePlus,} from "lucide-react";
 
 // ─── Variable Reference ──────────────────────────────────────────────────────
 

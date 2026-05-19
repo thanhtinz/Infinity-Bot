@@ -15,7 +15,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";import { ChevronDown, ChevronRight, Plus, Trash2, GripVertical, Play } from "lucide-react";
+} from "@/components/ui/select";import { ChevronDown, ChevronRight, Trash2, GripVertical, Play } from "lucide-react";
 import type { CommandAction, ActionType, CommandForm } from "./ccTypes";
 import { ACTION_GROUPS } from "./ccConstants";
 

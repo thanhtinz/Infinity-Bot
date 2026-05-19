@@ -13,9 +13,9 @@ export function useCurrency() {
     queryKey: ["currency-config"],
     queryFn: () => apiFetch("/api/config").then((r) => r.json()),
     staleTime: 60_000,
-    select: (d: Record<string, unknown>) => ({
-      currency: (d.currency as string) || "VND",
-      currency_symbol: (d.currency_symbol as string) || "₫",
+    select: (d: CurrencyConfig) => ({
+      currency: d.currency || "VND",
+      currency_symbol: d.currency_symbol || "₫",
     }),
   });
 
