@@ -848,6 +848,7 @@ class StaffPermission(Base):
     can_utilities = Column(Boolean, default=False)
     can_backup = Column(Boolean, default=False)
     can_config = Column(Boolean, default=False)
+    can_ai = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     __table_args__ = (UniqueConstraint("guild_id", "role_id"),)
 
@@ -1001,3 +1002,54 @@ class CouponRedemption(Base):
     subscription_id = Column(Integer, ForeignKey("guild_subscriptions.id"), nullable=True)
     redeemed_at     = Column(DateTime, default=datetime.datetime.utcnow)
     coupon          = relationship("PremiumCoupon", foreign_keys=[coupon_id])
+
+
+# ── AI Chat ──────────────────────────────────────────────────────────────────
+
+class AIChatConfig(Base):
+    """Per-guild AI Chat configuration."""
+    __tablename__ = "ai_chat_configs"
+    id                  = Column(Integer, primary_key=True)
+    guild_id            = Column(String, unique=True, index=True, nullable=False)
+    enabled             = Column(Boolean, default=False)
+    provider            = Column(String, default="gemini")       # groq|gemini|openai|deepsearch
+    model               = Column(String, nullable=True)
+    api_key             = Column(Text, nullable=True)             # stored obfuscated
+    system_prompt       = Column(Text, nullable=True)
+    listen_channels     = Column(JSON, default=list)              # list of channel IDs
+    ai_manager_role     = Column(String, nullable=True)           # role ID
+    respond_to_mention  = Column(Boolean, default=True)
+    respond_prefix      = Column(String, default="?")
+    ticket_auto_reply   = Column(Boolean, default=False)
+    image_gen_enabled   = Column(Boolean, default=False)
+    image_provider      = Column(String, nullable=True)           # gemini|openai
+    image_api_key       = Column(Text, nullable=True)
+    max_history         = Column(Integer, default=10)
+    created_at          = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at          = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+class AITrainingDoc(Base):
+    """Per-guild training documents injected as system context."""
+    __tablename__ = "ai_training_docs"
+    id         = Column(Integer, primary_key=True)
+    guild_id   = Column(String, index=True, nullable=False)
+    title      = Column(String, nullable=False)
+    content    = Column(Text, nullable=False)
+    doc_type   = Column(String, default="text")   # text|file
+    filename   = Column(String, nullable=True)
+    enabled    = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+class AIChatHistory(Base):
+    """Conversation history per guild+user (rolling window)."""
+    __tablename__ = "ai_chat_history"
+    id         = Column(Integer, primary_key=True)
+    guild_id   = Column(String, index=True, nullable=False)
+    user_id    = Column(String, index=True, nullable=False)
+    username   = Column(String, nullable=True)
+    channel_id = Column(String, nullable=True)
+    role       = Column(String, nullable=False)    # user|assistant
+    content    = Column(Text, nullable=False)
+    timestamp  = Column(DateTime, default=datetime.datetime.utcnow, index=True)

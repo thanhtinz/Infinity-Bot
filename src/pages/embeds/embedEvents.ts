@@ -9,7 +9,7 @@ import {
   LogIn, Hash, Shield, Moon, Zap, ZapOff, AlertTriangle,
   Heart, HelpCircle,
   CheckCircle, Package, PackageX, ClipboardList, Tag, UserPlus, Pin, UserMinus,
-  ShieldCheck, Archive, RotateCcw, Users,
+  ShieldCheck, Archive, RotateCcw, Users, BrainCircuit, ImageIcon,
 } from "lucide-react";
 
 // ─── Event definitions ───────────────────────────────────────────────────────
@@ -172,6 +172,9 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "alert_channel_delete",  label: "Channel Delete Alert",      labelEn: "Channel Delete Alert",   icon: Trash2,        desc: "When multiple consecutive channel deletions are detected" },
   { key: "alert_role_delete",     label: "Role Delete Alert",       labelEn: "Role Delete Alert",      icon: Trash2,        desc: "When multiple consecutive role deletions are detected" },
   { key: "alert_nuke_detect",     label: "Nuke Detected",          labelEn: "Nuke Detected",          icon: Zap,           desc: "When server nuke behavior is detected" },
+  // ── AI Chat ──
+  { key: "ai_response",           label: "AI Response",            labelEn: "AI Response",            icon: BrainCircuit,  desc: "When AI bot responds to a question" },
+  { key: "ai_image",              label: "AI Image Generated",     labelEn: "AI Image Generated",     icon: ImageIcon,     desc: "When AI generates an image" },
 ];
 
 // ─── Event groups ────────────────────────────────────────────────────────────
@@ -187,6 +190,7 @@ export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] 
   { label: "Interactions — Expressions", labelEn: "Interactions — Expressions", keys: ["interact_bleh", "interact_blush", "interact_celebrate", "interact_cheers", "interact_clap", "interact_confused", "interact_cool", "interact_cry", "interact_dance", "interact_drool", "interact_evillaugh", "interact_facepalm", "interact_happy", "interact_headbang", "interact_huh", "interact_laugh", "interact_love", "interact_mad", "interact_nervous", "interact_no", "interact_nosebleed", "interact_nyah", "interact_pout", "interact_roll", "interact_run", "interact_sad", "interact_scared", "interact_shout", "interact_shrug", "interact_shy", "interact_sigh", "interact_sip", "interact_sleep", "interact_slowclap", "interact_smile", "interact_smug", "interact_sneeze", "interact_sorry", "interact_stop", "interact_surprised", "interact_sweat", "interact_thumbsup", "interact_tired", "interact_woah", "interact_yawn", "interact_yay", "interact_yes"] },
   { label: "Security & Recovery", labelEn: "Security & Recovery", keys: ["verify_panel", "verification_log", "verification_denied", "verify_blacklist", "verify_whitelist", "backup_completed", "restore_started", "restore_completed", "member_pull_started", "member_pull_completed"] },
   { label: "Server Alerts", labelEn: "Server Alerts", keys: ["alert_mass_ban", "alert_mass_kick", "alert_channel_delete", "alert_role_delete", "alert_nuke_detect"] },
+  { label: "AI Chat", labelEn: "AI Chat", keys: ["ai_response", "ai_image"] },
 ];
 
 // ─── Variables reference ─────────────────────────────────────────────────────
@@ -285,4 +289,9 @@ export const VARIABLES: { token: string; desc: string; descEn: string }[] = [
   { token: "{pulled}",            desc: "Members pulled successfully",     descEn: "Members pulled successfully" },
   { token: "{failed}",            desc: "Members pull failed",       descEn: "Members pull failed" },
   { token: "{total}",             desc: "Total",                        descEn: "Total" },
+  // AI Chat
+  { token: "{ai.response}",      desc: "Câu trả lời từ AI",            descEn: "AI response text" },
+  { token: "{ai.prompt}",        desc: "Câu hỏi/prompt gửi cho AI",    descEn: "Prompt sent to AI" },
+  { token: "{ai.provider}",      desc: "Provider AI (gemini/groq...)",  descEn: "AI provider name" },
+  { token: "{ai.model}",         desc: "Model AI đang dùng",           descEn: "AI model name" },
 ];

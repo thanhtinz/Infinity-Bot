@@ -24,6 +24,7 @@ export const PERM_FIELDS = [
   "can_utilities",
   "can_backup",
   "can_config",
+  "can_ai",
 ] as const;
 
 export type PermField = (typeof PERM_FIELDS)[number];

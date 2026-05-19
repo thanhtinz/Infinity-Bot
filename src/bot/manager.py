@@ -178,6 +178,7 @@ def create_bot():
     from src.bot.cogs.fun import FunCog
     from src.bot.cogs.moderation_ext import ModerationExtCog
     from src.bot.prefix_commands import PrefixCommandsCog
+    from src.bot.cogs.ai_chat import AIChatCog
 
     # Tag cogs with feature keys for runtime check
     _COG_FEATURE_MAP = {
@@ -194,6 +195,7 @@ def create_bot():
         "ChannelAdminCog": "moderation",
         "FunCog": "fun",
         "ModerationExtCog": "moderation",
+        "AIChatCog": "ai_chat",
         "PrefixCommandsCog": None,
     }
 
@@ -214,6 +216,7 @@ def create_bot():
         OnboardingCog(bot_client),
         FunCog(bot_client),
         ModerationExtCog(bot_client),
+        AIChatCog(bot_client),
         PrefixCommandsCog(bot_client),
     ]
     for cog in cogs:

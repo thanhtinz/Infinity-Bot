@@ -25,6 +25,7 @@ FEATURE_DEFS: list[dict] = [
     {"key": "scheduler",       "label": "Scheduled Messages",  "desc": "Send messages on a schedule",               "icon": "Clock",         "cogs": ["SchedulerCog"]},
     {"key": "interactions",    "label": "Interactions",        "desc": "Anime GIF interaction commands (hug, kiss, slap…)", "icon": "Heart",   "cogs": ["InteractionCog"]},
     {"key": "fun",             "label": "Fun",                 "desc": "Fun & mini-game commands",                  "icon": "Smile",         "cogs": ["FunCog"]},
+    {"key": "ai_chat",         "label": "AI Chat",             "desc": "AI assistant per server (Groq/Gemini/OpenAI/DeepSearch)", "icon": "BrainCircuit", "cogs": ["AIChatCog"]},
 ]
 
 
