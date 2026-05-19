@@ -5,7 +5,7 @@ import {
   UserPlus, UserCog, Wrench, Zap, SearchX,
   UserCheck, ClipboardList, Bell, BarChart3, Rss, Activity, BrainCircuit,
 } from "lucide-react";
-import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
+import { LandingNavbar } from "@/components/LandingNavbar";
 
 interface Command { name: string; description: string; usage?: string; admin?: boolean; }
 interface Category { key?: string; name: string; count?: number; commands: Command[]; }
@@ -41,7 +41,6 @@ function getCategoryIcon(key?: string) {
 }
 
 export function PublicCommandsPage() {
-  useLandingFonts();
   const [cats, setCats] = useState<Category[]>([]);
   const [q, setQ] = useState("");
   const [activeFilter, setActiveFilter] = useState<string>("all");
@@ -81,70 +80,72 @@ export function PublicCommandsPage() {
   );
 
   return (
-    <div style={{ background: "#1E1E2D", fontFamily: "'Syne', sans-serif", minHeight: "100vh" }}>
+    <div className="min-h-screen bg-[#1E1E2D] animate-fade-in">
       <LandingNavbar />
 
       {/* ── Hero ──────────────────────────────────────────── */}
       <section className="relative pt-28 pb-8 px-4 overflow-hidden">
-        {/* Background glow */}
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[400px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(0,157,181,0.15) 0%, transparent 70%)", filter: "blur(60px)" }}
+          style={{ background: "radial-gradient(circle, rgba(0,157,181,0.12) 0%, transparent 70%)", filter: "blur(60px)" }}
         />
 
         <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#009DB5]/20 bg-[#009DB5]/5 text-[#009DB5] text-[12px] font-semibold mb-5">
+            <Terminal className="w-3.5 h-3.5" /> Bot Commands
+          </div>
+          <h1 className="text-[36px] md:text-[44px] font-bold text-white tracking-tight mb-3">
             Commands
           </h1>
-          <p className="text-white/40 text-lg mb-8">
-            <span className="text-primary font-semibold">{totalCommands}</span> commands across{" "}
-            <span className="text-primary font-semibold">{cats.length}</span> categories
+          <p className="text-[14px] text-[#9FA8C1] mb-8">
+            <span className="text-[#009DB5] font-semibold">{totalCommands}</span> commands across{" "}
+            <span className="text-[#009DB5] font-semibold">{cats.length}</span> categories
           </p>
 
           {/* Search bar */}
           <div className="relative max-w-lg mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-white/30 pointer-events-none" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9FA8C1] pointer-events-none" />
             <input
               type="text"
               value={q}
               onChange={e => setQ(e.target.value)}
               placeholder="Search commands..."
-              className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/30 transition-all text-sm backdrop-blur-sm"
+              className="w-full pl-11 pr-4 py-3 rounded-[10px] bg-[#262932] text-white placeholder:text-[#9FA8C1]/50 focus:outline-none focus:ring-2 focus:ring-[#009DB5]/40 transition-all text-[14px] shadow-[0px_7.8px_17.3px_rgba(0,157,181,0.07)]"
             />
           </div>
         </div>
       </section>
 
-      {/* ── Mobile category pills ─────────────────────────── */}
-      <div className="lg:hidden px-4 pb-4">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none" style={{ scrollbarWidth: "none" }}>
+      {/* ── Category filter pills ─────────────────────────── */}
+      <div className="px-4 pb-4">
+        <div className="max-w-7xl mx-auto flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
           <button
             onClick={() => setActiveFilter("all")}
-            className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium border transition-all ${
+            className={`shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-[13px] font-semibold transition-all ${
               activeFilter === "all"
-                ? "bg-primary/15 border-primary/30 text-primary"
-                : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/70"
+                ? "bg-[#009DB5]/15 border border-[#009DB5]/30 text-[#009DB5]"
+                : "bg-[#262932] border border-transparent text-[#9FA8C1] hover:text-white hover:bg-[#262932]/80"
             }`}
           >
             All
-            <span className="text-xs opacity-60">{totalCommands}</span>
+            <span className="text-[11px] opacity-60">{totalCommands}</span>
           </button>
           {cats.map(cat => {
             const Icon = getCategoryIcon(cat.key);
-            const active = activeFilter === cat.key;
+            const active = activeFilter === (cat.key || cat.name);
             return (
               <button
                 key={cat.key || cat.name}
                 onClick={() => setActiveFilter(cat.key || cat.name)}
-                className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium border transition-all ${
+                className={`shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-[13px] font-semibold transition-all ${
                   active
-                    ? "bg-primary/15 border-primary/30 text-primary"
-                    : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/70"
+                    ? "bg-[#009DB5]/15 border border-[#009DB5]/30 text-[#009DB5]"
+                    : "bg-[#262932] border border-transparent text-[#9FA8C1] hover:text-white hover:bg-[#262932]/80"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 {cat.name}
-                <span className="text-xs opacity-60">{cat.commands.length}</span>
+                <span className="text-[11px] opacity-60">{cat.commands.length}</span>
               </button>
             );
           })}
@@ -158,15 +159,15 @@ export function PublicCommandsPage() {
           <div className="sticky top-20 space-y-1">
             <button
               onClick={() => setActiveFilter("all")}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[13px] font-semibold transition-all ${
                 activeFilter === "all"
-                  ? "bg-primary/10 border border-primary/20 text-primary"
-                  : "border border-transparent text-white/50 hover:bg-white/5 hover:text-white/70"
+                  ? "bg-[#009DB5]/10 border border-[#009DB5]/20 text-[#009DB5]"
+                  : "border border-transparent text-[#9FA8C1] hover:bg-[#262932] hover:text-white"
               }`}
             >
               <Zap className="w-4 h-4" />
               <span className="flex-1 text-left">All</span>
-              <span className="text-xs opacity-50">{totalCommands}</span>
+              <span className="text-[11px] opacity-50">{totalCommands}</span>
             </button>
 
             <div className="h-px bg-white/5 my-2" />
@@ -178,16 +179,16 @@ export function PublicCommandsPage() {
                 <button
                   key={cat.key || cat.name}
                   onClick={() => setActiveFilter(cat.key || cat.name)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[13px] font-semibold transition-all ${
                     active
-                      ? "bg-primary/10 border border-primary/20 text-primary"
-                      : "border border-transparent text-white/50 hover:bg-white/5 hover:text-white/70"
+                      ? "bg-[#009DB5]/10 border border-[#009DB5]/20 text-[#009DB5]"
+                      : "border border-transparent text-[#9FA8C1] hover:bg-[#262932] hover:text-white"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span className="flex-1 text-left truncate">{cat.name}</span>
-                  <span className={`text-xs px-1.5 py-0.5 rounded-md ${
-                    active ? "bg-primary/15 text-primary" : "bg-white/5 text-white/30"
+                  <span className={`text-[11px] px-1.5 py-0.5 rounded-md ${
+                    active ? "bg-[#009DB5]/15 text-[#009DB5]" : "bg-[#262932] text-[#9FA8C1]/50"
                   }`}>
                     {cat.commands.length}
                   </span>
@@ -201,9 +202,9 @@ export function PublicCommandsPage() {
         <div className="flex-1 min-w-0">
           {/* Results count */}
           {(q || activeFilter !== "all") && (
-            <p className="text-white/30 text-sm mb-4">
+            <p className="text-[#9FA8C1] text-[13px] mb-4">
               {filteredTotal} result{filteredTotal !== 1 ? "s" : ""}
-              {q && <> for &ldquo;<span className="text-white/50">{q}</span>&rdquo;</>}
+              {q && <> for &ldquo;<span className="text-white/70">{q}</span>&rdquo;</>}
             </p>
           )}
 
@@ -211,14 +212,14 @@ export function PublicCommandsPage() {
             const CatIcon = getCategoryIcon(cat.key);
             return (
               <section key={cat.key || cat.name} className="mb-8">
-                {/* Category group header (visible when "All" is selected) */}
+                {/* Category group header */}
                 {activeFilter === "all" && (
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center">
-                      <CatIcon className="w-4 h-4 text-primary" />
+                    <div className="w-8 h-8 rounded-[8px] bg-[#009DB5]/10 flex items-center justify-center">
+                      <CatIcon className="w-4 h-4 text-[#009DB5]" />
                     </div>
-                    <h2 className="text-white font-bold text-base">{cat.name}</h2>
-                    <span className="text-white/25 text-xs">{cat.commands.length} command{cat.commands.length !== 1 ? "s" : ""}</span>
+                    <h2 className="text-white font-semibold text-[15px]">{cat.name}</h2>
+                    <span className="text-[#9FA8C1]/50 text-[12px]">{cat.commands.length} command{cat.commands.length !== 1 ? "s" : ""}</span>
                     <div className="flex-1 h-px bg-white/5" />
                   </div>
                 )}
@@ -227,33 +228,33 @@ export function PublicCommandsPage() {
                   {cat.commands.map(cmd => (
                     <article
                       key={`${cat.key}-${cmd.name}`}
-                      className="group rounded-xl border border-white/[0.06] bg-card p-4 hover:border-primary/30 hover:bg-white/[0.04] transition-all shadow-[0px_8px_17px_rgba(0,157,181,0.07)]"
+                      className="group rounded-[10px] bg-[#262932] p-4 hover:ring-1 hover:ring-[#009DB5]/30 transition-all shadow-[0px_7.8px_17.3px_rgba(0,157,181,0.07)]"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0">
-                          <CatIcon className="w-4 h-4 text-primary" />
+                        <div className="w-9 h-9 rounded-[8px] bg-[#009DB5]/10 flex items-center justify-center shrink-0">
+                          <CatIcon className="w-4 h-4 text-[#009DB5]" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2 mb-1">
                             <code
                               style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                              className="text-primary text-sm font-bold break-all"
+                              className="text-[#009DB5] text-[14px] font-bold break-all"
                             >
-                              {cmd.name}
+                              /{cmd.name}
                             </code>
                             {cmd.admin && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/10 border border-secondary/20 text-secondary text-[10px] font-bold uppercase tracking-wider">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F94C8E]/10 text-[#F94C8E] text-[10px] font-bold uppercase tracking-wider">
                                 <Shield className="w-3 h-3" /> Admin
                               </span>
                             )}
                           </div>
-                          <p className="text-white/45 text-sm leading-relaxed">
+                          <p className="text-[#9FA8C1] text-[13px] leading-relaxed">
                             {cmd.description}
                           </p>
                           {cmd.usage && (
                             <p
                               style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                              className="mt-2 text-xs text-white/20 truncate"
+                              className="mt-2 text-[12px] text-[#9FA8C1]/40 truncate"
                             >
                               {cmd.usage.replaceAll("`", "")}
                             </p>
@@ -269,10 +270,10 @@ export function PublicCommandsPage() {
 
           {/* No results */}
           {filtered.length === 0 && (
-            <div className="text-center py-20 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
-              <SearchX className="w-12 h-12 mx-auto mb-4 text-white/15" />
-              <p className="text-white/40 font-medium mb-1">No commands found</p>
-              <p className="text-white/20 text-sm">
+            <div className="text-center py-20 rounded-[10px] bg-[#262932] shadow-[0px_7.8px_17.3px_rgba(0,157,181,0.07)]">
+              <SearchX className="w-12 h-12 mx-auto mb-4 text-[#9FA8C1]/30" />
+              <p className="text-white/50 font-semibold mb-1">No commands found</p>
+              <p className="text-[#9FA8C1] text-[13px]">
                 {q ? `Try a different search term than "${q}"` : "Try selecting a different category"}
               </p>
             </div>

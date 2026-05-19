@@ -1,7 +1,7 @@
 import { useT } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { Activity, Clock, Database, Search, Server, Users, Wifi, WifiOff, Zap } from "lucide-react";
-import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
+import { LandingNavbar } from "@/components/LandingNavbar";
 
 interface ShardInfo { id: number; latency_ms: number | null; guild_count: number; }
 interface ClusterInfo {
@@ -45,7 +45,6 @@ function compactShards(shards: number[]) {
 
 export function PublicStatusPage() {
   const { t } = useT();
-  useLandingFonts();
   const [status, setStatus] = useState<BotStatus | null>(null);
   const [query, setQuery] = useState("");
   const [, setTick] = useState(0);
@@ -87,7 +86,7 @@ export function PublicStatusPage() {
   }, [query, status]);
 
   return (
-    <div style={{ background: "#1E1E2D", minHeight: "100vh", fontFamily: "'Syne', sans-serif" }}>
+    <div className="min-h-screen bg-[#1E1E2D]">
       <LandingNavbar />
 
       <div className="relative max-w-5xl mx-auto px-4 pt-28 pb-16">

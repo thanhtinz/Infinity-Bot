@@ -38,6 +38,7 @@ import {
   Sparkles,
   Ticket,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -688,17 +689,8 @@ export function MyPlan() {
     .sort((a, b) => a.sort_order - b.sort_order);
 
   return (
-    <div className="space-y-8 max-w-5xl">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-          <Crown className="h-6 w-6 text-primary" />
-          Server Premium Plan
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Active plan for <span className="font-medium text-foreground">{guildName}</span> — all members get full features.
-        </p>
-      </div>
+    <PageContainer size="lg">
+      <PageHeader title="Server Premium Plan" icon={Crown} description={`Active plan for ${guildName} — all members get full features.`} />
 
       {/* Server-scope reminder */}
       <div className="rounded-lg border border-primary/30 bg-primary/5 dark:border-primary/30 dark:bg-primary/10 px-4 py-2.5 flex items-center gap-3">
@@ -1138,6 +1130,6 @@ export function MyPlan() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageContainer>
   );
 }
