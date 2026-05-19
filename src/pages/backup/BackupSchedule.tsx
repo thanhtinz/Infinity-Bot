@@ -195,22 +195,6 @@ export function BackupSchedule() {
                   disabled={!scheduleForm.enabled}
                 />
               </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm">Include Verified Members</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Save verified member data and verification records
-                  </p>
-                </div>
-                <Switch
-                  checked={scheduleForm.include_verified_members}
-                  onCheckedChange={(v) =>
-                    setScheduleForm({ ...scheduleForm, include_verified_members: v })
-                  }
-                  disabled={!scheduleForm.enabled}
-                />
-              </div>
             </div>
 
             <Separator />

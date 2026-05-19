@@ -1,4 +1,4 @@
-"""Server Backup & Restore routes — full Discord structure + bot config + verified members."""
+"""Server Backup & Restore routes — full Discord structure + bot config."""
 import json
 import logging
 import sys
@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from src.database.config import get_db
 from src.api.deps import get_guild_id
 from src.models.models import (
-    ServerBackup, BackupSchedule, VerifiedMember,
+    ServerBackup, BackupSchedule,
     # Bot config tables for comprehensive backup
     AutoModConfig, ReactionRole,
     CustomCommand, ScheduledMessage, StickyMessage, EmbedTemplate,
@@ -76,14 +76,6 @@ def _backup_bot_config(db: Session, guild_id: str) -> dict:
     return result, config_count
 
 
-def _backup_verified_members(db: Session, guild_id: str) -> list:
-    """Backup verified members for a guild."""
-    members = db.execute(
-        select(VerifiedMember).where(VerifiedMember.guild_id == guild_id)
-    ).scalars().all()
-    return [_row_to_dict(m) for m in members]
-
-
 # ── List backups ──
 @router.get("/server-backup")
 def list_backups(guild_id: str = Depends(get_guild_id), db: Session = Depends(get_db)):
@@ -120,28 +112,20 @@ def create_backup(
     """Create a comprehensive backup.
     Body options:
       include_bot_config: bool (default true)
-      include_verified_members: bool (default true)
       include_messages: bool (default true)
       message_limit: int (default 100)
     Note: Discord structure backup happens via bot cog (needs bot token).
-    This endpoint backs up bot config + verified members from DB.
+    This endpoint backs up bot config from DB.
     Discord structure is added by the bot cog when triggered.
     """
     opts = body or {}
     include_bot_config = opts.get("include_bot_config", True)
-    include_members = opts.get("include_verified_members", True)
 
-    data = {"discord": None, "bot_config": None, "verified_members": None}
+    data = {"discord": None, "bot_config": None}
     config_count = 0
-    member_count = 0
 
     if include_bot_config:
         data["bot_config"], config_count = _backup_bot_config(db, guild_id)
-
-    if include_members:
-        members = _backup_verified_members(db, guild_id)
-        data["verified_members"] = members
-        member_count = len(members)
 
     size_bytes = len(json.dumps(data, default=str).encode())
 
@@ -151,7 +135,7 @@ def create_backup(
         status="completed",  # Discord part pending if bot adds it
         data=data,
         config_count=config_count,
-        member_count=member_count,
+        member_count=0,
         size_bytes=size_bytes,
     )
     db.add(backup)
@@ -162,7 +146,6 @@ def create_backup(
         "id": backup.id,
         "status": backup.status,
         "config_count": config_count,
-        "member_count": member_count,
         "size_bytes": size_bytes,
     }
 
@@ -233,7 +216,6 @@ def restore_backup(
     """Restore from backup.
     Body options:
       restore_bot_config: bool (default true)
-      restore_verified_members: bool (default true)
       restore_discord: bool (default false) — requires bot, handled by cog
     """
     b = db.execute(
@@ -288,24 +270,6 @@ def restore_backup(
                 errors[table_name] = str(e)
                 db.rollback()
 
-    # Restore verified members
-    if opts.get("restore_verified_members", True) and b.data and b.data.get("verified_members"):
-        try:
-            members_data = b.data["verified_members"]
-            db.execute(delete(VerifiedMember).where(VerifiedMember.guild_id == guild_id))
-            db.flush()
-            count = 0
-            for m in members_data:
-                valid_cols = {c.name for c in VerifiedMember.__table__.columns} - {"id"}
-                clean = {k: v for k, v in m.items() if k in valid_cols}
-                obj = VerifiedMember(**clean)
-                db.add(obj)
-                count += 1
-            restored["verified_members"] = count
-        except Exception as e:
-            logger.error(f"Restore verified members error: {e}")
-            errors["verified_members"] = str(e)
-
     db.commit()
     return {"ok": True, "restored": restored, "errors": errors}
 
@@ -320,7 +284,7 @@ def get_schedule(guild_id: str = Depends(get_guild_id), db: Session = Depends(ge
         return {
             "enabled": False, "interval_hours": 24, "max_backups": 5,
             "include_messages": True, "message_limit": 100,
-            "include_bot_config": True, "include_verified_members": True,
+            "include_bot_config": True,
             "last_backup_at": None, "next_backup_at": None,
         }
     return {
@@ -330,7 +294,6 @@ def get_schedule(guild_id: str = Depends(get_guild_id), db: Session = Depends(ge
         "include_messages": s.include_messages,
         "message_limit": s.message_limit,
         "include_bot_config": s.include_bot_config,
-        "include_verified_members": s.include_verified_members,
         "last_backup_at": s.last_backup_at.isoformat() if s.last_backup_at else None,
         "next_backup_at": s.next_backup_at.isoformat() if s.next_backup_at else None,
     }
@@ -346,7 +309,7 @@ def update_schedule(body: dict, guild_id: str = Depends(get_guild_id), db: Sessi
         db.add(s)
 
     for field in ["enabled", "interval_hours", "max_backups", "include_messages",
-                  "message_limit", "include_bot_config", "include_verified_members"]:
+                  "message_limit", "include_bot_config"]:
         if field in body:
             setattr(s, field, body[field])
 

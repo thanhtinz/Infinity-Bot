@@ -21,8 +21,6 @@ class SystemConfigBase(BaseModel):
     command_prefix: Optional[str] = "!"
     bot_invisible: Optional[bool] = None
     language: Optional[str] = "en"
-    vpn_api_key: Optional[str] = None
-    vpn_api_provider: Optional[str] = None
     
 class SystemConfigResponse(SystemConfigBase):
     """Full response — dùng nội bộ (không expose qua API public)."""
@@ -56,9 +54,6 @@ class SystemConfigSafe(BaseModel):
     has_payos_checksum_key: bool = False
     bot_invisible: bool = False
     language: str = "en"
-    # VPN / Security
-    has_vpn_api_key: bool = False
-    vpn_api_provider: Optional[str] = "proxycheck"
     # Currency & Payment
     currency: str = "VND"
     currency_symbol: str = "₫"

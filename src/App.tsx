@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, Lock, Zap, Warehouse, BrainCircuit, Settings2, BookOpen, History, Image, ClipboardList, Rss, UserCheck, Sun, Moon, Search, User } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, Zap, Warehouse, BrainCircuit, Settings2, BookOpen, History, Image, ClipboardList, Rss, UserCheck, Sun, Moon, Search, User } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense, Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -40,17 +40,13 @@ const ReactionRoleEditPage = lazy(() => import("./pages/reaction-roles/ReactionR
 const SelectMenuRoleEditPage = lazy(() => import("./pages/select-roles/SelectMenuRoleEditPage").then(m => ({ default: m.SelectMenuRoleEditPage })));
 const AutoResponder = lazy(() => import("./pages/AutoResponder").then(m => ({ default: m.AutoResponder })));
 const AutoResponderEditPage = lazy(() => import("./pages/auto-responder/AutoResponderEditPage").then(m => ({ default: m.AutoResponderEditPage })));
-const SecurityConfig = lazy(() => import("./pages/SecurityConfig").then(m => ({ default: m.SecurityConfig })));
+
 const FirewallLogs = lazy(() => import("./pages/firewall/FirewallLogs").then(m => ({ default: m.FirewallLogs })));
 const AlertsConfig = lazy(() => import("./pages/AlertsConfig").then(m => ({ default: m.AlertsConfig })));
-const VerificationPage = lazy(() => import("./pages/verification/VerificationPage"));
-const VerifyMembersStandalonePage = lazy(() => import("./pages/verification/VerifyMembersPage").then(m => ({ default: m.VerifyMembersPage })));
-const VerifyStatsPage = lazy(() => import("./pages/verification/VerifyStatsPage"));
 const ModerationPage = lazy(() => import("./pages/moderation/ModerationPage"));
 const LoggingPage = lazy(() => import("./pages/LoggingPage"));
 const InvitesPage = lazy(() => import("./pages/invites/InvitesPage"));
 const BackupPage = lazy(() => import("./pages/backup/BackupPage").then(m => ({ default: m.BackupPage })));
-const VerifyPage = lazy(() => import("./pages/VerifyPage").then(m => ({ default: m.VerifyPage })));
 const SelectGuildPage = lazy(() => import("./pages/SelectGuildPage").then(m => ({ default: m.SelectGuildPage })));
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const InitialSetup = lazy(() => import("./pages/InitialSetup").then(m => ({ default: m.InitialSetup })));
@@ -64,7 +60,7 @@ const ShopStats = lazy(() => import("./pages/ShopStats").then(m => ({ default: m
 const FlashSales = lazy(() => import("./pages/FlashSales").then(m => ({ default: m.FlashSales })));
 const InventoryManager = lazy(() => import("./pages/InventoryManager").then(m => ({ default: m.InventoryManager })));
 const SpendingMilestones = lazy(() => import("./pages/SpendingMilestones"));
-const GuildBotConfig = lazy(() => import("./pages/GuildBotConfig").then(m => ({ default: m.GuildBotConfig })));
+
 const PremiumPaymentConfig = lazy(() => import("./pages/PremiumPaymentConfig").then(m => ({ default: m.PremiumPaymentConfig })));
 const PremiumPlans = lazy(() => import("./pages/PremiumPlans").then(m => ({ default: m.PremiumPlans })));
 const PremiumManagement = lazy(() => import("./pages/PremiumManagement").then(m => ({ default: m.PremiumManagement })));
@@ -157,9 +153,6 @@ const navGroups: NavGroup[] = [
     label: "nav_security",
     staffPerm: "can_moderation",
     items: [
-      { to: "/verification", icon: CheckCircle, label: "Verification" },
-      { to: "/verification/members", icon: Users, label: "Verify Menber" },
-      { to: "/verification/stats", icon: BarChart3, label: "Verify Stats" },
       { to: "/firewall/logs", icon: ShieldAlert, label: "Firewall Logs" },
       { to: "/alerts", icon: Bell, label: "Server Alerts" },
     ],
@@ -225,7 +218,6 @@ const navGroups: NavGroup[] = [
     items: [
       { to: "/bot-status", icon: Activity, label: "nav_botStatus" },
       { to: "/config/discord", icon: Bot, label: "nav_discordBot" },
-      { to: "/security-config", icon: Lock, label: "Security Config" },
       { to: "/premium/plans", icon: Gem, label: "Premium Plans" },
       { to: "/premium/management", icon: Crown, label: "Premium Management" },
       { to: "/premium/config", icon: CreditCard, label: "Premium Payments" },
@@ -867,7 +859,6 @@ function SetupGate() {
         <Route path="/pricing" element={<PublicPricingPage />} />
         <Route path="/status" element={<PublicStatusPage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/verify/:guildId" element={<VerifyPage />} />
         {/* ── Dashboard (cần auth) ── */}
         <Route path="/dashboard" element={<ProtectedAppRoutes root />} />
         <Route path="/*" element={<ProtectedAppRoutes />} />
@@ -947,7 +938,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/config/channels" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/config/voice" element={<Navigate to="/bot-settings" replace />} />
         <Route path="/bot-settings" element={<BotSettings />} />
-        <Route path="/guild-bot" element={<GuildBotConfig />} />
+
         <Route path="/config/discord" element={<OwnerRoute><ConfigDiscord /></OwnerRoute>} />
         <Route path="/config/payments" element={<PaymentConfig />} />
         {/* Shop */}
@@ -984,11 +975,8 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/automod" element={<AutoModConfig />} />
         <Route path="/logging" element={<LoggingPage />} />
         {/* Security */}
-        <Route path="/verification" element={<VerificationPage />} />
-        <Route path="/verification/members" element={<VerifyMembersStandalonePage />} />
-        <Route path="/verification/stats" element={<VerifyStatsPage />} />
         <Route path="/backup" element={<BackupPage />} />
-        <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
+
         <Route path="/firewall/logs" element={<FirewallLogs />} />
         <Route path="/alerts" element={<AlertsConfig />} />
         {/* Utilities */}

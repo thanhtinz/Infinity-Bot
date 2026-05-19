@@ -35,7 +35,6 @@ export interface BackupSchedule {
   include_messages: boolean;
   message_limit: number;
   include_bot_config: boolean;
-  include_verified_members: boolean;
   last_backup_at: string | null;
   next_backup_at: string | null;
 }
@@ -66,7 +65,6 @@ export async function fetchBackups(): Promise<ServerBackupItem[]> {
 
 export async function createBackup(data: {
   include_bot_config: boolean;
-  include_verified_members: boolean;
 }): Promise<CreateBackupResponse> {
   const res = await apiFetch("/api/server-backup", {
     method: "POST",
@@ -84,7 +82,7 @@ export async function deleteBackup(id: number): Promise<void> {
 
 export async function restoreBackup(
   id: number,
-  data: { restore_bot_config: boolean; restore_verified_members: boolean; restore_discord: boolean }
+  data: { restore_bot_config: boolean; restore_discord: boolean }
 ): Promise<RestoreResponse> {
   const res = await apiFetch(`/api/server-backup/${id}/restore`, {
     method: "POST",

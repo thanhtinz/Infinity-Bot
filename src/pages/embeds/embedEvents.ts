@@ -158,16 +158,10 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "interact_yay",        label: "Yay", labelEn: "Yay",           icon: Heart, desc: "Yay!", descEn: "Yay!" },
   { key: "interact_yes",        label: "Yes", labelEn: "Yes",           icon: Heart, desc: "Nod yes", descEn: "Nod yes" },
   // ── Security & Recovery ──
-  { key: "verification_log",       label: "Verification Success",     labelEn: "Verification Success",   icon: ShieldCheck,  desc: "When user verifies successfully via OAuth2" },
-  { key: "verification_denied",    label: "Verification Denied",     labelEn: "Verification Denied",    icon: ShieldAlert,  desc: "When user is denied verification" },
-  { key: "verify_panel",           label: "Verify Panel",          labelEn: "Verify Panel",           icon: ShieldCheck,  desc: "Verification panel embed sent in channel (/verify embed)" },
-  { key: "verify_blacklist",       label: "Member Blacklisted",    labelEn: "Member Blacklisted",     icon: Ban,          desc: "When admin blacklists a member from verification" },
-  { key: "verify_whitelist",       label: "Member Whitelisted",    labelEn: "Member Whitelisted",     icon: ShieldCheck,  desc: "When admin removes a member from blacklist" },
+  // ── Backup & Restore ──
   { key: "backup_completed",       label: "Backup Completed",        labelEn: "Backup Completed",       icon: Archive,      desc: "When server backup is completed" },
   { key: "restore_started",        label: "Restore Started",          labelEn: "Restore Started",        icon: RotateCcw,    desc: "When server restore starts" },
   { key: "restore_completed",      label: "Restore Completed",      labelEn: "Restore Completed",      icon: CheckCircle,  desc: "When server restore is completed" },
-  { key: "member_pull_started",    label: "Member Pull Started",     labelEn: "Member Pull Started",    icon: Users,        desc: "When member pull to server starts" },
-  { key: "member_pull_completed",  label: "Member Pull Completed", labelEn: "Member Pull Completed",  icon: UserPlus,     desc: "When member pull to server is completed" },
   // ── Server Alerts ──
   { key: "alert_mass_ban",        label: "Mass Ban Alert",       labelEn: "Mass Ban Alert",         icon: AlertTriangle, desc: "When multiple consecutive bans are detected" },
   { key: "alert_mass_kick",       label: "Mass Kick Alert",      labelEn: "Mass Kick Alert",        icon: AlertTriangle, desc: "When multiple consecutive kicks are detected" },
@@ -205,7 +199,7 @@ export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] 
   { label: "Logging",     labelEn: "Logging",         keys: ["log_message_delete", "log_message_edit", "log_message_bulk_delete", "log_voice_join", "log_voice_leave", "log_voice_move", "log_member_join", "log_member_leave", "log_nickname_change", "log_role_update", "log_channel_create", "log_channel_delete"] },
   { label: "Interactions — Targeted", labelEn: "Interactions — Targeted", keys: ["interact_airkiss", "interact_angrystare", "interact_bite", "interact_brofist", "interact_cuddle", "interact_handhold", "interact_hug", "interact_kiss", "interact_lick", "interact_nom", "interact_nuzzle", "interact_pat", "interact_pinch", "interact_poke", "interact_punch", "interact_slap", "interact_smack", "interact_tickle", "interact_wave", "interact_wink", "interact_stare", "interact_peek"] },
   { label: "Interactions — Expressions", labelEn: "Interactions — Expressions", keys: ["interact_bleh", "interact_blush", "interact_celebrate", "interact_cheers", "interact_clap", "interact_confused", "interact_cool", "interact_cry", "interact_dance", "interact_drool", "interact_evillaugh", "interact_facepalm", "interact_happy", "interact_headbang", "interact_huh", "interact_laugh", "interact_love", "interact_mad", "interact_nervous", "interact_no", "interact_nosebleed", "interact_nyah", "interact_pout", "interact_roll", "interact_run", "interact_sad", "interact_scared", "interact_shout", "interact_shrug", "interact_shy", "interact_sigh", "interact_sip", "interact_sleep", "interact_slowclap", "interact_smile", "interact_smug", "interact_sneeze", "interact_sorry", "interact_stop", "interact_surprised", "interact_sweat", "interact_thumbsup", "interact_tired", "interact_woah", "interact_yawn", "interact_yay", "interact_yes"] },
-  { label: "Security & Recovery", labelEn: "Security & Recovery", keys: ["verify_panel", "verification_log", "verification_denied", "verify_blacklist", "verify_whitelist", "backup_completed", "restore_started", "restore_completed", "member_pull_started", "member_pull_completed"] },
+  { label: "Backup & Restore", labelEn: "Backup & Restore", keys: ["backup_completed", "restore_started", "restore_completed"] },
   { label: "Server Alerts", labelEn: "Server Alerts", keys: ["alert_mass_ban", "alert_mass_kick", "alert_channel_delete", "alert_role_delete", "alert_nuke_detect"] },
   { label: "Utilities",    labelEn: "Utilities",       keys: ["sticky_message", "afk_set", "afk_return", "afk_mention", "help_menu", "help_category", "help_command", "reminder_fire"] },
   { label: "AI Chat", labelEn: "AI Chat", keys: ["ai_response", "ai_image"] },

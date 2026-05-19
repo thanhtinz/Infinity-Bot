@@ -623,47 +623,7 @@ DEFAULTS: dict[str, dict] = {
             {"name": "🔓 Channels Unlocked", "value": "{count}", "inline": True},
         ],
     },
-    # ── Security & Recovery ───────────────────────────────────────────────────
-    "verify_panel": {
-        "title": "Verify",
-        "description": "Click the button below to verify in this server.",
-        "color": "#5865F2",
-        "fields": [],
-    },
-    "verify_blacklist": {
-        "title": "🚫 Member Blacklisted",
-        "description": "{user.mention} has been blacklisted from verification.",
-        "color": "#ED4245",
-        "fields": [
-            {"name": "Reason", "value": "{reason}", "inline": False},
-        ],
-    },
-    "verify_whitelist": {
-        "title": "✅ Member Whitelisted",
-        "description": "{user.mention} has been removed from the blacklist.",
-        "color": "#57F287",
-        "fields": [],
-    },
-    "verification_log": {
-        "title": "✅ Verification Successful",
-        "description": "{user.mention} has been verified successfully.",
-        "color": "#57F287",
-        "fields": [
-            {"name": "👤 User", "value": "{user.tag}", "inline": True},
-            {"name": "📧 Email", "value": "{email}", "inline": True},
-            {"name": "🌐 IP", "value": "{ip}", "inline": True},
-            {"name": "⚠️ Risk Score", "value": "{risk_score}", "inline": True},
-        ],
-    },
-    "verification_denied": {
-        "title": "❌ Verification Denied",
-        "description": "A user was denied verification.",
-        "color": "#ED4245",
-        "fields": [
-            {"name": "👤 User", "value": "{user.tag}", "inline": True},
-            {"name": "📝 Reason", "value": "{reason}", "inline": False},
-        ],
-    },
+    # ── Backup & Restore ───────────────────────────────────────────────────
     "backup_completed": {
         "title": "✅ Backup Completed",
         "description": "Server backup completed successfully.",
@@ -686,22 +646,6 @@ DEFAULTS: dict[str, dict] = {
         "description": "Server has been restored successfully.",
         "color": "#57F287",
         "fields": [],
-    },
-    "member_pull_started": {
-        "title": "🔄 Pulling Members...",
-        "description": "Pulling **{total_members}** members to the server.",
-        "color": "#5865F2",
-        "fields": [],
-    },
-    "member_pull_completed": {
-        "title": "✅ Member Pull Completed",
-        "description": "Members have been pulled to the server successfully.",
-        "color": "#57F287",
-        "fields": [
-            {"name": "✅ Succeeded", "value": "{pulled}", "inline": True},
-            {"name": "❌ Failed", "value": "{failed}", "inline": True},
-            {"name": "📊 Total", "value": "{total}", "inline": True},
-        ],
     },
     # ── Server Alerts ──
     "alert_mass_ban": {

@@ -17,7 +17,6 @@ import { useGuild } from "@/contexts/GuildContext";
 export const PERM_FIELDS = [
   "can_shop",
   "can_moderation",
-  "can_verification",
   "can_community",
   "can_embeds",
   "can_roles",

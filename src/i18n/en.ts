@@ -1121,9 +1121,7 @@ const en = {
   landing_giveaway: "Giveaway",
   landing_giveawayDesc: "Professional giveaways with entry requirements, reroll, and multiple winners.",
   landing_moderation: "Moderation & Security",
-  landing_moderationDesc: "Advanced moderation with verification, VPN blocking, alt detection & firewall",
-  landing_verification: "Verification System",
-  landing_verificationDesc: "OAuth2 member verification, VPN & alt detection, custom verify pages with full branding control.",
+  landing_moderationDesc: "Advanced moderation with firewall & security tools",
   landing_embedBuilder: "Embed Builder",
   landing_embedBuilderDesc: "Customize every bot notification with an intuitive Embed Builder and live Discord preview.",
   landing_aiChat: "AI Chat",
@@ -1632,7 +1630,6 @@ const en = {
 
   // ── Security & Recovery ──
   nav_security: "Security & Recovery",
-  nav_verification: "Verification",
   nav_serverBackup: "Server Backup",
   nav_securityConfig: "Security Config",
 } as const;

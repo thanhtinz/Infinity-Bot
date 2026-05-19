@@ -78,12 +78,10 @@ export function BackupList() {
   // ── Create dialog state ──
   const [createOpen, setCreateOpen] = useState(false);
   const [createIncludeBotConfig, setCreateIncludeBotConfig] = useState(true);
-  const [createIncludeVerified, setCreateIncludeVerified] = useState(true);
 
   // ── Restore dialog state ──
   const [restoreTarget, setRestoreTarget] = useState<ServerBackupItem | null>(null);
   const [restoreBotConfig, setRestoreBotConfig] = useState(false);
-  const [restoreVerified, setRestoreVerified] = useState(false);
   const [restoreDiscord, setRestoreDiscord] = useState(false);
 
   // ── Delete confirm ──
@@ -120,7 +118,6 @@ export function BackupList() {
     mutationFn: (b: ServerBackupItem) =>
       restoreBackup(b.id, {
         restore_bot_config: restoreBotConfig,
-        restore_verified_members: restoreVerified,
         restore_discord: restoreDiscord,
       }),
     onSuccess: (result) => {
@@ -145,7 +142,6 @@ export function BackupList() {
   function openRestoreDialog(b: ServerBackupItem) {
     setRestoreTarget(b);
     setRestoreBotConfig(false);
-    setRestoreVerified(false);
     setRestoreDiscord(false);
   }
 
@@ -304,22 +300,6 @@ export function BackupList() {
                 </p>
               </div>
             </div>
-
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id="inc-verified"
-                checked={createIncludeVerified}
-                onCheckedChange={(v) => setCreateIncludeVerified(!!v)}
-              />
-              <div className="space-y-0.5">
-                <Label htmlFor="inc-verified" className="text-sm font-medium cursor-pointer">
-                  Include Verified Members
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Verified member records, emails, and verification metadata
-                </p>
-              </div>
-            </div>
           </div>
 
           <DialogFooter>
@@ -330,7 +310,6 @@ export function BackupList() {
               onClick={() =>
                 createMutation.mutate({
                   include_bot_config: createIncludeBotConfig,
-                  include_verified_members: createIncludeVerified,
                 })
               }
               disabled={createMutation.isPending}
@@ -393,17 +372,6 @@ export function BackupList() {
                 Bot Configuration
               </Label>
             </div>
-
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id="restore-verified"
-                checked={restoreVerified}
-                onCheckedChange={(v) => setRestoreVerified(!!v)}
-              />
-              <Label htmlFor="restore-verified" className="text-sm font-medium cursor-pointer">
-                Verified Members
-              </Label>
-            </div>
           </div>
 
           <DialogFooter>
@@ -415,7 +383,7 @@ export function BackupList() {
               onClick={() => restoreTarget && restoreMutation.mutate(restoreTarget)}
               disabled={
                 restoreMutation.isPending ||
-                (!restoreDiscord && !restoreBotConfig && !restoreVerified)
+                (!restoreDiscord && !restoreBotConfig)
               }
               className="gap-1.5"
             >

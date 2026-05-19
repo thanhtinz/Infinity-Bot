@@ -25,7 +25,6 @@ interface StaffPerm {
   role_name: string | null;
   can_shop: boolean;
   can_moderation: boolean;
-  can_verification: boolean;
   can_community: boolean;
   can_embeds: boolean;
   can_roles: boolean;
@@ -40,7 +39,6 @@ interface StaffPerm {
 const PERM_LABELS: { key: keyof StaffPerm; label: string; desc: string }[] = [
   { key: "can_shop", label: "Shop", desc: "Products, orders, coupons, milestones" },
   { key: "can_moderation", label: "Moderation", desc: "Cases, warnings, notes" },
-  { key: "can_verification", label: "Verification", desc: "Verified members, pull, config" },
   { key: "can_community", label: "Community", desc: "Giveaways, invites, feedback" },
   { key: "can_embeds", label: "Embeds", desc: "Embed templates, custom embeds" },
   { key: "can_roles", label: "Roles", desc: "Auto role, button/select/reaction roles" },
@@ -55,7 +53,6 @@ const PERM_LABELS: { key: keyof StaffPerm; label: string; desc: string }[] = [
 const emptyPerms: Record<string, boolean> = {
   can_shop: false,
   can_moderation: false,
-  can_verification: false,
   can_community: false,
   can_embeds: false,
   can_roles: false,

@@ -1,5 +1,5 @@
 # src/bot/cogs/server_backup.py
-"""Server Backup cog — full Discord structure snapshot + bot config + verified members."""
+"""Server Backup cog — full Discord structure snapshot + bot config."""
 import datetime
 import json
 import logging
@@ -8,7 +8,7 @@ from discord.ext import commands, tasks
 from sqlalchemy import select, func
 from src.database.config import SessionLocal
 from src.models.models import (
-    ServerBackup, BackupSchedule, VerifiedMember, SystemConfig,
+    ServerBackup, BackupSchedule, SystemConfig,
     AutoModConfig, StarboardConfig, ReactionRole,
     CustomCommand, ScheduledMessage, StickyMessage, EmbedTemplate,
     ButtonRole, SelectMenuRole,
@@ -319,18 +319,11 @@ class ServerBackupCog(commands.Cog):
                     logger.warning(f"Backup skip {table_name}: {e}")
                     bot_config[table_name] = []
 
-            # Snapshot verified members
-            members = session.execute(
-                select(VerifiedMember).where(VerifiedMember.guild_id == guild_id)
-            ).scalars().all()
-            members_data = [_row_to_dict(m) for m in members]
-
             # Build full backup
             full_data = {
                 "discord": discord_data,
                 "messages": msg_data,
                 "bot_config": bot_config,
-                "verified_members": members_data,
             }
 
             size_bytes = len(json.dumps(full_data, default=str).encode())
@@ -343,7 +336,7 @@ class ServerBackupCog(commands.Cog):
                 data=full_data,
                 channel_count=len(discord_data.get("channels", [])),
                 role_count=len(discord_data.get("roles", [])),
-                member_count=len(members_data),
+                member_count=0,
                 config_count=config_count,
                 message_count=msg_count,
                 size_bytes=size_bytes,
@@ -419,7 +412,6 @@ class ServerBackupCog(commands.Cog):
         backup_id: discord.Option(int, description="Backup ID to restore"),
         restore_discord: discord.Option(bool, description="Restore channels/roles?", default=False),
         restore_config: discord.Option(bool, description="Restore bot config?", default=True),
-        restore_members: discord.Option(bool, description="Restore verified members?", default=True),
     ):
         await ctx.defer()
         session = SessionLocal()
@@ -467,19 +459,7 @@ class ServerBackupCog(commands.Cog):
                         logger.error(f"Restore {table_name}: {e}")
                 results.append(f"⚙️ Bot config: {count} records")
 
-            # Restore verified members
-            if restore_members and backup.data and backup.data.get("verified_members"):
-                from sqlalchemy import delete as sa_delete
-                guild_id = str(ctx.guild.id)
-                session.execute(sa_delete(VerifiedMember).where(VerifiedMember.guild_id == guild_id))
-                session.flush()
-                count = 0
-                valid_cols = {c.name for c in VerifiedMember.__table__.columns} - {"id"}
-                for m in backup.data["verified_members"]:
-                    clean = {k: v for k, v in m.items() if k in valid_cols}
-                    session.add(VerifiedMember(**clean))
-                    count += 1
-                results.append(f"👥 Members: {count}")
+            # (Verified members restore removed — model no longer exists)
 
             session.commit()
             embed = discord.Embed(
@@ -540,18 +520,10 @@ class ServerBackupCog(commands.Cog):
                             except Exception:
                                 bot_config[table_name] = []
 
-                    members_data = []
-                    if sched.include_verified_members:
-                        members = session.execute(
-                            select(VerifiedMember).where(VerifiedMember.guild_id == guild_id)
-                        ).scalars().all()
-                        members_data = [_row_to_dict(m) for m in members]
-
                     full_data = {
                         "discord": discord_data,
                         "messages": msg_data,
                         "bot_config": bot_config,
-                        "verified_members": members_data,
                     }
                     size_bytes = len(json.dumps(full_data, default=str).encode())
                     msg_count = sum(len(ch.get("messages", [])) for ch in msg_data.values())
@@ -563,7 +535,7 @@ class ServerBackupCog(commands.Cog):
                         data=full_data,
                         channel_count=len(discord_data.get("channels", [])),
                         role_count=len(discord_data.get("roles", [])),
-                        member_count=len(members_data),
+                        member_count=0,
                         config_count=config_count,
                         message_count=msg_count,
                         size_bytes=size_bytes,

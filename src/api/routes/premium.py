@@ -16,7 +16,6 @@ from src.models.models import (
     SystemConfig,
     PremiumCoupon,
     CouponRedemption,
-    VerificationConfig,
 )
 from src.api.deps import get_guild_id, require_auth, require_owner
 
@@ -26,38 +25,7 @@ logger = logging.getLogger(__name__)
 # ── Premium feature cleanup ────────────────────────────────────────────────────
 # Maps feature key → list of (model, field, reset_value) to clear when revoked.
 # reset_value=None → NULL, reset_value=<other> → set to that default value.
-_FEATURE_CLEANUP: dict[str, list[tuple]] = {
-    # Background music
-    "background_music": [(VerificationConfig, "music_url", None)],
-    # Custom domain
-    "custom_domain": [(VerificationConfig, "custom_domain", None)],
-    # Custom footer text
-    "custom_footer": [(VerificationConfig, "page_footer_text", None)],
-    # Custom CSS
-    "custom_css_feature": [(VerificationConfig, "custom_css", None)],
-    # Animated GIF — clear gif backgrounds/logos (keep non-gif URLs intact, just null)
-    "animated_gif": [
-        (VerificationConfig, "page_logo_url", None),
-        (VerificationConfig, "page_background_url", None),
-        (VerificationConfig, "cursor_url", None),
-        (VerificationConfig, "banner_url", None),
-    ],
-    # Advanced captcha (hCaptcha / Turnstile) → reset to none
-    "advanced_captcha": [(VerificationConfig, "captcha_type", "none")],
-    # Verification protection features
-    "verification_protection": [
-        (VerificationConfig, "block_vpn", False),
-        (VerificationConfig, "block_mobile", False),
-        (VerificationConfig, "block_scammers", False),
-        (VerificationConfig, "auto_ban_alts", False),
-        (VerificationConfig, "deny_alt_role", False),
-        (VerificationConfig, "min_account_age_days", 0),
-    ],
-    # Advanced blocklist (IP, country, ASN, email)
-    "advanced_blocklist": [(VerificationConfig, "vpn_api_key", None)],
-    # Multi-server pull
-    "multi_server_pull": [(VerificationConfig, "pull_cooldown_hours", 10)],
-}
+_FEATURE_CLEANUP: dict[str, list[tuple]] = {}
 
 def _cleanup_premium_features(guild_id: str, lost_features: set[str], db) -> None:
     """Clear guild data for features that are no longer accessible."""

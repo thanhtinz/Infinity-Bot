@@ -18,14 +18,12 @@ from src.api.routes.features import router as features_router
 from src.api.routes.public import router as public_router
 from src.api.routes.moderation import router as moderation_router
 from src.api.routes.server_backup import router as server_backup_router
-from src.api.routes.verification import router as verification_router
-from src.api.routes.member_pull import router as member_pull_router
-from src.api.routes.verify_page import router as verify_page_router
+
 from src.api.routes.files import router as files_router
 from src.api.routes.staff_permissions import router as staff_permissions_router
 from src.api.routes.firewall import router as firewall_router
 from src.api.routes.alerts import router as alerts_router
-from src.api.routes.guild_bot import router as guild_bot_router
+
 from src.api.routes.premium import router as premium_router
 from src.api.routes.ai_chat import router as ai_chat_router
 from src.api.routes.autorole import router as autorole_router
@@ -54,14 +52,10 @@ router.include_router(features_router, tags=["features"])
 router.include_router(public_router, tags=["public"])
 router.include_router(moderation_router, tags=["moderation"])
 router.include_router(server_backup_router, tags=["server-backup"])
-router.include_router(verification_router, tags=["verification"])
-router.include_router(member_pull_router, tags=["member-pull"])
-router.include_router(verify_page_router, tags=["verify-page"])
 router.include_router(files_router, tags=["files"])
 router.include_router(staff_permissions_router, tags=["staff-permissions"])
 router.include_router(firewall_router, tags=["firewall"])
 router.include_router(alerts_router, tags=["alerts"])
-router.include_router(guild_bot_router, tags=["guild-bot"])
 router.include_router(premium_router, tags=["premium"])
 router.include_router(ai_chat_router, tags=["ai-chat"])
 router.include_router(autorole_router, tags=["autorole"])

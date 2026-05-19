@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Database, Download, RotateCcw, Trash2, Plus, Settings2, Users, Clock,
+  Database, Download, RotateCcw, Trash2, Plus, Settings2, Clock,
   CheckCircle2, XCircle, Loader2, Save, Calendar, HardDrive,
 } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/infinity";
@@ -29,18 +29,16 @@ import {
 } from "./shared";
 
 // ── Backup type options ────────────────────────────────────────────────────
-type BackupType = "all" | "bot_config" | "verified_members";
+type BackupType = "all" | "bot_config";
 
 const BACKUP_TYPE_OPTIONS: { value: BackupType; label: string; icon: React.ReactNode; desc: string }[] = [
-  { value: "all",              label: "All",             icon: <Database className="h-4 w-4" />,  desc: "Bot config + Verified members" },
+  { value: "all",              label: "All",             icon: <Database className="h-4 w-4" />,  desc: "Bot config + Discord structure" },
   { value: "bot_config",       label: "Bot Config",      icon: <Settings2 className="h-4 w-4" />, desc: "Settings, embeds, channels" },
-  { value: "verified_members", label: "Verified Members",icon: <Users className="h-4 w-4" />,    desc: "Member verification data only" },
 ];
 
 function typeToPayload(t: BackupType) {
   return {
     include_bot_config:       t === "all" || t === "bot_config",
-    include_verified_members: t === "all" || t === "verified_members",
   };
 }
 
@@ -91,7 +89,6 @@ export function BackupPage() {
   const restoreMut = useMutation({
     mutationFn: (item: ServerBackupItem) => restoreBackup(item.id, {
       restore_bot_config:       restoreType === "all" || restoreType === "bot_config",
-      restore_verified_members: restoreType === "all" || restoreType === "verified_members",
       restore_discord:          restoreType === "all",
     }),
     onSuccess: () => {

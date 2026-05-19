@@ -2868,59 +2868,7 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
-  // ── Security & Recovery ──
-  verification_log: {
-    vi: {
-      title: "✅ Verification Successful",
-      description: "{user.mention} has been verified successfully.",
-      color: "#57F287",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "👤 User", value: "{user.tag}", inline: true },
-        { name: "📧 Email", value: "{email}", inline: true },
-        { name: "🌐 IP", value: "{ip}", inline: true },
-        { name: "⚠️ Risk Score", value: "{risk_score}", inline: true },
-      ],
-      enabled: true,
-    },
-    en: {
-      title: "✅ Verification Successful",
-      description: "{user.mention} has been verified successfully.",
-      color: "#57F287",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "👤 User", value: "{user.tag}", inline: true },
-        { name: "📧 Email", value: "{email}", inline: true },
-        { name: "🌐 IP", value: "{ip}", inline: true },
-        { name: "⚠️ Risk Score", value: "{risk_score}", inline: true },
-      ],
-      enabled: true,
-    },
-  },
-  verification_denied: {
-    vi: {
-      title: "❌ Verification Denied",
-      description: "A user was denied verification.",
-      color: "#ED4245",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "👤 User", value: "{user.tag}", inline: true },
-        { name: "📝 Reason", value: "{reason}", inline: false },
-      ],
-      enabled: true,
-    },
-    en: {
-      title: "❌ Verification Denied",
-      description: "A user was denied verification.",
-      color: "#ED4245",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "👤 User", value: "{user.tag}", inline: true },
-        { name: "📝 Reason", value: "{reason}", inline: false },
-      ],
-      enabled: true,
-    },
-  },
+  // ── Backup & Restore ──
   backup_completed: {
     vi: {
       title: "✅ Backup Completed",
@@ -2982,50 +2930,6 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       color: "#57F287",
       author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
       fields: [],
-      enabled: true,
-    },
-  },
-  member_pull_started: {
-    vi: {
-      title: "🔄 Pulling Members...",
-      description: "Pulling **{total_members}** members back to the server.",
-      color: "#5865F2",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [],
-      enabled: true,
-    },
-    en: {
-      title: "🔄 Pulling Members...",
-      description: "Pulling **{total_members}** members back to the server.",
-      color: "#5865F2",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [],
-      enabled: true,
-    },
-  },
-  member_pull_completed: {
-    vi: {
-      title: "✅ Member Pull Completed",
-      description: "Members have been pulled back to the server.",
-      color: "#57F287",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "✅ Success", value: "{pulled}", inline: true },
-        { name: "❌ Failed", value: "{failed}", inline: true },
-        { name: "📊 Total", value: "{total}", inline: true },
-      ],
-      enabled: true,
-    },
-    en: {
-      title: "✅ Member Pull Completed",
-      description: "Members have been pulled back to the server.",
-      color: "#57F287",
-      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
-      fields: [
-        { name: "✅ Success", value: "{pulled}", inline: true },
-        { name: "❌ Failed", value: "{failed}", inline: true },
-        { name: "📊 Total", value: "{total}", inline: true },
-      ],
       enabled: true,
     },
   },

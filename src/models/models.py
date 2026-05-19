@@ -42,9 +42,6 @@ class SystemConfig(Base):
     shard_count = Column(Integer, nullable=True)  # None = auto
     shop_leaderboard_reset_at = Column(DateTime, nullable=True)
     language = Column(String, default="en")
-    # ── Security / VPN detection API config ──
-    vpn_api_key = Column(String, nullable=True)
-    vpn_api_provider = Column(String, default="proxycheck")  # proxycheck | ipqualityscore
     # ── Currency & Payment ──
     currency = Column(String, default="VND")            # ISO 4217
     currency_symbol = Column(String, default="₫")
@@ -655,7 +652,7 @@ class ServerBackup(Base):
     guild_id = Column(String, index=True)
     backup_type = Column(String, default="manual")       # manual | scheduled | auto
     status = Column(String, default="in_progress")        # in_progress | completed | failed
-    data = Column(JSON)  # { discord: {...}, bot_config: {...}, verified_members: [...] }
+    data = Column(JSON)  # { discord: {...}, bot_config: {...} }
     channel_count = Column(Integer, default=0)
     role_count = Column(Integer, default=0)
     member_count = Column(Integer, default=0)
@@ -678,160 +675,8 @@ class BackupSchedule(Base):
     include_messages = Column(Boolean, default=True)
     message_limit = Column(Integer, default=100)
     include_bot_config = Column(Boolean, default=True)
-    include_verified_members = Column(Boolean, default=True)
     last_backup_at = Column(DateTime, nullable=True)
     next_backup_at = Column(DateTime, nullable=True)
-
-
-class VerifiedMember(Base):
-    """Members verified via OAuth2 — used for pull/restore after nuke."""
-    __tablename__ = "verified_members"
-    id = Column(Integer, primary_key=True)
-    guild_id = Column(String, index=True)
-    source_guild_name = Column(String, nullable=True)   # guild name at time of verify
-    discord_id = Column(String, index=True)
-    username = Column(String, nullable=True)
-    discriminator = Column(String, nullable=True)
-    avatar = Column(String, nullable=True)
-    email = Column(String, nullable=True)
-    ip_address = Column(String, nullable=True)
-    roles = Column(JSON, default=list)
-    access_token = Column(String, nullable=True)
-    refresh_token = Column(String, nullable=True)
-    token_expires_at = Column(DateTime, nullable=True)
-    verified_at = Column(DateTime, default=datetime.datetime.utcnow)
-    last_seen = Column(DateTime, nullable=True)
-    is_blacklisted = Column(Boolean, default=False)
-    risk_score = Column(Integer, default=0)
-    metadata_ = Column("metadata", JSON, default=dict)  # connected accounts, etc.
-    __table_args__ = (UniqueConstraint("guild_id", "discord_id"),)
-
-
-class MemberPull(Base):
-    """Track member pull (rejoin) operations."""
-    __tablename__ = "member_pulls"
-    id = Column(Integer, primary_key=True)
-    guild_id = Column(String, index=True)
-    status = Column(String, default="pending")  # pending | in_progress | completed | failed
-    total_members = Column(Integer, default=0)
-    pulled_members = Column(Integer, default=0)
-    failed_members = Column(Integer, default=0)
-    restore_roles = Column(Boolean, default=True)
-    join_delay_seconds = Column(Integer, default=1)
-    target_guild_id = Column(String, nullable=True)   # source server to pull from
-    role_ids = Column(JSON, default=list)              # roles to assign after pull
-    started_at = Column(DateTime, nullable=True)
-    completed_at = Column(DateTime, nullable=True)
-    error = Column(Text, nullable=True)
-    log = Column(JSON, default=list)
-
-
-class VerificationConfig(Base):
-    """Per-guild verification page configuration."""
-    __tablename__ = "verification_configs"
-    id = Column(Integer, primary_key=True)
-    guild_id = Column(String, unique=True, index=True)
-    enabled = Column(Boolean, default=False)
-    verified_role_id = Column(String, nullable=True)
-    unverified_role_id = Column(String, nullable=True)
-    verify_channel_id = Column(String, nullable=True)
-    log_channel_id = Column(String, nullable=True)
-    # Branding
-    page_title = Column(String, default="Verify")
-    page_description = Column(Text, nullable=True)
-    page_color = Column(String, default="#5865F2")
-    page_logo_url = Column(String, nullable=True)
-    page_background_url = Column(String, nullable=True)
-    button_text = Column(String, default="Verify with Discord")
-    success_message = Column(Text, default="You have been verified!")
-    # Security
-    captcha_enabled = Column(Boolean, default=False)
-    captcha_type = Column(String, default="none")  # none | button | emoji | math | slider
-    captcha_difficulty = Column(String, default="medium")  # easy | medium | hard
-    min_account_age_days = Column(Integer, default=0)
-    block_vpn = Column(Boolean, default=False)
-    kick_on_deauth = Column(Boolean, default=False)
-    close_page_after_verify = Column(Boolean, default=True)
-    # Extra branding
-    page_footer_text = Column(String, nullable=True)
-    page_theme = Column(String, default="dark")       # dark | light | glass
-    custom_css = Column(Text, nullable=True)
-    redirect_url = Column(String, nullable=True)
-    terms_url = Column(String, nullable=True)
-    # Access control
-    verify_password = Column(String, nullable=True)
-    # ── Advanced Customization ──
-    # Media
-    banner_url = Column(String, nullable=True)
-    cursor_url = Column(String, nullable=True)
-    # Appearance
-    font_family = Column(String, default="Inter")
-    bg_effect = Column(String, default="none")        # none | stars | particles | gradient | rain
-    # Colors
-    bg_color = Column(String, default="#0b0d14")
-    text_color = Column(String, default="#ffffff")
-    btn_color = Column(String, default="#5865F2")
-    btn_border_color = Column(String, default="#5865F2")
-    card_border_color = Column(String, default="#1a1d2e")
-    card_bg_color = Column(String, default="#1a1d2e")
-    card_opacity = Column(Integer, default=95)         # 0–100 percent
-    content_opacity = Column(Integer, default=100)     # 0–100 percent
-    # Effects
-    typewriter_effect = Column(Boolean, default=False)
-    typewriter_desc_effect = Column(Boolean, default=False)
-    glow_effect = Column(Boolean, default=False)
-    tilt_effect = Column(Boolean, default=False)
-    # Content
-    bio_description = Column(Text, nullable=True)
-    # Socials (JSON: {"twitter": "url", "github": "url", ...})
-    socials = Column(JSON, default=dict)
-    # ── Protection ──
-    block_mobile = Column(Boolean, default=False)         # block wireless/mobile networks
-    block_scammers = Column(Boolean, default=False)       # block known scammer accounts
-    deny_alt_role = Column(Boolean, default=False)        # don't give verified role to alts
-    auto_ban_alts = Column(Boolean, default=False)        # automatically ban alt accounts
-    no_save_ip = Column(Boolean, default=False)           # don't store IP addresses
-    # ── OAuth Permissions ──
-    guild_join_enabled = Column(Boolean, default=True)    # "Join servers for you" OAuth scope
-    force_all_permissions = Column(Boolean, default=False) # force members to accept all perms
-    # ── Notifications ──
-    notify_success_role_id = Column(String, nullable=True)  # role pinged on successful verify
-    notify_blocked_role_id = Column(String, nullable=True)  # role pinged on blocked events
-    # ── Gateway ──
-    gateway_guild_id = Column(String, nullable=True)       # add to extra server on verify
-    # ── Passwords (JSON list of {password, label})
-    verify_passwords = Column(JSON, default=list)
-    # ── VPN / Proxy detection (per-guild, NOT owner-level) ──
-    vpn_api_key = Column(String, nullable=True)
-    vpn_api_provider = Column(String, default="proxycheck")  # proxycheck | ipqualityscore
-    # ── Custom Domain ──
-    custom_domain = Column(String, nullable=True)  # e.g. "verify.myserver.com"
-    # ── Music ──
-    music_url = Column(String, nullable=True)  # Background audio URL for verify page
-    # ── Pull Cooldown ──
-    pull_cooldown_hours = Column(Integer, default=10)  # Cooldown between pulls (0 = no cooldown)
-    # ── Custom Slug ──
-    verify_slug = Column(String, nullable=True, unique=True)  # e.g. "myserver" → /verify/myserver
-    # ── Captcha ──
-    captcha_type = Column(String, default="none")  # none | button | emoji | math | slider
-    captcha_difficulty = Column(String, default="medium")  # easy | medium | hard
-
-
-class GuildBot(Base):
-    """Per-guild custom bot — allows each guild to use their own bot token for verification."""
-    __tablename__ = "guild_bots"
-    id = Column(Integer, primary_key=True)
-    guild_id = Column(String, unique=True, index=True)
-    bot_token = Column(String, nullable=True)
-    client_id = Column(String, nullable=True)
-    client_secret = Column(String, nullable=True)
-    bot_name = Column(String, nullable=True)
-    bot_avatar_url = Column(String, nullable=True)
-    status = Column(String, default="inactive")  # inactive | active | error
-    error_message = Column(String, nullable=True)
-    last_validated_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 
 class StaffPermission(Base):
@@ -844,7 +689,6 @@ class StaffPermission(Base):
     # Granular permissions (each is a feature section)
     can_shop = Column(Boolean, default=False)
     can_moderation = Column(Boolean, default=False)
-    can_verification = Column(Boolean, default=False)
     can_community = Column(Boolean, default=False)
     can_embeds = Column(Boolean, default=False)
     can_roles = Column(Boolean, default=False)

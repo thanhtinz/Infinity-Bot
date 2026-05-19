@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/staff-permissions", tags=["staff-permissions"])
 
 PERM_FIELDS = [
-    "can_shop", "can_moderation", "can_verification", "can_community",
+    "can_shop", "can_moderation", "can_community",
     "can_embeds", "can_roles", "can_utilities", "can_backup", "can_config", "can_ai",
     "can_forms", "can_reminders",
 ]

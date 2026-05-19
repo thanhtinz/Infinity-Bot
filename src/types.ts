@@ -28,9 +28,6 @@ export interface SystemConfig {
   public_app_url?: string;
   support_server_url?: string;
   language?: string;
-  // VPN / Security
-  has_vpn_api_key?: boolean;
-  vpn_api_provider?: string;
   // Currency & Payment
   currency?: string;
   currency_symbol?: string;

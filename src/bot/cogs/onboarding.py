@@ -31,7 +31,7 @@ def _auto_create_guild_configs(guild_id: str, guild_name: str, guild_icon: str |
     from src.models.models import (
         SystemConfig,
         LoggingConfig, AutoModConfig,
-        ModerationConfig, VerificationConfig,
+        ModerationConfig,
     )
 
     config_models = [
@@ -39,7 +39,6 @@ def _auto_create_guild_configs(guild_id: str, guild_name: str, guild_icon: str |
         (LoggingConfig, {"guild_id": guild_id}),
         (AutoModConfig, {"guild_id": guild_id}),
         (ModerationConfig, {"guild_id": guild_id}),
-        (VerificationConfig, {"guild_id": guild_id}),
     ]
 
     try:
