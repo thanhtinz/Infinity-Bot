@@ -29,9 +29,6 @@ export function LandingPage() {
       <section className="relative pt-[72px] overflow-hidden">
         {/* Gradient bg */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#1E1E2D] via-[#262932] to-[#1E1E2D]" />
-        {/* Glow effects */}
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#009DB5]/8 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-[#F94C8E]/5 rounded-full blur-[120px]" />
 
         <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-24 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#009DB5]/10 border border-[#009DB5]/20 mb-8">
