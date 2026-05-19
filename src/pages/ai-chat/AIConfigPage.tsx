@@ -14,7 +14,7 @@ import { useDiscordChannels, useDiscordRoles } from "@/hooks/useDiscordData";
 import type { DiscordChannel } from "@/hooks/useDiscordData";
 import {
   BrainCircuit, Save, Loader2, CheckCircle2, XCircle,
-  Bot, Key, MessageSquare, Settings2,
+  Bot, Key, MessageSquare,
   Sparkles, FlaskConical, FolderOpen, Eye, EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

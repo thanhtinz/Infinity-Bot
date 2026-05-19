@@ -8,9 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
 import {
-  Bell, Trash2, Clock, RefreshCw, CheckCircle, ListTodo, Loader2,
+  Bell, Trash2, Clock, RefreshCw, CheckCircle, ListTodo,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

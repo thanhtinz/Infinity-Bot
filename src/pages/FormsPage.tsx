@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,8 +18,8 @@ import { useDiscordChannels, useDiscordRoles } from "@/hooks/useDiscordData";
 import type { DiscordChannel } from "@/hooks/useDiscordData";
 import { useGuild } from "@/contexts/GuildContext";
 import {
-  ClipboardList, Plus, Trash2, Save, Loader2, CheckCircle, XCircle,
-  Clock, Eye, MessageSquare, FileText, BarChart3,
+  ClipboardList, Plus, Trash2, Loader2, CheckCircle, XCircle,
+  Clock, Eye, FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -114,7 +114,7 @@ export function FormsPage() {
     enabled: !!selectedGuildId,
   });
 
-  const { data: submissions = [], isLoading: submissionsLoading } = useQuery<FormSubmission[]>({
+  const { data: submissions = [] } = useQuery<FormSubmission[]>({
     queryKey: ["forms-submissions", selectedGuildId, filterTemplateId, filterStatus],
     queryFn: () => {
       const params = new URLSearchParams();

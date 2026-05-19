@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { apiFetch } from "@/hooks/useApi";
 import { useDiscordRoles } from "@/hooks/useDiscordData";
 import { useGuild } from "@/contexts/GuildContext";
 import {
-  UserPlus, Plus, Trash2, Save, Loader2, Clock, Bot, Shield,
+  UserPlus, Plus, Trash2, Loader2, Clock, Bot, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

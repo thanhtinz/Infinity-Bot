@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
 import {
-  BarChart3, Clock, CheckCircle, Users,
+  BarChart3, CheckCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
