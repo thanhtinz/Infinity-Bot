@@ -618,11 +618,6 @@ function Header() {
           </kbd>
         </Button>
 
-        {/* Theme toggle */}
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100" onClick={cycleTheme} title={`Theme: ${theme}`}>
-          {resolved === "dark" ? <Moon className="w-[18px] h-[18px]" /> : <Sun className="w-[18px] h-[18px]" />}
-        </Button>
-
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg relative text-gray-600 hover:text-gray-900 hover:bg-gray-100">
           <Bell className="w-[18px] h-[18px]" />
@@ -750,9 +745,6 @@ function MobileNav() {
       <div className="flex items-center gap-1">
         <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-600 hover:text-gray-900 hover:bg-gray-100" asChild>
           <Link to="/profile"><User className="w-4 h-4" /></Link>
-        </Button>
-        <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-600 hover:text-gray-900 hover:bg-gray-100" onClick={cycleTheme}>
-          {resolved === "dark" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
         </Button>
       </div>
     </div>

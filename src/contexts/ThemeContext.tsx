@@ -27,16 +27,16 @@ function resolve(theme: Theme): "light" | "dark" {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem("theme") as Theme | null;
-    return saved && ["light", "dark", "system"].includes(saved) ? saved : "dark";
+    return saved && ["light", "dark", "system"].includes(saved) ? saved : "light";
   });
 
   const resolved = resolve(theme);
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle("dark", resolved === "dark");
-    root.classList.toggle("light", resolved === "light");
-    localStorage.setItem("theme", theme);
+    root.classList.remove("dark");
+    root.classList.add("light");
+    localStorage.setItem("theme", "light");
   }, [theme, resolved]);
 
   // Listen for system theme changes when "system" is selected
