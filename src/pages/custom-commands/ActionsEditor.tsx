@@ -83,8 +83,8 @@ export function ActionsEditor({ form, onFormChange, open, onOpenChange }: Props)
       {open && (
         <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
           <p className="text-xs text-muted-foreground">
-            Actions thực thi <strong>sau responses</strong>, theo thứ tự. Hỗ trợ vars như{" "}
-            <code className="text-xs bg-muted px-1 rounded">{"{user.mention}"}</code> trong config.
+            Actions run <strong>after responses</strong>, in order. Vars like{" "}
+            <code className="text-xs bg-muted px-1 rounded">{"{user.mention}"}</code> are supported in config fields.
           </p>
 
           {/* Action list */}
@@ -112,7 +112,7 @@ export function ActionsEditor({ form, onFormChange, open, onOpenChange }: Props)
               onClick={() => setShowMenu((s) => !s)}
             >
               <Plus className="h-3.5 w-3.5" />
-              Thêm action
+              Add action
             </Button>
 
             {showMenu && (
@@ -122,7 +122,7 @@ export function ActionsEditor({ form, onFormChange, open, onOpenChange }: Props)
                     autoFocus
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Tìm action..."
+                    placeholder="Search actions..."
                     className="h-8 text-sm"
                   />
                 </div>
@@ -145,7 +145,7 @@ export function ActionsEditor({ form, onFormChange, open, onOpenChange }: Props)
                     </div>
                   ))}
                   {filtered.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">Không tìm thấy</p>
+                    <p className="text-sm text-muted-foreground text-center py-4">No results found</p>
                   )}
                 </div>
               </div>

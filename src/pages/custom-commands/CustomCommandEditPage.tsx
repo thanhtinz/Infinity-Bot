@@ -5,6 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
@@ -16,8 +25,10 @@ import {
   emptyEmbed,
   emptyField,
   emptyForm,
+  TRIGGER_GROUPS,
+  TRIGGER_BY_TYPE,
 } from "./ccConstants";
-import type { CommandForm } from "./ccTypes";
+import type { CommandForm, TriggerType } from "./ccTypes";
 import { VariablesReference } from "./VariablesReference";
 import { CommandOptionsSection } from "./CommandOptionsSection";
 import { CommandPermissionsSection } from "./CommandPermissionsSection";
@@ -25,7 +36,6 @@ import { CommandAdvancedSection } from "./CommandAdvancedSection";
 import { CommandAdditionalResponses } from "./CommandAdditionalResponses";
 import { CommandResponseSection } from "./CommandResponseSection";
 import { CommandSettingsSection } from "./CommandSettingsSection";
-import { TriggerPickerSection } from "./TriggerPickerSection";
 import { ActionsEditor } from "./ActionsEditor";
 import { apiFetch } from "@/hooks/useApi";
 
@@ -300,11 +310,6 @@ export function CustomCommandEditPage() {
         </div>
       </div>
       <div className="max-w-2xl mx-auto p-6 space-y-6">
-        {/* ── Section: Trigger ── */}
-        <TriggerPickerSection form={form} onFormChange={setForm} />
-
-        <Separator />
-
         {/* ── Section: Basic Info ── */}
         <div className="space-y-4">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
@@ -312,9 +317,40 @@ export function CustomCommandEditPage() {
             Basic info
           </p>
 
+          {/* Trigger */}
+          <div className="space-y-2">
+            <Label>Trigger</Label>
+            <Select
+              value={form.event_trigger}
+              onValueChange={(v) =>
+                setForm((p) => ({ ...p, event_trigger: v as TriggerType, trigger_config: {} }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue>
+                  {TRIGGER_BY_TYPE[form.event_trigger]
+                    ? `${TRIGGER_BY_TYPE[form.event_trigger].icon} ${TRIGGER_BY_TYPE[form.event_trigger].label}`
+                    : "Select trigger..."}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="max-h-80">
+                {TRIGGER_GROUPS.map((g) => (
+                  <SelectGroup key={g.group}>
+                    <SelectLabel>{g.emoji} {g.group}</SelectLabel>
+                    {g.triggers.map((t) => (
+                      <SelectItem key={t.type} value={t.type}>
+                        {t.icon} {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Name */}
           <div className="space-y-2">
-            <Label>Name Command</Label>
+            <Label>Name</Label>
             {form.event_trigger === "prefix_command" ? (
               <div className="flex items-center gap-0">
                 <span className="inline-flex items-center rounded-l-md border border-r-0 border-input bg-muted px-3 h-9 text-sm font-mono text-muted-foreground">
@@ -341,7 +377,7 @@ export function CustomCommandEditPage() {
                     name: e.target.value.replace(/\s/g, "").toLowerCase(),
                   }))
                 }
-                placeholder="tên-định-danh (dùng để phân biệt các lệnh)"
+                placeholder="identifier (used to distinguish commands with the same trigger)"
               />
             )}
             {form.name && form.event_trigger === "prefix_command" && (
