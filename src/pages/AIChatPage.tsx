@@ -18,7 +18,8 @@ import {
   AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useDiscordData } from "@/hooks/useDiscordData";
+import { useDiscordChannels, useDiscordRoles } from "@/hooks/useDiscordData";
+import type { DiscordChannel } from "@/hooks/useDiscordData";
 import {
   BrainCircuit, Save, Loader2, CheckCircle2, XCircle,
   Plus, Trash2, Upload, FileText, Eye, EyeOff,
@@ -41,6 +42,8 @@ interface AIChatConfig {
   respond_to_mention: boolean;
   respond_prefix: string;
   ticket_auto_reply: boolean;
+  ticket_category_ids: string[];
+  ticket_reply_mode: string;
   image_gen_enabled: boolean;
   image_provider: string | null;
   image_api_key: string | null;
@@ -82,6 +85,7 @@ const DEFAULT_CONFIG: AIChatConfig = {
   enabled: false, provider: "gemini", model: null, api_key: null, api_key_set: false,
   system_prompt: null, listen_channels: [], ai_manager_role: null,
   respond_to_mention: true, respond_prefix: "?", ticket_auto_reply: false,
+  ticket_category_ids: [], ticket_reply_mode: "first_msg",
   image_gen_enabled: false, image_provider: null, image_api_key: null,
   image_api_key_set: false, max_history: 10,
 };
@@ -91,7 +95,11 @@ const DEFAULT_CONFIG: AIChatConfig = {
 export function AIChatPage() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { channels, roles } = useDiscordData();
+  const { data: allChannels = [] } = useDiscordChannels();
+  const { data: allRoles = [] } = useDiscordRoles();
+  const channels = allChannels.filter(c => c.type === 0 || c.type === 5);
+  const categories = allChannels.filter(c => c.type === 4);
+  const roles = allRoles;
 
   const [form, setForm] = useState<AIChatConfig>(DEFAULT_CONFIG);
   const [showKey, setShowKey] = useState(false);
@@ -401,7 +409,7 @@ export function AIChatPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch id="ticket-ai" checked={form.ticket_auto_reply} onCheckedChange={v => setForm(f => ({ ...f, ticket_auto_reply: v }))} />
-                  <Label htmlFor="ticket-ai">Auto-reply in Tickets</Label>
+                  <Label htmlFor="ticket-ai">Ticket AI (external bots)</Label>
                 </div>
               </div>
 
@@ -422,9 +430,7 @@ export function AIChatPage() {
               <div className="space-y-1.5">
                 <Label>Listen in channels <span className="text-xs font-normal text-muted-foreground">(empty = all)</span></Label>
                 <div className="border rounded-lg max-h-44 overflow-y-auto divide-y">
-                  {(channels as { id: string; name: string }[])
-                    .filter((c: any) => c.type === 0 || c.type === undefined)
-                    .map((ch: { id: string; name: string }) => (
+                  {channels.map((ch) => (
                       <label key={ch.id} className="flex items-center gap-2 px-3 py-2 hover:bg-accent cursor-pointer">
                         <input
                           type="checkbox"
@@ -452,7 +458,7 @@ export function AIChatPage() {
                   <SelectTrigger><SelectValue placeholder="No restriction" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none">No restriction</SelectItem>
-                    {(roles as { id: string; name: string }[]).map(r => (
+                    {roles.map(r => (
                       <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -460,6 +466,74 @@ export function AIChatPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Ticket AI (External Bots) */}
+          {form.ticket_auto_reply && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />Ticket AI Configuration
+                </CardTitle>
+                <CardDescription>
+                  AI will auto-reply to user messages in ticket channels created by external bots (Ticket Tool, TicketBot, etc.)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Reply mode */}
+                <div className="space-y-1.5">
+                  <Label>Reply Mode</Label>
+                  <Select
+                    value={form.ticket_reply_mode}
+                    onValueChange={v => setForm(f => ({ ...f, ticket_reply_mode: v }))}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="first_msg">First message only — reply once when user sends first message</SelectItem>
+                      <SelectItem value="all_msg">All messages — reply to every user message in ticket</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Ticket category select */}
+                <div className="space-y-1.5">
+                  <Label>Ticket Categories</Label>
+                  <p className="text-xs text-muted-foreground mb-1.5">
+                    Select the Discord categories where ticket bots create channels. AI will respond to messages in channels under these categories.
+                  </p>
+                  <div className="border rounded-lg max-h-44 overflow-y-auto divide-y">
+                    {categories.length === 0 ? (
+                      <p className="text-xs text-muted-foreground p-3">No categories found</p>
+                    ) : categories.map((cat) => (
+                      <label key={cat.id} className="flex items-center gap-2 px-3 py-2 hover:bg-accent cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={form.ticket_category_ids.includes(cat.id)}
+                          onChange={() => setForm(f => ({
+                            ...f,
+                            ticket_category_ids: f.ticket_category_ids.includes(cat.id)
+                              ? f.ticket_category_ids.filter(c => c !== cat.id)
+                              : [...f.ticket_category_ids, cat.id],
+                          }))}
+                          className="rounded"
+                        />
+                        <span className="text-sm">📁 {cat.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {form.ticket_category_ids.length > 0 && (
+                    <p className="text-xs text-muted-foreground">{form.ticket_category_ids.length} categor{form.ticket_category_ids.length !== 1 ? "ies" : "y"} selected</p>
+                  )}
+                </div>
+
+                <div className="rounded-lg bg-muted/40 border p-3 text-xs text-muted-foreground space-y-1">
+                  <p className="font-medium text-foreground">How it works</p>
+                  <p>• Bot detects channels inside the selected categories</p>
+                  <p>• When a user sends a message → AI responds using your training data + system prompt</p>
+                  <p>• Works with any ticket bot: Ticket Tool, TicketBot, Helper.gg, etc.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* System Prompt */}
           <Card>

@@ -119,6 +119,8 @@ class AIChatCog(commands.Cog):
         self.bot = bot
         # Per-guild typing locks to prevent concurrent requests
         self._processing: set[str] = set()
+        # Track ticket channels where first-msg reply was already sent
+        self._ticket_replied: set[str] = set()
 
     # ── Helpers ────────────────────────────────────────────────────────────
 
@@ -241,12 +243,37 @@ class AIChatCog(commands.Cog):
         if not cfg or not cfg.enabled:
             return
 
+        question = None
+
+        # ── Ticket channel detection (external bots) ─────────────────────
+        # If this channel's parent category is in ticket_category_ids,
+        # treat it as a ticket channel and respond to user messages.
+        ticket_cats = cfg.ticket_category_ids or []
+        if cfg.ticket_auto_reply and ticket_cats and hasattr(message.channel, "category_id"):
+            cat_id = str(message.channel.category_id) if message.channel.category_id else ""
+            if cat_id in ticket_cats:
+                # In "first_msg" mode, only respond if this is the first non-bot message
+                reply_mode = cfg.ticket_reply_mode or "first_msg"
+                if reply_mode == "first_msg":
+                    key = f"ticket_replied:{message.channel.id}"
+                    if key in self._ticket_replied:
+                        pass  # already replied, skip
+                    else:
+                        self._ticket_replied.add(key)
+                        question = message.content.strip()
+                else:
+                    # all_msg mode — respond to every user message in ticket
+                    question = message.content.strip()
+
+                if question:
+                    await self._respond(message, question)
+                    return
+
+        # ── Normal channel logic ─────────────────────────────────────────
         # Check channel whitelist
         listen_chs = cfg.listen_channels or []
         if listen_chs and str(message.channel.id) not in listen_chs:
             return
-
-        question = None
 
         # Trigger: @mention
         if cfg.respond_to_mention and self.bot.user in message.mentions:
@@ -360,6 +387,12 @@ class AIChatCog(commands.Cog):
         await ctx.respond(embed=embed)
 
     # ── Ticket auto-reply helper ─────────────────────────────────────────────
+
+    @commands.Cog.listener()
+    async def on_guild_channel_delete(self, channel):
+        """Clean up ticket tracking when a channel is deleted."""
+        key = f"ticket_replied:{channel.id}"
+        self._ticket_replied.discard(key)
 
     async def ticket_auto_reply(self, channel: discord.TextChannel, guild_id: str, question: str, user: discord.Member):
         """Called externally when a ticket is opened, if AI auto-reply is enabled."""

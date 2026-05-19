@@ -1021,6 +1021,8 @@ class AIChatConfig(Base):
     respond_to_mention  = Column(Boolean, default=True)
     respond_prefix      = Column(String, default="?")
     ticket_auto_reply   = Column(Boolean, default=False)
+    ticket_category_ids = Column(JSON, default=list)              # category IDs where ticket bots create channels
+    ticket_reply_mode   = Column(String, default="first_msg")     # first_msg | all_msg
     image_gen_enabled   = Column(Boolean, default=False)
     image_provider      = Column(String, nullable=True)           # gemini|openai
     image_api_key       = Column(Text, nullable=True)

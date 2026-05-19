@@ -70,6 +70,8 @@ def _config_to_dict(cfg: AIChatConfig, mask: bool = True) -> dict:
         "respond_to_mention": cfg.respond_to_mention,
         "respond_prefix": cfg.respond_prefix,
         "ticket_auto_reply": cfg.ticket_auto_reply,
+        "ticket_category_ids": cfg.ticket_category_ids or [],
+        "ticket_reply_mode": cfg.ticket_reply_mode or "first_msg",
         "image_gen_enabled": cfg.image_gen_enabled,
         "image_provider": cfg.image_provider,
         "image_api_key": _mask_key(cfg.image_api_key) if mask else cfg.image_api_key,
@@ -92,6 +94,7 @@ def get_config(db: Session = Depends(get_db), guild_id: str = Depends(get_guild_
             "system_prompt": None, "listen_channels": [],
             "ai_manager_role": None, "respond_to_mention": True,
             "respond_prefix": "?", "ticket_auto_reply": False,
+            "ticket_category_ids": [], "ticket_reply_mode": "first_msg",
             "image_gen_enabled": False, "image_provider": None,
             "image_api_key": None, "image_api_key_set": False,
             "max_history": 10,
@@ -112,7 +115,8 @@ def upsert_config(body: dict, db: Session = Depends(get_db), guild_id: str = Dep
     SIMPLE_FIELDS = [
         "enabled", "provider", "model", "system_prompt",
         "listen_channels", "ai_manager_role", "respond_to_mention",
-        "respond_prefix", "ticket_auto_reply", "image_gen_enabled",
+        "respond_prefix", "ticket_auto_reply", "ticket_category_ids",
+        "ticket_reply_mode", "image_gen_enabled",
         "image_provider", "max_history",
     ]
     for f in SIMPLE_FIELDS:
