@@ -184,6 +184,11 @@ const navGroups: NavGroup[] = [
       { to: "/scheduled-messages", icon: Clock, label: "nav_scheduledMessages", feature: "scheduler" },
       { to: "/embeds", icon: Layout, label: "nav_embeds" },
       { to: "/emojis", icon: Smile, label: "nav_emojis" },
+      { to: "/forms", icon: ClipboardList, label: "Forms", feature: "forms" },
+      { to: "/reminders", icon: Bell, label: "Reminders", feature: "reminders" },
+      { to: "/polls", icon: BarChart3, label: "Polls", feature: "polls" },
+      { to: "/social-feeds", icon: Rss, label: "Social Feeds", feature: "social_feeds" },
+      { to: "/stats-channels", icon: Activity, label: "Stats Channels", feature: "stats_channels" },
     ],
   },
   {
@@ -207,56 +212,6 @@ const navGroups: NavGroup[] = [
       { to: "/ai-chat/training", icon: BookOpen, label: "Training" },
       { to: "/ai-chat/history", icon: History, label: "History" },
       { to: "/ai-chat/images", icon: Image, label: "Image Gen" },
-    ],
-  },
-  {
-    key: "forms",
-    icon: ClipboardList,
-    label: "Forms",
-    feature: "forms",
-    staffPerm: "can_forms",
-    items: [
-      { to: "/forms", icon: ClipboardList, label: "Forms" },
-    ],
-  },
-  {
-    key: "reminders",
-    icon: Bell,
-    label: "Reminders",
-    feature: "reminders",
-    staffPerm: "can_reminders",
-    items: [
-      { to: "/reminders", icon: Bell, label: "Reminders" },
-    ],
-  },
-  {
-    key: "polls",
-    icon: BarChart3,
-    label: "Polls",
-    feature: "polls",
-    staffPerm: "can_community",
-    items: [
-      { to: "/polls", icon: BarChart3, label: "Polls" },
-    ],
-  },
-  {
-    key: "social_feeds",
-    icon: Rss,
-    label: "Social Feeds",
-    feature: "social_feeds",
-    staffPerm: "can_utilities",
-    items: [
-      { to: "/social-feeds", icon: Rss, label: "Social Feeds" },
-    ],
-  },
-  {
-    key: "stats_channels",
-    icon: Activity,
-    label: "Stats Channels",
-    feature: "stats_channels",
-    staffPerm: "can_utilities",
-    items: [
-      { to: "/stats-channels", icon: Activity, label: "Stats Channels" },
     ],
   },
   {
