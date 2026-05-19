@@ -17,7 +17,7 @@ import type { AIChatConfig } from "./shared";
 
 function SaveBtn({ onClick, pending }: { onClick: () => void; pending: boolean }) {
   return (
-    <Button variant="outline" size="sm" onClick={onClick} disabled={pending} className="gap-1.5 ml-auto shrink-0">
+    <Button size="sm" onClick={onClick} disabled={pending} className="gap-1.5 ml-auto shrink-0">
       {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
       <span className="hidden sm:inline">Save</span>
     </Button>
