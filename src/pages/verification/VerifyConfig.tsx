@@ -535,7 +535,8 @@ export function VerifyConfig() {
   };
 
   return (
-    <div className="space-y-4">
+    <PageContainer>
+      <PageHeader title="Verification" icon={Shield} description="Configure member verification for your server" />
 
       {/* ── Action buttons row ── */}
       <div className="grid grid-cols-2 gap-2">
@@ -1202,6 +1203,6 @@ export function VerifyConfig() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

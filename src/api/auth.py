@@ -21,25 +21,39 @@ if not JWT_SECRET:
 
 
 def get_public_base_url(request: Request) -> str:
+    # 1. Env var (most reliable — set by platform)
+    custom_domain = os.environ.get("WORKSHOP_CUSTOM_DOMAIN")
+    if custom_domain:
+        return f"https://{custom_domain}".rstrip("/")
+
     origin = request.headers.get("origin")
     referer = request.headers.get("referer")
     forwarded_proto = request.headers.get("x-forwarded-proto")
     forwarded_host = request.headers.get("x-forwarded-host")
+    host = request.headers.get("host")
 
-    if origin:
+    # 2. Origin header (present on XHR/fetch, not on navigations)
+    if origin and "discord.com" not in origin:
         return origin.rstrip("/")
 
-    if referer:
-        from urllib.parse import urlsplit
-
-        parsed = urlsplit(referer)
-        if parsed.scheme and parsed.netloc:
-            return f"{parsed.scheme}://{parsed.netloc}".rstrip("/")
-
+    # 3. x-forwarded-host (set by Cloudflare/proxy)
     if forwarded_host:
         proto = forwarded_proto or "https"
         return f"{proto}://{forwarded_host}".rstrip("/")
 
+    # 4. Host header (usually set, includes proxy host)
+    if host and "localhost" not in host and "127.0.0.1" not in host:
+        proto = forwarded_proto or "https"
+        return f"{proto}://{host}".rstrip("/")
+
+    # 5. Referer (skip if from discord.com — OAuth callback)
+    if referer and "discord.com" not in referer:
+        from urllib.parse import urlsplit
+        parsed = urlsplit(referer)
+        if parsed.scheme and parsed.netloc:
+            return f"{parsed.scheme}://{parsed.netloc}".rstrip("/")
+
+    # 6. Fallback
     base_url = str(request.base_url).rstrip("/")
     if base_url.startswith("http://localhost") or base_url.startswith("http://127.0.0.1"):
         vercel_url = os.environ.get("VERCEL_URL")
@@ -64,19 +78,19 @@ def get_discord_oauth_config(db, request: Request | None = None):
         client_id = config.discord_client_id
         client_secret = config.discord_client_secret
         discord_token = config.discord_token
-        public_app_url = config.public_app_url
 
     client_id = client_id or os.environ.get("DISCORD_CLIENT_ID")
     client_secret = client_secret or os.environ.get("DISCORD_CLIENT_SECRET")
-    public_app_url = public_app_url or os.environ.get("PUBLIC_APP_URL")
 
-    # Auto-detect from request headers if still missing
-    if not public_app_url and request:
+    # Derive public_app_url from the CURRENT request so redirects
+    # always match the domain the user is actually browsing from.
+    # Fall back to DB / env only if request detection fails.
+    if request:
         public_app_url = get_public_base_url(request)
-        # Auto-save to DB
-        if public_app_url and config and not config.public_app_url:
-            config.public_app_url = public_app_url
-            db.commit()
+    if not public_app_url and config:
+        public_app_url = config.public_app_url
+    if not public_app_url:
+        public_app_url = os.environ.get("PUBLIC_APP_URL")
 
     return config, client_id, client_secret, discord_token, public_app_url
 
@@ -92,6 +106,7 @@ async def login(request: Request, db = Depends(get_db)):
 
     domain = public_app_url.rstrip("/")
     redirect_uri = f"{domain}/api/auth/callback"
+    logger.info(f"[auth/login] domain={domain} redirect_uri={redirect_uri}")
     discord_auth_url = (
         f"https://discord.com/api/oauth2/authorize"
         f"?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope=identify%20guilds"
@@ -105,6 +120,10 @@ async def auth_callback(code: str, request: Request, response: Response, db = De
         raise HTTPException(status_code=500, detail="Discord OAuth is not configured")
     if not public_app_url:
         raise HTTPException(status_code=500, detail="Public app URL is not configured")
+
+    domain = public_app_url.rstrip("/")
+    redirect_uri = f"{domain}/api/auth/callback"
+    logger.info(f"[auth/callback] domain={domain} redirect_uri={redirect_uri} host={request.headers.get('host')} fwd_host={request.headers.get('x-forwarded-host')}")
 
     domain = public_app_url.rstrip("/")
     redirect_uri = f"{domain}/api/auth/callback"
