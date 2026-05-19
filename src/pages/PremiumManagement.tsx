@@ -49,6 +49,7 @@ import {
   Ticket,
   RefreshCw,
   Eye,
+  X,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -1311,7 +1312,7 @@ export function PremiumManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCouponDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setCouponDialogOpen(false)}><X className="h-4 w-4 sm:mr-2" /><span className="hidden sm:inline">Cancel</span></Button>
             <Button
               onClick={handleSaveCoupon}
               disabled={createCouponMutation.isPending || updateCouponMutation.isPending || !cpPlanId || !cpDays}

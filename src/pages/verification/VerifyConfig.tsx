@@ -687,8 +687,8 @@ export function VerifyConfig() {
 
           <div className="flex justify-end">
             <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
-              {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
-              Save
+              {configMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}
+              <span className="hidden sm:inline">Save</span>
             </Button>
           </div>
         </TabsContent>
@@ -839,7 +839,7 @@ export function VerifyConfig() {
 
               <div className="flex justify-end">
                 <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
-                  {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}Save
+                  {configMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}<span className="hidden sm:inline">Save</span>
                 </Button>
               </div>
             </div>
@@ -971,7 +971,7 @@ export function VerifyConfig() {
 
           <div className="flex justify-end">
             <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
-              {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}Save
+              {configMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}<span className="hidden sm:inline">Save</span>
             </Button>
           </div>
         </TabsContent>
@@ -997,7 +997,7 @@ export function VerifyConfig() {
             </Button>
             <div className="flex justify-end pt-2">
               <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
-                {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}Save
+                {configMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}<span className="hidden sm:inline">Save</span>
               </Button>
             </div>
           </div>
@@ -1112,7 +1112,7 @@ export function VerifyConfig() {
 
           <div className="flex justify-end">
             <Button size="sm" onClick={() => configMutation.mutate(configForm)} disabled={configMutation.isPending}>
-              {configMutation.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}Save
+              {configMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}<span className="hidden sm:inline">Save</span>
             </Button>
           </div>
         </TabsContent>
@@ -1152,8 +1152,8 @@ export function VerifyConfig() {
               </div>
             )}
             <div className="flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => setDomainDialogOpen(false)}>Cancel</Button>
-              <Button size="sm" onClick={() => { configMutation.mutate(configForm); setDomainDialogOpen(false); }}>Save</Button>
+              <Button variant="outline" size="sm" onClick={() => setDomainDialogOpen(false)}><X className="h-4 w-4 sm:mr-2" /><span className="hidden sm:inline">Cancel</span></Button>
+              <Button size="sm" onClick={() => { configMutation.mutate(configForm); setDomainDialogOpen(false); }}><Save className="h-4 w-4 sm:mr-2" /><span className="hidden sm:inline">Save</span></Button>
             </div>
           </div>
         </DialogContent>
@@ -1192,7 +1192,7 @@ export function VerifyConfig() {
               <Input value={fwNewRule.reason} onChange={e => setFwNewRule(p => ({ ...p, reason: e.target.value }))} placeholder="Why this rule?" />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => setFwAddOpen(false)}>Cancel</Button>
+              <Button variant="outline" size="sm" onClick={() => setFwAddOpen(false)}><X className="h-4 w-4 sm:mr-2" /><span className="hidden sm:inline">Cancel</span></Button>
               <Button size="sm" onClick={() => fwAddMutation.mutate()} disabled={!fwNewRule.target_value || fwAddMutation.isPending}>
                 {fwAddMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Plus className="mr-1.5 h-4 w-4" />}Add Rule
               </Button>

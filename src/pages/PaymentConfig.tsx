@@ -959,7 +959,7 @@ export function PaymentConfig() {
           ) : (
             <Save className="h-4 w-4" />
           )}
-          Save
+          <span className="hidden sm:inline">Save</span>
         </Button>
       </div>
     </div>

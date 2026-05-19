@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
 import { RoleSelect } from "@/components/RoleSelect";
-import { Shield, Plus, Pencil, Trash2, Users } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, Users, X } from "lucide-react";
 
 interface StaffPerm {
   id: number;
@@ -263,7 +263,8 @@ export function StaffPermissions() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              <X className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Cancel</span>
             </Button>
             <Button
               onClick={() => save.mutate()}

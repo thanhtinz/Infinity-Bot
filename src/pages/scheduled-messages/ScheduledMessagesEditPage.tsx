@@ -22,6 +22,8 @@ import {
   FileText,
   Layout,
   ToggleLeft,
+  Save,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -186,7 +188,8 @@ export function ScheduledMessagesEditPage() {
         <h1 className="font-semibold text-lg">{isNew ? "Create" : "Edit"} schedule</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={!form.channel_id || !form.send_at || isPending}>
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}
+            <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
           </Button>
         </div>
       </div>

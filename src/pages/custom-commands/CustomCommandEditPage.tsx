@@ -18,6 +18,8 @@ import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
   Terminal,
+  Save,
+  Loader2,
 } from "lucide-react";
 import type { CustomCommand, EmbedField } from "./ccTypes";
 import {
@@ -305,7 +307,8 @@ export function CustomCommandEditPage() {
         </h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}
+            <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
           </Button>
         </div>
       </div>

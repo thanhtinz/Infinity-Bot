@@ -193,8 +193,8 @@ export function ModerationSettings() {
               disabled={saveConfigMutation.isPending}
               onClick={() => saveConfigMutation.mutate(configForm)}
             >
-              <Save className="h-4 w-4 mr-2" />
-              {saveConfigMutation.isPending ? t("saving") : t("save")}
+              <Save className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">{saveConfigMutation.isPending ? t("saving") : t("save")}</span>
             </Button>
           </div>
         </CardContent>

@@ -547,11 +547,11 @@ export function PremiumPaymentConfig() {
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={saveMutation.isPending}>
           {saveMutation.isPending ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
           ) : (
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="h-4 w-4 sm:mr-2" />
           )}
-          Save config
+          <span className="hidden sm:inline">Save config</span>
         </Button>
       </div>
     </div>

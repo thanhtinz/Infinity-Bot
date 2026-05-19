@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
 import { RoleSelect } from "@/components/RoleSelect";
-import { Trophy, Plus, Pencil, Trash2, Award } from "lucide-react";
+import { Trophy, Plus, Pencil, Trash2, Award, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Milestone {
@@ -281,7 +281,8 @@ export default function SpendingMilestones() {
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteId(null)}>
-              Cancel
+              <X className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Cancel</span>
             </Button>
             <Button
               variant="destructive"

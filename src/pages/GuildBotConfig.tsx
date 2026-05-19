@@ -258,7 +258,7 @@ export function GuildBotConfig() {
           className="gap-2"
         >
           {saveMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Save
+          <span className="hidden sm:inline">Save</span>
         </Button>
         {data?.configured && (
           <Button

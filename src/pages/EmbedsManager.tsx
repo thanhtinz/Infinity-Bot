@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Trophy, Plus, Trash2,
   ChevronDown,
-  RotateCcw,
+  RotateCcw, Save,
   Type, Layout,
   MessageSquare,
   Package,
@@ -363,7 +363,8 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
             onClick={() => saveMutation.mutate(form)}
             disabled={saveMutation.isPending}
           >
-            {saveMutation.isPending ? "..." : t("save")}
+            <Save className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{saveMutation.isPending ? "..." : t("save")}</span>
           </Button>
         </div>
       </div>

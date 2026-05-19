@@ -280,7 +280,7 @@ export function CustomMessagesTab() {
           </DialogHeader>
           <BackupList getBackups={getBackups} loadBackup={loadBackup} deleteBackup={deleteBackup} />
           <DialogFooter>
-            <Button size="sm" onClick={saveBackup}><Save className="h-3.5 w-3.5 mr-1" />{t("embed_saveCurrentBackup")}</Button>
+            <Button size="sm" onClick={saveBackup}><Save className="h-3.5 w-3.5 sm:mr-2" /><span className="hidden sm:inline">{t("embed_saveCurrentBackup")}</span></Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

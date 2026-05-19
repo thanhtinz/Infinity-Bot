@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, Loader2 } from "lucide-react";
 
 import type { AutoResponderRule, EmbedField } from "./arTypes";
 import type { RuleForm } from "./arTypes";
@@ -279,7 +279,8 @@ export function AutoResponderEditPage() {
         </h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}
+            <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
           </Button>
         </div>
       </div>

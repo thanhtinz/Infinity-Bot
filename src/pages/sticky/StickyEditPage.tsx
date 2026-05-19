@@ -13,6 +13,8 @@ import { EmojiPicker } from "@/components/EmojiPicker";
 import {
   ArrowLeft,
   Hash,
+  Save,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
@@ -318,7 +320,8 @@ export function StickyEditPage() {
             onClick={handleSave}
             disabled={!form.channel_id || isPending}
           >
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}
+            <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
           </Button>
         </div>
       </div>

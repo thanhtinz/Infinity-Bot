@@ -10,7 +10,7 @@ import { RoleSelect } from "@/components/RoleSelect";
 import { EmbedBuilder, EMBED_DEFAULTS } from "@/components/EmbedBuilder";
 import type { EmbedFormData, EmbedField } from "@/components/EmbedBuilder";
 import { EmojiPicker } from "@/components/EmojiPicker";
-import { ArrowLeft, Plus, X } from "lucide-react";
+import { ArrowLeft, Plus, X, Save, Loader2 } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -243,7 +243,8 @@ export function SelectMenuRoleEditPage() {
         <h1 className="font-semibold text-lg">{isNew ? "Create" : "Edit"} Panel Select Menu Role</h1>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}
+            <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
           </Button>
         </div>
       </div>

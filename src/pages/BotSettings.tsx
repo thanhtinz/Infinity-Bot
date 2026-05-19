@@ -124,8 +124,8 @@ function GeneralSection() {
       </div>
 
       <Button onClick={save} disabled={saving} size="sm" className="gap-2">
-        <Save className="w-3.5 h-3.5" />
-        {saving ? t("saving") : t("saveGeneral")}
+        <Save className="h-4 w-4" />
+        <span className="hidden sm:inline">{saving ? t("saving") : t("saveGeneral")}</span>
       </Button>
     </div>
   );

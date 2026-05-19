@@ -241,7 +241,7 @@ export function SecurityConfig() {
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              Save Configuration
+              <span className="hidden sm:inline">Save Configuration</span>
             </Button>
           </div>
         </CardContent>

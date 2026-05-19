@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  ChevronDown, Hash, Pencil, ExternalLink, Loader2, Send,
+  ChevronDown, Hash, Pencil, ExternalLink, Loader2, Send, Save,
 } from "lucide-react";
 import type { CustomEmbed } from "./embedTypes";
 import { useT } from "@/i18n";
@@ -66,8 +66,8 @@ export function EditorToolbar({
       />
       {/* Save */}
       <Button size="sm" onClick={onSave} disabled={savePending}>
-        {savePending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-        {t("save")}
+        {savePending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}
+        <span className="hidden sm:inline">{t("save")}</span>
       </Button>
       {/* Send dropdown */}
       <DropdownMenu>

@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PackagePlus, X, ArrowLeft, Info, MessageSquare } from "lucide-react";
+import { PackagePlus, X, ArrowLeft, Info, MessageSquare, Save, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import type { Product, ProductPackage } from "../../types";
@@ -134,7 +134,8 @@ export function ProductEditPage() {
         <h1 className="font-semibold text-lg">{isNew ? "Create product" : "Edit product"}</h1>
         <div className="ml-auto">
           <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}
+            <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
           </Button>
         </div>
       </div>

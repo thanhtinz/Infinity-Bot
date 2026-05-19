@@ -7,6 +7,7 @@ import { useGuild } from "@/contexts/GuildContext";
 import { apiFetch } from "@/hooks/useApi";
 import { toast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
+import { Save, Loader2 } from "lucide-react";
 
 interface ShopChannelsConfig {
   orders_channel_id: string;
@@ -104,7 +105,8 @@ export function ShopChannels() {
       </Card>
 
       <Button onClick={handleSave} disabled={isSaving}>
-        {isSaving ? t("saving") : t("save")}
+        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 sm:mr-2" />}
+        <span className="hidden sm:inline">{isSaving ? t("saving") : t("save")}</span>
       </Button>
     </div>
   );

@@ -165,8 +165,8 @@ export function AlertsConfig() {
             Test Alert
           </Button>
           <Button size="sm" onClick={() => saveMut.mutate()} disabled={saveMut.isPending || !dirty}>
-            {saveMut.isPending ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
-            Save
+            {saveMut.isPending ? <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" /> : <Save className="h-4 w-4 sm:mr-2" />}
+            <span className="hidden sm:inline">Save</span>
           </Button>
         </div>
       </div>
