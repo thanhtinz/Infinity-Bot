@@ -588,20 +588,20 @@ function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 h-[76px] border-b bg-white dark:bg-card/95 backdrop-blur-sm supports-[backdrop-filter]:bg-white/95 dark:supports-[backdrop-filter]:bg-card/80 flex items-center justify-between px-6 gap-4">
+    <header className="sticky top-0 z-40 h-[76px] border-b bg-white text-gray-900 backdrop-blur-sm flex items-center justify-between px-6 gap-4">
       {/* Left: Page title + Breadcrumb (Yuri layout) */}
       <div className="flex items-center gap-6 min-w-0">
         <div className="page-title-section">
-          <h2 className="text-lg font-bold text-foreground leading-tight">{breadcrumb.page}</h2>
+          <h2 className="text-lg font-bold text-gray-900 leading-tight">{breadcrumb.page}</h2>
           <nav className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-xs text-muted-foreground">Dashboard</span>
+            <span className="text-xs text-gray-500">Dashboard</span>
             {breadcrumb.group && (
               <>
-                <span className="text-xs text-muted-foreground/50">/</span>
-                <span className="text-xs text-muted-foreground">{breadcrumb.group}</span>
+                <span className="text-xs text-gray-400">/</span>
+                <span className="text-xs text-gray-500">{breadcrumb.group}</span>
               </>
             )}
-            <span className="text-xs text-muted-foreground/50">/</span>
+            <span className="text-xs text-gray-400">/</span>
             <span className="text-xs text-primary font-medium">{breadcrumb.page}</span>
           </nav>
         </div>
@@ -610,7 +610,7 @@ function Header() {
       {/* Right: Search + Theme + Notifications + User */}
       <div className="flex items-center gap-1.5">
         {/* Search */}
-        <Button variant="ghost" size="sm" className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-foreground h-9 px-3 rounded-lg">
+        <Button variant="ghost" size="sm" className="hidden sm:flex items-center gap-2 text-gray-500 hover:text-gray-900 h-9 px-3 rounded-lg">
           <Search className="w-4 h-4" />
           <span className="text-xs">Search...</span>
           <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
@@ -619,12 +619,12 @@ function Header() {
         </Button>
 
         {/* Theme toggle */}
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg" onClick={cycleTheme} title={`Theme: ${theme}`}>
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100" onClick={cycleTheme} title={`Theme: ${theme}`}>
           {resolved === "dark" ? <Moon className="w-[18px] h-[18px]" /> : <Sun className="w-[18px] h-[18px]" />}
         </Button>
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg relative">
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg relative text-gray-600 hover:text-gray-900 hover:bg-gray-100">
           <Bell className="w-[18px] h-[18px]" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#F94C8E] rounded-full" />
         </Button>
@@ -633,16 +633,16 @@ function Header() {
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 hover:bg-accent/80 transition-colors ml-1">
+              <button className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 hover:bg-gray-100 transition-colors ml-1">
                 <Avatar className="h-8 w-8 ring-2 ring-primary/10">
                   <AvatarImage src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`} />
                   <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:block text-left">
-                  <p className="text-sm font-semibold leading-tight max-w-[100px] truncate">{user.username}</p>
-                  <p className="text-[11px] text-muted-foreground leading-tight">{user.is_owner ? "Owner" : "Staff"}</p>
+                  <p className="text-sm font-semibold leading-tight max-w-[100px] truncate text-gray-900">{user.username}</p>
+                  <p className="text-[11px] text-gray-500 leading-tight">{user.is_owner ? "Owner" : "Staff"}</p>
                 </div>
-                <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:block" />
+                <ChevronDown className="h-3 w-3 text-gray-400 hidden sm:block" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -727,7 +727,7 @@ function MobileNav() {
   };
 
   return (
-    <div className="md:hidden border-b bg-white dark:bg-card px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+    <div className="md:hidden border-b bg-white text-gray-900 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
       <div className="flex items-center gap-3">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
@@ -748,10 +748,10 @@ function MobileNav() {
         </div>
       </div>
       <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
+        <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-600 hover:text-gray-900 hover:bg-gray-100" asChild>
           <Link to="/profile"><User className="w-4 h-4" /></Link>
         </Button>
-        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={cycleTheme}>
+        <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-600 hover:text-gray-900 hover:bg-gray-100" onClick={cycleTheme}>
           {resolved === "dark" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
         </Button>
       </div>
