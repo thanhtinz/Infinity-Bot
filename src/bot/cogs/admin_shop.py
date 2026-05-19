@@ -330,12 +330,13 @@ class BangGiaSelect(discord.ui.Select):
 
             # Try per-product embed first, fall back to generic san_pham_detail
             product_event = f"product_{product.id}"
+            _gid = str(interaction.guild_id)
             tmpl = session.execute(
-                select(EmbedTemplate).where(EmbedTemplate.event_type == product_event)
+                select(EmbedTemplate).where(EmbedTemplate.event_type == product_event, EmbedTemplate.guild_id == _gid)
             ).scalars().first()
             if not tmpl:
                 tmpl = session.execute(
-                    select(EmbedTemplate).where(EmbedTemplate.event_type == "san_pham_detail")
+                    select(EmbedTemplate).where(EmbedTemplate.event_type == "san_pham_detail", EmbedTemplate.guild_id == _gid)
                 ).scalars().first()
             db_has_fields = bool(tmpl and tmpl.enabled and tmpl.fields)
 
@@ -347,7 +348,7 @@ class BangGiaSelect(discord.ui.Select):
                 "package.name": first_pkg.get("name", ""),
                 "package.price": fmt_price(first_pkg.get('price', 0), currency_symbol, currency) if first_pkg else "",
                 "package.description": first_pkg.get("description", "") if first_pkg else "Contact admin for pricing.",
-            }, guild_id=str(interaction.guild_id))
+            }, guild_id=_gid)
 
             if pkgs and not db_has_fields:
                 for pk in pkgs:
@@ -392,8 +393,12 @@ class BangGiaView(discord.ui.View):
 async def _autocomplete_product_names(ctx: discord.AutocompleteContext):
     session = SessionLocal()
     try:
+        guild_id = str(ctx.interaction.guild_id) if ctx.interaction and ctx.interaction.guild_id else None
+        where_clause = [Product.active == True]
+        if guild_id:
+            where_clause.append(Product.guild_id == guild_id)
         products = session.execute(
-            select(Product).where(Product.active == True).order_by(Product.id)
+            select(Product).where(*where_clause).order_by(Product.id)
         ).scalars().all()
         query = (ctx.value or "").lower()
         return [p.name for p in products if p.name and query in p.name.lower()][:25]
@@ -441,7 +446,7 @@ class AdminShopCog(discord.Cog):
                 return
 
             product = session.execute(
-                select(Product).where(Product.id == product_id)
+                select(Product).where(Product.id == product_id, Product.guild_id == str(ctx.guild_id))
             ).scalars().first()
             if not product:
                 await ctx.respond(f"❌ Product ID #{product_id} not found.", ephemeral=True)
@@ -563,7 +568,7 @@ class AdminShopCog(discord.Cog):
             embed_event = f"qr_thanh_toan_{method}"
             from src.models.models import EmbedTemplate
             specific_tmpl = session.execute(
-                select(EmbedTemplate).where(EmbedTemplate.event_type == embed_event)
+                select(EmbedTemplate).where(EmbedTemplate.event_type == embed_event, EmbedTemplate.guild_id == str(interaction.guild_id))
             ).scalars().first()
             if not specific_tmpl:
                 embed_event = "qr_thanh_toan"
@@ -632,7 +637,7 @@ class AdminShopCog(discord.Cog):
             from src.models.models import EmbedTemplate
 
             products = session.execute(
-                select(Product).where(Product.active == True).order_by(Product.id)
+                select(Product).where(Product.active == True, Product.guild_id == str(ctx.guild_id)).order_by(Product.id)
             ).scalars().all()
 
             ten_lower = ten.lower()
@@ -707,7 +712,7 @@ class AdminShopCog(discord.Cog):
         session = get_session()
         try:
             products = session.execute(
-                select(Product).where(Product.active == True).order_by(Product.id)
+                select(Product).where(Product.active == True, Product.guild_id == str(ctx.guild_id)).order_by(Product.id)
             ).scalars().all()
 
             if not products:
@@ -888,7 +893,7 @@ class AdminShopCog(discord.Cog):
             # Try per-payment-type embed first, fall back to generic qr_thanh_toan
             embed_event = f"qr_thanh_toan_{method}"
             specific_tmpl = session.execute(
-                select(EmbedTemplate).where(EmbedTemplate.event_type == embed_event)
+                select(EmbedTemplate).where(EmbedTemplate.event_type == embed_event, EmbedTemplate.guild_id == str(interaction.guild_id))
             ).scalars().first()
             if not specific_tmpl:
                 embed_event = "qr_thanh_toan"

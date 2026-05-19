@@ -244,6 +244,7 @@ def create_order(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gui
         total_price=float(total_price),
         package_name=package_name,
         status=body.get("status", "PENDING"),
+        expires_at=datetime.datetime.utcnow() + datetime.timedelta(hours=24),
     )
     db.add(order)
     db.commit()
@@ -369,8 +370,7 @@ async def deliver_order(order_id: int, body: dict, db=Depends(get_db), guild_id:
 
     dm_content = body.get("dm_content", "").strip()
     order.status = "DELIVERED"
-    if order.user:
-        order.user.total_spent = (order.user.total_spent or 0) + order.total_price
+    # Deprecated: do not write to user.total_spent (cross-guild field); milestones use per-guild Order sum
     db.commit()
 
     # Check spending milestones
@@ -606,12 +606,12 @@ def save_payos_config(body: dict, db=Depends(get_db), guild_id: str = Depends(ge
     ).scalars().first()
     if not config:
         raise HTTPException(status_code=404, detail="No config found for this guild")
-    if "payos_client_id" in body and body["payos_client_id"] is not None:
+    if "payos_client_id" in body:
         config.payos_client_id = body["payos_client_id"] or None
-    if "payos_api_key" in body and body["payos_api_key"]:
-        config.payos_api_key = body["payos_api_key"]
-    if "payos_checksum_key" in body and body["payos_checksum_key"]:
-        config.payos_checksum_key = body["payos_checksum_key"]
+    if "payos_api_key" in body and body["payos_api_key"] is not None:
+        config.payos_api_key = body["payos_api_key"] or None
+    if "payos_checksum_key" in body and body["payos_checksum_key"] is not None:
+        config.payos_checksum_key = body["payos_checksum_key"] or None
     db.commit()
     return {
         "payos_client_id": config.payos_client_id,
@@ -677,9 +677,31 @@ async def test_paypal_connection(db=Depends(get_db), guild_id: str = Depends(get
 @router.post("/payos/webhook")
 async def payos_webhook(request: Request, db=Depends(get_db)):
     body = await request.json()
-    config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+
+    # We need the order's guild_id to load the correct config, so fetch order first.
+    # Strategy: extract orderCode from raw body → find order → load guild-scoped config → verify signature.
+    order_code_raw = str(body.get("data", {}).get("orderCode", ""))
+    
+    # 1. Find order to get guild_id for config scoping
+    order = db.execute(
+        select(Order).options(joinedload(Order.user), joinedload(Order.product))
+        .where(Order.payos_order_code == order_code_raw)
+        .with_for_update()
+    ).unique().scalars().first()
+
+    guild_id = order.guild_id if order else None
+
+    # 2. Load config scoped to order's guild
+    if guild_id:
+        config = db.execute(
+            select(SystemConfig).where(SystemConfig.guild_id == guild_id)
+        ).scalars().first()
+    else:
+        config = None
+
     if not config or not config.payos_checksum_key:
         return {"code": "00", "desc": "no config"}
+
     try:
         payos = PayOS(
             client_id=config.payos_client_id,
@@ -693,18 +715,26 @@ async def payos_webhook(request: Request, db=Depends(get_db)):
 
     if webhook_data.code == "00":
         order_code = str(webhook_data.orderCode)
-        order = db.execute(
-            select(Order).options(joinedload(Order.user), joinedload(Order.product))
-            .where(Order.payos_order_code == order_code)
-        ).unique().scalars().first()
+        # Re-fetch with lock if order_code_raw didn't match (safety)
+        if not order or order.payos_order_code != order_code:
+            order = db.execute(
+                select(Order).options(joinedload(Order.user), joinedload(Order.product))
+                .where(Order.payos_order_code == order_code)
+                .with_for_update()
+            ).unique().scalars().first()
 
-        if order and order.status == "PENDING":
+        if order and order.status in ("PENDING", "PENDING_MANUAL"):
             order.status = "PAID"
-            if order.user:
-                order.user.total_spent = (order.user.total_spent or 0) + order.total_price
+            # Increment coupon used_count if coupon was applied to this order
+            if hasattr(order, 'coupon_code') and order.coupon_code:
+                coupon = db.execute(
+                    select(Coupon).where(Coupon.code == order.coupon_code, Coupon.guild_id == order.guild_id)
+                ).scalars().first()
+                if coupon:
+                    coupon.used_count = (coupon.used_count or 0) + 1
             db.commit()
 
-            # Check spending milestones
+            # Check spending milestones (per-guild total from Order table)
             if order.user and order.guild_id:
                 await check_spending_milestones(order.user, order.guild_id, db)
 
@@ -736,7 +766,7 @@ async def payos_webhook(request: Request, db=Depends(get_db)):
                             "product.name": order.product.name if order.product else (order.package_name or ""),
                             "package": order.package_name or "",
                             "order.total": f"{order.total_price:,.0f}",
-                        }, guild_id=guild_id)
+                        }, guild_id=order.guild_id)
                         await discord_user.send(embed=dm_embed)
                         # Send product note if available
                         product_note = order.product.note if order.product else None
@@ -753,6 +783,26 @@ async def payos_webhook(request: Request, db=Depends(get_db)):
                     logger.error(f"PayOS webhook DM error: {e}")
 
     return {"code": "00", "desc": "success"}
+
+
+# ── Order Cleanup ─────────────────────────────────────────────────────────────
+
+@router.post("/orders/cleanup-expired")
+def cleanup_expired_orders(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    """Cancel PENDING orders that have passed their expires_at deadline."""
+    now = datetime.datetime.utcnow()
+    expired = db.execute(
+        select(Order).where(
+            Order.guild_id == guild_id,
+            Order.status == "PENDING",
+            Order.expires_at != None,
+            Order.expires_at < now,
+        )
+    ).scalars().all()
+    for o in expired:
+        o.status = "CANCELLED"
+    db.commit()
+    return {"cancelled": len(expired)}
 
 
 # ── Spending Milestones ───────────────────────────────────────────────────────
@@ -822,7 +872,11 @@ async def check_spending_milestones(user: User, guild_id: str, db):
     if not milestones:
         return
 
-    total = user.total_spent or 0
+    # Per-guild total from Order (not global user.total_spent)
+    total = db.execute(
+        select(func.sum(Order.total_price))
+        .where(Order.user_id == user.id, Order.guild_id == guild_id, Order.status == "PAID")
+    ).scalar() or 0
     from src.bot.manager import get_bot_client
     bot = get_bot_client()
     if not bot or not bot.is_ready():

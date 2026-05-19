@@ -71,12 +71,17 @@ def create_app(static_dir: str) -> FastAPI:
         
         if path.startswith("/api/") and not any(path.startswith(p) for p in public_paths):
             try:
-                # Manual verification for middleware
+                # Verify JWT signature, not just token presence
+                import jwt as _jwt
+                from src.api.auth import JWT_SECRET
                 token = request.cookies.get("dashboard_session")
                 if not token:
                     return JSONResponse(status_code=401, content={"detail": "Not authenticated"})
+                _jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+            except _jwt.ExpiredSignatureError:
+                return JSONResponse(status_code=401, content={"detail": "Session expired"})
             except Exception:
-                return JSONResponse(status_code=401, content={"detail": "Authentication error"})
+                return JSONResponse(status_code=401, content={"detail": "Invalid token"})
                 
         response = await call_next(request)
         return response

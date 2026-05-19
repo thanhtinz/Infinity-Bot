@@ -110,6 +110,7 @@ class Order(Base):
     payment_method = Column(String, default="payos")  # payos | paypal | crypto | manual
     payment_id = Column(String, nullable=True)         # PayPal order ID / crypto invoice ID
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    expires_at = Column(DateTime, nullable=True)  # PENDING order auto-expire (24h)
     
     user = relationship("User", back_populates="orders")
     product = relationship("Product")

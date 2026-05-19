@@ -234,6 +234,7 @@ async def init_db():
             "currency": "ALTER TABLE orders ADD COLUMN currency VARCHAR DEFAULT 'VND'",
             "payment_method": "ALTER TABLE orders ADD COLUMN payment_method VARCHAR",
             "payment_id": "ALTER TABLE orders ADD COLUMN payment_id VARCHAR",
+            "expires_at": "ALTER TABLE orders ADD COLUMN expires_at TIMESTAMP",
         }.items():
             if col not in ord_:
                 all_stmts.append(stmt)

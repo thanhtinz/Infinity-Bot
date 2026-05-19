@@ -239,7 +239,7 @@ async def delete_feedback(feedback_id: int, db=Depends(get_db), guild_id: str = 
     if fb.discord_message_id:
         try:
             from src.bot.manager import bot
-            config = db.execute(select(SystemConfig).limit(1)).scalars().first()
+            config = db.execute(select(SystemConfig).where(SystemConfig.guild_id == guild_id)).scalars().first()
             feedback_channel_id = config.feedback_channel_id if config else None
             if bot and feedback_channel_id:
                 ch = bot.get_channel(int(feedback_channel_id))

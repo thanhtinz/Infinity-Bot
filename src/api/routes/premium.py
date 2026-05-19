@@ -62,6 +62,17 @@ _FEATURE_CLEANUP: dict[str, list[tuple]] = {
 def _cleanup_premium_features(guild_id: str, lost_features: set[str], db) -> None:
     """Clear guild data for features that are no longer accessible."""
     for feature in lost_features:
+        if feature == "animated_gif":
+            # Only null GIF URLs — keep non-gif URLs intact
+            from sqlalchemy import select as _select
+            for model_cls, field, _ in _FEATURE_CLEANUP.get(feature, []):
+                rows = db.execute(_select(model_cls).where(model_cls.guild_id == guild_id)).scalars().all()
+                for row in rows:
+                    val = getattr(row, field, None)
+                    if val and str(val).lower().endswith(".gif"):
+                        setattr(row, field, None)
+                        logger.info(f"Cleared {model_cls.__tablename__}.{field} (gif) for guild {guild_id} (feature 'animated_gif' revoked)")
+            continue
         for model_cls, field, reset_val in _FEATURE_CLEANUP.get(feature, []):
             db.execute(
                 update(model_cls)
