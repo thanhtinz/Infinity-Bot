@@ -328,18 +328,19 @@ export function CustomCommandEditPage() {
             >
               <SelectTrigger>
                 <SelectValue>
-                  {TRIGGER_BY_TYPE[form.event_trigger]
-                    ? `${TRIGGER_BY_TYPE[form.event_trigger].icon} ${TRIGGER_BY_TYPE[form.event_trigger].label}`
-                    : "Select trigger..."}
+                  {TRIGGER_BY_TYPE[form.event_trigger]?.label ?? "Select trigger..."}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="max-h-80">
                 {TRIGGER_GROUPS.map((g) => (
                   <SelectGroup key={g.group}>
-                    <SelectLabel>{g.emoji} {g.group}</SelectLabel>
+                    <SelectLabel className="flex items-center gap-1.5">
+                      <g.icon className="h-3.5 w-3.5" />
+                      {g.group}
+                    </SelectLabel>
                     {g.triggers.map((t) => (
                       <SelectItem key={t.type} value={t.type}>
-                        {t.icon} {t.label}
+                        {t.label}
                       </SelectItem>
                     ))}
                   </SelectGroup>

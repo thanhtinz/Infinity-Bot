@@ -1,5 +1,11 @@
 import type { EmbedField, ResponseEmbed, CommandForm, TriggerMeta } from "./ccTypes";
-import { Variable, Hash, Clock, Sparkles } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import {
+  Variable, Hash, Clock, Sparkles,
+  Terminal, Users, Rocket, Building2, MessageSquare, Smile, Mic, Shield, GitBranch,
+  Calendar, Mic2, ShieldAlert, BarChart2, Mail, ClipboardList, Tag,
+  User, TrendingUp, ShoppingBag, Settings, SmilePlus,
+} from "lucide-react";
 
 // ─── Variable Reference ──────────────────────────────────────────────────────
 
@@ -152,10 +158,10 @@ export function formatDate(s?: string) {
 
 // ── Phase 4: Trigger metadata ─────────────────────────────────────────────
 
-export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMeta[] }[] = [
+export const TRIGGER_GROUPS: { group: string; icon: LucideIcon; triggers: TriggerMeta[] }[] = [
   {
     group: "Command",
-    emoji: "⌨️",
+    icon: Terminal,
     triggers: [
       { type: "prefix_command", label: "Prefix command (!cmd)", group: "Command", icon: "⌨️", hasConfig: false },
       { type: "keyword", label: "Keyword in message", group: "Command", icon: "🔍", hasConfig: true,
@@ -173,7 +179,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Member",
-    emoji: "👥",
+    icon: Users,
     triggers: [
       { type: "member_join", label: "Member joins", group: "Member", icon: "📥", hasConfig: false },
       { type: "member_leave", label: "Member leaves", group: "Member", icon: "📤", hasConfig: false },
@@ -198,7 +204,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Server Boost",
-    emoji: "🚀",
+    icon: Rocket,
     triggers: [
       { type: "member_boost", label: "Member boosts server", group: "Server Boost", icon: "🚀", hasConfig: false },
       { type: "member_unboost", label: "Member stops boosting", group: "Server Boost", icon: "📉", hasConfig: false },
@@ -208,7 +214,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Server",
-    emoji: "🏠",
+    icon: Building2,
     triggers: [
       { type: "guild_update", label: "Server updated", group: "Server", icon: "🔧", hasConfig: false },
       { type: "guild_name_change", label: "Server name changed", group: "Server", icon: "✏️", hasConfig: false },
@@ -226,7 +232,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Channel",
-    emoji: "#️⃣",
+    icon: Hash,
     triggers: [
       { type: "channel_create", label: "Channel created", group: "Channel", icon: "➕", hasConfig: false },
       { type: "channel_update", label: "Channel updated", group: "Channel", icon: "🔧", hasConfig: false },
@@ -239,7 +245,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Message",
-    emoji: "💬",
+    icon: MessageSquare,
     triggers: [
       { type: "message_delete", label: "Message deleted", group: "Message", icon: "🗑️", hasConfig: false },
       { type: "message_edit", label: "Message edited", group: "Message", icon: "✏️", hasConfig: false },
@@ -248,7 +254,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Reaction",
-    emoji: "😀",
+    icon: Smile,
     triggers: [
       { type: "reaction_add", label: "Reaction added", group: "Reaction", icon: "➕", hasConfig: true,
         configFields: [{ key: "emoji", label: "Emoji (blank = any)", type: "text", placeholder: "⭐" }] },
@@ -260,7 +266,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Voice",
-    emoji: "🎙️",
+    icon: Mic,
     triggers: [
       { type: "voice_join", label: "Joined voice channel", group: "Voice", icon: "🔊", hasConfig: true,
         configFields: [{ key: "channel_filter", label: "Filter channel (blank = any)", type: "channel_picker" }] },
@@ -279,7 +285,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Role",
-    emoji: "🎭",
+    icon: Tag,
     triggers: [
       { type: "role_create", label: "Role created", group: "Role", icon: "➕", hasConfig: false },
       { type: "role_update", label: "Role updated", group: "Role", icon: "🔧", hasConfig: false },
@@ -288,7 +294,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Thread",
-    emoji: "🧵",
+    icon: GitBranch,
     triggers: [
       { type: "thread_create", label: "Thread created", group: "Thread", icon: "➕", hasConfig: false },
       { type: "thread_update", label: "Thread updated", group: "Thread", icon: "🔧", hasConfig: false },
@@ -298,7 +304,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Scheduled Event",
-    emoji: "🗓️",
+    icon: Calendar,
     triggers: [
       { type: "scheduled_event_create", label: "Event created", group: "Scheduled Event", icon: "📅", hasConfig: false },
       { type: "scheduled_event_update", label: "Event updated", group: "Scheduled Event", icon: "🔧", hasConfig: false },
@@ -309,7 +315,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Stage",
-    emoji: "🎤",
+    icon: Mic2,
     triggers: [
       { type: "stage_create", label: "Stage created", group: "Stage", icon: "🎤", hasConfig: false },
       { type: "stage_update", label: "Stage updated", group: "Stage", icon: "🔧", hasConfig: false },
@@ -318,7 +324,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "AutoMod",
-    emoji: "🛡️",
+    icon: ShieldAlert,
     triggers: [
       { type: "automod_action", label: "AutoMod action triggered", group: "AutoMod", icon: "⚡", hasConfig: false },
       { type: "automod_rule_create", label: "AutoMod rule created", group: "AutoMod", icon: "➕", hasConfig: false },
@@ -328,7 +334,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Sticker",
-    emoji: "🎨",
+    icon: Sparkles,
     triggers: [
       { type: "sticker_create", label: "Sticker added", group: "Sticker", icon: "➕", hasConfig: false },
       { type: "sticker_update", label: "Sticker updated", group: "Sticker", icon: "🔧", hasConfig: false },
@@ -337,7 +343,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Poll",
-    emoji: "📊",
+    icon: BarChart2,
     triggers: [
       { type: "poll_vote_add", label: "Poll vote added", group: "Poll", icon: "✅", hasConfig: false },
       { type: "poll_vote_remove", label: "Poll vote removed", group: "Poll", icon: "❌", hasConfig: false },
@@ -345,7 +351,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Invite",
-    emoji: "📨",
+    icon: Mail,
     triggers: [
       { type: "invite_create", label: "Invite created", group: "Invite", icon: "📨", hasConfig: false },
       { type: "invite_delete", label: "Invite deleted", group: "Invite", icon: "🗑️", hasConfig: false },
@@ -353,7 +359,7 @@ export const TRIGGER_GROUPS: { group: string; emoji: string; triggers: TriggerMe
   },
   {
     group: "Audit & App",
-    emoji: "📋",
+    icon: ClipboardList,
     triggers: [
       { type: "audit_log_entry", label: "Audit log entry", group: "Audit & App", icon: "📋", hasConfig: true,
         configFields: [{ key: "action_type", label: "Filter by action type (blank = any)", type: "text", placeholder: "e.g. kick, ban" }] },
@@ -367,12 +373,13 @@ export const TRIGGER_BY_TYPE: Record<string, TriggerMeta> = Object.fromEntries(
   TRIGGER_GROUPS.flatMap((g) => g.triggers.map((t) => [t.type, t]))
 );
 
+
 // ── Phase 4: Action metadata ──────────────────────────────────────────────
 
-export const ACTION_GROUPS: { group: string; emoji: string; actions: { type: string; label: string; fields: { key: string; label: string; type: string; placeholder?: string; options?: {value: string; label: string}[] }[] }[] }[] = [
+export const ACTION_GROUPS: { group: string; icon: LucideIcon; actions: { type: string; label: string; fields: { key: string; label: string; type: string; placeholder?: string; options?: {value: string; label: string}[] }[] }[] }[] = [
   {
     group: "Role",
-    emoji: "🎭",
+    icon: Tag,
     actions: [
       { type: "add_role", label: "Add role", fields: [{ key: "role_id", label: "Role", type: "role_picker" }] },
       { type: "remove_role", label: "Remove role", fields: [{ key: "role_id", label: "Role", type: "role_picker" }] },
@@ -381,7 +388,7 @@ export const ACTION_GROUPS: { group: string; emoji: string; actions: { type: str
   },
   {
     group: "Moderation",
-    emoji: "🛡️",
+    icon: ShieldAlert,
     actions: [
       { type: "warn", label: "Warn", fields: [{ key: "reason", label: "Reason", type: "text", placeholder: "Rule violation" }] },
       { type: "kick", label: "Kick", fields: [{ key: "reason", label: "Reason", type: "text", placeholder: "" }] },
@@ -393,7 +400,7 @@ export const ACTION_GROUPS: { group: string; emoji: string; actions: { type: str
   },
   {
     group: "Member",
-    emoji: "👤",
+    icon: User,
     actions: [
       { type: "set_nickname", label: "Set nickname", fields: [{ key: "nickname", label: "Nickname (supports vars)", type: "text", placeholder: "{user.name}" }] },
       { type: "reset_nickname", label: "Reset nickname", fields: [] },
@@ -402,7 +409,7 @@ export const ACTION_GROUPS: { group: string; emoji: string; actions: { type: str
   },
   {
     group: "Channel",
-    emoji: "#️⃣",
+    icon: Hash,
     actions: [
       { type: "send_to_channel", label: "Send to channel", fields: [{ key: "channel_id", label: "Channel", type: "channel_picker" }, { key: "content", label: "Content", type: "text" }] },
       { type: "delete_message", label: "Delete trigger message", fields: [] },
@@ -414,7 +421,7 @@ export const ACTION_GROUPS: { group: string; emoji: string; actions: { type: str
   },
   {
     group: "Thread",
-    emoji: "🧵",
+    icon: GitBranch,
     actions: [
       { type: "create_thread", label: "Create thread", fields: [{ key: "name", label: "Thread name", type: "text" }, { key: "channel_id", label: "Parent channel (optional)", type: "channel_picker" }] },
       { type: "lock_thread", label: "Lock current thread", fields: [] },
@@ -423,7 +430,7 @@ export const ACTION_GROUPS: { group: string; emoji: string; actions: { type: str
   },
   {
     group: "Reaction",
-    emoji: "😀",
+    icon: SmilePlus,
     actions: [
       { type: "add_reaction", label: "Add reaction", fields: [{ key: "emoji", label: "Emoji", type: "text", placeholder: "⭐" }] },
       { type: "remove_reaction", label: "Remove reaction", fields: [{ key: "emoji", label: "Emoji", type: "text" }] },
@@ -431,7 +438,7 @@ export const ACTION_GROUPS: { group: string; emoji: string; actions: { type: str
   },
   {
     group: "Leveling",
-    emoji: "⬆️",
+    icon: TrendingUp,
     actions: [
       { type: "give_xp", label: "Give XP", fields: [{ key: "amount", label: "XP amount", type: "text", placeholder: "100" }] },
       { type: "remove_xp", label: "Remove XP", fields: [{ key: "amount", label: "XP amount", type: "text" }] },
@@ -440,14 +447,14 @@ export const ACTION_GROUPS: { group: string; emoji: string; actions: { type: str
   },
   {
     group: "Shop",
-    emoji: "🛍️",
+    icon: ShoppingBag,
     actions: [
       { type: "give_balance", label: "Give balance", fields: [{ key: "amount", label: "Amount", type: "text", placeholder: "1000" }] },
     ],
   },
   {
     group: "System",
-    emoji: "⚙️",
+    icon: Settings,
     actions: [
       { type: "wait", label: "Wait (max 10s)", fields: [{ key: "seconds", label: "Seconds", type: "text", placeholder: "1" }] },
       { type: "set_variable", label: "Set variable", fields: [{ key: "name", label: "Variable name", type: "text", placeholder: "myvar" }, { key: "value", label: "Value", type: "text" }] },

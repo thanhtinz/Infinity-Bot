@@ -15,8 +15,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ChevronDown, ChevronRight, Plus, Trash2, GripVertical, Play } from "lucide-react";
+} from "@/components/ui/select";import { ChevronDown, ChevronRight, Plus, Trash2, GripVertical, Play } from "lucide-react";
 import type { CommandAction, ActionType, CommandForm } from "./ccTypes";
 import { ACTION_GROUPS } from "./ccConstants";
 
@@ -108,7 +107,10 @@ export function ActionsEditor({ form, onFormChange, open, onOpenChange }: Props)
           <SelectContent className="max-h-72">
             {ACTION_GROUPS.map((g) => (
               <SelectGroup key={g.group}>
-                <SelectLabel>{g.emoji} {g.group}</SelectLabel>
+                <SelectLabel className="flex items-center gap-1.5">
+                  <g.icon className="h-3.5 w-3.5" />
+                  {g.group}
+                </SelectLabel>
                 {g.actions.map((a) => (
                   <SelectItem key={a.type} value={a.type}>
                     {a.label}
