@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
 import { CreditCard, ExternalLink, Zap, Loader2 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { useState } from "react";
 import { useGuild } from "@/contexts/GuildContext";
 import { apiFetch } from "@/hooks/useApi";
@@ -117,22 +118,14 @@ export function ConfigPayOS() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-primary/10">
-          <CreditCard className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold">{t("configPayOS_title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("configPayOS_desc")}</p>
-        </div>
+    <PageContainer size="md">
+      <PageHeader title={t("configPayOS_title")} icon={CreditCard} description={t("configPayOS_desc")}>
         {isConfigured && (
-          <Badge className="ml-auto bg-green-500/15 text-green-600 border-green-500/30">
+          <Badge className="bg-green-500/15 text-green-600 border-green-500/30">
             ✓ {t("configPayOS_configured")}
           </Badge>
         )}
-      </div>
+      </PageHeader>
 
       {!isLoading && (
         <Form {...form}>
@@ -217,6 +210,6 @@ export function ConfigPayOS() {
           </form>
         </Form>
       )}
-    </div>
+    </PageContainer>
   );
 }

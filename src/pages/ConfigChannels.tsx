@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Hash, Shield } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { useGuild } from "@/contexts/GuildContext";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
@@ -129,17 +130,8 @@ export function ConfigChannels() {
   if (isLoading) return <div className="text-muted-foreground text-sm">{t("loading")}</div>;
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-primary/10">
-          <Hash className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold">{t("configChannels_channelsPerms")}</h1>
-          <p className="text-sm text-muted-foreground">{t("configChannels_channelsPermsDesc")}</p>
-        </div>
-      </div>
+    <PageContainer size="md">
+      <PageHeader title={t("configChannels_channelsPerms")} icon={Hash} description={t("configChannels_channelsPermsDesc")} />
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-5">
@@ -232,6 +224,6 @@ export function ConfigChannels() {
           </Button>
         </form>
       </Form>
-    </div>
+    </PageContainer>
   );
 }

@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
+import { Key } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ─── Schemas ────────────────────────────────────────────────
 const discordSchema = z.object({
@@ -190,11 +192,8 @@ export function BotConfig() {
   if (isLoading) return <div>{t("loading")}</div>;
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("botConfig_discordBot")}</h1>
-        <p className="text-muted-foreground">{t("botConfig_tokenDesc")}</p>
-      </div>
+    <PageContainer>
+      <PageHeader title={t("botConfig_discordBot")} icon={Key} description={t("botConfig_tokenDesc")} />
 
       {/* ── Card: Discord Bot ── */}
       <Form {...discordForm}>
@@ -352,6 +351,6 @@ export function BotConfig() {
           </Card>
         </form>
       </Form>
-    </div>
+    </PageContainer>
   );
 }

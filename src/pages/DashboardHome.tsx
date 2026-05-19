@@ -4,7 +4,8 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Activity, TrendingUp, ShoppingCart, Users, Package } from "lucide-react";
+import { Activity, TrendingUp, ShoppingCart, Users, Package, LayoutDashboard } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { Link } from "react-router-dom";
 import {
   AreaChart, Area, BarChart, Bar,
@@ -71,8 +72,8 @@ export function DashboardHome() {
   const fmtMoney = (n: number) => formatPriceCompact(n);
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
-      <h1 className="text-xl font-semibold">{t("dashboard_title")}</h1>
+    <PageContainer size="full">
+      <PageHeader title={t("dashboard_title")} icon={LayoutDashboard} />
 
       {/* ── Stats grid ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -183,6 +184,6 @@ export function DashboardHome() {
           </Button>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

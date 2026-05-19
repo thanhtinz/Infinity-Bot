@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/hooks/useApi";
 import { Terminal } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -52,18 +53,8 @@ export function ConfigPrefix() {
   if (isLoading) return <div>{t("loading")}</div>;
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div>
-        <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-            <Terminal className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t("configPrefix_title")}</h1>
-            <p className="text-muted-foreground">{t("configPrefix_desc")}</p>
-          </div>
-        </div>
-      </div>
+    <PageContainer size="sm">
+      <PageHeader title={t("configPrefix_title")} icon={Terminal} description={t("configPrefix_desc")} />
 
       <Card>
         <CardHeader>
@@ -90,6 +81,6 @@ export function ConfigPrefix() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }
