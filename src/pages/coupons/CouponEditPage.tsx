@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { apiFetch } from "@/hooks/useApi";
 
 interface Coupon {
@@ -133,7 +134,7 @@ export function CouponEditPage() {
           </Button>
         </div>
       </div>
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <PageContainer size="sm">
         {/* Code */}
         <div className="space-y-1.5">
           <Label>Coupon code <span className="text-destructive">*</span></Label>
@@ -200,7 +201,7 @@ export function CouponEditPage() {
             onCheckedChange={(v) => setForm((f) => ({ ...f, is_public: v }))}
           />
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
   Loader2, Trash2, RefreshCw, History, Bot, User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import type { HistoryEntry } from "./shared";
 
 export function AIHistoryPage() {
@@ -46,17 +47,8 @@ export function AIHistoryPage() {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-primary/10">
-          <History className="h-6 w-6 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">History</h1>
-          <p className="text-sm text-muted-foreground">AI conversation logs and statistics</p>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeader title="History" icon={History} description="AI conversation logs and statistics" />
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
@@ -147,6 +139,6 @@ export function AIHistoryPage() {
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
-import { Clock } from "lucide-react";
 import type { ModCase } from "./shared";
 import { actionBadge, truncate, Countdown } from "./shared";
 
@@ -18,14 +17,6 @@ export function ModerationActive() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Clock className="h-6 w-6 text-primary" />
-          {t("mod_allActions")}
-        </h2>
-      </div>
-
       {/* ── Active list ── */}
       {activeLoading && activeCases.length === 0 ? (
         <div className="flex items-center justify-center h-40 text-muted-foreground">

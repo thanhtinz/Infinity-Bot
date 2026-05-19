@@ -19,6 +19,7 @@ import {
   Database, Download, RotateCcw, Trash2, Plus, Settings2, Users, Clock,
   CheckCircle2, XCircle, Loader2, Save, Calendar, HardDrive,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import type { ServerBackupItem, BackupSchedule as BackupScheduleType } from "./shared";
@@ -122,20 +123,14 @@ export function BackupPage() {
   const backups = backupsQuery.data ?? [];
 
   return (
-    <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">Backup & Restore</h2>
-          <PremiumBadge />
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={() => setCreateOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            New Backup
-          </Button>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeader title="Backup & Restore" icon={Database}>
+        <PremiumBadge />
+        <Button onClick={() => setCreateOpen(true)} className="gap-2">
+          <Plus className="h-4 w-4" />
+          New Backup
+        </Button>
+      </PageHeader>
 
       <PremiumGate feature="scheduled_backup" featureLabel="Backup & Restore" hasAccess={hasFeature("scheduled_backup")} isLoading={entLoading}>
         <div className="space-y-6">
@@ -357,6 +352,6 @@ export function BackupPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageContainer>
   );
 }

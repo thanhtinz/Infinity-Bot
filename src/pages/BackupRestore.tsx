@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import {
   Database,
   Download,
@@ -175,19 +176,8 @@ export function BackupRestore() {
   // ── Render ──
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-          <Database className="h-5 w-5 text-emerald-500" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("backup_title")}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t("backup_desc")}
-          </p>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeader title={t("backup_title")} icon={Database} description={t("backup_desc")} />
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* ── Card: Create Backup ── */}
@@ -419,6 +409,6 @@ export function BackupRestore() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageContainer>
   );
 }

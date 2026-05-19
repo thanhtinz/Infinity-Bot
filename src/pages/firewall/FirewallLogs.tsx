@@ -35,6 +35,7 @@ import {
   KeyRound,
   Captions,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -118,12 +119,8 @@ export function FirewallLogs() {
   // ── Render ──
 
   return (
-    <div className="p-4 md:p-6 space-y-4 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <ScrollText className="h-5 w-5 text-primary" />
-        <h1 className="text-xl font-semibold">Firewall Logs</h1>
-      </div>
+    <PageContainer size="lg">
+      <PageHeader title="Firewall Logs" icon={ScrollText} description="Monitor blocked verification attempts and firewall activity." />
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -275,6 +272,6 @@ export function FirewallLogs() {
           </div>
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }

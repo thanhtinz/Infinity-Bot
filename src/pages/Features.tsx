@@ -17,8 +17,10 @@ import {
   Terminal,
   Clock,
   Heart,
+  ToggleLeft,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { apiFetch } from "@/hooks/useApi";
 
 interface Feature {
@@ -121,14 +123,8 @@ export function Features() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t("features_title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t("features_desc")}
-        </p>
-      </div>
+    <PageContainer size="lg">
+      <PageHeader title={t("features_title")} icon={ToggleLeft} description={t("features_desc")} />
 
       {/* Grid */}
       {isLoading ? (
@@ -194,7 +190,7 @@ export function Features() {
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }
 

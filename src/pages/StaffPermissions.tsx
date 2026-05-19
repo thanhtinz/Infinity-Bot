@@ -17,6 +17,7 @@ import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
 import { RoleSelect } from "@/components/RoleSelect";
 import { Shield, Plus, Pencil, Trash2, Users, X } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 interface StaffPerm {
   id: number;
@@ -140,15 +141,12 @@ export function StaffPermissions() {
     PERM_LABELS.filter(({ key }) => sp[key]).length;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Grant dashboard access to specific roles without giving full admin
-        </p>
+    <PageContainer size="md">
+      <PageHeader title="Staff Permissions" icon={Shield} description="Grant dashboard access to specific roles without giving full admin">
         <Button size="sm" onClick={openCreate}>
           <Plus className="h-4 w-4 mr-1" /> Add Role
         </Button>
-      </div>
+      </PageHeader>
 
       {isLoading ? (
         <div className="text-center py-8 text-muted-foreground text-sm">Loading...</div>
@@ -300,7 +298,7 @@ export function StaffPermissions() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }
 

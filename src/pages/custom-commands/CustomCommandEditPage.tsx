@@ -21,6 +21,7 @@ import {
   Save,
   Loader2,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import type { CustomCommand, EmbedField } from "./ccTypes";
 import {
   DEFAULT_COLOR,
@@ -311,7 +312,7 @@ export function CustomCommandEditPage() {
           </Button>
         </div>
       </div>
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <PageContainer size="sm">
         {/* ── Section: Basic Info ── */}
         <div className="space-y-4">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
@@ -459,7 +460,7 @@ export function CustomCommandEditPage() {
 
         {/* ── Section: System Actions ── */}
         <ActionsEditor form={form} onFormChange={setForm} open={actionsOpen} onOpenChange={setActionsOpen} />
-      </div>
+      </PageContainer>
     </div>
   );
 }

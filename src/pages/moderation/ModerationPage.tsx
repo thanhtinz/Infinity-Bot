@@ -1,5 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Shield } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { ModerationCases } from "./ModerationCases";
 import { ModerationNotes } from "./ModerationNotes";
 import { ModerationActive } from "./ModerationActive";
@@ -11,11 +13,8 @@ export default function ModerationPage() {
   const tab = searchParams.get("tab") ?? "cases";
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Moderation</h1>
-        <p className="text-muted-foreground">Manage moderation cases and settings</p>
-      </div>
+    <PageContainer>
+      <PageHeader title="Moderation" icon={Shield} description="Manage moderation cases and settings" />
       <Tabs value={tab} onValueChange={(v) => setSearchParams({ tab: v })}>
         <TabsList className="h-10 w-full sm:w-auto">
           <TabsTrigger value="cases" className="flex items-center gap-1.5 px-3">
@@ -44,6 +43,6 @@ export default function ModerationPage() {
           <ModerationSettings />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   );
 }

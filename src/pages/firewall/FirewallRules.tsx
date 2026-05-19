@@ -48,6 +48,7 @@ import {
   AlertTriangle,
   XCircle,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -227,20 +228,13 @@ export function FirewallRules() {
   // ── Render ──
 
   return (
-    <div className="p-4 md:p-6 space-y-4 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-primary" />
-          <h1 className="text-xl font-semibold">Firewall Rules</h1>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={() => setAddDialogOpen(true)} className="gap-1.5">
-            <Plus className="h-4 w-4" />
-            Add Rule
-          </Button>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeader title="Firewall Rules" icon={Shield}>
+        <Button onClick={() => setAddDialogOpen(true)} className="gap-1.5">
+          <Plus className="h-4 w-4" />
+          Add Rule
+        </Button>
+      </PageHeader>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -526,6 +520,6 @@ export function FirewallRules() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

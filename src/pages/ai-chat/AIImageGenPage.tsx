@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Loader2, Save, Key, Image, Eye, EyeOff, Bot, Sparkles,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { DEFAULT_CONFIG } from "./shared";
 import type { AIChatConfig } from "./shared";
 
@@ -70,17 +71,8 @@ export function AIImageGenPage() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-primary/10">
-          <Image className="h-6 w-6 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">Image Generation</h1>
-          <p className="text-sm text-muted-foreground">Configure AI image generation for your server</p>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeader title="Image Generation" icon={Image} description="Configure AI image generation for your server" />
 
       <Card>
         <CardHeader className="pb-3">
@@ -177,6 +169,6 @@ export function AIImageGenPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

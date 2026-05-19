@@ -12,6 +12,7 @@ import { EmbedBuilder, EMBED_DEFAULTS } from "@/components/EmbedBuilder";
 import type { EmbedFormData, EmbedField } from "@/components/EmbedBuilder";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ArrowLeft, Plus, X, Save, Loader2 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -229,7 +230,7 @@ export function ReactionRoleEditPage() {
           </Button>
         </div>
       </div>
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <PageContainer size="sm">
         {/* Name */}
         <div className="space-y-2">
           <Label>Name Panel</Label>
@@ -364,7 +365,7 @@ export function ReactionRoleEditPage() {
             ))}
           </div>
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 }

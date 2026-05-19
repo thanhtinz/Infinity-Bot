@@ -8,8 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect } from "@/components/RoleSelect";
-import { ScrollText, Mic, ShieldCheck, Users, Server, Filter, X } from "lucide-react";
+import { ScrollText, Mic, ShieldCheck, Users, Server, Filter, X, FileText } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 interface LoggingConfigData {
   message_log_channel_id: string;
@@ -134,14 +135,8 @@ export function LoggingConfig() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">{t("logging_title")}</h2>
-        <p className="text-muted-foreground">
-          {t("logging_configDesc")}
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader title={t("logging_title")} icon={FileText} description={t("logging_configDesc")} />
 
       {/* Log Channels Card */}
       <Card>
@@ -227,6 +222,6 @@ export function LoggingConfig() {
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
         {mutation.isPending ? t("saving") : t("save")}
       </Button>
-    </div>
+    </PageContainer>
   );
 }

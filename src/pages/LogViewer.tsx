@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 /* ───────── Types ───────── */
 
@@ -201,12 +202,8 @@ export function LogViewer() {
   const totalPages = entriesData?.pages ?? 1;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* ── Header ── */}
-      <div className="flex items-center gap-2">
-        <ScrollText className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">{t("logViewer_title")}</h2>
-      </div>
+    <PageContainer size="lg">
+      <PageHeader title={t("logViewer_title")} icon={ScrollText} />
 
       {/* ── Stats Cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -423,6 +420,6 @@ export function LogViewer() {
           </div>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

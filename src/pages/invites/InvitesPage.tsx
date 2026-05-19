@@ -1,5 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Users } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { InviteLeaderboard } from "./InviteLeaderboard";
 import { InviteLog } from "./InviteLog";
 
@@ -8,11 +10,8 @@ export default function InvitesPage() {
   const tab = searchParams.get("tab") ?? "leaderboard";
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Invites</h1>
-        <p className="text-muted-foreground">Track invite leaderboard and logs</p>
-      </div>
+    <PageContainer>
+      <PageHeader title="Invites" icon={Users} description="Track invite leaderboard and logs" />
       <Tabs value={tab} onValueChange={(v) => setSearchParams({ tab: v })}>
         <TabsList>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
@@ -25,6 +24,6 @@ export default function InvitesPage() {
           <InviteLog />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   );
 }

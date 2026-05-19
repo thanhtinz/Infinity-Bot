@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Link2, UserPlus, UserMinus, AlertTriangle, Info } from "lucide-react";
+import { Link2, UserPlus, UserMinus, AlertTriangle, Info } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
 import type { InviteRecord } from "./shared";
@@ -27,12 +27,6 @@ export function InviteLeaderboard() {
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex items-center gap-2">
-        <Trophy className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">{t("invite_title")}</h2>
-      </div>
-
       {/* ── Note ── */}
       <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-primary dark:text-primary/80">
         <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />

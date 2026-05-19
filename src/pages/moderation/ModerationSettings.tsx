@@ -11,7 +11,7 @@ import { ChannelSelect, MultiChannelSelect } from "@/components/ChannelSelect";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
-import { Settings, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import type { ModerationConfig } from "./shared";
 
 export function ModerationSettings() {
@@ -84,14 +84,6 @@ export function ModerationSettings() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Settings className="h-6 w-6 text-muted-foreground" />
-          {t("mod_action")}
-        </h2>
-      </div>
-
       {/* ── Settings form ── */}
       <Card>
         <CardContent className="p-4 space-y-6">

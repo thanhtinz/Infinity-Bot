@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 import type { AutoResponderRule, EmbedField } from "./arTypes";
 import type { RuleForm } from "./arTypes";
@@ -284,7 +285,7 @@ export function AutoResponderEditPage() {
           </Button>
         </div>
       </div>
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <PageContainer size="sm">
         <TriggerSection form={form} setForm={setForm} />
 
         <Separator />
@@ -320,7 +321,7 @@ export function AutoResponderEditPage() {
           addBlockedChannel={addBlockedChannel}
           removeBlockedChannel={removeBlockedChannel}
         />
-      </div>
+      </PageContainer>
     </div>
   );
 }

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
-import { FileText, Trash2, Search, Pencil, Plus } from "lucide-react";
+import { Trash2, Search, Pencil, Plus } from "lucide-react";
 import type { ModNote } from "./shared";
 import { formatDate } from "./shared";
 
@@ -99,14 +99,6 @@ export function ModerationNotes() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <FileText className="h-6 w-6 text-green-500" />
-          {t("mod_notes")}
-        </h2>
-      </div>
-
       {/* ── Search ── */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

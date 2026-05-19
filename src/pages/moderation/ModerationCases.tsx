@@ -22,7 +22,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
-import { ShieldAlert, Shield, Clock, FileText, Gavel, Trash2, Search } from "lucide-react";
+import { Shield, Clock, FileText, Gavel, Trash2, Search } from "lucide-react";
 import type { ModCase, ModStats } from "./shared";
 import { actionBadge, formatDate, truncate } from "./shared";
 
@@ -82,17 +82,6 @@ export function ModerationCases() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <ShieldAlert className="h-6 w-6 text-orange-500" />
-          {t("mod_title")}
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t("mod_totalCases")}, {t("mod_notes")}, {t("mod_allActions")}
-        </p>
-      </div>
-
       {/* ── Stat Cards ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>

@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { PackagePlus, X, ArrowLeft, Save, Loader2, Warehouse, Zap } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { useToast } from "@/hooks/use-toast";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import type { Product, ProductPackage } from "../../types";
@@ -140,7 +141,7 @@ export function ProductEditPage() {
 
       {isNew ? (
         /* ── Create mode: no tabs, just the form ── */
-        <div className="max-w-2xl mx-auto p-6 space-y-6">
+        <PageContainer size="sm">
           <ProductInfoForm
             form={form}
             packages={packages}
@@ -149,10 +150,10 @@ export function ProductEditPage() {
             removePkg={removePkg}
             onSubmit={onSubmit}
           />
-        </div>
+        </PageContainer>
       ) : (
         /* ── Edit mode: Info only (no Embed tab) ── */
-        <div className="max-w-2xl mx-auto p-6 space-y-6">
+        <PageContainer size="sm">
           <ProductInfoForm
             form={form}
             packages={packages}
@@ -161,7 +162,7 @@ export function ProductEditPage() {
             removePkg={removePkg}
             onSubmit={onSubmit}
           />
-        </div>
+        </PageContainer>
       )}
     </div>
   );

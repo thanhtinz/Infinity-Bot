@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Clock, Calendar, Loader2, Save } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import type { BackupSchedule as BackupScheduleType } from "./shared";
 import { fetchSchedule, updateSchedule, formatDate } from "./shared";
 import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
@@ -54,16 +55,10 @@ export function BackupSchedule() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex items-center gap-2">
-        <Clock className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold tracking-tight">Backup Schedule</h2>
+    <PageContainer>
+      <PageHeader title="Backup Schedule" icon={Clock} description="Configure automatic backup schedules to keep your server data safe.">
         <PremiumBadge />
-      </div>
-      <p className="text-muted-foreground text-sm -mt-4">
-        Configure automatic backup schedules to keep your server data safe.
-      </p>
+      </PageHeader>
 
       <PremiumGate
         feature="scheduled_backup"
@@ -265,6 +260,6 @@ export function BackupSchedule() {
         </Card>
       )}
       </PremiumGate>
-    </div>
+    </PageContainer>
   );
 }

@@ -534,7 +534,7 @@ export function VerifyConfig() {
   };
 
   return (
-    <div className="space-y-4 p-4 md:p-6">
+    <div className="space-y-4">
 
       {/* ── Action buttons row ── */}
       <div className="grid grid-cols-2 gap-2">

@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ScrollText } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
 import type { InviteLogEntry } from "./shared";
@@ -22,12 +21,6 @@ export function InviteLog() {
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex items-center gap-2">
-        <ScrollText className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">{t("invite_title")}</h2>
-      </div>
-
       {/* ── Log Table ── */}
       <Card>
         <CardContent className="p-0">
