@@ -394,33 +394,6 @@ async def _execute_actions(
                     except Exception:
                         pass
 
-            # ── Leveling Actions ──────────────────────────────────────────
-            elif action_type in ("give_xp", "remove_xp", "set_level") and isinstance(member, discord.Member):
-                from src.models.models import MemberXP
-                db = get_session()
-                try:
-                    mx = db.execute(
-                        select(MemberXP).where(
-                            MemberXP.guild_id == str(guild.id),
-                            MemberXP.user_id == str(member.id),
-                        )
-                    ).scalars().first()
-                    if not mx:
-                        mx = MemberXP(guild_id=str(guild.id), user_id=str(member.id))
-                        db.add(mx)
-                    amount = int(cfg.get("amount", 0))
-                    level = int(cfg.get("level", 1))
-                    if action_type == "give_xp":
-                        mx.xp = (mx.xp or 0) + amount
-                    elif action_type == "remove_xp":
-                        mx.xp = max(0, (mx.xp or 0) - amount)
-                    elif action_type == "set_level":
-                        mx.level = level
-                    db.commit()
-                except Exception as e:
-                    logger.warning(f"Leveling action error: {e}")
-                finally:
-                    db.close()
 
             # ── Shop Actions ──────────────────────────────────────────────
             elif action_type == "give_balance" and member:
