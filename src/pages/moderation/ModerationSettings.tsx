@@ -40,7 +40,17 @@ export function ModerationSettings() {
 
   // Sync config form when config loads
   useEffect(() => {
-    if (config) setConfigForm(config);
+    if (config) {
+      const toStr = (v: unknown) =>
+        Array.isArray(v) ? v.join(",") : (v == null ? "" : String(v));
+      setConfigForm({
+        ...config,
+        lockdown_channels: toStr(config.lockdown_channels),
+        ignored_users: toStr(config.ignored_users),
+        ignored_roles: toStr(config.ignored_roles),
+        ignored_channels: toStr(config.ignored_channels),
+      });
+    }
   }, [config]);
 
   // ── Mutations ──

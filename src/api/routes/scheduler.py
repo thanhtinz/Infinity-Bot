@@ -4,10 +4,10 @@ from sqlalchemy import select
 from datetime import datetime
 
 from src.database.config import get_db
-from src.api.deps import get_guild_id
+from src.api.deps import get_guild_id, require_staff_perm
 from src.models.models import ScheduledMessage
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_staff_perm("can_utilities"))])
 
 
 @router.get("/scheduled-messages")

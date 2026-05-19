@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, UserCog, Lock, Zap, Warehouse } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, Lock, Zap, Warehouse } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense, Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -62,7 +62,6 @@ const ShopStats = lazy(() => import("./pages/ShopStats").then(m => ({ default: m
 const FlashSales = lazy(() => import("./pages/FlashSales").then(m => ({ default: m.FlashSales })));
 const InventoryManager = lazy(() => import("./pages/InventoryManager").then(m => ({ default: m.InventoryManager })));
 const SpendingMilestones = lazy(() => import("./pages/SpendingMilestones"));
-const StaffPermissions = lazy(() => import("./pages/StaffPermissions").then(m => ({ default: m.StaffPermissions })));
 const GuildBotConfig = lazy(() => import("./pages/GuildBotConfig").then(m => ({ default: m.GuildBotConfig })));
 const PremiumPaymentConfig = lazy(() => import("./pages/PremiumPaymentConfig").then(m => ({ default: m.PremiumPaymentConfig })));
 const PremiumPlans = lazy(() => import("./pages/PremiumPlans").then(m => ({ default: m.PremiumPlans })));
@@ -74,6 +73,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useEntitlements } from "@/hooks/useEntitlements";
+import { useStaffAccess } from "@/hooks/useStaffAccess";
 
 import type { LucideIcon } from "lucide-react";
 
@@ -91,6 +91,7 @@ interface NavGroup {
   items: NavItem[];
   feature?: string;  // if set, entire group hidden when disabled
   ownerOnly?: boolean; // if true, only visible to bot owner
+  staffPerm?: string;  // if set, non-owner must have this perm to see group
 }
 
 const navGroups: NavGroup[] = [
@@ -99,6 +100,7 @@ const navGroups: NavGroup[] = [
     icon: Package,
     label: "Shop",
     feature: "shop",
+    staffPerm: "can_shop",
     items: [
       { to: "/products", icon: Package, label: "nav_products" },
       { to: "/orders", icon: ShoppingCart, label: "nav_orders" },
@@ -117,6 +119,7 @@ const navGroups: NavGroup[] = [
     key: "community",
     icon: Users,
     label: "nav_community",
+    staffPerm: "can_community",
     items: [
       { to: "/giveaways", icon: Gift, label: "nav_giveaway", feature: "giveaway" },
       { to: "/invites", icon: UserPlus, label: "Invites", feature: "invite_tracking" },
@@ -128,6 +131,7 @@ const navGroups: NavGroup[] = [
     icon: Shield,
     label: "nav_moderation",
     feature: "moderation",
+    staffPerm: "can_moderation",
     items: [
       { to: "/moderation", icon: Shield, label: "Moderation" },
       { to: "/automod", icon: Bot, label: "nav_automod" },
@@ -138,19 +142,20 @@ const navGroups: NavGroup[] = [
     key: "security",
     icon: ShieldAlert,
     label: "nav_security",
+    staffPerm: "can_moderation",
     items: [
       { to: "/verification", icon: CheckCircle, label: "Verification" },
       { to: "/verification/members", icon: Users, label: "Verify Menber" },
       { to: "/verification/stats", icon: BarChart3, label: "Verify Stats" },
       { to: "/firewall/logs", icon: ShieldAlert, label: "Firewall Logs" },
       { to: "/alerts", icon: Bell, label: "Server Alerts" },
-      { to: "/staff-permissions", icon: UserCog, label: "Staff Permissions" },
     ],
   },
   {
     key: "roles",
     icon: ToggleLeft,
     label: "Roles",
+    staffPerm: "can_roles",
     items: [
       { to: "/button-roles", icon: MousePointer, label: "nav_panels" },
       { to: "/select-roles", icon: List, label: "Select Menu Roles" },
@@ -161,6 +166,7 @@ const navGroups: NavGroup[] = [
     key: "utilities",
     icon: Terminal,
     label: "nav_utilities",
+    staffPerm: "can_utilities",
     items: [
       { to: "/sticky", icon: Pin, label: "nav_sticky", feature: "sticky" },
       { to: "/autoresponder", icon: MessageCircle, label: "nav_autoResponder", feature: "autoresponder" },
@@ -174,6 +180,7 @@ const navGroups: NavGroup[] = [
     icon: Terminal,
     label: "Custom Commands",
     feature: "custom_commands",
+    staffPerm: "can_utilities",
     items: [
       { to: "/custom-commands", icon: Terminal, label: "nav_customCommands", feature: "custom_commands" },
     ],
@@ -218,23 +225,32 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   });
 
   const { selectedGuildId } = useGuild();
+  const { perms, memberRoles } = useStaffAccess();
+
+  // Persist member roles to localStorage so apiFetch can send X-Member-Roles header
+  useEffect(() => {
+    if (memberRoles.length > 0) {
+      localStorage.setItem("member_roles", memberRoles.join(","));
+    }
+  }, [memberRoles]);
 
   const disabledFeatures = useMemo(() => {
     if (!features) return new Set<string>();
     return new Set(features.filter(f => !f.enabled).map(f => f.key));
   }, [features]);
 
-  // Filter navGroups based on enabled features
+  // Filter navGroups based on enabled features + staff permissions
   const filteredGroups = useMemo(() => {
     return navGroups
       .filter(g => !g.feature || !disabledFeatures.has(g.feature))
       .filter(g => !g.ownerOnly)
+      .filter(g => !g.staffPerm || perms[g.staffPerm as keyof typeof perms])
       .map(g => ({
         ...g,
         items: g.items.filter(item => !item.feature || !disabledFeatures.has(item.feature)),
       }))
       .filter(g => g.items.length > 0);
-  }, [disabledFeatures, user]);
+  }, [disabledFeatures, user, perms]);
 
   const ownerGroups = useMemo(() => {
     if (!user?.is_owner) return [];
@@ -766,7 +782,6 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/security-config" element={<OwnerRoute><SecurityConfig /></OwnerRoute>} />
         <Route path="/firewall/logs" element={<FirewallLogs />} />
         <Route path="/alerts" element={<AlertsConfig />} />
-        <Route path="/staff-permissions" element={<StaffPermissions />} />
         {/* Utilities */}
         <Route path="/sticky" element={<StickyManager />} />
         <Route path="/sticky/new" element={<StickyEditPage />} />

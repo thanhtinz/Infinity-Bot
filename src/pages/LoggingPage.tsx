@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoggingConfig } from "./LoggingConfig";
 import { LogViewer } from "./LogViewer";
+import { Settings2, ScrollText } from "lucide-react";
 
 export default function LoggingPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -14,14 +15,18 @@ export default function LoggingPage() {
         <p className="text-muted-foreground">Configure event logging and view logs</p>
       </div>
       <Tabs value={tab} onValueChange={(v) => setSearchParams({ tab: v })}>
-        <TabsList>
-          <TabsTrigger value="config">Config</TabsTrigger>
-          <TabsTrigger value="viewer">Log Viewer</TabsTrigger>
+        <TabsList className="h-10 w-full sm:w-auto">
+          <TabsTrigger value="config" className="flex items-center gap-1.5 px-3">
+            <Settings2 className="h-3.5 w-3.5" /> Config
+          </TabsTrigger>
+          <TabsTrigger value="viewer" className="flex items-center gap-1.5 px-3">
+            <ScrollText className="h-3.5 w-3.5" /> Log Viewer
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="config">
+        <TabsContent value="config" className="mt-4">
           <LoggingConfig />
         </TabsContent>
-        <TabsContent value="viewer">
+        <TabsContent value="viewer" className="mt-4">
           <LogViewer />
         </TabsContent>
       </Tabs>

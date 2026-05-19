@@ -4,7 +4,7 @@ from sqlalchemy import select, func, case
 import logging
 
 from src.database.config import get_db
-from src.api.deps import get_guild_id
+from src.api.deps import get_guild_id, require_staff_perm
 from src.models.models import (
     SystemConfig, User, Order, Product, BannedShopUser,
     InviteTracking, Giveaway, GiveawayEntry, Warning, Feedback, StickyMessage,
@@ -12,7 +12,7 @@ from src.models.models import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_staff_perm("can_community"))])
 
 
 # ── Users Manager ─────────────────────────────────────────────────────────────

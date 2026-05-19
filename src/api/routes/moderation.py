@@ -2,14 +2,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select, func
-from src.api.deps import get_db, get_guild_id
+from src.api.deps import get_db, get_guild_id, require_staff_perm
 from src.models.models import (
     ModerationCase, ModerationNote, ModerationConfig, RolePersist, TempRole,
 )
 from typing import Optional
 import datetime
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_staff_perm("can_moderation"))])
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────

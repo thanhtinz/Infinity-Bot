@@ -31,11 +31,10 @@ import {
   TRIGGER_BY_TYPE,
 } from "./ccConstants";
 import type { CommandForm, TriggerType } from "./ccTypes";
-import { VariablesReference } from "./VariablesReference";
+import { CommandAdditionalResponses } from "./CommandAdditionalResponses";
 import { CommandOptionsSection } from "./CommandOptionsSection";
 import { CommandPermissionsSection } from "./CommandPermissionsSection";
 import { CommandAdvancedSection } from "./CommandAdvancedSection";
-import { CommandAdditionalResponses } from "./CommandAdditionalResponses";
 import { CommandResponseSection } from "./CommandResponseSection";
 import { CommandSettingsSection } from "./CommandSettingsSection";
 import { ActionsEditor } from "./ActionsEditor";
@@ -418,11 +417,6 @@ export function CustomCommandEditPage() {
           onUpdateField={updateField}
           onFocusEmbedDesc={() => setFocusedInput("embed_desc")}
         />
-
-        <Separator />
-
-        {/* ── Section: Variables Reference ── */}
-        <VariablesReference />
 
         <Separator />
 

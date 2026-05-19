@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -130,36 +131,23 @@ export function StaffPermissions() {
     PERM_LABELS.filter(({ key }) => sp[key]).length;
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-3">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Shield className="h-6 w-6 text-blue-500" />
-            Staff Permissions
-          </h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Grant dashboard access to specific roles without giving full admin
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-1" /> Add Role
-          </Button>
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Grant dashboard access to specific roles without giving full admin
+        </p>
+        <Button size="sm" onClick={openCreate}>
+          <Plus className="h-4 w-4 mr-1" /> Add Role
+        </Button>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12 text-muted-foreground">Loading...</div>
+        <div className="text-center py-8 text-muted-foreground text-sm">Loading...</div>
       ) : staffPerms.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <Users className="h-12 w-12 mx-auto mb-3 opacity-40" />
-            <p>No staff roles configured</p>
-            <p className="text-sm mt-1">
-              Add a role to grant partial dashboard access to staff members
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-dashed py-8 text-center text-muted-foreground">
+          <Users className="h-8 w-8 mx-auto mb-2 opacity-40" />
+          <p className="text-sm">No staff roles configured</p>
+        </div>
       ) : (
         <div className="grid gap-3">
           {staffPerms.map((sp) => (
@@ -199,69 +187,73 @@ export function StaffPermissions() {
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md flex flex-col max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>
               {editId ? "Edit Staff Role" : "Add Staff Role"}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
-            {!editId && (
-              <div className="space-y-2">
-                <Label>Role</Label>
-                <RoleSelect
-                  value={roleId}
-                  onChange={setRoleId}
-                  guildId={selectedGuildId || undefined}
-                />
-              </div>
-            )}
-
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Permissions</Label>
-              {PERM_LABELS.map(({ key, label, desc }) => (
-                <div
-                  key={key}
-                  className="flex items-center justify-between py-1"
-                >
-                  <div>
-                    <div className="text-sm font-medium">{label}</div>
-                    <div className="text-xs text-muted-foreground">{desc}</div>
-                  </div>
-                  <Switch
-                    checked={perms[key] ?? false}
-                    onCheckedChange={(v) =>
-                      setPerms({ ...perms, [key]: v })
-                    }
+          <ScrollArea className="flex-1 overflow-y-auto -mx-1 px-1">
+            <div className="space-y-4 py-2">
+              {!editId && (
+                <div className="space-y-2">
+                  <Label>Role</Label>
+                  <RoleSelect
+                    value={roleId}
+                    onChange={setRoleId}
+                    guildId={selectedGuildId || undefined}
                   />
                 </div>
-              ))}
-            </div>
+              )}
 
-            <div className="flex gap-2 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const all: Record<string, boolean> = {};
-                  for (const { key } of PERM_LABELS) all[key] = true;
-                  setPerms(all);
-                }}
-              >
-                Select All
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPerms({ ...emptyPerms })}
-              >
-                Clear All
-              </Button>
-            </div>
-          </div>
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">Permissions</Label>
+                <div className="rounded-lg border divide-y">
+                  {PERM_LABELS.map(({ key, label, desc }) => (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between px-3 py-2.5"
+                    >
+                      <div>
+                        <div className="text-sm font-medium">{label}</div>
+                        <div className="text-xs text-muted-foreground">{desc}</div>
+                      </div>
+                      <Switch
+                        checked={perms[key] ?? false}
+                        onCheckedChange={(v) =>
+                          setPerms({ ...perms, [key]: v })
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          <DialogFooter>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const all: Record<string, boolean> = {};
+                    for (const { key } of PERM_LABELS) all[key] = true;
+                    setPerms(all);
+                  }}
+                >
+                  Select All
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPerms({ ...emptyPerms })}
+                >
+                  Clear All
+                </Button>
+              </div>
+            </div>
+          </ScrollArea>
+
+          <DialogFooter className="mt-2 pt-2 border-t">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               <X className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Cancel</span>
@@ -302,3 +294,6 @@ export function StaffPermissions() {
     </div>
   );
 }
+
+/** Alias để embed vào BotSettings accordion */
+export { StaffPermissions as StaffPermissionsSection };

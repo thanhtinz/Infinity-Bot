@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { EmojiInput } from "@/components/EmojiInput";
 import {
   Dialog,
   DialogContent,
@@ -234,7 +235,7 @@ export default function SpendingMilestones() {
 
             <div className="space-y-2">
               <Label>Emoji (optional)</Label>
-              <Input
+              <EmojiInput
                 placeholder="🏆 or leave empty"
                 value={form.emoji}
                 onChange={(e) => setForm({ ...form, emoji: e.target.value })}

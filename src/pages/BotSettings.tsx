@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MultiRoleSelect } from "@/components/RoleSelect";
 import { useGuild } from "@/contexts/GuildContext";
 import { apiFetch } from "@/hooks/useApi";
+import { StaffPermissionsSection } from "./StaffPermissions";
 
 // ─── shared query ────────────────────────────────────────────────────────────
 
@@ -149,6 +150,19 @@ export function BotSettings() {
           </AccordionTrigger>
           <AccordionContent className="pb-5">
             <GeneralSection />
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="staff" className="border rounded-xl px-5">
+          <AccordionTrigger className="hover:no-underline py-4">
+            <span className="flex items-center gap-2.5 text-sm font-semibold">
+              <Shield className="w-4 h-4 text-muted-foreground" />
+              Staff Permissions
+              <span className="text-xs font-normal text-muted-foreground">Role-based dashboard access</span>
+            </span>
+          </AccordionTrigger>
+          <AccordionContent className="pb-5">
+            <StaffPermissionsSection />
           </AccordionContent>
         </AccordionItem>
 

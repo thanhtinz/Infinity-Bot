@@ -37,6 +37,8 @@ import {
   CaseSensitive,
   AtSign,
   ChevronDown,
+  Save,
+  Loader2,
 } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
@@ -213,6 +215,18 @@ export function AutoModConfig() {
     },
   });
 
+  const SaveBtn = () => (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+      onClick={() => mutation.mutate()}
+      disabled={mutation.isPending}
+    >
+      {mutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+    </Button>
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -232,7 +246,8 @@ export function AutoModConfig() {
               <CardTitle className="flex items-center gap-2 text-base">
                 <MessageSquareOff className="w-4 h-4" /> {t("automod_antiSpam")}
               </CardTitle>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <SaveBtn />
                 <Switch
                   checked={antiSpamEnabled}
                   onCheckedChange={(v) => {
@@ -300,7 +315,8 @@ export function AutoModConfig() {
               <CardTitle className="flex items-center gap-2 text-base">
                 <Link2Off className="w-4 h-4" /> {t("automod_antiLink")}
               </CardTitle>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <SaveBtn />
                 <Switch
                   checked={antiLinkEnabled}
                   onCheckedChange={(v) => {
@@ -342,7 +358,8 @@ export function AutoModConfig() {
               <CardTitle className="flex items-center gap-2 text-base">
                 <Ban className="w-4 h-4" /> {t("automod_badWords")}
               </CardTitle>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <SaveBtn />
                 <Switch
                   checked={badWordsEnabled}
                   onCheckedChange={(v) => {
@@ -384,7 +401,8 @@ export function AutoModConfig() {
               <CardTitle className="flex items-center gap-2 text-base">
                 <CaseSensitive className="w-4 h-4" /> {t("automod_antiCaps")}
               </CardTitle>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <SaveBtn />
                 <Switch
                   checked={capsLockEnabled}
                   onCheckedChange={(v) => {
@@ -439,7 +457,8 @@ export function AutoModConfig() {
               <CardTitle className="flex items-center gap-2 text-base">
                 <AtSign className="w-4 h-4" /> {t("automod_antiMassMention")}
               </CardTitle>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <SaveBtn />
                 <Switch
                   checked={mentionSpamEnabled}
                   onCheckedChange={(v) => {
@@ -491,10 +510,13 @@ export function AutoModConfig() {
       {/* ── Filters ── */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("automod_filters")}</CardTitle>
-          <CardDescription>
-            {t("automod_ignoredChannelsDesc")}
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base">{t("automod_filters")}</CardTitle>
+              <CardDescription>{t("automod_ignoredChannelsDesc")}</CardDescription>
+            </div>
+            <SaveBtn />
+          </div>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-2">
@@ -534,9 +556,9 @@ export function AutoModConfig() {
         </CardContent>
       </Card>
 
-      {/* Save */}
+      {/* Save — global fallback */}
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
-        {mutation.isPending ? t("saving") : t("automod_saveConfig")}
+        {mutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />{t("saving")}</> : t("automod_saveConfig")}
       </Button>
     </div>
   );

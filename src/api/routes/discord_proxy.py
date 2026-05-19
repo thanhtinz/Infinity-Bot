@@ -5,7 +5,7 @@ import httpx
 
 from src.database.config import get_db
 from src.models.models import SystemConfig, ManagedEmoji
-from src.api.deps import get_guild_id
+from src.api.deps import get_guild_id, _decode_session
 
 router = APIRouter()
 
@@ -146,3 +146,27 @@ async def delete_discord_emoji(emoji_id: str, db=Depends(get_db), guild_id: str 
         db.delete(managed)
         db.commit()
     return {"ok": True}
+
+
+@router.get("/discord/member-roles")
+async def get_member_roles(
+    request: Request,
+    db=Depends(get_db),
+    guild_id: str = Depends(get_guild_id),
+):
+    """Return the Discord role IDs of the currently logged-in user in this guild."""
+    payload = _decode_session(request)
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid session")
+
+    token = _get_bot_token(db)
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
+            f"https://discord.com/api/guilds/{guild_id}/members/{user_id}",
+            headers={"Authorization": f"Bot {token}"},
+        )
+        if res.status_code != 200:
+            return {"roles": []}
+        member_data = res.json()
+        return {"roles": member_data.get("roles", [])}

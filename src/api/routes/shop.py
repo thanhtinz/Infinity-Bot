@@ -7,13 +7,13 @@ import os, uuid, shutil, logging, datetime
 from src.database.config import get_db
 from src.models.models import SystemConfig, Product, Order, User, Coupon, SpendingMilestone, FlashSale, InventoryItem
 from src.schemas.schemas import ProductBase, ProductResponse, OrderResponse
-from src.api.deps import get_guild_id
+from src.api.deps import get_guild_id, require_staff_perm
 
 from payos import PayOS
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_staff_perm("can_shop"))])
 
 
 async def _refresh_bang_gia(db):

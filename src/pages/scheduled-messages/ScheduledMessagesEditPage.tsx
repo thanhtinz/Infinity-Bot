@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { EmojiTextarea } from "@/components/EmojiInput";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -306,7 +306,7 @@ export function ScheduledMessagesEditPage() {
           {/* Message content */}
           <div className="space-y-2">
             <Label>Message content</Label>
-            <EmojiTextarea
+            <Textarea
               value={form.content}
               onChange={(e) =>
                 setForm((f) => ({ ...f, content: e.target.value }))
@@ -316,9 +316,10 @@ export function ScheduledMessagesEditPage() {
             />
           </div>
 
-          {/* Add embed toggle — styled button */}
-          <button
-            type="button"
+          {/* Add embed toggle — styled row */}
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() =>
               setForm((f) => ({
                 ...f,
@@ -326,8 +327,18 @@ export function ScheduledMessagesEditPage() {
                 embed_data: !f.add_embed ? f.embed_data : emptyEmbed(),
               }))
             }
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setForm((f) => ({
+                  ...f,
+                  add_embed: !f.add_embed,
+                  embed_data: !f.add_embed ? f.embed_data : emptyEmbed(),
+                }));
+              }
+            }}
             className={cn(
-              "flex w-full items-center justify-between rounded-lg border p-3 transition-all",
+              "flex w-full cursor-pointer select-none items-center justify-between rounded-lg border p-3 transition-all",
               form.add_embed
                 ? "bg-indigo-500/10 border-indigo-500/30"
                 : "bg-muted/30 border-muted hover:bg-muted/50"
@@ -360,7 +371,7 @@ export function ScheduledMessagesEditPage() {
               }
               onClick={(e) => e.stopPropagation()}
             />
-          </button>
+          </div>
         </div>
 
         {/* ── Section 3: Config Embed ── */}

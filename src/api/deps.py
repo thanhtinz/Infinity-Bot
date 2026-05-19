@@ -2,6 +2,7 @@
 import os
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 import jwt
 
@@ -47,3 +48,50 @@ def require_owner(request: Request) -> dict:
     if not payload.get("is_owner"):
         raise HTTPException(status_code=403, detail="Owner access required")
     return payload
+
+
+def require_staff_perm(perm_field: str):
+    """
+    Factory: returns a FastAPI dependency that checks staff permission.
+    Owner always passes. Non-owner must have a StaffPermission row with
+    `perm_field=True` for at least one of their Discord roles.
+
+    Usage:
+        @router.get("/something", dependencies=[Depends(require_staff_perm("can_shop"))])
+    """
+    def _dep(
+        request: Request,
+        db=Depends(get_db),
+        guild_id: str = Depends(get_guild_id),
+    ):
+        from src.models.models import StaffPermission
+
+        payload = _decode_session(request)
+
+        # Owner bypasses all permission checks
+        if payload.get("is_owner"):
+            return payload
+
+        # Get caller's Discord role IDs from request header
+        # Frontend sends X-Member-Roles: "role1,role2,..."
+        raw_roles = request.headers.get("X-Member-Roles", "")
+        member_role_ids = [r.strip() for r in raw_roles.split(",") if r.strip()]
+
+        if not member_role_ids:
+            raise HTTPException(status_code=403, detail="Insufficient permissions")
+
+        # Check if any of the member's roles has the required permission
+        perms = db.execute(
+            select(StaffPermission).where(
+                StaffPermission.guild_id == guild_id,
+                StaffPermission.role_id.in_(member_role_ids),
+            )
+        ).scalars().all()
+
+        for sp in perms:
+            if getattr(sp, perm_field, False):
+                return payload
+
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+
+    return _dep

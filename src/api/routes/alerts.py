@@ -4,10 +4,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
-from src.api.deps import get_guild_id
+from src.api.deps import get_guild_id, require_staff_perm
 from src.models.models import ServerAlert, AlertHistory
 
-router = APIRouter(prefix="/api/alerts", tags=["alerts"])
+router = APIRouter(dependencies=[Depends(require_staff_perm("can_moderation"))], prefix="/api/alerts", tags=["alerts"])
 
 DEFAULT_ALERT_TYPES = [
     {"type": "mass_ban", "label": "Mass Ban", "threshold": 5, "window": 5},

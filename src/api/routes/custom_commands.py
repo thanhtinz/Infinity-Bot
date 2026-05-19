@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 
 from src.database.config import get_db
-from src.api.deps import get_guild_id
+from src.api.deps import get_guild_id, require_staff_perm
 from src.models.models import CustomCommand
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_staff_perm("can_utilities"))])
 
 _PHASE3_FIELDS = [
     "silent", "dm_response", "no_everyone",

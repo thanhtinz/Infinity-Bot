@@ -7,12 +7,12 @@ from sqlalchemy import select, func, and_
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
-from src.api.deps import get_guild_id
+from src.api.deps import get_guild_id, require_staff_perm
 from src.models.models import VerificationConfig, VerifiedMember, GuildBot
 from src.api import railway as _railway
 
 logger = logging.getLogger(__name__)
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_staff_perm("can_verification"))])
 
 
 def _get_or_create_config(db: Session, guild_id: str) -> VerificationConfig:

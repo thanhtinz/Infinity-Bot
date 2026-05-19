@@ -5,10 +5,10 @@ from sqlalchemy import select, func, and_
 from sqlalchemy.orm import Session
 
 from src.database.config import get_db
-from src.api.deps import get_guild_id
+from src.api.deps import get_guild_id, require_staff_perm
 from src.models.models import FirewallRule, FirewallLog
 
-router = APIRouter(prefix="/api/firewall", tags=["firewall"])
+router = APIRouter(dependencies=[Depends(require_staff_perm("can_moderation"))], prefix="/api/firewall", tags=["firewall"])
 
 
 # ── Rules CRUD ────────────────────────────────────────────────────────────

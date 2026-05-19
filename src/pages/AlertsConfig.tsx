@@ -11,8 +11,6 @@ import {
   ShieldCheck, Save, FlaskConical, Loader2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { PremiumGate } from "@/components/ui/premium-gate";
-import { useEntitlements } from "@/hooks/useEntitlements";
 import { useGuild } from "@/contexts/GuildContext";
 import { apiFetch } from "@/hooks/useApi";
 
@@ -62,7 +60,6 @@ function formatDate(iso: string | null) {
 export function AlertsConfig() {
   const { toast } = useToast();
   const qc = useQueryClient();
-  const { hasFeature, isLoading: entLoading } = useEntitlements();
   const { selectedGuildId } = useGuild();
   const [webhookUrl, setWebhookUrl] = useState("");
   const [alerts, setAlerts] = useState<AlertConfig[]>([]);
@@ -73,7 +70,7 @@ export function AlertsConfig() {
     queryKey: ["alerts-config", selectedGuildId],
     queryFn: async () => {
       const res = await apiFetch("/api/alerts/config");
-      if (!res.ok) throw new Error("Failed to load");
+      if (!res.ok) return [] as AlertConfig[];
       const data: AlertConfig[] = await res.json();
       setAlerts(data);
       const wh = data.find(a => a.webhook_url)?.webhook_url ?? "";
@@ -81,6 +78,7 @@ export function AlertsConfig() {
       return data;
     },
     enabled: !!selectedGuildId,
+    retry: 1,
   });
 
   /* Fetch history */
@@ -140,13 +138,14 @@ export function AlertsConfig() {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
-        <p className="text-sm">Failed to load alert configuration.</p>
+        <Bell className="w-8 h-8 opacity-30" />
+        <p className="text-sm font-medium">Failed to load alert configuration</p>
+        <p className="text-xs">Make sure your bot is connected and the guild is selected.</p>
       </div>
     );
   }
 
   return (
-    <PremiumGate feature="alerts" featureLabel="Server Alerts" hasAccess={hasFeature("alerts")} isLoading={entLoading}>
     <div className="space-y-6 p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="space-y-3">
@@ -283,6 +282,5 @@ export function AlertsConfig() {
         </CardContent>
       </Card>
     </div>
-    </PremiumGate>
   );
 }
