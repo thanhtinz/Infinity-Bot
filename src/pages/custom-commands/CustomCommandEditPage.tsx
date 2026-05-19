@@ -25,6 +25,8 @@ import { CommandAdvancedSection } from "./CommandAdvancedSection";
 import { CommandAdditionalResponses } from "./CommandAdditionalResponses";
 import { CommandResponseSection } from "./CommandResponseSection";
 import { CommandSettingsSection } from "./CommandSettingsSection";
+import { TriggerPickerSection } from "./TriggerPickerSection";
+import { ActionsEditor } from "./ActionsEditor";
 import { apiFetch } from "@/hooks/useApi";
 
 export function CustomCommandEditPage() {
@@ -44,6 +46,7 @@ export function CustomCommandEditPage() {
   const [permOpen, setPermOpen] = useState(false);
   const [advOpts2Open, setAdvOpts2Open] = useState(false);
   const [addRespOpen, setAddRespOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
 
   // ── Fetch command if editing ──
   const { isLoading } = useQuery<CustomCommand[]>({
@@ -97,6 +100,9 @@ export function CustomCommandEditPage() {
         delete_after: cmd.delete_after ?? 0,
         required_args: cmd.required_args ?? 0,
         additional_responses: cmd.additional_responses ?? [],
+        event_trigger: cmd.event_trigger ?? "prefix_command",
+        trigger_config: cmd.trigger_config ?? {},
+        actions: cmd.actions ?? [],
       });
       setPopulated(true);
     }
@@ -180,6 +186,9 @@ export function CustomCommandEditPage() {
       delete_after: form.delete_after,
       required_args: form.required_args,
       additional_responses: form.additional_responses,
+      event_trigger: form.event_trigger,
+      trigger_config: form.trigger_config,
+      actions: form.actions,
     };
     if (!isNew && id) {
       updateMutation.mutate({ id: Number(id), ...body });
@@ -291,6 +300,11 @@ export function CustomCommandEditPage() {
         </div>
       </div>
       <div className="max-w-2xl mx-auto p-6 space-y-6">
+        {/* ── Section: Trigger ── */}
+        <TriggerPickerSection form={form} onFormChange={setForm} />
+
+        <Separator />
+
         {/* ── Section: Basic Info ── */}
         <div className="space-y-4">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
@@ -301,10 +315,24 @@ export function CustomCommandEditPage() {
           {/* Name */}
           <div className="space-y-2">
             <Label>Name Command</Label>
-            <div className="flex items-center gap-0">
-              <span className="inline-flex items-center rounded-l-md border border-r-0 border-input bg-muted px-3 h-9 text-sm font-mono text-muted-foreground">
-                !
-              </span>
+            {form.event_trigger === "prefix_command" ? (
+              <div className="flex items-center gap-0">
+                <span className="inline-flex items-center rounded-l-md border border-r-0 border-input bg-muted px-3 h-9 text-sm font-mono text-muted-foreground">
+                  !
+                </span>
+                <Input
+                  value={form.name}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      name: e.target.value.replace(/\s/g, "").toLowerCase(),
+                    }))
+                  }
+                  placeholder="command_name"
+                  className="rounded-l-none"
+                />
+              </div>
+            ) : (
               <Input
                 value={form.name}
                 onChange={(e) =>
@@ -313,11 +341,10 @@ export function CustomCommandEditPage() {
                     name: e.target.value.replace(/\s/g, "").toLowerCase(),
                   }))
                 }
-                placeholder="command_name"
-                className="rounded-l-none"
+                placeholder="tên-định-danh (dùng để phân biệt các lệnh)"
               />
-            </div>
-            {form.name && (
+            )}
+            {form.name && form.event_trigger === "prefix_command" && (
               <p className="text-xs text-muted-foreground">
                 Preview: <span className="font-mono font-medium">!{form.name}</span>
               </p>
@@ -393,6 +420,11 @@ export function CustomCommandEditPage() {
 
         {/* ── Section: Additional Responses ── */}
         <CommandAdditionalResponses form={form} onFormChange={setForm} open={addRespOpen} onOpenChange={setAddRespOpen} />
+
+        <Separator />
+
+        {/* ── Section: System Actions ── */}
+        <ActionsEditor form={form} onFormChange={setForm} open={actionsOpen} onOpenChange={setActionsOpen} />
       </div>
     </div>
   );

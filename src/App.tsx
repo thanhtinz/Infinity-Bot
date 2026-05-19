@@ -159,11 +159,19 @@ const navGroups: NavGroup[] = [
     label: "nav_utilities",
     items: [
       { to: "/sticky", icon: Pin, label: "nav_sticky", feature: "sticky" },
-      { to: "/custom-commands", icon: Terminal, label: "nav_customCommands", feature: "custom_commands" },
       { to: "/autoresponder", icon: MessageCircle, label: "nav_autoResponder", feature: "autoresponder" },
       { to: "/scheduled-messages", icon: Clock, label: "nav_scheduledMessages", feature: "scheduler" },
       { to: "/embeds", icon: Layout, label: "nav_embeds" },
       { to: "/emojis", icon: Smile, label: "nav_emojis" },
+    ],
+  },
+  {
+    key: "custom_commands",
+    icon: Terminal,
+    label: "Custom Commands",
+    feature: "custom_commands",
+    items: [
+      { to: "/custom-commands", icon: Terminal, label: "nav_customCommands", feature: "custom_commands" },
     ],
   },
   {
@@ -295,6 +303,30 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           const isOpen = openGroups.has(group.key);
           const isActive = group.items.some((item) => item.to === location.pathname);
           const GroupIcon = group.icon;
+
+          // Single-item group → render as direct link (no collapsible)
+          if (group.items.length === 1) {
+            const item = group.items[0];
+            const ItemIcon = item.icon;
+            const isItemActive = location.pathname.startsWith(item.to);
+            return (
+              <Link
+                key={group.key}
+                to={item.to}
+                onClick={onClose}
+                className={cn(
+                  "flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  isItemActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground/80 hover:bg-accent/40 hover:text-foreground"
+                )}
+              >
+                <ItemIcon className="w-4 h-4 shrink-0" />
+                {t(group.label as Parameters<typeof t>[0])}
+              </Link>
+            );
+          }
+
           return (
             <div key={group.key}>
               <button

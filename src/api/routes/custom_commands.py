@@ -15,6 +15,8 @@ _PHASE3_FIELDS = [
     "additional_responses",
 ]
 
+_PHASE4_FIELDS = ["event_trigger", "trigger_config", "actions"]
+
 
 def _serialize(c: CustomCommand) -> dict:
     return {
@@ -45,6 +47,10 @@ def _serialize(c: CustomCommand) -> dict:
         "delete_after": getattr(c, "delete_after", 0) or 0,
         "required_args": getattr(c, "required_args", 0) or 0,
         "additional_responses": getattr(c, "additional_responses", None) or [],
+        # Phase 4
+        "event_trigger": getattr(c, "event_trigger", "prefix_command") or "prefix_command",
+        "trigger_config": getattr(c, "trigger_config", None) or {},
+        "actions": getattr(c, "actions", None) or [],
     }
 
 
@@ -59,14 +65,16 @@ def list_custom_commands(db=Depends(get_db), guild_id: str = Depends(get_guild_i
 
 @router.post("/custom-commands")
 def create_custom_command(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    incoming_trigger = body.get("event_trigger", "prefix_command")
     existing = db.execute(
         select(CustomCommand).where(
             CustomCommand.guild_id == guild_id,
             CustomCommand.name == body.get("name", "").strip().lower(),
+            CustomCommand.event_trigger == incoming_trigger,
         )
     ).scalars().first()
     if existing:
-        raise HTTPException(status_code=400, detail="Command name đã tồn tại")
+        raise HTTPException(status_code=400, detail="Command name đã tồn tại với cùng trigger")
 
     cmd = CustomCommand(
         guild_id=guild_id,
@@ -93,6 +101,9 @@ def create_custom_command(body: dict, db=Depends(get_db), guild_id: str = Depend
         delete_after=body.get("delete_after", 0),
         required_args=body.get("required_args", 0),
         additional_responses=body.get("additional_responses", []),
+        event_trigger=body.get("event_trigger", "prefix_command"),
+        trigger_config=body.get("trigger_config", {}),
+        actions=body.get("actions", []),
     )
     db.add(cmd)
     db.commit()
@@ -110,7 +121,7 @@ def update_custom_command(cmd_id: int, body: dict, db=Depends(get_db), guild_id:
         "name", "description", "response_type", "response_text",
         "response_embed", "ephemeral", "required_roles", "enabled",
         "aliases", "cooldown", "allowed_channels", "delete_trigger", "auto_react",
-    ] + _PHASE3_FIELDS
+    ] + _PHASE3_FIELDS + _PHASE4_FIELDS
 
     for field in all_fields:
         if field in body:

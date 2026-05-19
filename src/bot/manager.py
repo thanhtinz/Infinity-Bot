@@ -100,6 +100,7 @@ def create_bot():
     intents = discord.Intents.default()
     intents.message_content = True
     intents.members = True
+    intents.presences = True  # needed for member_status_change trigger
 
     # Read shard_count from DB (None = auto)
     _shard_count = None

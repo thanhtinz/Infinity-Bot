@@ -498,6 +498,14 @@ class CustomCommand(Base):
     delete_after = Column(Integer, default=0)      # delete bot response after N seconds (0 = never)
     required_args = Column(Integer, default=0)     # minimum number of $N args required
     additional_responses = Column(JSON, default=list)  # [{type: "text"|"embed", content: ..., embed: {...}}]
+    # Phase 4 — trigger system
+    event_trigger = Column(String, default="prefix_command")  # one of 86 trigger_type values
+    trigger_config = Column(JSON, default=dict)   # per-trigger config (keyword, channel_filter, etc.)
+    actions = Column(JSON, default=list)          # [{type: "add_role", config: {...}}] executed after responses
+    # Phase 4 fields — Event triggers + System actions
+    event_trigger = Column(String, default="prefix_command")   # trigger_type from TRIGGER_TYPES (86 values)
+    trigger_config = Column(JSON, default=dict)                 # per-trigger config {keyword, match_type, channel_id, ...}
+    actions = Column(JSON, default=list)                        # [{type: "add_role", config: {role_id: "..."}}]
 
 
 # ── Advanced Moderation System ─────────────────────────────────────────────────

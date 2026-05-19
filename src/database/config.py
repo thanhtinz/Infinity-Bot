@@ -204,6 +204,9 @@ async def init_db():
             "delete_after": "ALTER TABLE custom_commands ADD COLUMN delete_after INTEGER DEFAULT 0",
             "required_args": "ALTER TABLE custom_commands ADD COLUMN required_args INTEGER DEFAULT 0",
             "additional_responses": "ALTER TABLE custom_commands ADD COLUMN additional_responses JSON DEFAULT '[]'",
+            "event_trigger": "ALTER TABLE custom_commands ADD COLUMN event_trigger VARCHAR DEFAULT 'prefix_command'",
+            "trigger_config": "ALTER TABLE custom_commands ADD COLUMN trigger_config JSON DEFAULT '{}'",
+            "actions": "ALTER TABLE custom_commands ADD COLUMN actions JSON DEFAULT '[]'",
         }.items():
             if col not in cc:
                 all_stmts.append(stmt)
