@@ -22,6 +22,7 @@ import {
   Clock, Eye, FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -289,15 +290,8 @@ export function FormsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <ClipboardList className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">Forms</h2>
-      </div>
-      <p className="text-sm text-muted-foreground -mt-4">
-        Create form templates and review submissions from your members.
-      </p>
+    <PageContainer size="md">
+      <PageHeader title="Forms" description="Create form templates and review submissions from your members." icon={ClipboardList} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -604,6 +598,6 @@ export function FormsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

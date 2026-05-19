@@ -28,6 +28,7 @@ import {
   Calendar,
   Hash,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { useT } from "@/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -285,25 +286,13 @@ export function ReactionRoles() {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-3">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Smile className="w-6 h-6" />
-            {t("rr_title")}
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            {t("reaction_desc")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={() => navigate('/reaction-roles/new')}>
-            <Plus className="h-4 w-4 mr-1.5" />
-            {t("reaction_createPanel")}
-          </Button>
-        </div>
-      </div>
+    <PageContainer size="md">
+      <PageHeader title={t("rr_title")} description={t("reaction_desc")} icon={Smile}>
+        <Button onClick={() => navigate('/reaction-roles/new')}>
+          <Plus className="h-4 w-4 mr-1.5" />
+          {t("reaction_createPanel")}
+        </Button>
+      </PageHeader>
 
       {/* Loading */}
       {isLoading && (
@@ -369,6 +358,6 @@ export function ReactionRoles() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

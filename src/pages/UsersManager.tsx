@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Users, UserCheck, Ban, DollarSign, Search, FileText, ShieldBan } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
@@ -129,11 +130,8 @@ export function UsersManager() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Users className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">{t("users_title")}</h2>
-      </div>
+    <PageContainer size="lg">
+      <PageHeader title={t("users_title")} icon={Users} />
 
       {/* ── Stat Cards ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -348,6 +346,6 @@ export function UsersManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

@@ -28,6 +28,7 @@ import {
   MessageSquare,
   Package,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { cn } from "@/lib/utils";
 import type { FormState, EmbedField, EmbedTemplate, EmbedsManagerProps, EmbedEventDef } from "./embeds/embedTypes";
 import { EMBED_EVENTS, EVENT_GROUPS, VARIABLES } from "./embeds/embedEvents";
@@ -262,16 +263,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       {pageTitle && (
-        <div className="relative mb-4 overflow-hidden rounded-3xl border bg-card px-5 py-4 shadow-sm">
-          <div className="absolute -right-16 -top-20 h-48 w-48 rounded-full bg-primary/20 blur-3xl" />
-          <div className="relative flex items-start gap-3">
-            <div className="rounded-2xl bg-primary/10 p-3 ring-1 ring-primary/20"><Trophy className="h-5 w-5 text-primary" /></div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">{pageTitle}</h1>
-              {pageDescription && <p className="mt-1 text-sm text-muted-foreground">{pageDescription}</p>}
-            </div>
-          </div>
-        </div>
+        <PageHeader title={pageTitle} description={pageDescription} icon={Layout} />
       )}
 
       {/* ── Tab Switcher ── */}

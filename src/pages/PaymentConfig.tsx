@@ -31,6 +31,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
 import { cn } from "@/lib/utils";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import {
   CreditCard,
   Globe,
@@ -452,16 +453,8 @@ export function PaymentConfig() {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Payment Configuration
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Configure currency and payment methods for your shop.
-        </p>
-      </div>
+    <PageContainer size="sm">
+      <PageHeader title="Payment Configuration" description="Configure currency and payment methods for your shop." icon={CreditCard} />
 
       {/* ── Section 1: Currency Settings ──────────────────────────────── */}
       <Card>
@@ -993,6 +986,6 @@ export function PaymentConfig() {
           )}
         </Card>
       </Collapsible>
-    </div>
+    </PageContainer>
   );
 }

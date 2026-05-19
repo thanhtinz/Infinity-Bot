@@ -7,8 +7,9 @@ import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
-import { TrendingUp, ShoppingCart, Users, Package } from "lucide-react";
+import { TrendingUp, ShoppingCart, Users, Package, BarChart as BarChartIcon } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 interface Stats {
   chart: { date: string; revenue: number; orders: number }[];
@@ -59,8 +60,8 @@ export function ShopStats() {
   const fmtMoney = (n: number) => formatPriceCompact(n);
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      <h1 className="text-xl font-semibold">{t("shopStats_title")}</h1>
+    <PageContainer size="lg">
+      <PageHeader title={t("shopStats_title")} icon={BarChartIcon} />
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -140,6 +141,6 @@ export function ShopStats() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageContainer>
   );
 }

@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { SmilePlus, Copy, Trash2, Upload, ImageIcon, RefreshCw, Sticker, Smile } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
@@ -166,36 +167,27 @@ export function EmojiManager() {
   };
 
   return (
-    <div className="space-y-6 p-4 lg:p-6 max-w-6xl mx-auto">
-      {/* ── Header ── */}
-      <div className="space-y-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("emoji_title")}</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {t("emoji_desc")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {tab === "emoji" && (
-            <>
-              <Button variant="outline" onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}>
-                <RefreshCw className={cn("h-4 w-4 mr-2", syncMutation.isPending && "animate-spin")} />
-                {t("emoji_sync")}
-              </Button>
-              <Button onClick={() => setEmojiUploadOpen(true)}>
-                <SmilePlus className="h-4 w-4 mr-2" />
-                {t("emoji_addEmoji")}
-              </Button>
-            </>
-          )}
-          {tab === "sticker" && (
-            <Button onClick={() => setStickerUploadOpen(true)}>
-              <Sticker className="h-4 w-4 mr-2" />
-              {t("emoji_addSticker")}
+    <PageContainer size="lg">
+      <PageHeader title={t("emoji_title")} description={t("emoji_desc")} icon={Smile}>
+        {tab === "emoji" && (
+          <>
+            <Button variant="outline" onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}>
+              <RefreshCw className={cn("h-4 w-4 mr-2", syncMutation.isPending && "animate-spin")} />
+              {t("emoji_sync")}
             </Button>
-          )}
-        </div>
-      </div>
+            <Button onClick={() => setEmojiUploadOpen(true)}>
+              <SmilePlus className="h-4 w-4 mr-2" />
+              {t("emoji_addEmoji")}
+            </Button>
+          </>
+        )}
+        {tab === "sticker" && (
+          <Button onClick={() => setStickerUploadOpen(true)}>
+            <Sticker className="h-4 w-4 mr-2" />
+            {t("emoji_addSticker")}
+          </Button>
+        )}
+      </PageHeader>
 
       {/* ── Tabs ── */}
       <div className="flex border-b">
@@ -439,7 +431,7 @@ export function EmojiManager() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageContainer>
   );
 }
 

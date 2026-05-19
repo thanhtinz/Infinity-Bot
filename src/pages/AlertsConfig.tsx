@@ -10,6 +10,7 @@ import {
   Bell, Bomb, UserX, LogOut, FolderMinus, Tag,
   ShieldCheck, Save, FlaskConical, Loader2,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import type { LucideIcon } from "lucide-react";
 import { useGuild } from "@/contexts/GuildContext";
 import { apiFetch } from "@/hooks/useApi";
@@ -146,29 +147,17 @@ export function AlertsConfig() {
   }
 
   return (
-    <div className="space-y-6 p-6 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
-            <Bell className="w-5 h-5 text-orange-500" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold sm:text-2xl">Server Alerts</h1>
-            <p className="text-sm text-muted-foreground">Detect nuke attempts, mass bans, and suspicious activity</p>
-          </div>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={() => testMut.mutate()} disabled={testMut.isPending}>
-            <FlaskConical className="w-4 h-4 mr-1.5" />
-            Test Alert
-          </Button>
-          <Button size="sm" onClick={() => saveMut.mutate()} disabled={saveMut.isPending || !dirty}>
-            {saveMut.isPending ? <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" /> : <Save className="h-4 w-4 sm:mr-2" />}
-            <span className="hidden sm:inline">Save</span>
-          </Button>
-        </div>
-      </div>
+    <PageContainer size="md">
+      <PageHeader title="Server Alerts" description="Detect nuke attempts, mass bans, and suspicious activity" icon={Bell}>
+        <Button variant="outline" size="sm" onClick={() => testMut.mutate()} disabled={testMut.isPending}>
+          <FlaskConical className="w-4 h-4 mr-1.5" />
+          Test Alert
+        </Button>
+        <Button size="sm" onClick={() => saveMut.mutate()} disabled={saveMut.isPending || !dirty}>
+          {saveMut.isPending ? <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" /> : <Save className="h-4 w-4 sm:mr-2" />}
+          <span className="hidden sm:inline">Save</span>
+        </Button>
+      </PageHeader>
 
       {/* Webhook URL */}
       <Card>
@@ -281,6 +270,6 @@ export function AlertsConfig() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

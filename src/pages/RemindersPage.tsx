@@ -10,6 +10,7 @@ import { useGuild } from "@/contexts/GuildContext";
 import {
   Bell, Trash2, Clock, RefreshCw, CheckCircle, ListTodo,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -103,15 +104,8 @@ export function RemindersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <Bell className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">Reminders</h2>
-      </div>
-      <p className="text-sm text-muted-foreground -mt-4">
-        View and manage reminders created via bot commands. Reminders are created using slash commands.
-      </p>
+    <PageContainer size="md">
+      <PageHeader title="Reminders" description="View and manage reminders created via bot commands. Reminders are created using slash commands." icon={Bell} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -195,6 +189,6 @@ export function RemindersPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

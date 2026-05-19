@@ -43,6 +43,7 @@ import {
   Loader2,
   Gem,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -315,24 +316,13 @@ export function PremiumPlans() {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="space-y-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Premium Plan Management
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Create and manage Premium subscription plans.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={openCreateDialog}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create New Plan
-          </Button>
-        </div>
-      </div>
+    <PageContainer size="md">
+      <PageHeader title="Premium Plan Management" description="Create and manage Premium subscription plans." icon={Gem}>
+        <Button onClick={openCreateDialog}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create New Plan
+        </Button>
+      </PageHeader>
 
       {/* Plans table */}
       <Card>
@@ -658,6 +648,6 @@ export function PremiumPlans() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

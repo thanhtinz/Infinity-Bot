@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Package } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { Product } from "../types";
@@ -55,16 +56,12 @@ export function ProductsManager() {
   });
 
   return (
-    <div className="p-4 md:p-6 space-y-4 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="space-y-3">
-        <h1 className="text-xl font-semibold">{t("products_title")}</h1>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button size="sm" onClick={() => navigate('/products/new')}>
-            <Plus className="mr-2 h-4 w-4" /> {t("products_add")}
-          </Button>
-        </div>
-      </div>
+    <PageContainer size="md">
+      <PageHeader title={t("products_title")} icon={Package}>
+        <Button size="sm" onClick={() => navigate('/products/new')}>
+          <Plus className="mr-2 h-4 w-4" /> {t("products_add")}
+        </Button>
+      </PageHeader>
 
       {/* Product cards grid */}
       {isLoading ? (
@@ -145,6 +142,6 @@ export function ProductsManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

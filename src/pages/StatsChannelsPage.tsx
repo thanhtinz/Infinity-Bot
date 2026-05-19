@@ -17,6 +17,7 @@ import {
   Activity, Plus, Trash2, Loader2, Hash, Users, Zap, Crown, Shield, BarChart3, Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -165,20 +166,12 @@ export function StatsChannelsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Activity className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-bold">Stats Channels</h2>
-        </div>
+    <PageContainer size="md">
+      <PageHeader title="Stats Channels" description="Display live server statistics in voice channel names." icon={Activity}>
         <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4" /> Add Channel
         </Button>
-      </div>
-      <p className="text-sm text-muted-foreground -mt-4">
-        Display live server statistics in voice channel names.
-      </p>
+      </PageHeader>
 
       {/* Stats Channels List */}
       <Card>
@@ -296,6 +289,6 @@ export function StatsChannelsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

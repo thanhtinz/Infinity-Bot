@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, ShieldAlert, ShieldCheck, Trash2, Search, Users, UserCheck } from "lucide-react";
+import { Shield, ShieldAlert, ShieldCheck, Trash2, Search, Users, UserCheck, AlertTriangle } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
 
@@ -61,18 +62,8 @@ export function WarningsManager() {
   const uniqueMods = new Set(warnings.map((w) => w.moderator_id)).size;
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-3">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ShieldAlert className="h-6 w-6 text-orange-500" />
-            {t("warnings_title")}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("warnings_title")} <code className="bg-muted px-1 rounded text-xs">/warn</code>. Deleting here does not DM the user.
-          </p>
-        </div>
-      </div>
+    <PageContainer size="lg">
+      <PageHeader title={t("warnings_title")} description={`${t("warnings_title")} /warn. Deleting here does not DM the user.`} icon={AlertTriangle} />
 
       {/* ── Stat Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -202,6 +193,6 @@ export function WarningsManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

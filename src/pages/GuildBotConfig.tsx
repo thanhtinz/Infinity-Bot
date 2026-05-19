@@ -12,6 +12,7 @@ import { useEntitlements } from "@/hooks/useEntitlements";
 import {
   Bot, Save, Loader2, Trash2, CheckCircle2, XCircle, AlertCircle, Eye, EyeOff,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 /* ── Types ──────────────────────────────────────── */
 
@@ -109,15 +110,10 @@ export function GuildBotConfig() {
   const statusLabel = data?.status === "active" ? "Active" : data?.status === "error" ? "Error" : "Inactive";
 
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary/80" />
-          Custom Bot
-          <PremiumBadge />
-        </h1>
-      </div>
+    <PageContainer size="sm">
+      <PageHeader title="Custom Bot" icon={Bot}>
+        <PremiumBadge />
+      </PageHeader>
       <PremiumGate feature="custom_bot" featureLabel="Custom Bot" hasAccess={hasFeature("custom_bot")} isLoading={entLoading}>
         <p className="text-sm text-muted-foreground mt-1">
           Use your own Discord bot for this guild instead of the main bot. The verification flow will use this bot's OAuth credentials.
@@ -277,6 +273,6 @@ export function GuildBotConfig() {
         )}
       </div>
       </PremiumGate>
-    </div>
+    </PageContainer>
   );
 }

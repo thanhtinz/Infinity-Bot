@@ -20,6 +20,7 @@ import {
   Layout,
   CalendarClock,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
 
@@ -170,27 +171,13 @@ export function ScheduledMessages() {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-primary" />
-          <div>
-            <h2 className="text-2xl font-bold leading-none">
-              Scheduled Messages
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Schedule messages / embeds
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={() => navigate('/scheduled-messages/new')} size="sm">
-            <Plus className="mr-1.5 h-4 w-4" />
-            New Schedule
-          </Button>
-        </div>
-      </div>
+    <PageContainer size="md">
+      <PageHeader title="Scheduled Messages" description="Schedule messages / embeds" icon={Clock}>
+        <Button onClick={() => navigate('/scheduled-messages/new')} size="sm">
+          <Plus className="mr-1.5 h-4 w-4" />
+          New Schedule
+        </Button>
+      </PageHeader>
 
       {/* Message list */}
       {isLoading ? (
@@ -400,6 +387,6 @@ export function ScheduledMessages() {
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

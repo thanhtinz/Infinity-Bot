@@ -25,6 +25,8 @@ import {
   Calendar,
   Hash,
 } from "lucide-react";
+import { List } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
 
@@ -250,25 +252,13 @@ export function SelectMenuRoles() {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-3">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <ListChecks className="w-6 h-6" />
-            {t("smr_title")}
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            {t("selectMenu_desc")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={() => navigate('/select-roles/new')}>
-            <Plus className="h-4 w-4 mr-1.5" />
-            {t("selectMenu_createPanel")}
-          </Button>
-        </div>
-      </div>
+    <PageContainer size="md">
+      <PageHeader title={t("smr_title")} description={t("selectMenu_desc")} icon={List}>
+        <Button onClick={() => navigate('/select-roles/new')}>
+          <Plus className="h-4 w-4 mr-1.5" />
+          {t("selectMenu_createPanel")}
+        </Button>
+      </PageHeader>
 
       {/* Loading */}
       {isLoading && (
@@ -332,6 +322,6 @@ export function SelectMenuRoles() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

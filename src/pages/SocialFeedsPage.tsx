@@ -18,6 +18,7 @@ import { useGuild } from "@/contexts/GuildContext";
 import {
   Rss, Plus, Trash2, Loader2, Play, Tv, Globe, Hash,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { cn } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -150,20 +151,12 @@ export function SocialFeedsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Rss className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-bold">Social Feeds</h2>
-        </div>
+    <PageContainer size="md">
+      <PageHeader title="Social Feeds" description="Automatically post content from YouTube, Twitch, or RSS feeds to your channels." icon={Rss}>
         <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4" /> Add Feed
         </Button>
-      </div>
-      <p className="text-sm text-muted-foreground -mt-4">
-        Automatically post content from YouTube, Twitch, or RSS feeds to your channels.
-      </p>
+      </PageHeader>
 
       {/* Feeds List */}
       <Card>
@@ -293,6 +286,6 @@ export function SocialFeedsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

@@ -18,6 +18,7 @@ import {
   Sparkles, FlaskConical, FolderOpen, Eye, EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { PROVIDERS, DEFAULT_CONFIG } from "./shared";
 import type { AIChatConfig } from "./shared";
 

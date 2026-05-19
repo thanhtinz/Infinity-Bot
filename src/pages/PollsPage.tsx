@@ -8,6 +8,7 @@ import {
   BarChart3, CheckCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -77,15 +78,8 @@ export function PollsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <BarChart3 className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">Polls</h2>
-      </div>
-      <p className="text-sm text-muted-foreground -mt-4">
-        View poll results. Polls are created via bot commands.
-      </p>
+    <PageContainer size="md">
+      <PageHeader title="Polls" description="View poll results. Polls are created via bot commands." icon={BarChart3} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4">
@@ -165,6 +159,6 @@ export function PollsPage() {
           })
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }

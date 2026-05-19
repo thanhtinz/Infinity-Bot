@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { Gift, Trophy, Clock, Users, Trash2, Info } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
 import { useGuild } from "@/contexts/GuildContext";
@@ -76,13 +77,8 @@ export function GiveawaysManager() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Gift className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-bold">{t("giveaway_title")}</h2>
-        </div>
-      </div>
+    <PageContainer size="lg">
+      <PageHeader title={t("giveaway_title")} icon={Gift} />
 
       {/* ── Note ── */}
       <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-primary dark:text-primary/80">
@@ -232,6 +228,6 @@ export function GiveawaysManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

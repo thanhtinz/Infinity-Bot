@@ -50,7 +50,9 @@ import {
   RefreshCw,
   Eye,
   X,
+  Crown,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -577,16 +579,8 @@ export function PremiumManagement() {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Premium Management
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage Premium subscriptions and payments.
-        </p>
-      </div>
+    <PageContainer size="lg">
+      <PageHeader title="Premium Management" description="Manage Premium subscriptions and payments." icon={Crown} />
 
       <Tabs defaultValue="subscriptions">
         <TabsList>
@@ -1342,6 +1336,6 @@ export function PremiumManagement() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

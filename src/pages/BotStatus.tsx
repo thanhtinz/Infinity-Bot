@@ -25,10 +25,12 @@ import {
   Users,
   Timer,
   EyeOff,
+  Activity,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
 import { cn } from "@/lib/utils";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { useState, useRef } from "react";
 import type { SystemConfig } from "../types";
 
@@ -243,8 +245,8 @@ export function BotStatus() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl w-full">
-      <h1 className="text-xl font-semibold">{t("botStatus_title")}</h1>
+    <PageContainer size="md">
+      <PageHeader title={t("botStatus_title")} icon={Activity} />
 
       {/* ── Row 1: Bot Identity Card ── */}
       <Card>
@@ -628,6 +630,6 @@ export function BotStatus() {
           />
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

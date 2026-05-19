@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Package, Upload, Trash2, Loader2, AlertTriangle, Warehouse } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import type { Product } from "@/types";
 
 interface InventoryItem {
@@ -166,12 +167,8 @@ export function InventoryManager() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Warehouse className="h-6 w-6 text-primary" /> Inventory
-        </h1>
-      </div>
+    <PageContainer size="md">
+      <PageHeader title="Inventory" icon={Warehouse} />
 
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -438,6 +435,6 @@ export function InventoryManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

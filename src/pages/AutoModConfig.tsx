@@ -39,7 +39,9 @@ import {
   ChevronDown,
   Save,
   Loader2,
+  Bot,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
 
@@ -228,15 +230,8 @@ export function AutoModConfig() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-2">
-          <Shield className="w-5 h-5" />
-          <h2 className="text-2xl font-bold tracking-tight">{t("automod_title")}</h2>
-        </div>
-        <p className="text-muted-foreground mt-1">{t("automod_autoModerate")}</p>
-      </div>
+    <PageContainer size="sm">
+      <PageHeader title={t("automod_title")} description={t("automod_autoModerate")} icon={Bot} />
 
       {/* ── Anti-Spam ── */}
       <Card>
@@ -560,6 +555,6 @@ export function AutoModConfig() {
       <Button onClick={() => mutation.mutate()} disabled={mutation.isPending} className="w-full">
         {mutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />{t("saving")}</> : t("automod_saveConfig")}
       </Button>
-    </div>
+    </PageContainer>
   );
 }

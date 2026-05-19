@@ -17,6 +17,7 @@ import {
   UserPlus, Plus, Trash2, Loader2, Clock, Bot, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -155,20 +156,12 @@ export function AutoRolePage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <UserPlus className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-bold">Auto Role</h2>
-        </div>
+    <PageContainer size="sm">
+      <PageHeader title="Auto Role" description="Automatically assign roles when members join the server or after a delay." icon={UserPlus}>
         <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4" /> Add Rule
         </Button>
-      </div>
-      <p className="text-sm text-muted-foreground -mt-4">
-        Automatically assign roles when members join the server or after a delay.
-      </p>
+      </PageHeader>
 
       {/* Rules List */}
       <Card>
@@ -282,6 +275,6 @@ export function AutoRolePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useT } from "@/i18n";
 import { Settings, Shield, Save } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -137,7 +138,8 @@ function GeneralSection() {
 export function BotSettings() {
   const { t } = useT();
   return (
-    <div className="space-y-4 max-w-3xl">
+    <PageContainer size="sm">
+      <PageHeader title={t("nav_botSettings")} icon={Settings} />
       <Accordion type="multiple" defaultValue={["general"]} className="space-y-2">
 
         <AccordionItem value="general" className="border rounded-xl px-5">
@@ -167,6 +169,6 @@ export function BotSettings() {
         </AccordionItem>
 
       </Accordion>
-    </div>
+    </PageContainer>
   );
 }

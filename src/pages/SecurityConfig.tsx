@@ -32,7 +32,9 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  Lock,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -125,16 +127,8 @@ export function SecurityConfig() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Shield className="h-6 w-6" />
-          Security Configuration
-        </h2>
-        <p className="text-muted-foreground text-sm mt-1">
-          Configure security features including VPN/proxy detection for member verification.
-        </p>
-      </div>
+    <PageContainer size="sm">
+      <PageHeader title="Security Configuration" description="Configure security features including VPN/proxy detection for member verification." icon={Lock} />
 
       <Card className="max-w-2xl">
         <CardHeader>
@@ -247,6 +241,6 @@ export function SecurityConfig() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

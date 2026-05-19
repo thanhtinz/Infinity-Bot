@@ -17,6 +17,8 @@ import {
   MessageCircleReply,
   Plus,
 } from "lucide-react";
+import { MessageCircle } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 import type { AutoResponderRule } from "./auto-responder/arTypes";
 import { RuleCard } from "./auto-responder/RuleCard";
@@ -104,25 +106,13 @@ export function AutoResponder() {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-3">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <MessageCircleReply className="w-6 h-6" />
-            {t("ar_title")}
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            {t("ar_desc")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-1.5" />
-            {t("ar_addRule")}
-          </Button>
-        </div>
-      </div>
+    <PageContainer size="md">
+      <PageHeader title={t("ar_title")} description={t("ar_desc")} icon={MessageCircle}>
+        <Button onClick={openCreate}>
+          <Plus className="h-4 w-4 mr-1.5" />
+          {t("ar_addRule")}
+        </Button>
+      </PageHeader>
 
       {/* Loading */}
       {isLoading && (
@@ -190,6 +180,6 @@ export function AutoResponder() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

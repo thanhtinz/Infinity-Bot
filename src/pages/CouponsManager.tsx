@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Copy, Tag } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
@@ -61,15 +62,12 @@ export function CouponsManager() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-4 max-w-3xl mx-auto">
-      <div className="space-y-3">
-        <h1 className="text-xl font-semibold">{t("coupons_title")}</h1>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button size="sm" onClick={() => navigate('/coupons/new')}>
-            <Plus className="mr-2 h-4 w-4" /> {t("coupons_add")}
-          </Button>
-        </div>
-      </div>
+    <PageContainer size="sm">
+      <PageHeader title={t("coupons_title")} icon={Tag}>
+        <Button size="sm" onClick={() => navigate('/coupons/new')}>
+          <Plus className="mr-2 h-4 w-4" /> {t("coupons_add")}
+        </Button>
+      </PageHeader>
 
       {isLoading ? (
         <p className="text-muted-foreground text-sm">{t("loading")}</p>
@@ -161,6 +159,6 @@ export function CouponsManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

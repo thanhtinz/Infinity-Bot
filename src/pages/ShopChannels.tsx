@@ -7,10 +7,11 @@ import { useGuild } from "@/contexts/GuildContext";
 import { apiFetch } from "@/hooks/useApi";
 import { toast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, Hash } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 interface ShopChannelsConfig {
   orders_channel_id: string;
@@ -168,8 +169,8 @@ export function ShopChannels() {
   );
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Shop Config</h1>
+    <PageContainer size="sm">
+      <PageHeader title="Shop Config" icon={Hash} />
 
       {/* Card 1: Shop Channels */}
       <Card>
@@ -311,6 +312,6 @@ export function ShopChannels() {
         </CardFooter>
       </Card>
 
-    </div>
+    </PageContainer>
   );
 }

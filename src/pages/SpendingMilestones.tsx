@@ -20,6 +20,7 @@ import { useGuild } from "@/contexts/GuildContext";
 import { RoleSelect } from "@/components/RoleSelect";
 import { Trophy, Plus, Pencil, Trash2, Award, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 interface Milestone {
   id: number;
@@ -113,23 +114,12 @@ export default function SpendingMilestones() {
   const sorted = [...milestones].sort((a, b) => a.threshold - b.threshold);
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-3">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Trophy className="h-6 w-6 text-yellow-500" />
-            Spending Milestones
-          </h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Automatically grant roles when customers reach spending milestones
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-1" /> Add Milestone
-          </Button>
-        </div>
-      </div>
+    <PageContainer size="md">
+      <PageHeader title="Spending Milestones" description="Automatically grant roles when customers reach spending milestones" icon={Trophy}>
+        <Button onClick={openCreate}>
+          <Plus className="h-4 w-4 mr-1" /> Add Milestone
+        </Button>
+      </PageHeader>
 
       {isLoading ? (
         <div className="text-center py-12 text-muted-foreground">Loading...</div>
@@ -295,6 +285,6 @@ export default function SpendingMilestones() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

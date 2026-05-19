@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,7 +19,7 @@
     --secondary-foreground: 0 0% 100%;
     --muted: 220 20% 95%;
     --muted-foreground: 228 11% 55%;   /* #7B8298 */
-    --accent: 220 20% 95%;
+    --accent: 210 25% 95%;
     --accent-foreground: 240 22% 10.6%;
     --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 100%;
@@ -27,9 +29,9 @@
     --radius: 10px;
 
     /* ── Sidebar (always dark) ──────────────────────────── */
-    --sidebar-bg: 225 12% 17%;         /* #262932 */
-    --sidebar-text: 224 21% 69%;       /* #9FA8C1 */
-    --sidebar-active: 188 100% 35.5%;  /* #009DB5 */
+    --sidebar-bg: 225 12% 17%;
+    --sidebar-text: 224 21% 69%;
+    --sidebar-active: 188 100% 35.5%;
     --sidebar-border: 0 0% 100% / 0.1;
     --sidebar-muted: 225 15% 40%;
     --sidebar-hover-bg: 0 0% 100% / 0.06;
@@ -43,9 +45,9 @@
   }
 
   .dark {
-    --background: 233.3 13.4% 13.1%;   /* #1E1E2D */
+    --background: 233.3 13.4% 13.1%;
     --foreground: 0 0% 87%;
-    --card: 225 13.6% 17.3%;           /* #262932 */
+    --card: 225 13.6% 17.3%;
     --card-foreground: 0 0% 87%;
     --popover: 225 13.6% 17.3%;
     --popover-foreground: 0 0% 87%;
@@ -68,6 +70,9 @@
   }
 }
 
+/* ════════════════════════════════════════════════════════════════════════════════
+   BASE RESET
+   ════════════════════════════════════════════════════════════════════════════════ */
 @layer base {
   * {
     @apply border-border;
@@ -87,32 +92,83 @@
     font-family: "Nunito", "Inter", "Segoe UI", sans-serif;
     font-size: 14px;
     line-height: 1.6;
-    color: hsl(var(--foreground));
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Nunito", "Inter", "Segoe UI", sans-serif;
+    font-weight: 700;
   }
 }
 
-/* ── Yuri Global Card Styling ───────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════════
+   YURI CARD — global override for ALL cards
+   ════════════════════════════════════════════════════════════════════════════════ */
 @layer base {
   [data-slot="card"],
   .card,
   div[class*="rounded-lg border bg-card"],
   div[class*="rounded-xl border bg-card"] {
-    box-shadow: var(--card-shadow);
+    box-shadow: var(--card-shadow) !important;
     border: none !important;
     border-radius: var(--radius) !important;
     transition: box-shadow 0.3s ease;
-    margin-bottom: 0;
   }
 }
 
-/* ── Switch active color → teal ─────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════════
+   YURI BUTTONS — primary/default buttons with Yuri treatment
+   ════════════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  /* Primary button — teal with subtle shadow */
+  button[data-slot="button"],
+  a[data-slot="button"] {
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   YURI INPUTS — consistent form field styling
+   ════════════════════════════════════════════════════════════════════════════════ */
+@layer base {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="url"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="datetime-local"],
+  textarea,
+  select,
+  [role="combobox"] {
+    border-radius: 8px !important;
+    font-size: 14px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  input:focus,
+  textarea:focus,
+  select:focus,
+  [role="combobox"]:focus {
+    border-color: hsl(var(--primary)) !important;
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1) !important;
+    outline: none;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   YURI SWITCH — teal active
+   ════════════════════════════════════════════════════════════════════════════════ */
 @layer base {
   button[role="switch"][data-state="checked"] {
     background-color: hsl(var(--primary)) !important;
   }
 }
 
-/* ── Tabs — teal underline indicator ────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════════
+   YURI TABS — teal underline
+   ════════════════════════════════════════════════════════════════════════════════ */
 @layer base {
   [role="tab"][data-state="active"] {
     border-bottom-color: hsl(var(--primary));
@@ -120,7 +176,84 @@
   }
 }
 
-/* ── Yuri-style section title ───────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════════
+   YURI ACCORDION — card-style accordion items
+   ════════════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  [data-state][data-orientation="vertical"].border {
+    box-shadow: var(--card-shadow);
+    border: none !important;
+    border-radius: var(--radius) !important;
+    background: hsl(var(--card));
+    overflow: hidden;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   YURI BADGE — subtle rounded
+   ════════════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  [data-slot="badge"] {
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.01em;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   YURI TABLE — clean Yuri-style tables
+   ════════════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  thead th {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
+    padding: 12px 16px;
+    border-bottom: 2px solid hsl(var(--border));
+  }
+  tbody td {
+    padding: 12px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid hsl(var(--border));
+    vertical-align: middle;
+  }
+  tbody tr {
+    transition: background-color 0.15s ease;
+  }
+  tbody tr:hover {
+    background-color: hsl(var(--accent));
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   YURI DIALOG/SHEET — rounded with Yuri shadow
+   ════════════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  [role="dialog"] {
+    border-radius: var(--radius) !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   YURI DROPDOWN MENU
+   ════════════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  [role="menu"] {
+    border-radius: 8px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08) !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════
+   SIDEBAR SECTION TITLES
+   ════════════════════════════════════════════════════════════════════════════════ */
 .sidebar-section-title {
   padding: 12px 20px 4px;
   font-size: 11px;
@@ -131,15 +264,9 @@
   user-select: none;
 }
 
-/* ── Yuri-style page title in header ────────────────────────── */
-.page-title-section h2 {
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: hsl(var(--foreground));
-}
-
-/* ── Scrollbar ──────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════════
+   SCROLLBAR
+   ════════════════════════════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -148,30 +275,35 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
+  background: hsl(var(--muted-foreground) / 0.2);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: hsl(var(--muted-foreground) / 0.4);
 }
 
-/* ── Sidebar scrollbar ──────────────────────────────────────── */
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
 }
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.22);
 }
 
-/* ── Yuri-style badges ──────────────────────────────────────── */
-.badge-primary {
-  background-color: hsl(var(--primary));
-  color: white;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
+/* ════════════════════════════════════════════════════════════════════════════════
+   SELECTION
+   ════════════════════════════════════════════════════════════════════════════════ */
+::selection {
+  background: hsl(var(--primary) / 0.15);
+  color: inherit;
 }
 
-/* ── Nunito font import ─────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+/* ════════════════════════════════════════════════════════════════════════════════
+   TOOLTIP
+   ════════════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  [role="tooltip"] {
+    border-radius: 6px !important;
+    font-size: 12px;
+    font-weight: 500;
+  }
+}

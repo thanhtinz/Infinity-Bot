@@ -13,6 +13,7 @@ import { EmojiTextarea } from "@/components/EmojiInput";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { RefreshCw, Plus, ShoppingCart, User2, Truck, ExternalLink, Copy } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { cn } from "@/lib/utils";
 import type { Order, Product } from "../types";
 import { apiFetch } from "@/hooks/useApi";
@@ -150,19 +151,15 @@ export function OrdersManager() {
   const paidAndDelivered = counts.PAID + counts.DELIVERING + counts.DELIVERED;
 
   return (
-    <div className="p-4 md:p-6 space-y-4 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="space-y-3">
-        <h1 className="text-xl font-semibold">{t("orders_title")}</h1>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> {t("orders_createOrder")}
-          </Button>
-        </div>
-      </div>
+    <PageContainer size="md">
+      <PageHeader title={t("orders_title")} icon={ShoppingCart}>
+        <Button variant="outline" size="sm" onClick={() => refetch()}>
+          <RefreshCw className="h-4 w-4" />
+        </Button>
+        <Button size="sm" onClick={() => setCreateOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" /> {t("orders_createOrder")}
+        </Button>
+      </PageHeader>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -458,6 +455,6 @@ export function OrdersManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

@@ -29,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import {
   Save,
   Loader2,
@@ -256,16 +257,8 @@ export function PremiumPaymentConfig() {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Premium Payment Config
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Configure payment methods and renewal settings for Premium.
-        </p>
-      </div>
+    <PageContainer size="sm">
+      <PageHeader title="Premium Payment Config" description="Configure payment methods and renewal settings for Premium." icon={CreditCard} />
 
       {/* ── Section 1: General ─────────────────────────────────────────── */}
       <Collapsible
@@ -554,6 +547,6 @@ export function PremiumPaymentConfig() {
           <span className="hidden sm:inline">Save config</span>
         </Button>
       </div>
-    </div>
+    </PageContainer>
   );
 }

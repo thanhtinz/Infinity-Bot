@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
 import { Bot, KeyRound } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 
 const schema = z.object({
   discord_token: z.string().optional(),
@@ -99,22 +100,14 @@ export function ConfigDiscord() {
   const isConfigured = !!config?.has_discord_token;
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-primary/10">
-          <Bot className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold">{t("configDiscord_title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("configDiscord_desc")}</p>
-        </div>
+    <PageContainer size="sm">
+      <PageHeader title={t("configDiscord_title")} description={t("configDiscord_desc")} icon={Bot}>
         {isConfigured && (
-          <Badge className="ml-auto bg-green-500/15 text-green-600 border-green-500/30">
+          <Badge className="bg-green-500/15 text-green-600 border-green-500/30">
             ✓ {t("configDiscord_connected")}
           </Badge>
         )}
-      </div>
+      </PageHeader>
 
       {!isLoading && (
         <Form {...form}>
@@ -228,6 +221,6 @@ export function ConfigDiscord() {
           </form>
         </Form>
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -19,6 +19,7 @@ import {
   Power,
   Hash,
 } from "lucide-react";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
@@ -255,20 +256,13 @@ export function StickyManager() {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Pin className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-bold">Sticky Messages</h2>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button onClick={openCreate} size="sm">
-            <Plus className="mr-1.5 h-4 w-4" />
-            Add Sticky
-          </Button>
-        </div>
-      </div>
+    <PageContainer size="lg">
+      <PageHeader title="Sticky Messages" icon={Pin}>
+        <Button onClick={openCreate} size="sm">
+          <Plus className="mr-1.5 h-4 w-4" />
+          Add Sticky
+        </Button>
+      </PageHeader>
 
       {/* Stat cards */}
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
@@ -501,6 +495,6 @@ export function StickyManager() {
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

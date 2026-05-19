@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Loader2, Zap } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
 import { useCurrency } from "@/hooks/useCurrency";
+import { PageContainer, PageHeader } from "@/components/yuri";
 import type { Product } from "@/types";
 
 interface FlashSale {
@@ -264,15 +265,12 @@ export function FlashSales() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Zap className="h-6 w-6 text-orange-500" /> Flash Sales
-        </h1>
+    <PageContainer size="md">
+      <PageHeader title="Flash Sales" icon={Zap}>
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4 mr-2" /> New Flash Sale
         </Button>
-      </div>
+      </PageHeader>
 
       <Card>
         <CardContent className="p-0">
@@ -505,6 +503,6 @@ export function FlashSales() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }
