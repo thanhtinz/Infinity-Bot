@@ -316,21 +316,21 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-[#0f1117] to-[#151822]">
+    <div className="flex flex-col h-full bg-white border-r border-gray-200">
       {/* ── Logo area ── */}
-      <div className="h-[76px] px-5 flex items-center gap-3 border-b border-white/[0.05]">
+      <div className="h-[76px] px-5 flex items-center gap-3 border-b border-gray-200">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#009DB5] to-[#00d4f5] flex items-center justify-center shadow-lg shadow-[#009DB5]/20">
           <Bot className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h1 className="font-bold text-[15px] text-white leading-tight tracking-tight">Infinity Bot</h1>
-          <span className="text-[11px] text-[#9FA8C1]/60">Dashboard</span>
+          <h1 className="font-bold text-[15px] text-gray-900 leading-tight tracking-tight">Infinity Bot</h1>
+          <span className="text-[11px] text-gray-400">Dashboard</span>
         </div>
       </div>
 
       {/* ── User profile section ── */}
       {user && (
-        <div className="px-5 py-4 border-b border-white/[0.05]">
+        <div className="px-5 py-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="relative">
               <img
@@ -338,18 +338,18 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 alt=""
                 className="w-10 h-10 rounded-full ring-2 ring-[#6C5CE7]/30"
               />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-[#0f1117]" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-white" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{user.username}</p>
-              <p className="text-[11px] text-[#9FA8C1]/70">{user.is_owner ? "Bot Owner" : "Staff"}</p>
+              <p className="text-sm font-semibold text-gray-900 truncate">{user.username}</p>
+              <p className="text-[11px] text-gray-500">{user.is_owner ? "Bot Owner" : "Staff"}</p>
             </div>
           </div>
         </div>
       )}
 
       {/* ── Guild selector ── */}
-      <div className="px-3 py-3 border-b border-white/[0.05]">
+      <div className="px-3 py-3 border-b border-gray-200">
         <GuildSelector />
       </div>
 
@@ -357,7 +357,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       <nav className="flex-1 py-2 overflow-y-auto sidebar-scroll">
         {!selectedGuildId ? (
           <div className="text-center py-8">
-            <p className="text-sm text-[#9FA8C1]/60">Select a server to continue</p>
+            <p className="text-sm text-gray-400">Select a server to continue</p>
           </div>
         ) : (
         <>
@@ -373,7 +373,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               "flex items-center gap-3 px-4 py-[10px] rounded-lg text-[14px] font-medium transition-all duration-300",
               location.pathname === "/bot-settings"
                 ? "text-[#6C5CE7] bg-[#6C5CE7]/10"
-                : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.04]"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             )}
           >
             <Settings className="w-[18px] h-[18px] shrink-0" />
@@ -404,7 +404,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                   "flex items-center gap-3 px-4 py-[10px] rounded-lg text-[14px] font-medium transition-all duration-300",
                   isItemActive
                     ? "text-[#6C5CE7] bg-[#6C5CE7]/10"
-                    : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.04]"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 )}
               >
                 <ItemIcon className="w-[18px] h-[18px] shrink-0" />
@@ -421,7 +421,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                   "flex items-center justify-between w-full px-4 py-[10px] text-[14px] font-medium cursor-pointer rounded-lg transition-all duration-300",
                   isActive
                     ? "text-[#6C5CE7]"
-                    : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.04]"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 )}
               >
                 <span className="flex items-center gap-3">
@@ -429,7 +429,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                   {t(group.label as Parameters<typeof t>[0])}
                 </span>
                 <ChevronRight className={cn(
-                  "h-4 w-4 shrink-0 text-[#9FA8C1]/40 transition-transform duration-300",
+                  "h-4 w-4 shrink-0 text-gray-400 transition-transform duration-300",
                   isOpen && "rotate-90"
                 )} />
               </button>
@@ -449,12 +449,12 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                           "flex items-center gap-3 px-3 py-[8px] rounded-md text-[13px] transition-all duration-300",
                           isItemActive
                             ? "text-[#6C5CE7] font-semibold"
-                            : "text-[#9FA8C1]/70 hover:text-white"
+                            : "text-gray-500 hover:text-gray-900"
                         )}
                       >
                         <span className={cn(
                           "w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-300",
-                          isItemActive ? "bg-[#6C5CE7]" : "bg-[#9FA8C1]/30"
+                          isItemActive ? "bg-[#6C5CE7]" : "bg-gray-300"
                         )} />
                         {t(item.label as Parameters<typeof t>[0])}
                       </Link>
@@ -514,12 +514,12 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                           "flex items-center gap-3 px-3 py-[8px] rounded-md text-[13px] transition-all duration-300",
                           isItemActive
                             ? "text-amber-400 font-semibold"
-                            : "text-[#9FA8C1]/60 hover:text-amber-400"
+                            : "text-gray-500 hover:text-amber-400"
                         )}
                       >
                         <span className={cn(
                           "w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-300",
-                          isItemActive ? "bg-amber-400" : "bg-[#9FA8C1]/30"
+                          isItemActive ? "bg-amber-400" : "bg-gray-300"
                         )} />
                         {t(item.label as Parameters<typeof t>[0])}
                       </Link>

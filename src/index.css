@@ -197,7 +197,7 @@
   padding: 14px 20px 6px;
   font-size: 10px; font-weight: 800;
   letter-spacing: .1em; text-transform: uppercase;
-  color: rgba(255,255,255,.3);
+  color: rgba(0,0,0,.35);
   user-select: none;
 }
 
@@ -208,8 +208,8 @@
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / .2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / .35); }
-.sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); }
-.sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,.1); }
+.sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.2); }
 
 /* ════════════════════════════════════════════════════════════════════════════
    SELECTION
