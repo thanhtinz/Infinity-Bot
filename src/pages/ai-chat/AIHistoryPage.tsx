@@ -46,7 +46,7 @@ export function AIHistoryPage() {
   });
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
+    <div className="space-y-6">
       {/* Page header */}
       <div className="flex items-center gap-3">
         <div className="p-2.5 rounded-xl bg-primary/10">
