@@ -316,9 +316,9 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#262932]">
-      {/* ── Logo area (Yuri-style) ── */}
-      <div className="h-[76px] px-5 flex items-center gap-3 border-b border-[rgba(106,113,133,0.2)]">
+    <div className="flex flex-col h-full bg-[#1a1d24]">
+      {/* ── Logo area ── */}
+      <div className="h-[76px] px-5 flex items-center gap-3 border-b border-white/[0.06]">
         <div className="w-9 h-9 rounded-xl bg-[#009DB5] flex items-center justify-center shadow-lg shadow-[#009DB5]/20">
           <Bot className="w-5 h-5 text-white" />
         </div>
@@ -328,9 +328,9 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         </div>
       </div>
 
-      {/* ── User profile section (Yuri-style) ── */}
+      {/* ── User profile section ── */}
       {user && (
-        <div className="px-5 py-4 border-b border-[rgba(106,113,133,0.2)]">
+        <div className="px-5 py-4 border-b border-white/[0.06]">
           <div className="flex items-center gap-3">
             <div className="relative">
               <img
@@ -338,7 +338,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 alt=""
                 className="w-10 h-10 rounded-full ring-2 ring-[#009DB5]/30"
               />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-[#262932]" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-[#1a1d24]" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-white truncate">{user.username}</p>
@@ -349,7 +349,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       )}
 
       {/* ── Guild selector ── */}
-      <div className="px-3 py-3 border-b border-[rgba(106,113,133,0.2)]">
+      <div className="px-3 py-3 border-b border-white/[0.06]">
         <GuildSelector />
       </div>
 
@@ -437,7 +437,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 "overflow-hidden transition-all duration-300 ease-in-out",
                 isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
               )}>
-                <div className="py-1 ml-[18px] pl-4 border-l border-[rgba(106,113,133,0.3)]">
+                <div className="py-1 ml-[18px] pl-4 border-l border-white/[0.08]">
                   {group.items.map((item) => {
                     const isItemActive = location.pathname === item.to;
                     return (
