@@ -12,7 +12,7 @@ import { EmbedBuilder, EMBED_DEFAULTS } from "@/components/EmbedBuilder";
 import type { EmbedFormData, EmbedField } from "@/components/EmbedBuilder";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ArrowLeft, Plus, X, Save, Loader2 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer } from "@/components/yuri";
 import { apiFetch } from "@/hooks/useApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

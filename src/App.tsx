@@ -439,7 +439,6 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               )}>
                 <div className="py-1 ml-[18px] pl-4 border-l border-[rgba(106,113,133,0.3)]">
                   {group.items.map((item) => {
-                    const ItemIcon = item.icon;
                     const isItemActive = location.pathname === item.to;
                     return (
                       <Link
@@ -505,7 +504,6 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               )}>
                 <div className="py-1 ml-[18px] pl-4 border-l border-amber-500/20">
                   {group.items.map((item) => {
-                    const ItemIcon = item.icon;
                     const isItemActive = location.pathname === item.to;
                     return (
                       <Link

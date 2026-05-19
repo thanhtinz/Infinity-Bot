@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { LandingNavbar } from "@/components/LandingNavbar";
 import { Check, X, Zap, Crown, Gem, ArrowRight, Star } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useT } from "@/i18n";
 
 const PLANS = [

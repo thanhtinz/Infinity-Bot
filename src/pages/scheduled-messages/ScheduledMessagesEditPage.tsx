@@ -26,7 +26,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer } from "@/components/yuri";
 
 import type { EmbedField, ScheduledMessage, FormState } from "./smTypes";
 import { emptyEmbed, emptyForm, toDatetimeLocal } from "./smConstants";

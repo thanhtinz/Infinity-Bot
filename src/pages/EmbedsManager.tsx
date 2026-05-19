@@ -28,7 +28,7 @@ import {
   MessageSquare,
   Package,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageHeader } from "@/components/yuri";
 import { cn } from "@/lib/utils";
 import type { FormState, EmbedField, EmbedTemplate, EmbedsManagerProps, EmbedEventDef } from "./embeds/embedTypes";
 import { EMBED_EVENTS, EVENT_GROUPS, VARIABLES } from "./embeds/embedEvents";

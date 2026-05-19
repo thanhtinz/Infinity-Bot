@@ -21,7 +21,6 @@ const TIMEZONES = [
 ];
 
 export function ProfilePage() {
-  const { t } = useT();
   const { language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();

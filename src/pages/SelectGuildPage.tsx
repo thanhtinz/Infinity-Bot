@@ -3,12 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useGuild } from "@/contexts/GuildContext";
 import { Server, Plus, Loader2, Users } from "lucide-react";
 import { LandingNavbar } from "@/components/LandingNavbar";
-import { cn } from "@/lib/utils";
 
 export function SelectGuildPage() {
   const navigate = useNavigate();
   const { setSelectedGuildId, guilds, isLoading } = useGuild();
-  const { data: user } = useQuery({
+  const { data: _user } = useQuery({
     queryKey: ["auth_me"],
     queryFn: () => fetch("/api/auth/me", { credentials: "include" }).then(r => r.ok ? r.json() : null),
     retry: false,

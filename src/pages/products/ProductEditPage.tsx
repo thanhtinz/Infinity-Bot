@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { PackagePlus, X, ArrowLeft, Save, Loader2, Warehouse, Zap } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer } from "@/components/yuri";
 import { useToast } from "@/hooks/use-toast";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import type { Product, ProductPackage } from "../../types";

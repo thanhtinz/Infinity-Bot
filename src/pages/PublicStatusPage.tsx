@@ -49,7 +49,7 @@ const STATUS_COLORS = {
   outage: { dot: "bg-red-400", bg: "bg-red-500/5", border: "border-red-500/20", text: "text-red-400" },
 };
 
-function getStatusLevel(online: boolean | null) {
+function getStatusLevel(online: boolean | null | undefined) {
   if (online === null) return "degraded";
   return online ? "operational" : "outage";
 }

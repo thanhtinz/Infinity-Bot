@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer } from "@/components/yuri";
 import { apiFetch } from "@/hooks/useApi";
 
 interface Coupon {

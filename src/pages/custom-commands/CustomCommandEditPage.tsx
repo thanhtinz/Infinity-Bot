@@ -21,7 +21,7 @@ import {
   Save,
   Loader2,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer } from "@/components/yuri";
 import type { CustomCommand, EmbedField } from "./ccTypes";
 import {
   DEFAULT_COLOR,
