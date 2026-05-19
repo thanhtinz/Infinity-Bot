@@ -127,6 +127,16 @@ async def init_db():
             all_stmts.append("ALTER TABLE system_config ADD COLUMN premium_default_renewal_days INTEGER DEFAULT 7")
         if "premium_renewal_channel_id" not in sc:
             all_stmts.append("ALTER TABLE system_config ADD COLUMN premium_renewal_channel_id VARCHAR")
+        if "flash_sale_channel_id" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN flash_sale_channel_id VARCHAR")
+        if "spending_leaderboard_channel_id" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN spending_leaderboard_channel_id VARCHAR")
+        if "spending_leaderboard_schedule" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN spending_leaderboard_schedule VARCHAR")
+        if "spending_leaderboard_time" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN spending_leaderboard_time VARCHAR")
+        if "inventory_low_stock_threshold" not in sc:
+            all_stmts.append("ALTER TABLE system_config ADD COLUMN inventory_low_stock_threshold INTEGER DEFAULT 5")
 
         # embed_templates
         et = cols("embed_templates")

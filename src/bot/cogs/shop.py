@@ -7,7 +7,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 from src.database.config import SessionLocal
 from src.models.models import (
-    SystemConfig, User, Product, Order, Coupon, Feedback
+    SystemConfig, User, Product, Order, Coupon, Feedback, FlashSale, SpendingMilestone
 )
 
 
@@ -373,3 +373,122 @@ class ShopCog(discord.Cog):
             await ctx.respond(embed=embed, ephemeral=True)
         finally:
             session.close()
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Background tasks
+    # ─────────────────────────────────────────────────────────────────────
+
+    @discord.ext.tasks.loop(minutes=1)
+    async def _flash_sale_expiry_check(self):
+        """Deactivate expired or sold-out flash sales and post end embed."""
+        session = get_session()
+        try:
+            now = datetime.datetime.utcnow()
+            active_sales = session.execute(
+                select(FlashSale).where(FlashSale.active == True)
+            ).scalars().all()
+            for fs in active_sales:
+                expired = now >= fs.ends_at
+                sold_out = fs.quantity_limit is not None and fs.quantity_used >= fs.quantity_limit
+                if expired or sold_out:
+                    fs.active = False
+                    session.commit()
+                    cfg = session.execute(select(SystemConfig).where(SystemConfig.guild_id == fs.guild_id)).scalars().first()
+                    if not cfg:
+                        cfg = session.execute(select(SystemConfig).limit(1)).scalars().first()
+                    ch_id = getattr(cfg, "flash_sale_channel_id", None) if cfg else None
+                    if ch_id:
+                        try:
+                            ch = self.bot.get_channel(int(ch_id))
+                            if not ch:
+                                ch = await self.bot.fetch_channel(int(ch_id))
+                            if ch:
+                                from src.bot.embed_utils import build_embed
+                                product_name = fs.product.name if fs.product else f"Product #{fs.product_id}"
+                                emb = build_embed("flash_sale_end", session, vars={
+                                    "product.name": product_name,
+                                    "package.name": fs.package_name,
+                                    "sale.qty_used": str(fs.quantity_used),
+                                    "sale.qty_limit": str(fs.quantity_limit or "∞"),
+                                }, guild_id=fs.guild_id)
+                                await ch.send(embed=emb)
+                        except Exception as e:
+                            import logging; logging.getLogger(__name__).warning(f"flash_sale_end send error: {e}")
+        except Exception as e:
+            import logging; logging.getLogger(__name__).error(f"flash_sale_expiry_check error: {e}")
+        finally:
+            session.close()
+
+    @_flash_sale_expiry_check.before_loop
+    async def before_flash_sale(self):
+        await self.bot.wait_until_ready()
+
+    @discord.ext.tasks.loop(minutes=1)
+    async def _spending_leaderboard_auto(self):
+        """Auto-post spending leaderboard on schedule."""
+        session = get_session()
+        try:
+            now = datetime.datetime.utcnow()
+            configs = session.execute(select(SystemConfig)).scalars().all()
+            for cfg in configs:
+                ch_id = getattr(cfg, "spending_leaderboard_channel_id", None)
+                schedule = getattr(cfg, "spending_leaderboard_schedule", None)
+                sched_time = getattr(cfg, "spending_leaderboard_time", None) or "08:00"
+                guild_id = cfg.guild_id
+                if not ch_id or not schedule or not guild_id:
+                    continue
+                h, m_val = (int(x) for x in sched_time.split(":")) if ":" in sched_time else (8, 0)
+                if now.hour != h or now.minute != m_val:
+                    continue
+                if schedule == "weekly" and now.weekday() != 0:
+                    continue
+                elif schedule == "monthly" and now.day != 1:
+                    continue
+                try:
+                    ch = self.bot.get_channel(int(ch_id))
+                    if not ch:
+                        ch = await self.bot.fetch_channel(int(ch_id))
+                    if not ch:
+                        continue
+                    rows = session.execute(
+                        select(User.discord_id, User.username, func.sum(Order.total_price).label("total"))
+                        .join(Order, Order.user_id == User.id)
+                        .where(Order.guild_id == guild_id, Order.status.in_(["PAID", "DELIVERED"]))
+                        .group_by(User.id)
+                        .order_by(func.sum(Order.total_price).desc())
+                        .limit(10)
+                    ).all()
+                    from src.bot.embed_utils import build_embed
+                    medals = ["🥇", "🥈", "🥉"]
+                    lines = [
+                        f"{medals[i] if i < 3 else f'**{i+1}.**'} <@{r.discord_id}> — **{r.total:,.0f}**"
+                        for i, r in enumerate(rows)
+                    ]
+                    emb = build_embed("spending_leaderboard_auto", session, vars={
+                        "leaderboard": "\n".join(lines) if lines else "No data yet.",
+                        "period": schedule.capitalize(),
+                        "date": now.strftime("%d/%m/%Y"),
+                    }, guild_id=guild_id)
+                    await ch.send(embed=emb)
+                except Exception as e:
+                    import logging; logging.getLogger(__name__).warning(f"auto BXH send error: {e}")
+        except Exception as e:
+            import logging; logging.getLogger(__name__).error(f"spending_leaderboard_auto error: {e}")
+        finally:
+            session.close()
+
+    @_spending_leaderboard_auto.before_loop
+    async def before_bxh_auto(self):
+        await self.bot.wait_until_ready()
+
+    def cog_load(self):
+        self._flash_sale_expiry_check.start()
+        self._spending_leaderboard_auto.start()
+
+    def cog_unload(self):
+        self._flash_sale_expiry_check.cancel()
+        self._spending_leaderboard_auto.cancel()
+
+
+def setup(bot):
+    bot.add_cog(ShopCog(bot))

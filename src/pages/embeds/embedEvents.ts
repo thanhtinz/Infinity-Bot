@@ -6,9 +6,9 @@ import {
   QrCode,
   ShieldOff, ShieldAlert,
   LogOut, Pencil, Volume2, VolumeX, ArrowRightLeft,
-  LogIn, Hash, Shield, Moon, Zap, AlertTriangle,
+  LogIn, Hash, Shield, Moon, Zap, ZapOff, AlertTriangle,
   Heart, HelpCircle,
-  CheckCircle, Package, ClipboardList, Tag, UserPlus, Pin, UserMinus,
+  CheckCircle, Package, PackageX, ClipboardList, Tag, UserPlus, Pin, UserMinus,
   ShieldCheck, Archive, RotateCcw, Users,
 } from "lucide-react";
 
@@ -34,6 +34,10 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "coupon",            label: "Coupon",            labelEn: "Coupon",              icon: Tag,          desc: "When sending coupon to user" },
   { key: "ban_shop",          label: "Shop Ban",           labelEn: "Shop Ban",            icon: Ban,          desc: "When user is banned from shopping" },
   { key: "unban_shop",        label: "Shop Unban",        labelEn: "Shop Unban",          icon: ShieldOff,    desc: "When user is unbanned from shopping" },
+  { key: "flash_sale_start",  label: "Flash Sale Start",  labelEn: "Flash Sale Start",    icon: Zap,          desc: "Posted when a flash sale begins" },
+  { key: "flash_sale_end",    label: "Flash Sale End",    labelEn: "Flash Sale End",      icon: ZapOff,       desc: "Posted when a flash sale ends" },
+  { key: "out_of_stock_admin",label: "Out of Stock (Admin)", labelEn: "Out of Stock (Admin)", icon: PackageX,   desc: "Admin notified when item is out of stock" },
+  { key: "spending_leaderboard_auto", label: "Auto Leaderboard", labelEn: "Auto Leaderboard", icon: Trophy,     desc: "Auto-posted spending leaderboard" },
   // ── Community ──
   { key: "giveaway",          label: "Giveaway",       labelEn: "Giveaway",            icon: Gift,         desc: "When creating /giveaway" },
   { key: "ket_qua_giveaway",  label: "Giveaway Result",       labelEn: "Giveaway Result",     icon: Trophy,       desc: "When giveaway ends, announce winner" },
@@ -173,7 +177,7 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
 // ─── Event groups ────────────────────────────────────────────────────────────
 
 export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] = [
-  { label: "Orders",    labelEn: "Orders",         keys: ["don_hang_moi", "qr_thanh_toan", "qr_thanh_toan_payos", "qr_thanh_toan_paypal", "qr_thanh_toan_crypto", "qr_thanh_toan_manual", "don_hang_het_han", "ghi_chu_don_hang", "bang_gia", "bxh_chi_tieu", "bxh_don_hang", "feedback", "thanh_toan", "giao_hang", "don_hang_chi_tiet", "coupon", "ban_shop", "unban_shop"] },
+  { label: "Orders",    labelEn: "Orders",         keys: ["don_hang_moi", "qr_thanh_toan", "qr_thanh_toan_payos", "qr_thanh_toan_paypal", "qr_thanh_toan_crypto", "qr_thanh_toan_manual", "don_hang_het_han", "ghi_chu_don_hang", "bang_gia", "bxh_chi_tieu", "bxh_don_hang", "feedback", "thanh_toan", "giao_hang", "don_hang_chi_tiet", "coupon", "ban_shop", "unban_shop", "flash_sale_start", "flash_sale_end", "out_of_stock_admin", "spending_leaderboard_auto"] },
   { label: "Community",   labelEn: "Community",      keys: ["giveaway", "ket_qua_giveaway", "reaction_role_panel", "starboard_post", "giveaway_banned", "invite_join", "invite_leaderboard"] },
   { label: "Moderation", labelEn: "Moderation",      keys: ["canh_bao", "kick", "ban", "unban", "softban", "mute", "deafen", "rolepersist", "temprole", "lockdown_start", "lockdown_end", "automod_warn", "automod_mute", "automod_kick", "automod_delete", "timeout"] },
   { label: "Utilities",    labelEn: "Utilities",       keys: ["afk_set", "afk_return", "sticky_message"] },

@@ -377,6 +377,11 @@ def _config_to_safe(config) -> SystemConfigSafe:
         manual_account_holder=getattr(config, "manual_account_holder", None),
         manual_account_number=getattr(config, "manual_account_number", None),
         manual_instructions=getattr(config, "manual_instructions", None),
+        flash_sale_channel_id=getattr(config, "flash_sale_channel_id", None),
+        spending_leaderboard_channel_id=getattr(config, "spending_leaderboard_channel_id", None),
+        spending_leaderboard_schedule=getattr(config, "spending_leaderboard_schedule", None),
+        spending_leaderboard_time=getattr(config, "spending_leaderboard_time", None),
+        inventory_low_stock_threshold=getattr(config, "inventory_low_stock_threshold", None) or 5,
     )
 
 

@@ -33,6 +33,8 @@ export interface ProductPackage {
   name: string;
   price: number;
   active: boolean;
+  use_inventory?: boolean;
+  auto_buy?: boolean;
 }
 
 export interface Product {

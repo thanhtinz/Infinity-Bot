@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PackagePlus, X, ArrowLeft, Info, MessageSquare, Save, Loader2 } from "lucide-react";
+import { PackagePlus, X, ArrowLeft, Info, MessageSquare, Save, Loader2, Warehouse, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import type { Product, ProductPackage } from "../../types";
@@ -290,11 +290,35 @@ function ProductInfoForm({ form, packages, addPkg, updatePkg, removePkg, onSubmi
                 onChange={(e) => updatePkg(i, "price", parseFloat(e.target.value) || 0)}
                 className="w-28 h-8 text-sm"
               />
-              <Switch
-                checked={pkg.active}
-                onCheckedChange={(v) => updatePkg(i, "active", v)}
-                title="Toggle package"
-              />
+              <div className="flex items-center gap-1.5">
+                <Switch
+                  checked={pkg.active}
+                  onCheckedChange={(v) => updatePkg(i, "active", v)}
+                  title="Toggle package"
+                />
+              </div>
+              <div className="flex items-center gap-1.5 border-l pl-2">
+                <Warehouse className="h-3.5 w-3.5 text-muted-foreground" />
+                <Switch
+                  checked={pkg.use_inventory ?? false}
+                  onCheckedChange={(v) => updatePkg(i, "use_inventory", v)}
+                  title="Inventory"
+                />
+                {pkg.use_inventory && (
+                  <span className="text-[10px] font-medium text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded">Auto-delivery</span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 border-l pl-2">
+                <Zap className="h-3.5 w-3.5 text-muted-foreground" />
+                <Switch
+                  checked={pkg.auto_buy ?? false}
+                  onCheckedChange={(v) => updatePkg(i, "auto_buy", v)}
+                  title="Auto-buy"
+                />
+                {pkg.auto_buy && (
+                  <span className="text-[10px] font-medium text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 px-1.5 py-0.5 rounded">Auto-buy</span>
+                )}
+              </div>
               <Button
                 type="button"
                 variant="ghost"

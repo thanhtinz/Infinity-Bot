@@ -8,6 +8,9 @@ import { apiFetch } from "@/hooks/useApi";
 import { toast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
 import { Save, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ShopChannelsConfig {
   orders_channel_id: string;
@@ -15,6 +18,11 @@ interface ShopChannelsConfig {
   coupon_log_channel_id: string;
   price_list_channel_id: string;
   welcome_channel_id: string;
+  flash_sale_channel_id: string;
+  spending_leaderboard_channel_id: string;
+  spending_leaderboard_schedule: string;
+  spending_leaderboard_time: string;
+  inventory_low_stock_threshold: number;
 }
 
 const FIELDS: { key: keyof ShopChannelsConfig; label: string }[] = [
@@ -23,6 +31,8 @@ const FIELDS: { key: keyof ShopChannelsConfig; label: string }[] = [
   { key: "coupon_log_channel_id", label: "Coupon log channel" },
   { key: "price_list_channel_id", label: "Price list channel" },
   { key: "welcome_channel_id", label: "Welcome channel" },
+  { key: "flash_sale_channel_id", label: "Flash Sale channel" },
+  { key: "spending_leaderboard_channel_id", label: "Auto Leaderboard channel" },
 ];
 
 export function ShopChannels() {
@@ -36,6 +46,11 @@ export function ShopChannels() {
     coupon_log_channel_id: "",
     price_list_channel_id: "",
     welcome_channel_id: "",
+    flash_sale_channel_id: "",
+    spending_leaderboard_channel_id: "",
+    spending_leaderboard_schedule: "daily",
+    spending_leaderboard_time: "00:00",
+    inventory_low_stock_threshold: 5,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -52,13 +67,18 @@ export function ShopChannels() {
           coupon_log_channel_id: data.coupon_log_channel_id || data.coupon_channel_id || "",
           price_list_channel_id: data.price_list_channel_id || data.bang_gia_channel_id || "",
           welcome_channel_id: data.welcome_channel_id || "",
+          flash_sale_channel_id: data.flash_sale_channel_id || "",
+          spending_leaderboard_channel_id: data.spending_leaderboard_channel_id || "",
+          spending_leaderboard_schedule: data.spending_leaderboard_schedule || "daily",
+          spending_leaderboard_time: data.spending_leaderboard_time || "00:00",
+          inventory_low_stock_threshold: data.inventory_low_stock_threshold ?? 5,
         });
       })
       .catch(() => toast({ title: t("error"), variant: "destructive" }))
       .finally(() => setIsLoading(false));
   }, [selectedGuildId]);
 
-  const set = (key: keyof ShopChannelsConfig, value: string) =>
+  const set = (key: keyof ShopChannelsConfig, value: string | number) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
   const handleSave = async () => {
@@ -101,6 +121,55 @@ export function ShopChannels() {
               />
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Auto Leaderboard Config</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Schedule</Label>
+            <Select
+              value={form.spending_leaderboard_schedule}
+              onValueChange={(v) => set("spending_leaderboard_schedule", v)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select schedule" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Time</Label>
+            <Input
+              type="time"
+              value={form.spending_leaderboard_time}
+              onChange={(e) => set("spending_leaderboard_time", e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Inventory</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Low stock threshold</Label>
+            <Input
+              type="number"
+              min={0}
+              value={form.inventory_low_stock_threshold}
+              onChange={(e) => set("inventory_low_stock_threshold", Number(e.target.value))}
+            />
+          </div>
         </CardContent>
       </Card>
 

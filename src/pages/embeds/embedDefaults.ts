@@ -3029,4 +3029,90 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
+  flash_sale_start: {
+    vi: {
+      title: "⚡ Flash Sale Started!",
+      description: "**{product.name}** — Package **{package.name}** is on sale!\n🔥 Discount: **{sale.discount}**",
+      color: "#FF6B35",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "⏰ Ends At", value: "{sale.ends_at}", inline: true },
+        { name: "📦 Quantity", value: "{sale.qty_limit}", inline: true },
+        { name: "🎫 Coupons", value: "{sale.allow_coupon}", inline: true },
+      ],
+      enabled: true,
+    },
+    en: {
+      title: "⚡ Flash Sale Started!",
+      description: "**{product.name}** — Package **{package.name}** is on sale!\n🔥 Discount: **{sale.discount}**",
+      color: "#FF6B35",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "⏰ Ends At", value: "{sale.ends_at}", inline: true },
+        { name: "📦 Quantity", value: "{sale.qty_limit}", inline: true },
+        { name: "🎫 Coupons", value: "{sale.allow_coupon}", inline: true },
+      ],
+      enabled: true,
+    },
+  },
+  flash_sale_end: {
+    vi: {
+      title: "🏁 Flash Sale Ended",
+      description: "Flash sale for **{product.name}** — **{package.name}** has ended.",
+      color: "#99AAB5",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "🛒 Sold", value: "{sale.qty_used} / {sale.qty_limit}", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "🏁 Flash Sale Ended",
+      description: "Flash sale for **{product.name}** — **{package.name}** has ended.",
+      color: "#99AAB5",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "🛒 Sold", value: "{sale.qty_used} / {sale.qty_limit}", inline: true }],
+      enabled: true,
+    },
+  },
+  out_of_stock_admin: {
+    vi: {
+      title: "⚠️ Out of Stock — Manual Delivery Required",
+      description: "Order **#{order.id}** by {user.mention} for **{product.name}** requires manual delivery.",
+      color: "#FEE75C",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "📦 Package", value: "{product.name}", inline: true },
+        { name: "🆔 Order", value: "#{order.id}", inline: true },
+      ],
+      enabled: true,
+    },
+    en: {
+      title: "⚠️ Out of Stock — Manual Delivery Required",
+      description: "Order **#{order.id}** by {user.mention} for **{product.name}** requires manual delivery.",
+      color: "#FEE75C",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [
+        { name: "📦 Package", value: "{product.name}", inline: true },
+        { name: "🆔 Order", value: "#{order.id}", inline: true },
+      ],
+      enabled: true,
+    },
+  },
+  spending_leaderboard_auto: {
+    vi: {
+      title: "🏆 Spending Leaderboard — {period}",
+      description: "{leaderboard}",
+      color: "#F0B232",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "📅 Date", value: "{date}", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "🏆 Spending Leaderboard — {period}",
+      description: "{leaderboard}",
+      color: "#F0B232",
+      author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "📅 Date", value: "{date}", inline: true }],
+      enabled: true,
+    },
+  },
 };

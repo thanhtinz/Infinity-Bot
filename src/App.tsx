@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, UserCog, Lock } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, UserCog, Lock, Zap, Warehouse } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense, Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -59,6 +59,8 @@ const PublicPricingPage = lazy(() => import("./pages/PublicPricingPage").then(m 
 const PublicStatusPage = lazy(() => import("./pages/PublicStatusPage").then(m => ({ default: m.PublicStatusPage })));
 const ShopChannels = lazy(() => import("./pages/ShopChannels").then(m => ({ default: m.ShopChannels })));
 const ShopStats = lazy(() => import("./pages/ShopStats").then(m => ({ default: m.ShopStats })));
+const FlashSales = lazy(() => import("./pages/FlashSales").then(m => ({ default: m.FlashSales })));
+const InventoryManager = lazy(() => import("./pages/InventoryManager").then(m => ({ default: m.InventoryManager })));
 const SpendingMilestones = lazy(() => import("./pages/SpendingMilestones"));
 const StaffPermissions = lazy(() => import("./pages/StaffPermissions").then(m => ({ default: m.StaffPermissions })));
 const GuildBotConfig = lazy(() => import("./pages/GuildBotConfig").then(m => ({ default: m.GuildBotConfig })));
@@ -104,6 +106,8 @@ const navGroups: NavGroup[] = [
       { to: "/users", icon: Users, label: "nav_users" },
       { to: "/shop-stats", icon: BarChart, label: "nav_shopStats" },
       { to: "/milestones", icon: Trophy, label: "Spending Milestones" },
+      { to: "/flash-sales", icon: Zap, label: "Flash Sales" },
+      { to: "/inventory", icon: Warehouse, label: "Inventory" },
       { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
       { to: "/config/shop-channels", icon: Hash, label: "nav_shopChannels", feature: "shop" },
       { to: "/config/payments", icon: CreditCard, label: "Payments" },
@@ -734,6 +738,8 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/config/shop-channels" element={<ShopChannels />} />
         <Route path="/shop-stats" element={<ShopStats />} />
         <Route path="/milestones" element={<SpendingMilestones />} />
+        <Route path="/flash-sales" element={<FlashSales />} />
+        <Route path="/inventory" element={<InventoryManager />} />
         {/* Community */}
         <Route path="/warnings" element={<WarningsManager />} />
         <Route path="/moderation" element={<ModerationPage />} />

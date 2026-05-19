@@ -5,7 +5,7 @@ from sqlalchemy.orm import joinedload
 import os, uuid, shutil, logging, datetime
 
 from src.database.config import get_db
-from src.models.models import SystemConfig, Product, Order, User, Coupon, SpendingMilestone
+from src.models.models import SystemConfig, Product, Order, User, Coupon, SpendingMilestone, FlashSale, InventoryItem
 from src.schemas.schemas import ProductBase, ProductResponse, OrderResponse
 from src.api.deps import get_guild_id
 
@@ -236,6 +236,60 @@ def create_order(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gui
         package_name = custom_product_name
         product_id = None
 
+    # ── Flash sale price override ──────────────────────────────────────────
+    allow_coupon_override = True  # default: coupon allowed
+    if product_id and package_name:
+        now = datetime.datetime.utcnow()
+        active_sale = db.execute(
+            select(FlashSale).where(
+                FlashSale.guild_id == guild_id,
+                FlashSale.product_id == product_id,
+                FlashSale.package_name == package_name,
+                FlashSale.active == True,
+                FlashSale.starts_at <= now,
+                FlashSale.ends_at > now,
+            )
+        ).scalars().first()
+        if active_sale and (active_sale.quantity_limit is None or active_sale.quantity_used < active_sale.quantity_limit):
+            product_obj = db.execute(select(Product).where(Product.id == product_id)).scalars().first()
+            if product_obj:
+                pkgs = product_obj.packages or []
+                matched_pkg = next((p for p in pkgs if p.get("name") == package_name), None)
+                if matched_pkg:
+                    orig = float(matched_pkg.get("price", 0))
+                    if active_sale.discount_type == "percent":
+                        sale_price = orig * (1 - active_sale.discount_value / 100)
+                    else:
+                        sale_price = max(0, orig - active_sale.discount_value)
+                    total_price = sale_price
+                    # increment used
+                    active_sale.quantity_used = (active_sale.quantity_used or 0) + 1
+                    allow_coupon_override = active_sale.allow_coupon
+
+    # ── Check inventory ────────────────────────────────────────────────────
+    use_inventory = False
+    inventory_item = None
+    if product_id and package_name:
+        product_obj2 = db.execute(select(Product).where(Product.id == product_id)).scalars().first()
+        if product_obj2:
+            pkgs2 = product_obj2.packages or []
+            matched_pkg2 = next((p for p in pkgs2 if p.get("name") == package_name), None)
+            if matched_pkg2 and matched_pkg2.get("use_inventory"):
+                use_inventory = True
+                # Pick oldest available item (FIFO)
+                inventory_item = db.execute(
+                    select(InventoryItem).where(
+                        InventoryItem.guild_id == guild_id,
+                        InventoryItem.product_id == product_id,
+                        InventoryItem.package_name == package_name,
+                        InventoryItem.delivered_order_id == None,
+                    ).order_by(InventoryItem.created_at.asc()).limit(1)
+                ).scalars().first()
+
+    initial_status = body.get("status", "PENDING")
+    if use_inventory and not inventory_item:
+        initial_status = "PENDING_MANUAL"
+
     order = Order(
         guild_id=guild_id,
         user_id=user.id,
@@ -243,12 +297,128 @@ def create_order(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gui
         quantity=body.get("quantity", 1),
         total_price=float(total_price),
         package_name=package_name,
-        status=body.get("status", "PENDING"),
+        status=initial_status,
         expires_at=datetime.datetime.utcnow() + datetime.timedelta(hours=24),
     )
     db.add(order)
     db.commit()
     db.refresh(order)
+
+    # ── Auto-deliver from inventory ────────────────────────────────────────
+    if use_inventory and inventory_item and initial_status == "PENDING":
+        inventory_item.delivered_order_id = order.id
+        db.commit()
+        # Trigger async delivery notification
+        import asyncio as _asyncio2
+        from src.bot.manager import bot as _bot2
+        async def _auto_deliver():
+            try:
+                from src.database.config import SessionLocal as _SL2
+                _db3 = _SL2()
+                try:
+                    _o = _db3.get(Order, order.id)
+                    if _o:
+                        _o.status = "DELIVERED"
+                        _db3.commit()
+                    from src.bot.embed_utils import build_embed
+                    from src.models.models import SystemConfig as _SC
+                    _cfg = _db3.execute(select(_SC).limit(1)).scalars().first()
+                    if _cfg and _cfg.don_hang_channel_id and _bot2:
+                        import discord as _dc
+                        ch = _bot2.get_channel(int(_cfg.don_hang_channel_id))
+                        if ch:
+                            emb = build_embed("giao_hang", _db3, vars={
+                                "order.id": str(order.id),
+                                "user.mention": f"<@{discord_uid}>",
+                                "product.name": package_name or "",
+                                "delivery.content": inventory_item.content,
+                            })
+                            await ch.send(content=f"<@{discord_uid}>", embed=emb)
+                    # Low stock check
+                    remaining = _db3.execute(
+                        select(func.count(InventoryItem.id)).where(
+                            InventoryItem.guild_id == guild_id,
+                            InventoryItem.product_id == product_id,
+                            InventoryItem.package_name == package_name,
+                            InventoryItem.delivered_order_id == None,
+                        )
+                    ).scalar() or 0
+                    threshold = (_cfg.inventory_low_stock_threshold or 5) if _cfg else 5
+                    if remaining <= threshold and _cfg and _bot2:
+                        _guild = _bot2.get_guild(int(guild_id)) if guild_id else None
+                        if _guild and _guild.owner:
+                            try:
+                                await _guild.owner.send(
+                                    f"⚠️ **Low Stock Alert**\nProduct: **{package_name}** (ID {product_id})\nRemaining: **{remaining}** item(s)"
+                                )
+                            except Exception:
+                                pass
+                finally:
+                    _db3.close()
+            except Exception as _e:
+                logger.error(f"auto_deliver error: {_e}")
+        if _bot2 and _bot2.loop:
+            _asyncio2.run_coroutine_threadsafe(_auto_deliver(), _bot2.loop)
+
+    # ── Out-of-stock: send admin confirm embed ─────────────────────────────
+    elif use_inventory and not inventory_item:
+        import asyncio as _asyncio3
+        from src.bot.manager import bot as _bot3
+        async def _send_oos_admin():
+            try:
+                from src.database.config import SessionLocal as _SL3
+                _db4 = _SL3()
+                try:
+                    from src.models.models import SystemConfig as _SC2
+                    _cfg2 = _db4.execute(select(_SC2).limit(1)).scalars().first()
+                    if not _cfg2 or not _cfg2.don_hang_channel_id or not _bot3:
+                        return
+                    import discord as _dc2
+                    ch2 = _bot3.get_channel(int(_cfg2.don_hang_channel_id))
+                    if not ch2:
+                        return
+                    from src.bot.embed_utils import build_embed
+                    emb_oos = build_embed("out_of_stock_admin", _db4, vars={
+                        "order.id": str(order.id),
+                        "user.mention": f"<@{discord_uid}>",
+                        "product.name": package_name or "",
+                    })
+
+                    class OosView(_dc2.ui.View):
+                        def __init__(self):
+                            super().__init__(timeout=None)
+                        @_dc2.ui.button(label="✅ Confirm manual delivery", style=_dc2.ButtonStyle.success, custom_id=f"oos_confirm_{order.id}")
+                        async def confirm(self, btn, inter):
+                            _db5 = _SL3()
+                            try:
+                                _o2 = _db5.get(Order, order.id)
+                                if _o2:
+                                    _o2.status = "PENDING"
+                                    _db5.commit()
+                                await inter.response.send_message("✅ Order moved to manual delivery queue.", ephemeral=True)
+                                await inter.message.edit(view=None)
+                            finally:
+                                _db5.close()
+                        @_dc2.ui.button(label="❌ Cancel order", style=_dc2.ButtonStyle.danger, custom_id=f"oos_cancel_{order.id}")
+                        async def cancel(self, btn, inter):
+                            _db6 = _SL3()
+                            try:
+                                _o3 = _db6.get(Order, order.id)
+                                if _o3:
+                                    _o3.status = "CANCELLED"
+                                    _db6.commit()
+                                await inter.response.send_message("❌ Order cancelled.", ephemeral=True)
+                                await inter.message.edit(view=None)
+                            finally:
+                                _db6.close()
+
+                    await ch2.send(embed=emb_oos, view=OosView())
+                finally:
+                    _db4.close()
+            except Exception as _e2:
+                logger.error(f"oos_admin embed error: {_e2}")
+        if _bot3 and _bot3.loop:
+            _asyncio3.run_coroutine_threadsafe(_send_oos_admin(), _bot3.loop)
 
     qr_sent = False
     if send_qr_channel_id and float(total_price) > 0:
@@ -899,3 +1069,254 @@ async def check_spending_milestones(user: User, guild_id: str, db):
                     await member.add_roles(role, reason=f"Spending milestone: {m.name} ({m.threshold:,.0f})")
                 except Exception as e:
                     logger.warning(f"Failed to add milestone role {m.name}: {e}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Flash Sale routes
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _flash_sale_dict(fs: FlashSale) -> dict:
+    return {
+        "id": fs.id,
+        "guild_id": fs.guild_id,
+        "product_id": fs.product_id,
+        "product_name": fs.product.name if fs.product else None,
+        "package_name": fs.package_name,
+        "discount_type": fs.discount_type,
+        "discount_value": fs.discount_value,
+        "quantity_limit": fs.quantity_limit,
+        "quantity_used": fs.quantity_used,
+        "allow_coupon": fs.allow_coupon,
+        "starts_at": fs.starts_at.isoformat() if fs.starts_at else None,
+        "ends_at": fs.ends_at.isoformat() if fs.ends_at else None,
+        "active": fs.active,
+        "channel_message_id": fs.channel_message_id,
+        "created_at": fs.created_at.isoformat() if fs.created_at else None,
+    }
+
+
+@router.get("/flash-sales")
+def get_flash_sales(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    items = db.execute(
+        select(FlashSale)
+        .options(joinedload(FlashSale.product))
+        .where(FlashSale.guild_id == guild_id)
+        .order_by(FlashSale.created_at.desc())
+    ).scalars().all()
+    return [_flash_sale_dict(fs) for fs in items]
+
+
+@router.get("/flash-sales/active")
+def get_active_flash_sale(product_id: int, package_name: str, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    """Check if an active flash sale exists for a product/package."""
+    now = datetime.datetime.utcnow()
+    fs = db.execute(
+        select(FlashSale)
+        .where(
+            FlashSale.guild_id == guild_id,
+            FlashSale.product_id == product_id,
+            FlashSale.package_name == package_name,
+            FlashSale.active == True,
+            FlashSale.starts_at <= now,
+            FlashSale.ends_at > now,
+        )
+    ).scalars().first()
+    if not fs:
+        return None
+    # Also check quantity limit
+    if fs.quantity_limit is not None and fs.quantity_used >= fs.quantity_limit:
+        return None
+    return _flash_sale_dict(fs)
+
+
+@router.post("/flash-sales")
+def create_flash_sale(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    product_id = body.get("product_id")
+    if not product_id:
+        raise HTTPException(400, "product_id required")
+    product = db.execute(select(Product).where(Product.id == product_id, Product.guild_id == guild_id)).scalars().first()
+    if not product:
+        raise HTTPException(404, "Product not found")
+
+    starts_at = datetime.datetime.fromisoformat(body["starts_at"]) if body.get("starts_at") else datetime.datetime.utcnow()
+    ends_at = datetime.datetime.fromisoformat(body["ends_at"]) if body.get("ends_at") else starts_at + datetime.timedelta(hours=24)
+
+    fs = FlashSale(
+        guild_id=guild_id,
+        product_id=product_id,
+        package_name=body.get("package_name", ""),
+        discount_type=body.get("discount_type", "percent"),
+        discount_value=float(body.get("discount_value", 0)),
+        quantity_limit=body.get("quantity_limit"),
+        allow_coupon=bool(body.get("allow_coupon", False)),
+        starts_at=starts_at,
+        ends_at=ends_at,
+        active=bool(body.get("active", True)),
+    )
+    db.add(fs)
+    db.commit()
+    db.refresh(fs)
+    return _flash_sale_dict(fs)
+
+
+@router.put("/flash-sales/{sale_id}")
+def update_flash_sale(sale_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    fs = db.execute(select(FlashSale).where(FlashSale.id == sale_id, FlashSale.guild_id == guild_id)).scalars().first()
+    if not fs:
+        raise HTTPException(404, "Flash sale not found")
+    for k in ("discount_type", "discount_value", "quantity_limit", "allow_coupon", "active", "package_name"):
+        if k in body:
+            setattr(fs, k, body[k])
+    if body.get("starts_at"):
+        fs.starts_at = datetime.datetime.fromisoformat(body["starts_at"])
+    if body.get("ends_at"):
+        fs.ends_at = datetime.datetime.fromisoformat(body["ends_at"])
+    db.commit()
+    db.refresh(fs)
+    return _flash_sale_dict(fs)
+
+
+@router.delete("/flash-sales/{sale_id}")
+def delete_flash_sale(sale_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    fs = db.execute(select(FlashSale).where(FlashSale.id == sale_id, FlashSale.guild_id == guild_id)).scalars().first()
+    if not fs:
+        raise HTTPException(404, "Flash sale not found")
+    db.delete(fs)
+    db.commit()
+    return {"ok": True}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Inventory routes
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _inv_dict(item: InventoryItem) -> dict:
+    return {
+        "id": item.id,
+        "guild_id": item.guild_id,
+        "product_id": item.product_id,
+        "product_name": item.product.name if item.product else None,
+        "package_name": item.package_name,
+        "content": item.content,
+        "delivered_order_id": item.delivered_order_id,
+        "status": "delivered" if item.delivered_order_id else "available",
+        "created_at": item.created_at.isoformat() if item.created_at else None,
+    }
+
+
+@router.get("/inventory")
+def get_inventory(
+    product_id: int | None = None,
+    package_name: str | None = None,
+    status: str | None = None,   # "available" | "delivered" | None = all
+    db=Depends(get_db),
+    guild_id: str = Depends(get_guild_id),
+):
+    q = select(InventoryItem).options(joinedload(InventoryItem.product)).where(InventoryItem.guild_id == guild_id)
+    if product_id:
+        q = q.where(InventoryItem.product_id == product_id)
+    if package_name:
+        q = q.where(InventoryItem.package_name == package_name)
+    if status == "available":
+        q = q.where(InventoryItem.delivered_order_id == None)
+    elif status == "delivered":
+        q = q.where(InventoryItem.delivered_order_id != None)
+    items = db.execute(q.order_by(InventoryItem.created_at.asc())).scalars().all()
+    return [_inv_dict(i) for i in items]
+
+
+@router.get("/inventory/stats")
+def get_inventory_stats(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    """Return available count per product/package."""
+    rows = db.execute(
+        select(
+            InventoryItem.product_id,
+            InventoryItem.package_name,
+            func.count(InventoryItem.id).label("total"),
+            func.sum(func.cast(InventoryItem.delivered_order_id == None, func.Integer)).label("available"),
+        )
+        .where(InventoryItem.guild_id == guild_id)
+        .group_by(InventoryItem.product_id, InventoryItem.package_name)
+    ).all()
+    result = []
+    for r in rows:
+        product = db.execute(select(Product).where(Product.id == r.product_id)).scalars().first()
+        result.append({
+            "product_id": r.product_id,
+            "product_name": product.name if product else None,
+            "package_name": r.package_name,
+            "total": r.total,
+            "available": int(r.available or 0),
+            "delivered": r.total - int(r.available or 0),
+        })
+    return result
+
+
+@router.post("/inventory")
+def add_inventory_item(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    product_id = body.get("product_id")
+    if not product_id:
+        raise HTTPException(400, "product_id required")
+    item = InventoryItem(
+        guild_id=guild_id,
+        product_id=product_id,
+        package_name=body.get("package_name", ""),
+        content=body.get("content", ""),
+    )
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return _inv_dict(item)
+
+
+@router.post("/inventory/bulk")
+def bulk_add_inventory(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    """Upload multiple items at once. body.contents = list of strings."""
+    product_id = body.get("product_id")
+    package_name = body.get("package_name", "")
+    contents: list[str] = body.get("contents", [])
+    if not product_id:
+        raise HTTPException(400, "product_id required")
+    if not contents:
+        raise HTTPException(400, "No contents provided")
+    added = 0
+    for c in contents:
+        c = c.strip()
+        if not c:
+            continue
+        db.add(InventoryItem(guild_id=guild_id, product_id=product_id, package_name=package_name, content=c))
+        added += 1
+    db.commit()
+    return {"ok": True, "added": added}
+
+
+@router.delete("/inventory/{item_id}")
+def delete_inventory_item(item_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    item = db.execute(select(InventoryItem).where(InventoryItem.id == item_id, InventoryItem.guild_id == guild_id)).scalars().first()
+    if not item:
+        raise HTTPException(404, "Item not found")
+    if item.delivered_order_id:
+        raise HTTPException(400, "Cannot delete delivered item")
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+
+@router.delete("/inventory/bulk-delete")
+def bulk_delete_inventory(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    """Delete all available (undelivered) items for a product/package."""
+    product_id = body.get("product_id")
+    package_name = body.get("package_name")
+    q = select(InventoryItem).where(
+        InventoryItem.guild_id == guild_id,
+        InventoryItem.delivered_order_id == None,
+    )
+    if product_id:
+        q = q.where(InventoryItem.product_id == product_id)
+    if package_name:
+        q = q.where(InventoryItem.package_name == package_name)
+    items = db.execute(q).scalars().all()
+    for i in items:
+        db.delete(i)
+    db.commit()
+    return {"ok": True, "deleted": len(items)}

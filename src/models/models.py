@@ -66,6 +66,12 @@ class SystemConfig(Base):
     premium_payment_instructions = Column(Text, nullable=True)      # shown to buyers on renewal page
     premium_default_renewal_days = Column(Integer, default=7)       # reminder window for all subs
     premium_renewal_channel_id = Column(String, nullable=True)      # channel for bot renewal reminders
+    # ── Flash Sale + BXH + Inventory ──
+    flash_sale_channel_id = Column(String, nullable=True)
+    spending_leaderboard_channel_id = Column(String, nullable=True)
+    spending_leaderboard_schedule = Column(String, nullable=True)   # "daily"|"weekly"|"monthly"
+    spending_leaderboard_time = Column(String, nullable=True)       # "HH:MM" UTC
+    inventory_low_stock_threshold = Column(Integer, default=5)
 
 class User(Base):
     __tablename__ = "users"
@@ -125,6 +131,37 @@ class Coupon(Base):
     max_uses = Column(Integer, default=1)
     used_count = Column(Integer, default=0)
     is_public = Column(Boolean, default=False)
+
+class FlashSale(Base):
+    """Flash sale trên một package cụ thể của sản phẩm."""
+    __tablename__ = "flash_sales"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"))
+    package_name = Column(String, nullable=False)       # tên package áp dụng
+    discount_type = Column(String, default="percent")   # "percent" | "fixed"
+    discount_value = Column(Float, nullable=False)
+    quantity_limit = Column(Integer, nullable=True)     # None = không giới hạn
+    quantity_used = Column(Integer, default=0)
+    allow_coupon = Column(Boolean, default=False)
+    starts_at = Column(DateTime, nullable=False)
+    ends_at = Column(DateTime, nullable=False)
+    active = Column(Boolean, default=True)
+    channel_message_id = Column(String, nullable=True)  # tin nhắn flash sale đã gửi
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    product = relationship("Product")
+
+class InventoryItem(Base):
+    """Một item trong kho hàng — gắn với package của sản phẩm."""
+    __tablename__ = "inventory_items"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"))
+    package_name = Column(String, nullable=False)
+    content = Column(Text, nullable=False)              # nội dung giao hàng
+    delivered_order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)  # None = chưa giao
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    product = relationship("Product")
 
 class SpendingMilestone(Base):
     """Mốc chi tiêu — tự động gán role khi user đạt mốc."""

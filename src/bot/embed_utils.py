@@ -249,6 +249,42 @@ DEFAULTS: dict[str, dict] = {
             {"name": "👮 Action By", "value": "{moderator}", "inline": True},
         ],
     },
+    # ── Flash Sale ────────────────────────────────────────────────────────────
+    "flash_sale_start": {
+        "title": "⚡ Flash Sale Started!",
+        "description": "**{product.name}** — Package **{package.name}** is on sale!\n🔥 Discount: **{sale.discount}**",
+        "color": "#FF6B35",
+        "fields": [
+            {"name": "⏰ Ends At", "value": "{sale.ends_at}", "inline": True},
+            {"name": "📦 Quantity", "value": "{sale.qty_limit}", "inline": True},
+            {"name": "🎫 Coupons", "value": "{sale.allow_coupon}", "inline": True},
+        ],
+    },
+    "flash_sale_end": {
+        "title": "🏁 Flash Sale Ended",
+        "description": "Flash sale for **{product.name}** — **{package.name}** has ended.",
+        "color": "#99AAB5",
+        "fields": [
+            {"name": "🛒 Sold", "value": "{sale.qty_used} / {sale.qty_limit}", "inline": True},
+        ],
+    },
+    "out_of_stock_admin": {
+        "title": "⚠️ Out of Stock — Manual Delivery Required",
+        "description": "Order **#{order.id}** by {user.mention} for **{product.name}** requires manual delivery (inventory empty).",
+        "color": "#FEE75C",
+        "fields": [
+            {"name": "📦 Package", "value": "{product.name}", "inline": True},
+            {"name": "🆔 Order", "value": "#{order.id}", "inline": True},
+        ],
+    },
+    "spending_leaderboard_auto": {
+        "title": "🏆 Spending Leaderboard — {period}",
+        "description": "{leaderboard}",
+        "color": "#F0B232",
+        "fields": [
+            {"name": "📅 Date", "value": "{date}", "inline": True},
+        ],
+    },
     # ── Giveaway banned ───────────────────────────────────────────────────────
     "giveaway_banned": {
         "title": "⛔ Giveaway Banned",

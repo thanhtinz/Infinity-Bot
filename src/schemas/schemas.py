@@ -71,6 +71,12 @@ class SystemConfigSafe(BaseModel):
     manual_account_holder: Optional[str] = None
     manual_account_number: Optional[str] = None
     manual_instructions: Optional[str] = None
+    # Flash Sale + BXH + Inventory
+    flash_sale_channel_id: Optional[str] = None
+    spending_leaderboard_channel_id: Optional[str] = None
+    spending_leaderboard_schedule: Optional[str] = None
+    spending_leaderboard_time: Optional[str] = None
+    inventory_low_stock_threshold: int = 5
 
     class Config:
         from_attributes = True
