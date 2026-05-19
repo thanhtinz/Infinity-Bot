@@ -47,9 +47,9 @@ function AvatarInitial({ username }: { username: string }) {
   const initial = username.charAt(0).toUpperCase() || "?";
   const colors = [
     "bg-red-500/15 text-red-600",
-    "bg-blue-500/15 text-blue-600",
+    "bg-primary/15 text-primary",
     "bg-green-500/15 text-green-600",
-    "bg-purple-500/15 text-purple-600",
+    "bg-secondary/15 text-secondary",
     "bg-orange-500/15 text-orange-600",
     "bg-pink-500/15 text-pink-600",
   ];

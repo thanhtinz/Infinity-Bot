@@ -75,11 +75,11 @@ export const ACTION_BADGE: Record<string, { cls: string; icon: React.ReactNode }
     icon: <UserX className="h-3 w-3" />,
   },
   mute: {
-    cls: "bg-blue-500/15 text-blue-600 border-blue-500/30",
+    cls: "bg-primary/15 text-primary border-primary/30",
     icon: <Volume2 className="h-3 w-3" />,
   },
   timeout: {
-    cls: "bg-blue-500/15 text-blue-600 border-blue-500/30",
+    cls: "bg-primary/15 text-primary border-primary/30",
     icon: <Clock className="h-3 w-3" />,
   },
   unban: {
@@ -91,7 +91,7 @@ export const ACTION_BADGE: Record<string, { cls: string; icon: React.ReactNode }
     icon: <ShieldCheck className="h-3 w-3" />,
   },
   deafen: {
-    cls: "bg-purple-500/15 text-purple-600 border-purple-500/30",
+    cls: "bg-secondary/15 text-secondary border-purple-500/30",
     icon: <Volume2 className="h-3 w-3" />,
   },
 };

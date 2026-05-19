@@ -162,7 +162,7 @@ export function StaffPermissions() {
           {staffPerms.map((sp) => (
             <Card key={sp.id}>
               <CardContent className="flex items-center gap-4 py-4">
-                <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-500/10 text-blue-500 shrink-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 text-primary shrink-0">
                   <Shield className="h-5 w-5" />
                 </div>
 

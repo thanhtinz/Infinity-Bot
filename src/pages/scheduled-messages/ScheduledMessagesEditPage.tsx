@@ -340,19 +340,19 @@ export function ScheduledMessagesEditPage() {
             className={cn(
               "flex w-full cursor-pointer select-none items-center justify-between rounded-lg border p-3 transition-all",
               form.add_embed
-                ? "bg-indigo-500/10 border-indigo-500/30"
+                ? "bg-primary/10 border-indigo-500/30"
                 : "bg-muted/30 border-muted hover:bg-muted/50"
             )}
           >
             <div className="flex items-center gap-2.5">
               <div className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-md",
-                form.add_embed ? "bg-indigo-500/20" : "bg-muted"
+                form.add_embed ? "bg-primary/20" : "bg-muted"
               )}>
-                <Layout className={cn("h-4 w-4", form.add_embed ? "text-indigo-500" : "text-muted-foreground")} />
+                <Layout className={cn("h-4 w-4", form.add_embed ? "text-primary" : "text-muted-foreground")} />
               </div>
               <div className="text-left">
-                <p className={cn("text-sm font-medium", form.add_embed ? "text-indigo-600 dark:text-indigo-400" : "text-foreground")}>
+                <p className={cn("text-sm font-medium", form.add_embed ? "text-primary dark:text-primary/80" : "text-foreground")}>
                   Add Embed
                 </p>
                 <p className="text-[11px] text-muted-foreground">

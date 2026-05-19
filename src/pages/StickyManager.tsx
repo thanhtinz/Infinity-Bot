@@ -219,8 +219,8 @@ export function StickyManager() {
       label: "Total stickies",
       value: stats?.total ?? 0,
       icon: Pin,
-      color: "text-blue-500",
-      bg: "bg-blue-500/10",
+      color: "text-primary",
+      bg: "bg-primary/10",
     },
     {
       label: "Online",
@@ -240,8 +240,8 @@ export function StickyManager() {
       label: "Embed type",
       value: stats?.embed_count ?? 0,
       icon: Image,
-      color: "text-purple-500",
-      bg: "bg-purple-500/10",
+      color: "text-secondary",
+      bg: "bg-secondary/10",
     },
     {
       label: "Pinned",

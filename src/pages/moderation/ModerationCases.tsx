@@ -108,7 +108,7 @@ export function ModerationCases() {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-start gap-3">
-            <div className="p-2 rounded-md bg-blue-500/10 text-blue-600">
+            <div className="p-2 rounded-md bg-primary/10 text-primary">
               <Clock className="h-4 w-4" />
             </div>
             <div>

@@ -125,7 +125,7 @@ export function ResponseSection({
           className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium hover:bg-muted/30 transition-colors rounded-lg"
         >
           <span className="flex items-center gap-2">
-            <Variable className="h-4 w-4 text-indigo-500" />
+            <Variable className="h-4 w-4 text-primary" />
             {t("ar_availableVariables")}
           </span>
           {varsOpen ? (
@@ -153,7 +153,7 @@ export function ResponseSection({
                         key={v.key}
                         type="button"
                         onClick={() => insertVariable(v.key)}
-                        className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-[11px] font-mono hover:bg-indigo-50 hover:border-indigo-300 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 rounded-md border bg-background px-2 py-0.5 text-[11px] font-mono hover:bg-primary/5 hover:border-indigo-300 transition-colors cursor-pointer"
                         title={v.desc}
                       >
                         {v.key}

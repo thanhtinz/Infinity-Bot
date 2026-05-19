@@ -541,8 +541,8 @@ export function PaymentConfig() {
                   type="button"
                   className="flex items-center gap-3 text-left flex-1"
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
-                    <CreditCard className="h-5 w-5 text-blue-500" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <CreditCard className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -643,8 +643,8 @@ export function PaymentConfig() {
                   type="button"
                   className="flex items-center gap-3 text-left flex-1"
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500/10">
-                    <Globe className="h-5 w-5 text-indigo-500" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <Globe className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">

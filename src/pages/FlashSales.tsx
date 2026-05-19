@@ -62,7 +62,7 @@ function getStatus(sale: FlashSale): "Upcoming" | "Active" | "Ended" {
 
 function statusBadge(status: "Upcoming" | "Active" | "Ended") {
   const cls = {
-    Upcoming: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    Upcoming: "bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary/80",
     Active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
     Ended: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
   }[status];

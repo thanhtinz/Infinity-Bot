@@ -113,7 +113,7 @@ const STATUS_BADGES: Record<string, { label: string; className: string }> = {
   },
   trial: {
     label: "Trial",
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0",
+    className: "bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary/80 border-0",
   },
   expired: {
     label: "Expired",
@@ -387,13 +387,13 @@ export function MyPlan() {
         </div>
 
         {/* Server-scope info */}
-        <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 px-4 py-3 flex items-start gap-3">
-          <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+        <div className="rounded-lg border border-primary/30 bg-primary/5 dark:border-primary/30 dark:bg-primary/10 px-4 py-3 flex items-start gap-3">
+          <Info className="h-5 w-5 text-primary dark:text-primary/80 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+            <p className="text-sm font-medium text-primary dark:text-primary/80 flex items-center gap-1.5">
               <Users className="h-4 w-4" /> Premium plan applies to the entire server
             </p>
-            <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+            <p className="text-xs text-primary dark:text-primary/80 mt-0.5">
               When an admin purchases a plan, all members in <span className="font-medium">{guildName}</span> get full Premium features immediately.
             </p>
           </div>
@@ -701,9 +701,9 @@ export function MyPlan() {
       </div>
 
       {/* Server-scope reminder */}
-      <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 px-4 py-2.5 flex items-center gap-3">
-        <Users className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
-        <p className="text-xs text-blue-700 dark:text-blue-300">
+      <div className="rounded-lg border border-primary/30 bg-primary/5 dark:border-primary/30 dark:bg-primary/10 px-4 py-2.5 flex items-center gap-3">
+        <Users className="h-4 w-4 text-primary dark:text-primary/80 shrink-0" />
+        <p className="text-xs text-primary dark:text-primary/80">
           This Premium plan applies to <span className="font-semibold">{guildName}</span>. All members in the server benefit.
         </p>
       </div>

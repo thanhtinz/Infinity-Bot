@@ -198,7 +198,7 @@ export function VerifyMembersPage() {
       {/* ── Pull members button ── */}
       <div>
         <Button
-          className="gap-2 bg-blue-600 hover:bg-blue-700 text-white h-12 px-6 text-base font-semibold rounded-xl"
+          className="gap-2 bg-primary hover:bg-primary/90 text-white h-12 px-6 text-base font-semibold rounded-xl"
           onClick={() => setPullDialogOpen(true)}
         >
           <ArrowDownToLine className="h-5 w-5" />
@@ -251,7 +251,7 @@ export function VerifyMembersPage() {
             )}
           </div>
           <button
-            className="text-blue-500 underline text-sm font-medium mt-0.5 hover:text-blue-400 transition-colors"
+            className="text-primary underline text-sm font-medium mt-0.5 hover:text-primary/80 transition-colors"
             onClick={() => setDeauthDialogOpen(true)}
           >
             View deauthorized
@@ -271,7 +271,7 @@ export function VerifyMembersPage() {
           />
           <Button
             size="icon"
-            className="bg-blue-600 hover:bg-blue-700 h-10 w-10 shrink-0"
+            className="bg-primary hover:bg-primary/90 h-10 w-10 shrink-0"
             onClick={() => setDebouncedSearch(search)}
           >
             <Search className="h-4 w-4" />
@@ -393,7 +393,7 @@ export function VerifyMembersPage() {
           <div className="space-y-4">
             {/* Select a server */}
             <Select value={selectedGuildId} onValueChange={setSelectedGuildId}>
-              <SelectTrigger className="border-blue-500 focus:ring-blue-500">
+              <SelectTrigger className="border-primary focus:ring-blue-500">
                 <SelectValue placeholder="Select a server" />
               </SelectTrigger>
               <SelectContent>
@@ -442,7 +442,7 @@ export function VerifyMembersPage() {
                     <SelectItem key={r.id} value={r.id}>
                       <div className="flex items-center gap-2">
                         {selectedRoleIds.includes(r.id) && (
-                          <span className="text-blue-500 text-xs">✓</span>
+                          <span className="text-primary text-xs">✓</span>
                         )}
                         {r.color ? (
                           <span
@@ -512,7 +512,7 @@ export function VerifyMembersPage() {
               <div className="space-y-2 pt-1">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <Loader2 className="h-3 w-3 animate-spin text-blue-500" />
+                    <Loader2 className="h-3 w-3 animate-spin text-primary" />
                     {pullStatusQuery.data?.pulled_members} / {pullStatusQuery.data?.total_members} pulled
                   </span>
                   <span>
@@ -602,7 +602,7 @@ export function VerifyMembersPage() {
                 </Button>
                 <PremiumGate feature="pull_members" featureLabel="Pull Members" hasAccess={hasFeature("pull_members")} isLoading={entLoading}>
                   <Button
-                    className="bg-blue-600 hover:bg-blue-700 gap-2"
+                    className="bg-primary hover:bg-primary/90 gap-2"
                     onClick={() =>
                       startPullMutation.mutate({
                         restore_roles: preventDuplicates,
@@ -635,7 +635,7 @@ export function VerifyMembersPage() {
             <DialogDescription className="text-center text-xs">
               List of users who Unauthorized your Discord app. Make VaultCord remove roles from these
               types of users with{" "}
-              <a href="#" className="text-blue-500 underline">
+              <a href="#" className="text-primary underline">
                 this setting (here)
               </a>
             </DialogDescription>
@@ -746,7 +746,7 @@ export function VerifyMembersPage() {
 
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-primary hover:bg-primary/90"
               disabled={!transferSource.trim() || transferMutation.isPending}
               onClick={() => transferMutation.mutate()}
             >

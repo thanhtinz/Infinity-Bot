@@ -38,9 +38,9 @@ interface StatTypeOption {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const STAT_TYPE_COLORS: Record<string, string> = {
-  members: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  members: "bg-primary/15 text-primary dark:text-primary/80",
   online: "bg-green-500/15 text-green-600 dark:text-green-400",
-  boosts: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
+  boosts: "bg-secondary/15 text-secondary dark:text-secondary/80",
   roles: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
   channels: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
   avg_rating: "bg-pink-500/15 text-pink-600 dark:text-pink-400",

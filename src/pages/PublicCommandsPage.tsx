@@ -81,7 +81,7 @@ export function PublicCommandsPage() {
   );
 
   return (
-    <div style={{ background: "#0d0f14", fontFamily: "'Syne', sans-serif", minHeight: "100vh" }}>
+    <div style={{ background: "#1E1E2D", fontFamily: "'Syne', sans-serif", minHeight: "100vh" }}>
       <LandingNavbar />
 
       {/* ── Hero ──────────────────────────────────────────── */}
@@ -89,7 +89,7 @@ export function PublicCommandsPage() {
         {/* Background glow */}
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[400px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(88,101,242,0.15) 0%, transparent 70%)", filter: "blur(60px)" }}
+          style={{ background: "radial-gradient(circle, rgba(0,157,181,0.15) 0%, transparent 70%)", filter: "blur(60px)" }}
         />
 
         <div className="relative z-10 max-w-4xl mx-auto text-center">
@@ -97,8 +97,8 @@ export function PublicCommandsPage() {
             Commands
           </h1>
           <p className="text-white/40 text-lg mb-8">
-            <span className="text-[#818cf8] font-semibold">{totalCommands}</span> commands across{" "}
-            <span className="text-[#818cf8] font-semibold">{cats.length}</span> categories
+            <span className="text-primary font-semibold">{totalCommands}</span> commands across{" "}
+            <span className="text-primary font-semibold">{cats.length}</span> categories
           </p>
 
           {/* Search bar */}
@@ -109,7 +109,7 @@ export function PublicCommandsPage() {
               value={q}
               onChange={e => setQ(e.target.value)}
               placeholder="Search commands..."
-              className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-[#5865F2]/40 focus:border-[#5865F2]/30 transition-all text-sm backdrop-blur-sm"
+              className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/30 transition-all text-sm backdrop-blur-sm"
             />
           </div>
         </div>
@@ -122,7 +122,7 @@ export function PublicCommandsPage() {
             onClick={() => setActiveFilter("all")}
             className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium border transition-all ${
               activeFilter === "all"
-                ? "bg-[#5865F2]/15 border-[#5865F2]/30 text-[#818cf8]"
+                ? "bg-primary/15 border-primary/30 text-primary"
                 : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/70"
             }`}
           >
@@ -138,7 +138,7 @@ export function PublicCommandsPage() {
                 onClick={() => setActiveFilter(cat.key || cat.name)}
                 className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium border transition-all ${
                   active
-                    ? "bg-[#5865F2]/15 border-[#5865F2]/30 text-[#818cf8]"
+                    ? "bg-primary/15 border-primary/30 text-primary"
                     : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/70"
                 }`}
               >
@@ -160,7 +160,7 @@ export function PublicCommandsPage() {
               onClick={() => setActiveFilter("all")}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeFilter === "all"
-                  ? "bg-[#5865F2]/10 border border-[#5865F2]/20 text-[#818cf8]"
+                  ? "bg-primary/10 border border-primary/20 text-primary"
                   : "border border-transparent text-white/50 hover:bg-white/5 hover:text-white/70"
               }`}
             >
@@ -180,14 +180,14 @@ export function PublicCommandsPage() {
                   onClick={() => setActiveFilter(cat.key || cat.name)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     active
-                      ? "bg-[#5865F2]/10 border border-[#5865F2]/20 text-[#818cf8]"
+                      ? "bg-primary/10 border border-primary/20 text-primary"
                       : "border border-transparent text-white/50 hover:bg-white/5 hover:text-white/70"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span className="flex-1 text-left truncate">{cat.name}</span>
                   <span className={`text-xs px-1.5 py-0.5 rounded-md ${
-                    active ? "bg-[#5865F2]/15 text-[#818cf8]" : "bg-white/5 text-white/30"
+                    active ? "bg-primary/15 text-primary" : "bg-white/5 text-white/30"
                   }`}>
                     {cat.commands.length}
                   </span>
@@ -214,8 +214,8 @@ export function PublicCommandsPage() {
                 {/* Category group header (visible when "All" is selected) */}
                 {activeFilter === "all" && (
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/15 flex items-center justify-center">
-                      <CatIcon className="w-4 h-4 text-[#818cf8]" />
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center">
+                      <CatIcon className="w-4 h-4 text-primary" />
                     </div>
                     <h2 className="text-white font-bold text-base">{cat.name}</h2>
                     <span className="text-white/25 text-xs">{cat.commands.length} command{cat.commands.length !== 1 ? "s" : ""}</span>
@@ -227,22 +227,22 @@ export function PublicCommandsPage() {
                   {cat.commands.map(cmd => (
                     <article
                       key={`${cat.key}-${cmd.name}`}
-                      className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 hover:border-[#5865F2]/30 hover:bg-white/[0.04] transition-all"
+                      className="group rounded-xl border border-white/[0.06] bg-card p-4 hover:border-primary/30 hover:bg-white/[0.04] transition-all shadow-[0px_8px_17px_rgba(0,157,181,0.07)]"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/15 flex items-center justify-center shrink-0">
-                          <CatIcon className="w-4 h-4 text-[#818cf8]" />
+                        <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0">
+                          <CatIcon className="w-4 h-4 text-primary" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2 mb-1">
                             <code
                               style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                              className="text-[#818cf8] text-sm font-bold break-all"
+                              className="text-primary text-sm font-bold break-all"
                             >
                               {cmd.name}
                             </code>
                             {cmd.admin && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[10px] font-bold uppercase tracking-wider">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/10 border border-secondary/20 text-secondary text-[10px] font-bold uppercase tracking-wider">
                                 <Shield className="w-3 h-3" /> Admin
                               </span>
                             )}

@@ -194,7 +194,7 @@ export function BackupRestore() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Download className="h-5 w-5 text-blue-500" />
+              <Download className="h-5 w-5 text-primary" />
               {t("backup_createBackup")}
             </CardTitle>
             <CardDescription>

@@ -122,7 +122,7 @@ export function RuleCard({
         {/* Meta row */}
         <div className="mx-4 mb-2 flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
           {rule.ignore_case && (
-            <span className="text-blue-600">Aa</span>
+            <span className="text-primary">Aa</span>
           )}
           {(rule.cooldown ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-amber-600">
@@ -130,7 +130,7 @@ export function RuleCard({
             </span>
           )}
           {(rule.allowed_channels?.length ?? 0) > 0 && (
-            <span className="flex items-center gap-1 text-blue-600">
+            <span className="flex items-center gap-1 text-primary">
               📌 {rule.allowed_channels.length} {t("ar_channel")}
             </span>
           )}
@@ -150,7 +150,7 @@ export function RuleCard({
             </span>
           )}
           {(rule.priority ?? 0) > 0 && (
-            <span className="flex items-center gap-1 text-purple-600">
+            <span className="flex items-center gap-1 text-secondary">
               ⬆️ P{rule.priority}
             </span>
           )}

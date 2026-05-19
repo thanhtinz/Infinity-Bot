@@ -51,7 +51,7 @@ export function UsersManager() {
   const STATUS_CLS: Record<string, string> = {
     PAID: "bg-green-500/15 text-green-600 border-green-500/30",
     PENDING: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
-    DELIVERING: "bg-blue-500/15 text-blue-600 border-blue-500/30",
+    DELIVERING: "bg-primary/15 text-primary border-primary/30",
     DELIVERED: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
     CANCELLED: "bg-red-500/15 text-red-600 border-red-500/30",
     ERROR: "bg-gray-500/15 text-gray-600 border-gray-500/30",

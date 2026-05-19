@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Zap, ArrowRight, ExternalLink } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Bot, ArrowRight } from "lucide-react";
 
 export function useLandingFonts() {
   useEffect(() => {
@@ -17,7 +17,7 @@ export function LandingNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
-  const [supportUrl, setSupportUrl] = useState<string | null>(null);
+  const location = useLocation();
 
   useLandingFonts();
 
@@ -26,7 +26,6 @@ export function LandingNavbar() {
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.invite_url) setInviteUrl(d.invite_url);
-        if (d?.support_url) setSupportUrl(d.support_url);
       })
       .catch(() => {});
   }, []);
@@ -38,24 +37,27 @@ export function LandingNavbar() {
   }, []);
 
   const navLinks = [
-    { to: "/", label: "Home" },
     { to: "/commands", label: "Commands" },
     { to: "/pricing", label: "Pricing" },
     { to: "/status", label: "Status" },
   ];
 
+  const isActive = (to: string) => location.pathname === to;
+
   return (
     <nav
       style={{ fontFamily: "'Syne', sans-serif" }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-[#0d0f14]/90 backdrop-blur-xl border-b border-white/5 shadow-lg" : "bg-[#0d0f14]/70 backdrop-blur-md"
+        scrolled
+          ? "bg-[#1E1E2D]/80 backdrop-blur-xl border-b border-white/5 shadow-lg"
+          : "bg-transparent backdrop-blur-sm"
       }`}
     >
       <div className="max-w-6xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 font-bold text-xl text-white hover:opacity-90 transition-opacity">
-          <div className="w-8 h-8 rounded-lg bg-[#5865F2] flex items-center justify-center">
-            <Zap className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <Bot className="w-4 h-4 text-white" />
           </div>
           Infinity Bot
         </Link>
@@ -63,31 +65,34 @@ export function LandingNavbar() {
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-7 text-sm font-medium text-white/60">
           {navLinks.map(l => (
-            <Link key={l.to} to={l.to} className="hover:text-white transition-colors">{l.label}</Link>
+            <Link
+              key={l.to}
+              to={l.to}
+              className={`transition-colors hover:text-white ${
+                isActive(l.to) ? "text-primary" : ""
+              }`}
+            >
+              {l.label}
+            </Link>
           ))}
-          {inviteUrl && (
-            <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
-              className="hover:text-white transition-colors flex items-center gap-1">
-              Invite Bot <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          )}
-          {supportUrl && (
-            <a href={supportUrl} target="_blank" rel="noopener noreferrer"
-              className="hover:text-white transition-colors flex items-center gap-1">
-              Support <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          )}
         </div>
 
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <Link to="/dashboard" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+          <Link
+            to="/dashboard"
+            className="text-sm font-medium text-white/70 hover:text-white transition-colors px-4 py-2 rounded-lg border border-white/10 hover:border-white/20"
+          >
             Login
           </Link>
           {inviteUrl && (
-            <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#5865F2] hover:bg-[#4752c4] text-white text-sm font-semibold transition-colors">
-              Add Bot <ArrowRight className="w-3.5 h-3.5" />
+            <a
+              href={inviteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-semibold transition-colors"
+            >
+              Add to Discord <ArrowRight className="w-3.5 h-3.5" />
             </a>
           )}
         </div>
@@ -104,27 +109,19 @@ export function LandingNavbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden bg-[#0d0f14]/95 backdrop-blur-xl border-b border-white/10 px-4 pb-4 space-y-1">
+        <div className="md:hidden bg-[#1E1E2D]/95 backdrop-blur-xl border-b border-white/10 px-4 pb-4 space-y-1">
           {[...navLinks, { to: "/dashboard", label: "Dashboard" }].map(l => (
-            <Link key={l.to} to={l.to} onClick={() => setMenuOpen(false)}
-              className="block text-sm text-white/70 hover:text-white py-2 transition-colors">
+            <Link
+              key={l.to}
+              to={l.to}
+              onClick={() => setMenuOpen(false)}
+              className={`block text-sm py-2 transition-colors ${
+                isActive(l.to) ? "text-primary" : "text-white/70 hover:text-white"
+              }`}
+            >
               {l.label}
             </Link>
           ))}
-          {inviteUrl && (
-            <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 text-sm text-white/70 hover:text-white py-2 transition-colors">
-              Invite Bot <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          )}
-          {supportUrl && (
-            <a href={supportUrl} target="_blank" rel="noopener noreferrer"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 text-sm text-white/70 hover:text-white py-2 transition-colors">
-              Support <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          )}
         </div>
       )}
     </nav>

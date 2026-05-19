@@ -35,7 +35,7 @@ export function CommandCard({
         {/* Top: name + badges */}
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-            <Badge className="bg-indigo-500/15 text-indigo-600 border border-indigo-500/30 shrink-0 text-[11px] font-mono px-2">
+            <Badge className="bg-primary/15 text-primary border border-indigo-500/30 shrink-0 text-[11px] font-mono px-2">
               !{command.name}
             </Badge>
             {command.aliases?.map((alias) => (
@@ -120,7 +120,7 @@ export function CommandCard({
             </span>
           )}
           {(command.allowed_channels?.length ?? 0) > 0 && (
-            <span className="flex items-center gap-1 text-blue-600">
+            <span className="flex items-center gap-1 text-primary">
               📌 {command.allowed_channels.length} {t("cc_channel")}
             </span>
           )}

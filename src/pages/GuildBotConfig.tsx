@@ -113,7 +113,7 @@ export function GuildBotConfig() {
       {/* Header */}
       <div>
         <h1 className="text-xl font-semibold flex items-center gap-2">
-          <Bot className="h-5 w-5 text-indigo-400" />
+          <Bot className="h-5 w-5 text-primary/80" />
           Custom Bot
           <PremiumBadge />
         </h1>
@@ -131,8 +131,8 @@ export function GuildBotConfig() {
               {data.bot_avatar_url ? (
                 <img src={data.bot_avatar_url} alt="" className="h-10 w-10 rounded-full" />
               ) : (
-                <div className="h-10 w-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                  <Bot className="h-5 w-5 text-indigo-400" />
+                <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Bot className="h-5 w-5 text-primary/80" />
                 </div>
               )}
               <div>
@@ -214,10 +214,10 @@ export function GuildBotConfig() {
       </div>
 
       {/* Setup instructions */}
-      <div className="rounded-lg border border-indigo-500/20 bg-indigo-500/5 p-4 space-y-2">
-        <p className="text-xs font-semibold text-indigo-300">Setup Instructions</p>
+      <div className="rounded-lg border border-indigo-500/20 bg-primary/5 p-4 space-y-2">
+        <p className="text-xs font-semibold text-primary/70">Setup Instructions</p>
         <ol className="text-xs text-muted-foreground space-y-1 list-decimal pl-4">
-          <li>Go to <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-indigo-400 underline">Discord Developer Portal</a></li>
+          <li>Go to <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-primary/80 underline">Discord Developer Portal</a></li>
           <li>Create a new application (or select existing)</li>
           <li>Copy the <strong>Application ID</strong> and <strong>Client Secret</strong> from OAuth2</li>
           <li>Go to Bot tab, copy the <strong>Bot Token</strong></li>
@@ -225,9 +225,9 @@ export function GuildBotConfig() {
           <li>Invite the bot to your server with required permissions</li>
         </ol>
         <div className="mt-3 space-y-1">
-          <p className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider">OAuth2 Redirect URL</p>
+          <p className="text-[10px] font-semibold text-primary/70 uppercase tracking-wider">OAuth2 Redirect URL</p>
           <div className="flex items-center gap-2 rounded-md bg-background/60 border border-indigo-500/20 px-3 py-2">
-            <code className="flex-1 text-xs text-indigo-200 break-all select-all">
+            <code className="flex-1 text-xs text-primary/60 break-all select-all">
               {window.location.origin}/api/verify/callback
             </code>
             <button
@@ -235,7 +235,7 @@ export function GuildBotConfig() {
               onClick={() => {
                 navigator.clipboard.writeText(`${window.location.origin}/api/verify/callback`);
               }}
-              className="shrink-0 text-indigo-400 hover:text-indigo-200 transition-colors"
+              className="shrink-0 text-primary/80 hover:text-primary/60 transition-colors"
               title="Copy"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

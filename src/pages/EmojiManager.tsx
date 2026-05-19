@@ -241,10 +241,10 @@ export function EmojiManager() {
             <Badge variant="secondary" className="text-sm px-3 py-1">
               {totalCount} {t("emoji_emojiTab").toLowerCase()}
             </Badge>
-            <Badge variant="secondary" className="text-sm px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-0">
+            <Badge variant="secondary" className="text-sm px-3 py-1 bg-secondary/10 text-secondary dark:text-secondary/80 border-0">
               {animatedCount} {t("emoji_animated").toLowerCase()}
             </Badge>
-            <Badge variant="secondary" className="text-sm px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0">
+            <Badge variant="secondary" className="text-sm px-3 py-1 bg-primary/10 text-primary dark:text-primary/80 border-0">
               {staticCount} {t("emoji_static").toLowerCase()}
             </Badge>
           </div>
@@ -283,7 +283,7 @@ export function EmojiManager() {
                     :{emoji.name}:
                   </span>
                   {emoji.animated && (
-                    <Badge className="absolute top-1 right-1 text-[10px] px-1 py-0 h-4 bg-purple-500/80">GIF</Badge>
+                    <Badge className="absolute top-1 right-1 text-[10px] px-1 py-0 h-4 bg-secondary/80">GIF</Badge>
                   )}
                   <div className="absolute inset-0 flex items-center justify-center gap-2 rounded-lg bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button

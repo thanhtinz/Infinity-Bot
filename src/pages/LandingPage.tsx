@@ -1,7 +1,7 @@
 import { useT } from "@/i18n";
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Gift, Shield, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight, BrainCircuit, BarChart3, ClipboardList } from "lucide-react";
+import { ShoppingBag, Gift, Shield, Palette, ArrowRight, Zap, Server, Users, Activity, ChevronRight, BrainCircuit, BarChart3, ClipboardList, Bot, BookOpen, Headphones, ExternalLink } from "lucide-react";
 import { LandingNavbar, useLandingFonts } from "@/components/LandingNavbar";
 
 /* ── Terminal typing animation ───────────────────────────────── */
@@ -61,19 +61,19 @@ function Terminal() {
       {/* history */}
       {history.map((h, i) => (
         <div key={i} className="mb-1 opacity-40">
-          <span className="text-[#00d4aa]">$ </span>
+          <span className="text-primary">$ </span>
           <span className="text-white">{h.cmd}</span>
           <div className="text-white/50 ml-2">{h.out}</div>
         </div>
       ))}
       {/* current */}
       <div className="mb-1">
-        <span className="text-[#00d4aa]">$ </span>
+        <span className="text-primary">$ </span>
         <span className="text-white">{typed}</span>
-        <span className="inline-block w-2 h-4 bg-[#5865F2] ml-0.5 animate-pulse align-middle" />
+        <span className="inline-block w-2 h-4 bg-primary ml-0.5 animate-pulse align-middle" />
       </div>
       {showOut && (
-        <div className="text-[#00d4aa]/80 ml-2 animate-in fade-in duration-300">
+        <div className="text-primary/80 ml-2 animate-in fade-in duration-300">
           {COMMANDS[lineIdx > 0 ? (lineIdx - 1) % COMMANDS.length : 0]?.out}
         </div>
       )}
@@ -107,7 +107,7 @@ function StatCard({ icon: Icon, value, label, suffix = "+" }: { icon: typeof Zap
   const { val, ref } = useCountUp(value);
   return (
     <div ref={ref} className="flex flex-col items-center gap-1">
-      <Icon className="w-5 h-5 text-[#5865F2] mb-1" />
+      <Icon className="w-5 h-5 text-primary mb-1" />
       <span style={{ fontFamily: "'Syne', sans-serif" }} className="text-3xl font-800 text-white font-bold">
         {val.toLocaleString()}{suffix}
       </span>
@@ -118,15 +118,15 @@ function StatCard({ icon: Icon, value, label, suffix = "+" }: { icon: typeof Zap
 
 /* ── Feature cards ───────────────────────────────────────────── */
 const FEATURES = [
-  { icon: ShoppingBag, titleKey: "landing_shopOrders", descKey: "landing_shopOrdersDesc", color: "#5865F2" },
-  { icon: Gift, titleKey: "landing_giveaway", descKey: "landing_giveawayDesc", color: "#f59e0b" },
-  { icon: Shield, titleKey: "landing_moderation", descKey: "landing_moderationDesc", color: "#ef4444" },
-  { icon: Users, titleKey: "landing_verification", descKey: "landing_verificationDesc", color: "#a855f7" },
-  { icon: BrainCircuit, titleKey: "landing_aiChat", descKey: "landing_aiChatDesc", color: "#06b6d4" },
-  { icon: Palette, titleKey: "landing_embedBuilder", descKey: "landing_embedBuilderDesc", color: "#ec4899" },
-  { icon: BarChart3, titleKey: "landing_polls", descKey: "landing_pollsDesc", color: "#10b981" },
-  { icon: ClipboardList, titleKey: "landing_forms", descKey: "landing_formsDesc", color: "#f97316" },
-  { icon: Activity, titleKey: "landing_leveling", descKey: "landing_levelingDesc", color: "#8b5cf6" },
+  { icon: ShoppingBag, titleKey: "landing_shopOrders", descKey: "landing_shopOrdersDesc" },
+  { icon: Gift, titleKey: "landing_giveaway", descKey: "landing_giveawayDesc" },
+  { icon: Shield, titleKey: "landing_moderation", descKey: "landing_moderationDesc" },
+  { icon: Users, titleKey: "landing_verification", descKey: "landing_verificationDesc" },
+  { icon: BrainCircuit, titleKey: "landing_aiChat", descKey: "landing_aiChatDesc" },
+  { icon: Palette, titleKey: "landing_embedBuilder", descKey: "landing_embedBuilderDesc" },
+  { icon: BarChart3, titleKey: "landing_polls", descKey: "landing_pollsDesc" },
+  { icon: ClipboardList, titleKey: "landing_forms", descKey: "landing_formsDesc" },
+  { icon: Activity, titleKey: "landing_leveling", descKey: "landing_levelingDesc" },
 ];
 
 /* ── Main Landing Page ───────────────────────────────────────── */
@@ -135,44 +135,42 @@ export function LandingPage() {
   useLandingFonts();
 
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
-  const [supportUrl, setSupportUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/public/invite")
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.invite_url) setInviteUrl(d.invite_url);
-        if (d?.support_url) setSupportUrl(d.support_url);
       })
       .catch(() => {});
   }, []);
 
   return (
-    <div style={{ background: "#0d0f14", fontFamily: "'Syne', sans-serif", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "'Syne', sans-serif", minHeight: "100vh" }}>
       <LandingNavbar />
 
       {/* ── Hero ──────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-12 overflow-hidden">
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-12 overflow-hidden bg-gradient-to-b from-[#1E1E2D] to-[#262932]">
         {/* Background glow */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(88,101,242,0.18) 0%, transparent 70%)", filter: "blur(40px)" }} />
+          style={{ background: "radial-gradient(circle, rgba(0,157,181,0.18) 0%, transparent 70%)", filter: "blur(40px)" }} />
         <div className="absolute top-1/2 right-0 w-96 h-96 rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(0,212,170,0.1) 0%, transparent 70%)", filter: "blur(60px)" }} />
+          style={{ background: "radial-gradient(circle, rgba(249,76,142,0.1) 0%, transparent 70%)", filter: "blur(60px)" }} />
 
         <div className="relative z-10 max-w-6xl w-full mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
           {/* Text side */}
           <div className="flex-1 text-center lg:text-left">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#5865F2]/30 bg-[#5865F2]/10 text-[#818cf8] text-xs font-medium mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00d4aa] animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-medium mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
               {t("landing_allInOne")}
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.08] mb-6 tracking-tight">
-              {t("landing_manageServer")}
+              The Ultimate
               <br />
-              <span style={{ background: "linear-gradient(135deg, #5865F2, #00d4aa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                {t("landing_effortlessly")}
+              <span style={{ background: "linear-gradient(135deg, #009DB5, #F94C8E)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                Discord Bot Dashboard
               </span>
             </h1>
 
@@ -183,13 +181,13 @@ export function LandingPage() {
             <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
               {inviteUrl && (
                 <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#5865F2] hover:bg-[#4752c4] text-white font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#5865F2]/25">
-                  <Zap className="w-4 h-4" /> {t("landing_addToServer")}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/25">
+                  <Zap className="w-4 h-4" /> Add to Discord
                 </a>
               )}
-              <Link to="/dashboard"
+              <Link to="/commands"
                 className="flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]">
-                {t("landing_goToDashboard")} <ChevronRight className="w-4 h-4" />
+                View Commands <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
 
@@ -209,10 +207,10 @@ export function LandingPage() {
       </section>
 
       {/* ── Features ─────────────────────────────────────── */}
-      <section className="relative px-4 py-24">
+      <section className="relative px-4 py-24 bg-[#1E1E2D]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
-            <p className="text-[#5865F2] text-sm font-semibold tracking-widest uppercase mb-3">{t("landing_features")}</p>
+            <p className="text-primary text-sm font-semibold tracking-widest uppercase mb-3">{t("landing_features")}</p>
             <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
               {t("landing_everythingYouNeed")}
             </h2>
@@ -224,14 +222,10 @@ export function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {FEATURES.map((f, i) => (
               <div key={i}
-                className="group relative p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300 cursor-default overflow-hidden">
-                {/* Glow on hover */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  style={{ background: `radial-gradient(circle at 0% 0%, ${f.color}15 0%, transparent 60%)` }} />
+                className="group relative p-6 rounded-2xl border border-white/5 bg-card hover:border-primary/20 transition-all duration-300 cursor-default overflow-hidden shadow-[0px_8px_17px_rgba(0,157,181,0.07)]">
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                    style={{ background: `${f.color}20`, border: `1px solid ${f.color}30` }}>
-                    <f.icon className="w-5 h-5" style={{ color: f.color }} />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 bg-primary/15 border border-primary/20">
+                    <f.icon className="w-5 h-5 text-primary" />
                   </div>
                   <h3 className="text-white font-bold mb-2">{t(f.titleKey)}</h3>
                   <p className="text-white/40 text-sm leading-relaxed">{t(f.descKey)}</p>
@@ -242,12 +236,37 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* ── Stats / Social proof section ─────────────────── */}
+      <section className="px-4 py-20 bg-[#262932]">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
+            Trusted by <span className="text-primary">500+</span> Servers
+          </h2>
+          <p className="text-white/40 text-lg mb-10 max-w-xl mx-auto">
+            Join thousands of communities already using Infinity Bot to manage, moderate, and grow their Discord servers.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              { icon: Server, value: "500+", label: t("landing_servers") },
+              { icon: Users, value: "50K+", label: t("landing_members") },
+              { icon: Activity, value: "99%", label: t("landing_uptime") },
+            ].map((s, i) => (
+              <div key={i} className="p-6 rounded-2xl border border-white/5 bg-card shadow-[0px_8px_17px_rgba(0,157,181,0.07)]">
+                <s.icon className="w-6 h-6 text-primary mx-auto mb-3" />
+                <p className="text-3xl font-extrabold text-white mb-1">{s.value}</p>
+                <p className="text-white/40 text-sm">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA banner ───────────────────────────────────── */}
-      <section className="px-4 py-20">
+      <section className="px-4 py-20 bg-[#1E1E2D]">
         <div className="max-w-4xl mx-auto text-center">
           <div className="relative rounded-3xl border border-white/10 overflow-hidden p-12"
-            style={{ background: "linear-gradient(135deg, rgba(88,101,242,0.15), rgba(0,212,170,0.08))" }}>
-            <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 0%, rgba(88,101,242,0.2), transparent 70%)" }} />
+            style={{ background: "linear-gradient(135deg, rgba(0,157,181,0.2), rgba(249,76,142,0.1))" }}>
+            <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 0%, rgba(0,157,181,0.25), transparent 70%)" }} />
             <div className="relative">
               <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
                 {t("landing_readyToStart")}
@@ -256,8 +275,8 @@ export function LandingPage() {
               <div className="flex flex-wrap gap-3 justify-center">
                 {inviteUrl && (
                   <a href={inviteUrl} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#5865F2] hover:bg-[#4752c4] text-white font-bold text-sm transition-all hover:scale-[1.02] shadow-xl shadow-[#5865F2]/30">
-                    <Zap className="w-4 h-4" /> {t("landing_addBotFree")}
+                    className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm transition-all hover:scale-[1.02] shadow-xl shadow-primary/30">
+                    <Zap className="w-4 h-4" /> Get Started
                   </a>
                 )}
                 <Link to="/commands"
@@ -271,21 +290,61 @@ export function LandingPage() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────── */}
-      <footer className="border-t border-white/5 px-4 py-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-white/40 text-sm">
-            <div className="w-5 h-5 rounded bg-[#5865F2] flex items-center justify-center">
-              <Zap className="w-3 h-3 text-white" />
+      <footer className="bg-[#1E1E2D] border-t border-white/5 px-4 py-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* Col 1: Brand */}
+            <div>
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-bold text-lg text-white">Infinity Bot</span>
+              </div>
+              <p className="text-white/40 text-sm leading-relaxed max-w-xs">
+                The all-in-one Discord bot for managing, moderating, and growing your server effortlessly.
+              </p>
             </div>
-            <span>{t("landing_copyright")}</span>
+
+            {/* Col 2: Links */}
+            <div>
+              <h4 className="text-white font-semibold mb-4">Links</h4>
+              <ul className="space-y-2.5">
+                {[
+                  { to: "/#features", label: "Features" },
+                  { to: "/commands", label: "Commands" },
+                  { to: "/pricing", label: "Pricing" },
+                  { to: "/status", label: "Status" },
+                ].map(l => (
+                  <li key={l.to}>
+                    <Link to={l.to} className="text-white/40 hover:text-primary text-sm transition-colors">{l.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Col 3: Resources */}
+            <div>
+              <h4 className="text-white font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2.5">
+                {[
+                  { to: "/commands", label: "Documentation", icon: BookOpen },
+                  { to: "/status", label: "Support", icon: Headphones },
+                  { to: "#", label: "GitHub", icon: ExternalLink },
+                ].map(l => (
+                  <li key={l.label}>
+                    <Link to={l.to} className="text-white/40 hover:text-primary text-sm transition-colors flex items-center gap-2">
+                      <l.icon className="w-3.5 h-3.5" /> {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <div className="flex items-center gap-5 text-sm text-white/30">
-            <Link to="/commands" className="hover:text-white/60 transition-colors">{t("landing_commands")}</Link>
-            <Link to="/pricing" className="hover:text-white/60 transition-colors">{t("landing_pricing")}</Link>
-            <Link to="/status" className="hover:text-white/60 transition-colors">{t("landing_status")}</Link>
-            {supportUrl && (
-              <a href={supportUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white/60 transition-colors">{t("landing_support")}</a>
-            )}
+
+          {/* Bottom bar */}
+          <div className="border-t border-white/5 pt-6 text-center">
+            <p className="text-white/30 text-sm">© 2025 Infinity Bot · All rights reserved</p>
           </div>
         </div>
       </footer>

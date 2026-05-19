@@ -325,7 +325,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                       <Icon className="h-4 w-4 text-primary" />
                       {botLang === "en" ? (currentEvent.labelEn ?? currentEvent.label) : currentEvent.label}
                       {savedMap.has(selectedKey) && (
-                        <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-0 text-[10px] px-1.5 py-0 h-4">
+                        <Badge variant="secondary" className="bg-primary/10 text-primary dark:text-primary/80 border-0 text-[10px] px-1.5 py-0 h-4">
                           {t("edit")}
                         </Badge>
                       )}
@@ -348,7 +348,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                         <span className="flex items-center gap-2">
                           <Icon className="h-3.5 w-3.5" />
                           {botLang === "en" ? (ev.labelEn ?? ev.label) : ev.label}
-                          {saved && <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />}
+                          {saved && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
                         </span>
                       </SelectItem>
                     );

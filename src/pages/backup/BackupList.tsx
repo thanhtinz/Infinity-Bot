@@ -65,7 +65,7 @@ const STATUS_BADGE: Record<string, { cls: string; icon: React.ReactNode }> = {
     icon: <XCircle className="h-3 w-3" />,
   },
   in_progress: {
-    cls: "bg-blue-500/15 text-blue-600 border-blue-500/30",
+    cls: "bg-primary/15 text-primary border-primary/30",
     icon: <Loader2 className="h-3 w-3 animate-spin" />,
   },
 };
@@ -206,8 +206,8 @@ export function BackupList() {
                           variant="outline"
                           className={
                             b.backup_type === "manual"
-                              ? "bg-blue-500/15 text-blue-600 border-blue-500/30"
-                              : "bg-purple-500/15 text-purple-600 border-purple-500/30"
+                              ? "bg-primary/15 text-primary border-primary/30"
+                              : "bg-secondary/15 text-secondary border-purple-500/30"
                           }
                         >
                           {b.backup_type === "manual" ? "Manual" : "Scheduled"}

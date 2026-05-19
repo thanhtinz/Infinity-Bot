@@ -44,7 +44,7 @@ const ALERT_ICONS: Record<string, LucideIcon> = {
 };
 
 const SEVERITY_COLORS: Record<string, string> = {
-  info: "bg-blue-500",
+  info: "bg-primary",
   warning: "bg-yellow-500",
   critical: "bg-red-500",
 };

@@ -37,7 +37,7 @@ interface SocialFeed {
 
 const PLATFORM_CONFIG: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
   youtube: { label: "YouTube", icon: Play, color: "bg-red-500/15 text-red-600 dark:text-red-400" },
-  twitch: { label: "Twitch", icon: Tv, color: "bg-purple-500/15 text-purple-600 dark:text-purple-400" },
+  twitch: { label: "Twitch", icon: Tv, color: "bg-secondary/15 text-secondary dark:text-secondary/80" },
   rss: { label: "RSS", icon: Globe, color: "bg-orange-500/15 text-orange-600 dark:text-orange-400" },
 };
 

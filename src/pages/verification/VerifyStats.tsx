@@ -42,8 +42,8 @@ export function VerifyStats() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-blue-500/10 p-2.5">
-                <Users className="h-5 w-5 text-blue-500" />
+              <div className="rounded-lg bg-primary/10 p-2.5">
+                <Users className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Total Verified</p>
@@ -64,8 +64,8 @@ export function VerifyStats() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-purple-500/10 p-2.5">
-                <Clock className="h-5 w-5 text-purple-500" />
+              <div className="rounded-lg bg-secondary/10 p-2.5">
+                <Clock className="h-5 w-5 text-secondary" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">This Week</p>

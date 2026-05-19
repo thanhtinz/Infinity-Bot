@@ -85,9 +85,9 @@ export function GiveawaysManager() {
       </div>
 
       {/* ── Note ── */}
-      <div className="flex items-start gap-2 rounded-lg border border-blue-500/30 bg-blue-500/5 p-3 text-sm text-blue-700 dark:text-blue-400">
+      <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-primary dark:text-primary/80">
         <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-        <p>{t("giveaway_note")} (<code className="font-mono bg-blue-500/10 px-1 rounded">/giveaway</code>)</p>
+        <p>{t("giveaway_note")} (<code className="font-mono bg-primary/10 px-1 rounded">/giveaway</code>)</p>
       </div>
 
       {/* ── Stat Cards ── */}

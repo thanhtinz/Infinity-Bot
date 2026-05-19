@@ -144,7 +144,7 @@ const STATUS_BADGES: Record<string, { label: string; className: string }> = {
   },
   trial: {
     label: "Trial",
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0",
+    className: "bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary/80 border-0",
   },
   expired: {
     label: "Expired",

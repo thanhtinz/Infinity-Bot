@@ -107,8 +107,8 @@ export function VerifyPull() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="rounded-lg bg-blue-500/10 p-2.5">
-              <Users className="h-5 w-5 text-blue-500" />
+            <div className="rounded-lg bg-primary/10 p-2.5">
+              <Users className="h-5 w-5 text-primary" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Pullable Members</p>
@@ -193,7 +193,7 @@ export function VerifyPull() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 Pull in Progress
               </CardTitle>
               <Button
@@ -310,7 +310,7 @@ export function VerifyPull() {
                             ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
                             : h.status === "failed"
                             ? "bg-red-500/15 text-red-600 border-red-500/30"
-                            : "bg-blue-500/15 text-blue-600 border-blue-500/30"
+                            : "bg-primary/15 text-primary border-primary/30"
                         }
                       >
                         {h.status}

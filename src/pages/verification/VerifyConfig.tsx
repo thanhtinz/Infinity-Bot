@@ -546,7 +546,7 @@ export function VerifyConfig() {
             setDomainDialogOpen(true);
           }}
         >
-          <Globe className="h-4 w-4 text-blue-500" />
+          <Globe className="h-4 w-4 text-primary" />
           <span className="font-medium text-sm">Custom Domain</span>
           {!hasFeature("custom_domain") && !entLoading && <PremiumBadge size="xs" className="ml-auto" />}
           {hasFeature("custom_domain") && domainStatus?.status === "verified" && <Badge variant="secondary" className="ml-auto text-[10px] py-0">Active</Badge>}
@@ -557,7 +557,7 @@ export function VerifyConfig() {
           className="h-10 gap-2 justify-start"
           onClick={() => navigate("/embeds?event=verify_panel")}
         >
-          <MessageSquare className="h-4 w-4 text-indigo-500" />
+          <MessageSquare className="h-4 w-4 text-primary" />
           <span className="font-medium text-sm">Verify Message</span>
         </Button>
       </div>
@@ -933,7 +933,7 @@ export function VerifyConfig() {
               </div>
             ))}
             {configForm.block_vpn && (
-              <div className="space-y-3 pl-3 border-l-2 border-blue-500/40 mt-2">
+              <div className="space-y-3 pl-3 border-l-2 border-primary/40 mt-2">
                 <div>
                   <Label className="text-xs mb-1.5 block">VPN Detection Provider</Label>
                   <select value={configForm.vpn_api_provider || "proxycheck"} onChange={e => update({ vpn_api_provider: e.target.value })}
@@ -1123,7 +1123,7 @@ export function VerifyConfig() {
       <Dialog open={domainDialogOpen} onOpenChange={setDomainDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-blue-500" />Custom Domain</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-primary" />Custom Domain</DialogTitle>
             <DialogDescription>Point a CNAME record to host your verify page on your own domain.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

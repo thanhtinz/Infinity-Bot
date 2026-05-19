@@ -117,7 +117,7 @@ export function RemindersPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 flex items-start gap-3">
-            <div className="p-2 rounded-md bg-blue-500/10 text-blue-600"><Clock className="h-4 w-4" /></div>
+            <div className="p-2 rounded-md bg-primary/10 text-primary"><Clock className="h-4 w-4" /></div>
             <div>
               <p className="text-2xl font-bold">{stats?.active ?? 0}</p>
               <p className="text-xs text-muted-foreground">Active Reminders</p>
@@ -135,7 +135,7 @@ export function RemindersPage() {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-start gap-3">
-            <div className="p-2 rounded-md bg-purple-500/10 text-purple-600"><ListTodo className="h-4 w-4" /></div>
+            <div className="p-2 rounded-md bg-secondary/10 text-secondary"><ListTodo className="h-4 w-4" /></div>
             <div>
               <p className="text-2xl font-bold">{stats?.active_todos ?? 0}</p>
               <p className="text-xs text-muted-foreground">Active Todos</p>
@@ -163,12 +163,12 @@ export function RemindersPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium truncate">{r.message}</span>
                       {r.is_recurring && (
-                        <Badge variant="outline" className="text-xs bg-purple-500/15 text-purple-600 dark:text-purple-400 shrink-0">
+                        <Badge variant="outline" className="text-xs bg-secondary/15 text-secondary dark:text-secondary/80 shrink-0">
                           <RefreshCw className="h-3 w-3 mr-1" /> Recurring
                         </Badge>
                       )}
                       {r.is_todo && (
-                        <Badge variant="outline" className="text-xs bg-blue-500/15 text-blue-600 dark:text-blue-400 shrink-0">
+                        <Badge variant="outline" className="text-xs bg-primary/15 text-primary dark:text-primary/80 shrink-0">
                           <ListTodo className="h-3 w-3 mr-1" /> Todo
                         </Badge>
                       )}

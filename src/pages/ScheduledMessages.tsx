@@ -297,7 +297,7 @@ export function ScheduledMessages() {
 
                           {/* Embed badge */}
                           {m.embed_data && (
-                            <Badge className="bg-indigo-500/15 text-indigo-600 border-indigo-500/30 w-fit gap-1 text-xs">
+                            <Badge className="bg-primary/15 text-primary border-indigo-500/30 w-fit gap-1 text-xs">
                               <Layout className="h-3 w-3" />
                               Embed
                             </Badge>

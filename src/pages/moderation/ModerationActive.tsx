@@ -21,7 +21,7 @@ export function ModerationActive() {
       {/* ── Header ── */}
       <div>
         <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Clock className="h-6 w-6 text-blue-500" />
+          <Clock className="h-6 w-6 text-primary" />
           {t("mod_allActions")}
         </h2>
       </div>

@@ -47,7 +47,7 @@ function typeToPayload(t: BackupType) {
 const STATUS_BADGE: Record<string, { cls: string; icon: React.ReactNode; label: string }> = {
   completed:   { cls: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30", icon: <CheckCircle2 className="h-3 w-3" />, label: "Completed" },
   failed:      { cls: "bg-red-500/15 text-red-500 border-red-500/30",             icon: <XCircle className="h-3 w-3" />,      label: "Failed" },
-  in_progress: { cls: "bg-blue-500/15 text-blue-500 border-blue-500/30",          icon: <Loader2 className="h-3 w-3 animate-spin" />, label: "In progress" },
+  in_progress: { cls: "bg-primary/15 text-primary border-primary/30",          icon: <Loader2 className="h-3 w-3 animate-spin" />, label: "In progress" },
 };
 
 // ── Main BackupPage ────────────────────────────────────────────────────────

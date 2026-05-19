@@ -380,8 +380,8 @@ export function PremiumPaymentConfig() {
                 type="button"
                 className="flex items-center gap-3 text-left w-full"
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
-                  <CreditCard className="h-5 w-5 text-blue-500" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                  <CreditCard className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <CardTitle className="text-base">PayPal (Auto)</CardTitle>

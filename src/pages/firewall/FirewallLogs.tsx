@@ -59,8 +59,8 @@ interface FirewallStats {
 }
 
 const BLOCKED_BY_CONFIG: Record<string, { label: string; icon: typeof Shield; color: string }> = {
-  vpn: { label: "VPN", icon: Globe, color: "bg-blue-500/10 text-blue-500" },
-  alt: { label: "Alt Account", icon: User, color: "bg-purple-500/10 text-purple-500" },
+  vpn: { label: "VPN", icon: Globe, color: "bg-primary/10 text-primary" },
+  alt: { label: "Alt Account", icon: User, color: "bg-secondary/10 text-secondary" },
   firewall: { label: "Firewall Rule", icon: Shield, color: "bg-red-500/10 text-red-500" },
   age: { label: "Account Age", icon: KeyRound, color: "bg-orange-500/10 text-orange-500" },
   captcha: { label: "Captcha", icon: Captions, color: "bg-yellow-500/10 text-yellow-500" },

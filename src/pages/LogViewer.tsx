@@ -72,9 +72,9 @@ const CATEGORY_META: Record<
   string,
   { labelKey: string; icon: React.ElementType; color: string }
 > = {
-  message: { labelKey: "logViewer_messages", icon: MessageSquare, color: "text-blue-500" },
+  message: { labelKey: "logViewer_messages", icon: MessageSquare, color: "text-primary" },
   voice: { labelKey: "logViewer_voice", icon: Mic, color: "text-green-500" },
-  member: { labelKey: "logViewer_members", icon: Users, color: "text-purple-500" },
+  member: { labelKey: "logViewer_members", icon: Users, color: "text-secondary" },
   server: { labelKey: "logViewer_server", icon: Server, color: "text-orange-500" },
 };
 

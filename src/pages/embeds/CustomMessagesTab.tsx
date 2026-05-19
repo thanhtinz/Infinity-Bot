@@ -207,7 +207,7 @@ export function CustomMessagesTab() {
             {/* Add dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="default" className="bg-indigo-600 hover:bg-indigo-700 gap-1">
+                <Button size="sm" variant="default" className="bg-primary hover:bg-primary/90 gap-1">
                   <Plus className="h-3.5 w-3.5" />{t("embed_add")}<ChevronDown className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>

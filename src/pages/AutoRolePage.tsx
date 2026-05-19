@@ -40,8 +40,8 @@ const TRIGGER_LABELS: Record<string, string> = {
 
 const TRIGGER_COLORS: Record<string, string> = {
   join: "bg-green-500/15 text-green-600 dark:text-green-400",
-  delay: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  bot: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
+  delay: "bg-primary/15 text-primary dark:text-primary/80",
+  bot: "bg-secondary/15 text-secondary dark:text-secondary/80",
 };
 
 function formatDelay(seconds?: number) {

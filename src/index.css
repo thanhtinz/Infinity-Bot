@@ -102,6 +102,33 @@
   }
 }
 
+/* ── Global card override — Yuri shadows ────────────────────── */
+@layer base {
+  [data-slot="card"],
+  .card,
+  div[class*="rounded-lg border bg-card"] {
+    box-shadow: var(--card-shadow);
+    border-color: hsl(var(--border));
+    border-radius: var(--radius);
+    transition: box-shadow 0.3s ease;
+  }
+}
+
+/* ── Switch active color → teal ─────────────────────────────── */
+@layer base {
+  button[role="switch"][data-state="checked"] {
+    background-color: hsl(var(--primary)) !important;
+  }
+}
+
+/* ── Tabs — teal underline indicator ────────────────────────── */
+@layer base {
+  [role="tab"][data-state="active"] {
+    border-bottom-color: hsl(var(--primary));
+    color: hsl(var(--primary));
+  }
+}
+
 /* ── Scrollbar ──────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
