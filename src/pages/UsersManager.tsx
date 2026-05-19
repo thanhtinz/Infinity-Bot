@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiTextarea } from "@/components/EmojiInput";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
@@ -328,7 +328,7 @@ export function UsersManager() {
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>{t("users_ban")}</Label>
-              <Textarea
+              <EmojiTextarea
                 placeholder={t("users_ban")}
                 value={banReason}
                 onChange={(e) => setBanReason(e.target.value)}

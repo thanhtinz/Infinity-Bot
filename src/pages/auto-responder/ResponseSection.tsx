@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -171,7 +171,7 @@ export function ResponseSection({
       {hasText && (
         <div className="space-y-2">
           <Label>{t("ar_responseContent")}</Label>
-          <Textarea
+          <EmojiTextarea
             value={form.response_text}
             onChange={(e) =>
               setForm((p) => ({ ...p, response_text: e.target.value }))
@@ -188,7 +188,7 @@ export function ResponseSection({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>{t("ar_titleEmbed")}</Label>
-            <Input
+            <EmojiInput
               value={form.response_embed.title}
               onChange={(e) =>
                 setForm((p) => ({
@@ -205,7 +205,7 @@ export function ResponseSection({
 
           <div className="space-y-2">
             <Label>{t("description")}</Label>
-            <Textarea
+            <EmojiTextarea
               value={form.response_embed.description}
               onChange={(e) =>
                 setForm((p) => ({

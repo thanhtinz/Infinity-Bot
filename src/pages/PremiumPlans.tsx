@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiTextarea } from "@/components/EmojiInput";
 import {
   Select,
   SelectContent,
@@ -467,7 +467,7 @@ export function PremiumPlans() {
 
             <div className="space-y-2">
               <Label htmlFor="plan-description">Description</Label>
-              <Textarea
+              <EmojiTextarea
                 id="plan-description"
                 value={form.description}
                 onChange={(e) => updateField("description", e.target.value)}

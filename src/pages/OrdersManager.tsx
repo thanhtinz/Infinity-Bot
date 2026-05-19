@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiTextarea } from "@/components/EmojiInput";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { RefreshCw, Plus, ShoppingCart, User2, Truck, ExternalLink, Copy } from "lucide-react";
@@ -437,7 +437,7 @@ export function OrdersManager() {
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>{t("dmContent")}</Label>
-              <Textarea
+              <EmojiTextarea
                 placeholder={t("dmContent")}
                 value={dmContent}
                 onChange={(e) => setDmContent(e.target.value)}

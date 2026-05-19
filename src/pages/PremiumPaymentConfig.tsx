@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiTextarea } from "@/components/EmojiInput";
 import {
   Select,
   SelectContent,
@@ -528,7 +528,7 @@ export function PremiumPaymentConfig() {
                 <Label htmlFor="premium-payment-instructions">
                   Payment instructions
                 </Label>
-                <Textarea
+                <EmojiTextarea
                   id="premium-payment-instructions"
                   value={form.premium_payment_instructions}
                   onChange={(e) =>

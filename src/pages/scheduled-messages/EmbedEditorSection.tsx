@@ -1,6 +1,6 @@
-import { Input } from "@/components/ui/input";
+import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   ChevronDown,
@@ -121,7 +121,7 @@ export function EmbedEditorSection({
             {/* Title */}
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">{t("scheduler_titleLabel")}</Label>
-              <Input
+              <EmojiInput
                 value={embedData.title}
                 onChange={(e) =>
                   setForm((f) => ({
@@ -141,7 +141,7 @@ export function EmbedEditorSection({
                   {embedData.description.length}/4096
                 </span>
               </div>
-              <Textarea
+              <EmojiTextarea
                 value={embedData.description}
                 onChange={(e) =>
                   setForm((f) => ({
@@ -234,7 +234,7 @@ export function EmbedEditorSection({
           <div className="px-4 pb-4 space-y-3">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">{t("scheduler_authorName")}</Label>
-              <Input
+              <EmojiInput
                 value={embedData.author_name}
                 onChange={(e) =>
                   setForm((f) => ({
@@ -307,7 +307,7 @@ export function EmbedEditorSection({
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
                     <Label className="text-xs">{t("scheduler_nameLabel")}</Label>
-                    <Input
+                    <EmojiInput
                       value={field.name}
                       onChange={(e) =>
                         updateEmbedField(idx, { name: e.target.value })
@@ -318,7 +318,7 @@ export function EmbedEditorSection({
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">{t("scheduler_valueLabel")}</Label>
-                    <Input
+                    <EmojiInput
                       value={field.value}
                       onChange={(e) =>
                         updateEmbedField(idx, { value: e.target.value })
@@ -439,7 +439,7 @@ export function EmbedEditorSection({
                   {embedData.footer.length}/2048
                 </span>
               </div>
-              <Input
+              <EmojiInput
                 value={embedData.footer}
                 onChange={(e) =>
                   setForm((f) => ({

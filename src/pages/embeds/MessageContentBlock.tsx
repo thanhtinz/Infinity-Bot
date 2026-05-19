@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import { Switch } from "@/components/ui/switch";
 import {
   ChevronDown, ChevronRight, BellOff,
@@ -40,7 +40,7 @@ export function MessageContentBlock({
             <Label className="text-xs font-semibold">{t("embed_content")}</Label>
             <span className="text-[11px] text-muted-foreground">{form.content.length}/2000</span>
           </div>
-          <Textarea
+          <EmojiTextarea
             placeholder={t("embed_contentPlaceholder")}
             value={form.content ?? ""}
             onChange={(e) => onFormChange((f) => ({ ...f, content: e.target.value }))}
@@ -59,7 +59,7 @@ export function MessageContentBlock({
           </button>
           {threadOpen && (
             <div className="px-4 pb-4">
-              <Input placeholder={t("embed_nameThreadPlaceholder")} value={form.thread_name ?? ""}
+              <EmojiInput placeholder={t("embed_nameThreadPlaceholder")} value={form.thread_name ?? ""}
                 onChange={(e) => onFormChange((f) => ({ ...f, thread_name: e.target.value }))} className="text-sm" />
             </div>
           )}
@@ -76,7 +76,7 @@ export function MessageContentBlock({
             <div className="px-4 pb-4 space-y-2">
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">{t("embed_webhookUsername")}</Label>
-                <Input placeholder={t("embed_displayNamePlaceholder")} value={form.webhook_username ?? ""}
+                <EmojiInput placeholder={t("embed_displayNamePlaceholder")} value={form.webhook_username ?? ""}
                   onChange={(e) => onFormChange((f) => ({ ...f, webhook_username: e.target.value }))} className="text-sm" />
               </div>
               <div className="space-y-1">

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EmojiInput } from "@/components/EmojiInput";
 import { Label } from "@/components/ui/label";
 import { RoleSelect, MultiRoleSelect } from "@/components/RoleSelect";
 import { ChannelSelect } from "@/components/ChannelSelect";
@@ -788,26 +789,26 @@ export function VerifyConfig() {
               {/* Content */}
               <div className="rounded-xl border border-border bg-card p-5 space-y-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5"><Type className="h-3.5 w-3.5" />Content</p>
-                <div><Label className="text-xs text-muted-foreground mb-1.5 block">Page Title</Label><Input value={configForm.page_title} onChange={e => update({ page_title: e.target.value })} placeholder="Verify Your Account" /></div>
-                <div><Label className="text-xs text-muted-foreground mb-1.5 block">Description</Label><Input value={configForm.page_description} onChange={e => update({ page_description: e.target.value })} placeholder="Please verify..." /></div>
+                <div><Label className="text-xs text-muted-foreground mb-1.5 block">Page Title</Label><EmojiInput value={configForm.page_title} onChange={e => update({ page_title: e.target.value })} placeholder="Verify Your Account" /></div>
+                <div><Label className="text-xs text-muted-foreground mb-1.5 block">Description</Label><EmojiInput value={configForm.page_description} onChange={e => update({ page_description: e.target.value })} placeholder="Please verify..." /></div>
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1.5 block">Bio</Label>
                   <textarea value={configForm.bio_description} onChange={e => update({ bio_description: e.target.value })} rows={2}
                     className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label className="text-xs text-muted-foreground mb-1.5 block">Button Text</Label><Input value={configForm.button_text} onChange={e => update({ button_text: e.target.value })} placeholder="Verify with Discord" /></div>
+                  <div><Label className="text-xs text-muted-foreground mb-1.5 block">Button Text</Label><EmojiInput value={configForm.button_text} onChange={e => update({ button_text: e.target.value })} placeholder="Verify with Discord" /></div>
                   <div>
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <Label className="text-xs text-muted-foreground">Footer Text</Label>
                       <PremiumBadge size="xs" />
                     </div>
                     <PremiumGate feature="custom_footer" featureLabel="Custom Footer Text" hasAccess={hasFeature("custom_footer")} isLoading={entLoading} mode="inline">
-                      <Input value={configForm.page_footer_text} onChange={e => update({ page_footer_text: e.target.value })} placeholder="Powered by Infinity Bot" />
+                      <EmojiInput value={configForm.page_footer_text} onChange={e => update({ page_footer_text: e.target.value })} placeholder="Powered by Infinity Bot" />
                     </PremiumGate>
                   </div>
                 </div>
-                <div><Label className="text-xs text-muted-foreground mb-1.5 block">Success Message</Label><Input value={configForm.success_message} onChange={e => update({ success_message: e.target.value })} placeholder="Verified successfully!" /></div>
+                <div><Label className="text-xs text-muted-foreground mb-1.5 block">Success Message</Label><EmojiInput value={configForm.success_message} onChange={e => update({ success_message: e.target.value })} placeholder="Verified successfully!" /></div>
               </div>
 
               {/* Socials */}

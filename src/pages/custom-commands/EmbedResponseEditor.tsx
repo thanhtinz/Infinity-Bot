@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Plus, X } from "lucide-react";
@@ -32,7 +32,7 @@ export function EmbedResponseEditor({
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>{t("cc_titleEmbed")}</Label>
-        <Input
+        <EmojiInput
           value={form.response_embed.title}
           onChange={(e) =>
             onFormChange((p) => ({
@@ -49,7 +49,7 @@ export function EmbedResponseEditor({
 
       <div className="space-y-2">
         <Label>{t("description")}</Label>
-        <Textarea
+        <EmojiTextarea
           value={form.response_embed.description}
           onChange={(e) =>
             onFormChange((p) => ({
@@ -116,7 +116,7 @@ export function EmbedResponseEditor({
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <Label className="text-xs">{t("cc_author")}</Label>
-            <Input
+            <EmojiInput
               value={form.response_embed.author}
               onChange={(e) =>
                 onFormChange((p) => ({
@@ -133,7 +133,7 @@ export function EmbedResponseEditor({
           </div>
           <div className="space-y-1">
             <Label className="text-xs">{t("cc_footer")}</Label>
-            <Input
+            <EmojiInput
               value={form.response_embed.footer}
               onChange={(e) =>
                 onFormChange((p) => ({
@@ -229,7 +229,7 @@ export function EmbedResponseEditor({
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
                   <Label className="text-xs">{t("name")}</Label>
-                  <Input
+                  <EmojiInput
                     value={field.name}
                     onChange={(e) =>
                       onUpdateField(idx, { name: e.target.value })
@@ -240,7 +240,7 @@ export function EmbedResponseEditor({
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">{t("cc_value")}</Label>
-                  <Input
+                  <EmojiInput
                     value={field.value}
                     onChange={(e) =>
                       onUpdateField(idx, { value: e.target.value })

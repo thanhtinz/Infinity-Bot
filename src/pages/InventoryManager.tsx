@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiTextarea } from "@/components/EmojiInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Package, Upload, Trash2, Loader2, AlertTriangle, Warehouse } from "lucide-react";
@@ -373,7 +373,7 @@ export function InventoryManager() {
                   </span>
                 </label>
               </div>
-              <Textarea
+              <EmojiTextarea
                 rows={8}
                 placeholder={"key1\nkey2\nhttps://example.com/code3"}
                 value={uploadContent}

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiTextarea } from "@/components/EmojiInput";
 import {
   Dialog,
   DialogContent,
@@ -131,7 +131,7 @@ export function ModerationNotes() {
               value={newNoteTarget}
               onChange={(e) => setNewNoteTarget(e.target.value)}
             />
-            <Textarea
+            <EmojiTextarea
               placeholder={t("mod_noteContent")}
               value={newNoteContent}
               onChange={(e) => setNewNoteContent(e.target.value)}
@@ -226,7 +226,7 @@ export function ModerationNotes() {
           <DialogHeader>
             <DialogTitle>{t("mod_editNote")}</DialogTitle>
           </DialogHeader>
-          <Textarea
+          <EmojiTextarea
             value={editNoteContent}
             onChange={(e) => setEditNoteContent(e.target.value)}
             rows={4}

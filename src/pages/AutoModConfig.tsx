@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiTextarea } from "@/components/EmojiInput";
 import {
   Select,
   SelectContent,
@@ -322,7 +322,7 @@ export function AutoModConfig() {
             <CardContent className="space-y-4 pt-0">
               <div className="space-y-2">
                 <Label>{t("automod_whitelist")}</Label>
-                <Textarea
+                <EmojiTextarea
                   value={antiLinkWhitelist}
                   onChange={(e) => setAntiLinkWhitelist(e.target.value)}
                   placeholder={"discord.com\ngithub.com"}
@@ -364,7 +364,7 @@ export function AutoModConfig() {
             <CardContent className="space-y-4 pt-0">
               <div className="space-y-2">
                 <Label>{t("automod_badWordsListLabel")}</Label>
-                <Textarea
+                <EmojiTextarea
                   value={badWordsList}
                   onChange={(e) => setBadWordsList(e.target.value)}
                   placeholder={"badword1\nbadword2"}

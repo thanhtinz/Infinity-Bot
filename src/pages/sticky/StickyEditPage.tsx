@@ -6,10 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
-import { EmojiPicker } from "@/components/EmojiPicker";
 import {
   ArrowLeft,
   Hash,
@@ -359,18 +358,12 @@ export function StickyEditPage() {
         {!form.embed_enabled && (
           <div className="space-y-2">
             <Label>Content</Label>
-            <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-              <Textarea
-                value={form.content}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, content: e.target.value }))
-                }
-                placeholder="Sticky message content..."
-                rows={4}
-                className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
-              />
-              <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, content: f.content + em }))} />
-            </div>
+            <EmojiTextarea
+              value={form.content}
+              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+              placeholder="Sticky message content..."
+              rows={4}
+            />
           </div>
         )}
 
@@ -379,36 +372,21 @@ export function StickyEditPage() {
           <div className="space-y-3">
             <div className="space-y-2">
               <Label>Title</Label>
-              <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                <Input
-                  value={form.embed_title}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, embed_title: e.target.value }))
-                  }
-                  placeholder="Title embed"
-                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-                <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, embed_title: f.embed_title + em }))} />
-              </div>
+              <EmojiInput
+                value={form.embed_title}
+                onChange={(e) => setForm((f) => ({ ...f, embed_title: e.target.value }))}
+                placeholder="Title embed"
+              />
             </div>
 
             <div className="space-y-2">
               <Label>Description</Label>
-              <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                <Textarea
-                  value={form.embed_description}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      embed_description: e.target.value,
-                    }))
-                  }
-                  placeholder="Description embed..."
-                  rows={4}
-                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
-                />
-                <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, embed_description: f.embed_description + em }))} />
-              </div>
+              <EmojiTextarea
+                value={form.embed_description}
+                onChange={(e) => setForm((f) => ({ ...f, embed_description: e.target.value }))}
+                placeholder="Description embed..."
+                rows={4}
+              />
             </div>
 
             <div className="space-y-2">
@@ -444,17 +422,11 @@ export function StickyEditPage() {
 
             <div className="space-y-2">
               <Label>Footer</Label>
-              <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                <Input
-                  value={form.embed_footer}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, embed_footer: e.target.value }))
-                  }
-                  placeholder="Embed footer"
-                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-                <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, embed_footer: f.embed_footer + em }))} />
-              </div>
+              <EmojiInput
+                value={form.embed_footer}
+                onChange={(e) => setForm((f) => ({ ...f, embed_footer: e.target.value }))}
+                placeholder="Embed footer"
+              />
             </div>
 
             <div className="space-y-2">

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import {
   Select,
   SelectContent,
@@ -1056,7 +1056,7 @@ export function PremiumManagement() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-notes">Notes</Label>
-              <Textarea
+              <EmojiTextarea
                 id="edit-notes"
                 value={editNotes}
                 onChange={(e) => setEditNotes(e.target.value)}
@@ -1173,7 +1173,7 @@ export function PremiumManagement() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="pay-notes">Notes</Label>
-              <Textarea
+              <EmojiTextarea
                 id="pay-notes"
                 value={payNotes}
                 onChange={(e) => setPayNotes(e.target.value)}
@@ -1286,7 +1286,7 @@ export function PremiumManagement() {
             {/* Note */}
             <div className="space-y-1.5">
               <Label>Internal Notes</Label>
-              <Input value={cpNote} onChange={e => setCpNote(e.target.value)} placeholder="For June event..." />
+              <EmojiInput value={cpNote} onChange={e => setCpNote(e.target.value)} placeholder="For June event..." />
             </div>
           </div>
           <DialogFooter>

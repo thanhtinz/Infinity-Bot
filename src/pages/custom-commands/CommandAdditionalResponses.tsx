@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -86,7 +85,7 @@ export function CommandAdditionalResponses({ form, onFormChange, open, onOpenCha
                   </div>
 
                   {resp.type === "text" ? (
-                    <Textarea
+                    <EmojiTextarea
                       value={resp.content ?? ""}
                       onChange={(e) => onFormChange((p) => ({
                         ...p,
@@ -99,7 +98,7 @@ export function CommandAdditionalResponses({ form, onFormChange, open, onOpenCha
                     />
                   ) : (
                     <div className="space-y-2">
-                      <Input
+                      <EmojiInput
                         value={resp.embed?.title ?? ""}
                         onChange={(e) => onFormChange((p) => ({
                           ...p,
@@ -109,7 +108,7 @@ export function CommandAdditionalResponses({ form, onFormChange, open, onOpenCha
                         }))}
                         placeholder="Title embed"
                       />
-                      <Textarea
+                      <EmojiTextarea
                         value={resp.embed?.description ?? ""}
                         onChange={(e) => onFormChange((p) => ({
                           ...p,

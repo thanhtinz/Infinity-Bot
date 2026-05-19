@@ -1,5 +1,5 @@
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiTextarea } from "@/components/EmojiInput";
 import { ChevronDown, ChevronRight, Type, Layout, Variable } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { VARIABLE_GROUPS } from "./ccConstants";
@@ -129,7 +129,7 @@ export function CommandResponseSection({
       {form.response_type === "text" && (
         <div className="space-y-2">
           <Label>{t("cc_content")}</Label>
-          <Textarea
+          <EmojiTextarea
             value={form.response_text}
             onChange={(e) =>
               onFormChange((p) => ({ ...p, response_text: e.target.value }))

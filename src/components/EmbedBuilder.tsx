@@ -6,10 +6,9 @@ import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { EmojiPicker } from "@/components/EmojiPicker";
 import { Plus, Trash2, ChevronDown, ChevronRight, Image } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -214,31 +213,23 @@ export function EmbedBuilder({
   const titleSection = (
     <div className="space-y-2">
       <Label className="text-sm">Title</Label>
-      <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-        <Input
-          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-          value={data.title}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => update({ title: e.target.value })}
-          placeholder="Embed title"
-        />
-        <EmojiPicker onSelect={(em) => update({ title: data.title + em })} />
-      </div>
+      <EmojiInput
+        value={data.title}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => update({ title: e.target.value })}
+        placeholder="Embed title"
+      />
     </div>
   );
 
   const descriptionSection = (
     <div className="space-y-2">
       <Label className="text-sm">Description</Label>
-      <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-        <Textarea
-          value={data.description}
-          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => update({ description: e.target.value })}
-          placeholder="Embed content..."
-          rows={3}
-          className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-        />
-        <EmojiPicker onSelect={(em) => update({ description: data.description + em })} />
-      </div>
+      <EmojiTextarea
+        value={data.description}
+        onChange={(e: ChangeEvent<HTMLTextAreaElement>) => update({ description: e.target.value })}
+        placeholder="Embed content..."
+        rows={3}
+      />
       {variableHint && (
         <p className="text-xs text-muted-foreground">{variableHint}</p>
       )}
@@ -248,15 +239,11 @@ export function EmbedBuilder({
   const footerSection = (
     <div className="space-y-2">
       <Label className="text-sm">Footer</Label>
-      <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-        <Input
-          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-          value={data.footer}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => update({ footer: e.target.value })}
-          placeholder="Footer text..."
-        />
-        <EmojiPicker onSelect={(em) => update({ footer: data.footer + em })} />
-      </div>
+      <EmojiInput
+        value={data.footer}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => update({ footer: e.target.value })}
+        placeholder="Footer text..."
+      />
     </div>
   );
 
@@ -317,25 +304,19 @@ export function EmbedBuilder({
                 <Trash2 className="w-3.5 h-3.5" />
               </Button>
             </div>
-            <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-              <Input
-                value={field.name}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => updateField(idx, "name", e.target.value)}
-                placeholder="Field name"
-                className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
-              <EmojiPicker onSelect={(em) => updateField(idx, "name", field.name + em)} />
-            </div>
-            <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-              <Textarea
-                value={field.value}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => updateField(idx, "value", e.target.value)}
-                placeholder="Field value"
-                rows={2}
-                className="text-sm flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
-              <EmojiPicker onSelect={(em) => updateField(idx, "value", field.value + em)} />
-            </div>
+            <EmojiInput
+              value={field.name}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => updateField(idx, "name", e.target.value)}
+              placeholder="Field name"
+              className="text-sm"
+            />
+            <EmojiTextarea
+              value={field.value}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => updateField(idx, "value", e.target.value)}
+              placeholder="Field value"
+              rows={2}
+              className="text-sm"
+            />
             <div className="flex items-center gap-2">
               <Switch
                 checked={field.inline}

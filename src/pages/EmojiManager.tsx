@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiTextarea } from "@/components/EmojiInput";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -695,7 +695,7 @@ function StickerUploadDialog({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="sticker-desc">{t("description")}</Label>
-            <Textarea
+            <EmojiTextarea
               id="sticker-desc"
               placeholder={t("emoji_stickerDesc")}
               value={description}

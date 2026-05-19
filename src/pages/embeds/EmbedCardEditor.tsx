@@ -1,13 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import {
   ChevronDown, ChevronRight,
   Plus, Trash2, Copy,
   ArrowUp, ArrowDown,
 } from "lucide-react";
-import { EmojiPicker } from "@/components/EmojiPicker";
 import type { EmbedData, EmbedField, EmbedOpenState } from "./embedTypes";
 import { defaultEmbedOpen } from "./customMessagesHelpers";
 import { useT } from "@/i18n";
@@ -71,11 +70,8 @@ export function EmbedCardEditor({
                     <div className="px-3 pb-3 space-y-2">
                       <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground">{t("embed_authorName")} <span className="text-[10px]">{emb.author.length}/256</span></Label>
-                        <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                          <Input className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm" placeholder={t("embed_authorName")} maxLength={256}
-                            value={emb.author ?? ""} onChange={(e) => onUpdateEmbed(idx, { author: e.target.value })} />
-                          <EmojiPicker onSelect={(em) => onUpdateEmbed(idx, { author: emb.author + em })} />
-                        </div>
+                        <EmojiInput className="text-sm" placeholder={t("embed_authorName")} maxLength={256}
+                          value={emb.author ?? ""} onChange={(e) => onUpdateEmbed(idx, { author: e.target.value })} />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs text-muted-foreground">{t("embed_iconUrl")}</Label>
@@ -92,22 +88,16 @@ export function EmbedCardEditor({
                       <Label className="text-xs text-muted-foreground">{t("embed_title")}</Label>
                       <span className="text-[11px] text-muted-foreground">{emb.title.length}/256</span>
                     </div>
-                    <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                      <Input className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm" placeholder={t("embed_titleEmbedPlaceholder")} maxLength={256}
+                    <EmojiInput className="text-sm" placeholder={t("embed_titleEmbedPlaceholder")} maxLength={256}
                         value={emb.title ?? ""} onChange={(e) => onUpdateEmbed(idx, { title: e.target.value })} />
-                      <EmojiPicker onSelect={(em) => onUpdateEmbed(idx, { title: emb.title + em })} />
-                    </div>
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs text-muted-foreground">{t("embed_description")}</Label>
                       <span className="text-[11px] text-muted-foreground">{emb.description.length}/4096</span>
                     </div>
-                    <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                      <Textarea className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 text-sm resize-y" placeholder={t("embed_descriptionPlaceholder")} rows={4} maxLength={4096}
+                    <EmojiTextarea className="text-sm resize-y" placeholder={t("embed_descriptionPlaceholder")} rows={4} maxLength={4096}
                         value={emb.description ?? ""} onChange={(e) => onUpdateEmbed(idx, { description: e.target.value })} />
-                      <EmojiPicker onSelect={(em) => onUpdateEmbed(idx, { description: emb.description + em })} />
-                    </div>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">{t("embed_colors")}</Label>
@@ -147,11 +137,8 @@ export function EmbedCardEditor({
                     <Label className="text-xs text-muted-foreground">{t("embed_footer")}</Label>
                     <span className="text-[11px] text-muted-foreground">{emb.footer.length}/2048</span>
                   </div>
-                  <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                    <Input className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm" placeholder={t("embed_footerContent")} maxLength={2048}
-                      value={emb.footer ?? ""} onChange={(e) => onUpdateEmbed(idx, { footer: e.target.value })} />
-                    <EmojiPicker onSelect={(em) => onUpdateEmbed(idx, { footer: emb.footer + em })} />
-                  </div>
+                  <EmojiInput className="text-sm" placeholder={t("embed_footerContent")} maxLength={2048}
+                    value={emb.footer ?? ""} onChange={(e) => onUpdateEmbed(idx, { footer: e.target.value })} />
                 </div>
 
                 {/* Fields — collapsible */}
@@ -172,16 +159,10 @@ export function EmbedCardEditor({
                             </Button>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
-                            <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                              <Input placeholder={t("embed_nameFieldPlaceholder")} value={field.name ?? ""} onChange={(e) => onUpdateField(idx, fi, "name", e.target.value)}
-                                className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
-                              <EmojiPicker onSelect={(em) => onUpdateField(idx, fi, "name", field.name + em)} />
-                            </div>
-                            <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                              <Input placeholder={t("embed_value")} value={field.value ?? ""} onChange={(e) => onUpdateField(idx, fi, "value", e.target.value)}
-                                className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
-                              <EmojiPicker onSelect={(em) => onUpdateField(idx, fi, "value", field.value + em)} />
-                            </div>
+                            <EmojiInput placeholder={t("embed_nameFieldPlaceholder")} value={field.name ?? ""} onChange={(e) => onUpdateField(idx, fi, "name", e.target.value)}
+                              className="text-sm" />
+                            <EmojiInput placeholder={t("embed_value")} value={field.value ?? ""} onChange={(e) => onUpdateField(idx, fi, "value", e.target.value)}
+                              className="text-sm" />
                           </div>
                           <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
                             <input type="checkbox" checked={field.inline} onChange={(e) => onUpdateField(idx, fi, "inline", e.target.checked)} className="rounded border-input" />

@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiTextarea } from "@/components/EmojiInput";
 import {
   Select,
   SelectContent,
@@ -971,7 +971,7 @@ export function PaymentConfig() {
                     <Label htmlFor="manual-instructions">
                       Payment Instructions
                     </Label>
-                    <Textarea
+                    <EmojiTextarea
                       id="manual-instructions"
                       value={form.manual_instructions}
                       onChange={(e) =>

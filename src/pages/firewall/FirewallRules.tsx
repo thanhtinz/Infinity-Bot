@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiTextarea } from "@/components/EmojiInput";
 import {
   Select,
   SelectContent,
@@ -501,7 +501,7 @@ export function FirewallRules() {
             {/* Reason */}
             <div className="space-y-1.5">
               <Label>Reason (optional)</Label>
-              <Textarea
+              <EmojiTextarea
                 placeholder="Why is this rule being added?"
                 value={newReason}
                 onChange={(e) => setNewReason(e.target.value)}

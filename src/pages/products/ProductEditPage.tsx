@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
@@ -186,8 +186,7 @@ function ProductInfoForm({ form, packages, addPkg, updatePkg, removePkg, onSubmi
           <FormItem>
             <FormLabel>Product name</FormLabel>
             <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-              <FormControl><Input {...field} placeholder="VD: VIP Discord" className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0" /></FormControl>
-              <EmojiPicker onSelect={(em) => field.onChange(field.value + em)} />
+              <FormControl><EmojiInput {...field} placeholder="VD: VIP Discord" className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0" /></FormControl>
             </div>
             <FormMessage />
           </FormItem>
@@ -217,8 +216,7 @@ function ProductInfoForm({ form, packages, addPkg, updatePkg, removePkg, onSubmi
           <FormItem>
             <FormLabel>Description</FormLabel>
             <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-              <FormControl><Textarea {...field} rows={2} placeholder="Short description..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
-              <EmojiPicker onSelect={(em) => field.onChange((field.value || "") + em)} />
+              <FormControl><EmojiTextarea {...field} rows={2} placeholder="Short description..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
             </div>
             <FormMessage />
           </FormItem>
@@ -229,8 +227,7 @@ function ProductInfoForm({ form, packages, addPkg, updatePkg, removePkg, onSubmi
           <FormItem>
             <FormLabel>Note <span className="text-xs text-muted-foreground font-normal">(internal / post-purchase instructions)</span></FormLabel>
             <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-              <FormControl><Textarea {...field} rows={3} placeholder="e.g. Delivery instructions, download links, activation info..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
-              <EmojiPicker onSelect={(em) => field.onChange((field.value || "") + em)} />
+              <FormControl><EmojiTextarea {...field} rows={3} placeholder="e.g. Delivery instructions, download links, activation info..." className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1" /></FormControl>
             </div>
             <FormMessage />
           </FormItem>

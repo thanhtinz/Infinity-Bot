@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -29,7 +29,6 @@ import {
   Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { EmojiPicker } from "@/components/EmojiPicker";
 import type { FormState, EmbedField, EmbedTemplate, EmbedsManagerProps, EmbedEventDef } from "./embeds/embedTypes";
 import { EMBED_EVENTS, EVENT_GROUPS, VARIABLES } from "./embeds/embedEvents";
 import { DiscordPreview, defaultForm } from "./embeds/DiscordPreview";
@@ -432,7 +431,7 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                     />
                   </div>
                 </div>
-                <Textarea
+                <EmojiTextarea
                   value={form.text_template ?? ""}
                   onChange={(e) => setForm((f) => ({ ...f, text_template: e.target.value }))}
                   placeholder="Message content text with {variable}...&#10;&#10;E.g. **Order #{order.id}** by {user.mention} has been created!"
@@ -493,15 +492,11 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                 {/* Title */}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">{t("embeds_title_field")}</Label>
-                  <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                    <Input
-                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder={t("embeds_title_field") + "..."}
-                      value={form.title ?? ""}
-                      onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                    />
-                    <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, title: f.title + em }))} />
-                  </div>
+                  <EmojiInput
+                    placeholder={t("embeds_title_field") + "..."}
+                    value={form.title ?? ""}
+                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  />
                 </div>
                 {/* Description with char count */}
                 <div className="space-y-1">
@@ -509,16 +504,13 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                     <Label className="text-xs text-muted-foreground">{t("embeds_description")}</Label>
                     <span className="text-[11px] text-muted-foreground">{form.description.length}/4096</span>
                   </div>
-                  <div className="flex items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                    <Textarea
-                      placeholder={t("embeds_description") + "..."}
-                      value={form.description ?? ""}
-                      onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                      rows={5}
-                      className="resize-y flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                    />
-                    <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, description: f.description + em }))} />
-                  </div>
+                  <EmojiTextarea
+                    placeholder={t("embeds_description") + "..."}
+                    value={form.description ?? ""}
+                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    rows={5}
+                    className="resize-y"
+                  />
                 </div>
                 {/* Color */}
                 <div className="space-y-1">
@@ -544,15 +536,11 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                     <Label className="text-xs text-muted-foreground">{t("embeds_footer")}</Label>
                     <span className="text-[11px] text-muted-foreground">{form.footer.length}/2048</span>
                   </div>
-                  <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                    <Input
-                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder={t("embeds_footer")}
-                      value={form.footer ?? ""}
-                      onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
-                    />
-                    <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, footer: f.footer + em }))} />
-                  </div>
+                  <EmojiInput
+                    placeholder={t("embeds_footer")}
+                    value={form.footer ?? ""}
+                    onChange={(e) => setForm((f) => ({ ...f, footer: e.target.value }))}
+                  />
                 </div>
               </div>
             )}
@@ -574,15 +562,11 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
               <div className="px-4 pb-4 space-y-3">
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">{t("authorName")}</Label>
-                  <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                    <Input
-                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder={t("authorName")}
-                      value={form.author ?? ""}
-                      onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
-                    />
-                    <EmojiPicker onSelect={(em) => setForm((f) => ({ ...f, author: f.author + em }))} />
-                  </div>
+                  <EmojiInput
+                    placeholder={t("authorName")}
+                    value={form.author ?? ""}
+                    onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">{t("authorIconUrl")}</Label>
@@ -658,24 +642,18 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                       </Button>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                        <Input
+                      <EmojiInput
                           placeholder={t("fieldName")}
                           value={field.name}
                           onChange={(e) => updateField(i, "name", e.target.value)}
-                          className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                          className="text-sm"
                         />
-                        <EmojiPicker onSelect={(em) => updateField(i, "name", field.name + em)} />
-                      </div>
-                      <div className="flex items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
-                        <Input
+                      <EmojiInput
                           placeholder={t("value")}
                           value={field.value}
                           onChange={(e) => updateField(i, "value", e.target.value)}
-                          className="text-sm border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                          className="text-sm"
                         />
-                        <EmojiPicker onSelect={(em) => updateField(i, "value", field.value + em)} />
-                      </div>
                     </div>
                     <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
                       <input
