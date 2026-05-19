@@ -181,12 +181,15 @@ class Feedback(Base):
     guild_id = Column(String, nullable=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
     stars = Column(Integer)
     content = Column(Text, nullable=True)
+    image_url = Column(String, nullable=True)
     discord_message_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     user = relationship("User", foreign_keys=[user_id])
     product = relationship("Product", foreign_keys=[product_id])
+    order = relationship("Order", foreign_keys=[order_id])
 
 class Warning(Base):
     __tablename__ = "warnings"
@@ -849,6 +852,8 @@ class StaffPermission(Base):
     can_backup = Column(Boolean, default=False)
     can_config = Column(Boolean, default=False)
     can_ai = Column(Boolean, default=False)
+    can_forms = Column(Boolean, default=False)
+    can_reminders = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     __table_args__ = (UniqueConstraint("guild_id", "role_id"),)
 
@@ -1055,3 +1060,127 @@ class AIChatHistory(Base):
     role       = Column(String, nullable=False)    # user|assistant
     content    = Column(Text, nullable=False)
     timestamp  = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+
+
+# ── Auto Role ───────────────────────────────────────────────────────────────
+
+class AutoRole(Base):
+    __tablename__ = "auto_roles"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    role_id = Column(String, nullable=False)
+    trigger = Column(String, default="join")        # join | delay | bot
+    delay_seconds = Column(Integer, default=0)
+    enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+# ── Forms / Application ────────────────────────────────────────────────────
+
+class FormTemplate(Base):
+    __tablename__ = "form_templates"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    questions = Column(JSON, default=list)           # [{label, placeholder, required, style}]
+    response_channel_id = Column(String, nullable=True)
+    review_role_id = Column(String, nullable=True)
+    active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+class FormSubmission(Base):
+    __tablename__ = "form_submissions"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    template_id = Column(Integer, ForeignKey("form_templates.id", ondelete="CASCADE"))
+    user_id = Column(String, nullable=False)
+    username = Column(String, nullable=True)
+    answers = Column(JSON, default=list)             # [{question, answer}]
+    status = Column(String, default="pending")       # pending | approved | rejected
+    reviewer_id = Column(String, nullable=True)
+    review_note = Column(Text, nullable=True)
+    reviewed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    template = relationship("FormTemplate")
+
+
+# ── Reminder / Todo ─────────────────────────────────────────────────────────
+
+class Reminder(Base):
+    __tablename__ = "reminders"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    user_id = Column(String, nullable=False)
+    channel_id = Column(String, nullable=True)
+    message = Column(Text, nullable=False)
+    remind_at = Column(DateTime, nullable=False, index=True)
+    recurring = Column(String, nullable=True)        # None | daily | weekly
+    completed = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+class TodoItem(Base):
+    __tablename__ = "todo_items"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    user_id = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    done = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+# ── Poll System ─────────────────────────────────────────────────────────────
+
+class Poll(Base):
+    __tablename__ = "polls"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    channel_id = Column(String, nullable=False)
+    message_id = Column(String, nullable=True)
+    question = Column(Text, nullable=False)
+    options = Column(JSON, default=list)             # ["option1", "option2", ...]
+    end_time = Column(DateTime, nullable=True)
+    anonymous = Column(Boolean, default=False)
+    multiple_choice = Column(Boolean, default=False)
+    creator_id = Column(String, nullable=False)
+    ended = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+class PollVote(Base):
+    __tablename__ = "poll_votes"
+    id = Column(Integer, primary_key=True)
+    poll_id = Column(Integer, ForeignKey("polls.id", ondelete="CASCADE"), index=True)
+    user_id = Column(String, nullable=False)
+    option_index = Column(Integer, nullable=False)
+    __table_args__ = (UniqueConstraint("poll_id", "user_id", "option_index", name="uq_poll_vote"),)
+
+
+# ── Social Feeds ────────────────────────────────────────────────────────────
+
+class SocialFeed(Base):
+    __tablename__ = "social_feeds"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    platform = Column(String, nullable=False)        # youtube | twitch | rss
+    feed_url = Column(String, nullable=False)         # channel URL or RSS URL
+    discord_channel_id = Column(String, nullable=False)
+    custom_message = Column(Text, nullable=True)      # template with {title}, {url}, {author}
+    last_item_id = Column(String, nullable=True)
+    last_checked = Column(DateTime, nullable=True)
+    enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+# ── Server Stats Channels ──────────────────────────────────────────────────
+
+class StatsChannel(Base):
+    __tablename__ = "stats_channels"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    channel_id = Column(String, nullable=False)
+    stat_type = Column(String, nullable=False)       # members | online | boosts | roles | channels | avg_rating
+    format_template = Column(String, default="{value}")  # e.g. "Members: {value}"
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)

@@ -32,6 +32,8 @@ interface StaffPerm {
   can_backup: boolean;
   can_config: boolean;
   can_ai: boolean;
+  can_forms: boolean;
+  can_reminders: boolean;
 }
 
 const PERM_LABELS: { key: keyof StaffPerm; label: string; desc: string }[] = [
@@ -45,6 +47,8 @@ const PERM_LABELS: { key: keyof StaffPerm; label: string; desc: string }[] = [
   { key: "can_backup", label: "Backup", desc: "Server backups, restore, schedule" },
   { key: "can_config", label: "Config", desc: "Bot settings, channels, PayOS" },
   { key: "can_ai", label: "AI Chat", desc: "AI assistant config, training, history" },
+  { key: "can_forms", label: "Forms", desc: "Form templates, submissions, reviews" },
+  { key: "can_reminders", label: "Reminders", desc: "View and manage reminders" },
 ];
 
 const emptyPerms: Record<string, boolean> = {
@@ -58,6 +62,8 @@ const emptyPerms: Record<string, boolean> = {
   can_backup: false,
   can_config: false,
   can_ai: false,
+  can_forms: false,
+  can_reminders: false,
 };
 
 export function StaffPermissions() {

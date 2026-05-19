@@ -3115,4 +3115,172 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
+  // ── Auto Role ──
+  autorole_assign: {
+    vi: {
+      title: "Role Assigned",
+      description: "{user.mention} has been assigned the role **{role.name}**.",
+      color: "#57F287",
+      author: "", author_icon_url: "", footer: "Auto Role", thumbnail_url: "", image_url: "",
+      fields: [],
+      enabled: true,
+    },
+    en: {
+      title: "Role Assigned",
+      description: "{user.mention} has been assigned the role **{role.name}**.",
+      color: "#57F287",
+      author: "", author_icon_url: "", footer: "Auto Role", thumbnail_url: "", image_url: "",
+      fields: [],
+      enabled: true,
+    },
+  },
+  // ── Forms ──
+  form_submitted: {
+    vi: {
+      title: "New Form Submission",
+      description: "{user.mention} submitted the form **{form.title}**.",
+      color: "#5865F2",
+      author: "", author_icon_url: "", footer: "Forms", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Form", value: "{form.title}", inline: true }, { name: "Form ID", value: "{form.id}", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "New Form Submission",
+      description: "{user.mention} submitted the form **{form.title}**.",
+      color: "#5865F2",
+      author: "", author_icon_url: "", footer: "Forms", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Form", value: "{form.title}", inline: true }, { name: "Form ID", value: "{form.id}", inline: true }],
+      enabled: true,
+    },
+  },
+  form_approved: {
+    vi: {
+      title: "Form Approved",
+      description: "Your submission for **{form.title}** has been approved.",
+      color: "#57F287",
+      author: "", author_icon_url: "", footer: "Forms", thumbnail_url: "", image_url: "",
+      fields: [],
+      enabled: true,
+    },
+    en: {
+      title: "Form Approved",
+      description: "Your submission for **{form.title}** has been approved.",
+      color: "#57F287",
+      author: "", author_icon_url: "", footer: "Forms", thumbnail_url: "", image_url: "",
+      fields: [],
+      enabled: true,
+    },
+  },
+  form_rejected: {
+    vi: {
+      title: "Form Rejected",
+      description: "Your submission for **{form.title}** has been rejected.",
+      color: "#ED4245",
+      author: "", author_icon_url: "", footer: "Forms", thumbnail_url: "", image_url: "",
+      fields: [],
+      enabled: true,
+    },
+    en: {
+      title: "Form Rejected",
+      description: "Your submission for **{form.title}** has been rejected.",
+      color: "#ED4245",
+      author: "", author_icon_url: "", footer: "Forms", thumbnail_url: "", image_url: "",
+      fields: [],
+      enabled: true,
+    },
+  },
+  // ── Reminders ──
+  reminder_fire: {
+    vi: {
+      title: "Reminder",
+      description: "{reminder.message}",
+      color: "#FEE75C",
+      author: "", author_icon_url: "", footer: "Reminder", thumbnail_url: "", image_url: "",
+      fields: [],
+      enabled: true,
+    },
+    en: {
+      title: "Reminder",
+      description: "{reminder.message}",
+      color: "#FEE75C",
+      author: "", author_icon_url: "", footer: "Reminder", thumbnail_url: "", image_url: "",
+      fields: [],
+      enabled: true,
+    },
+  },
+  // ── Polls ──
+  poll_created: {
+    vi: {
+      title: "New Poll",
+      description: "{poll.question}",
+      color: "#5865F2",
+      author: "", author_icon_url: "", footer: "Poll", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Options", value: "{poll.options}", inline: false }],
+      enabled: true,
+    },
+    en: {
+      title: "New Poll",
+      description: "{poll.question}",
+      color: "#5865F2",
+      author: "", author_icon_url: "", footer: "Poll", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Options", value: "{poll.options}", inline: false }],
+      enabled: true,
+    },
+  },
+  poll_ended: {
+    vi: {
+      title: "Poll Ended",
+      description: "{poll.question}",
+      color: "#ED4245",
+      author: "", author_icon_url: "", footer: "Poll", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Results", value: "{poll.results}", inline: false }, { name: "Total Votes", value: "{poll.total_votes}", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "Poll Ended",
+      description: "{poll.question}",
+      color: "#ED4245",
+      author: "", author_icon_url: "", footer: "Poll", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Results", value: "{poll.results}", inline: false }, { name: "Total Votes", value: "{poll.total_votes}", inline: true }],
+      enabled: true,
+    },
+  },
+  // ── Social Feeds ──
+  social_feed_post: {
+    vi: {
+      title: "New Post from {feed.platform}",
+      description: "{feed.title}",
+      color: "#5865F2",
+      author: "", author_icon_url: "", footer: "Social Feed", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Author", value: "{feed.author}", inline: true }, { name: "Link", value: "{feed.url}", inline: false }],
+      enabled: true,
+    },
+    en: {
+      title: "New Post from {feed.platform}",
+      description: "{feed.title}",
+      color: "#5865F2",
+      author: "", author_icon_url: "", footer: "Social Feed", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Author", value: "{feed.author}", inline: true }, { name: "Link", value: "{feed.url}", inline: false }],
+      enabled: true,
+    },
+  },
+  // ── AFK ──
+  afk_mention: {
+    vi: {
+      title: "AFK User Mentioned",
+      description: "{afk.user} is currently AFK.",
+      color: "#FEE75C",
+      author: "", author_icon_url: "", footer: "AFK", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Reason", value: "{afk.reason}", inline: false }, { name: "Since", value: "{afk.since}", inline: true }, { name: "Duration", value: "{afk.duration}", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "AFK User Mentioned",
+      description: "{afk.user} is currently AFK.",
+      color: "#FEE75C",
+      author: "", author_icon_url: "", footer: "AFK", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Reason", value: "{afk.reason}", inline: false }, { name: "Since", value: "{afk.since}", inline: true }, { name: "Duration", value: "{afk.duration}", inline: true }],
+      enabled: true,
+    },
+  },
 };

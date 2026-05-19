@@ -17,9 +17,9 @@ def get_session():
 
 
 def _format_duration(seconds: float) -> str:
-    """Format seconds into human-readable Vietnamese duration."""
+    """Format seconds into human-readable duration."""
     if seconds < 60:
-        return f"{int(seconds)} giây"
+        return f"{int(seconds)} seconds"
     elif seconds < 3600:
         return f"{int(seconds // 60)} minutes"
     elif seconds < 86400:
@@ -35,6 +35,8 @@ def _format_duration(seconds: float) -> str:
 class AFKCog(discord.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
+        # In-memory tracking of auto-reply counts per (guild_id, user_id)
+        self._afk_reply_counts: dict[tuple[str, str], int] = {}
 
     @discord.slash_command(name="afk", description="Set AFK status")
     async def afk_cmd(
@@ -44,16 +46,16 @@ class AFKCog(discord.Cog):
     ):
         session = get_session()
         try:
-            exismessagesg = session.execute(
+            existing = session.execute(
                 select(AFKStatus).where(
                     AFKStatus.guild_id == str(ctx.guild.id),
                     AFKStatus.user_id == str(ctx.author.id),
                 )
             ).scalars().first()
 
-            if exismessagesg:
-                exismessagesg.reason = reason
-                exismessagesg.set_at = datetime.datetime.utcnow()
+            if existing:
+                existing.reason = reason
+                existing.set_at = datetime.datetime.utcnow()
             else:
                 session.add(AFKStatus(
                     guild_id=str(ctx.guild.id),
@@ -61,6 +63,10 @@ class AFKCog(discord.Cog):
                     reason=reason,
                 ))
             session.commit()
+
+            # Reset reply count
+            key = (str(ctx.guild.id), str(ctx.author.id))
+            self._afk_reply_counts[key] = 0
 
             # Try to add [AFK] prefix to nickname
             try:
@@ -81,13 +87,14 @@ class AFKCog(discord.Cog):
 
     @discord.Cog.listener()
     async def on_message(self, message: discord.Message):
-        if not check_feature(self): return
+        if not check_feature(self):
+            return
         if not message.guild or message.author.bot:
             return
 
         session = get_session()
         try:
-            # Check if author is AFK → remove AFK
+            # Check if author is AFK → remove AFK status
             author_afk = session.execute(
                 select(AFKStatus).where(
                     AFKStatus.guild_id == str(message.guild.id),
@@ -98,6 +105,10 @@ class AFKCog(discord.Cog):
             if author_afk:
                 duration_sec = (datetime.datetime.utcnow() - author_afk.set_at).total_seconds()
                 duration_text = _format_duration(duration_sec)
+
+                # Get reply count before removing
+                key = (str(message.guild.id), str(message.author.id))
+                reply_count = self._afk_reply_counts.pop(key, 0)
 
                 session.delete(author_afk)
                 session.commit()
@@ -114,14 +125,24 @@ class AFKCog(discord.Cog):
                     "user": str(message.author),
                     "user.mention": message.author.mention,
                     "duration": duration_text,
-                }, guild_id=str(ctx.guild.id))
+                    "reply_count": str(reply_count),
+                }, guild_id=str(message.guild.id))
+
+                # Add reply count info if any
+                if reply_count > 0:
+                    embed.add_field(
+                        name="Messages while away",
+                        value=f"You received {reply_count} mention(s) while AFK.",
+                        inline=False,
+                    )
+
                 await message.channel.send(embed=embed, delete_after=10)
 
             # Check if any mentioned users are AFK
             if message.mentions:
                 for user in message.mentions:
                     if user.bot:
-                        conmessagesue
+                        continue
                     afk = session.execute(
                         select(AFKStatus).where(
                             AFKStatus.guild_id == str(message.guild.id),
@@ -131,9 +152,18 @@ class AFKCog(discord.Cog):
                     if afk:
                         duration_sec = (datetime.datetime.utcnow() - afk.set_at).total_seconds()
                         duration_text = _format_duration(duration_sec)
-                        await message.channel.send(
-                            f"💤 **{user.display_name}** is AFK: {afk.reason} ({duration_text})",
-                            delete_after=10,
-                        )
+
+                        # Increment reply count
+                        afk_key = (str(message.guild.id), str(user.id))
+                        self._afk_reply_counts[afk_key] = self._afk_reply_counts.get(afk_key, 0) + 1
+
+                        # Use a nice embed for the auto-reply
+                        embed = build_embed("afk_mention", session, vars={
+                            "user": str(user),
+                            "user.mention": user.mention,
+                            "reason": afk.reason,
+                            "duration": duration_text,
+                        }, guild_id=str(message.guild.id))
+                        await message.channel.send(embed=embed, delete_after=10)
         finally:
             session.close()

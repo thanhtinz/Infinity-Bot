@@ -16,10 +16,12 @@ def get_session():
 
 
 class FeedbackModal(discord.ui.Modal):
-    def __init__(self, product: Product, user_id: int):
-        super().__init__(title=f"Review: {product.name[:40]}")
-        self.product = product
+    def __init__(self, order: "Order", user_id: int, guild_id: str):
+        product_name = order.product.name if order.product else f"Order #{order.id}"
+        super().__init__(title=f"Review: {product_name[:40]}")
+        self.order = order
         self.db_user_id = user_id
+        self.guild_id = guild_id
         self.stars_input = discord.ui.InputText(
             label="Stars (1-5)",
             placeholder="Enter a number from 1 to 5",
@@ -33,8 +35,16 @@ class FeedbackModal(discord.ui.Modal):
             max_length=500,
             required=False,
         )
+        self.image_input = discord.ui.InputText(
+            label="Image URL (optional)",
+            placeholder="https://i.imgur.com/example.png",
+            style=discord.InputTextStyle.short,
+            max_length=500,
+            required=False,
+        )
         self.add_item(self.stars_input)
         self.add_item(self.content_input)
+        self.add_item(self.image_input)
 
     async def callback(self, interaction: discord.Interaction):
         try:
@@ -42,34 +52,46 @@ class FeedbackModal(discord.ui.Modal):
             if not 1 <= stars <= 5:
                 raise ValueError
         except ValueError:
-            await interaction.response.send_message("❌ Stars must be between 1 and 5.", ephemeral=True)
+            await interaction.response.send_message("Stars must be between 1 and 5.", ephemeral=True)
             return
+
+        image_url = (self.image_input.value or "").strip() or None
 
         session = get_session()
         try:
-            config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+            config = session.execute(
+                select(SystemConfig).where(SystemConfig.guild_id == self.guild_id)
+            ).scalars().first() or session.execute(select(SystemConfig).limit(1)).scalars().first()
+
+            product_name = self.order.product.name if self.order.product else f"Order #{self.order.id}"
             feedback = Feedback(
+                guild_id=self.guild_id,
                 user_id=self.db_user_id,
-                product_id=self.product.id,
+                product_id=self.order.product_id,
+                order_id=self.order.id,
                 stars=stars,
                 content=self.content_input.value or None,
+                image_url=image_url,
             )
             session.add(feedback)
             session.flush()
 
-            star_str = "⭐" * stars + "☆" * (5 - stars)
+            star_str = "\u2B50" * stars + "\u2606" * (5 - stars)
             from src.bot.embed_utils import build_embed
             embed = build_embed("feedback", session, vars={
                 "user.mention": interaction.user.mention,
                 "user": interaction.user.display_name,
-                "user.id": interaction.user.id,
-                "product.name": self.product.name,
+                "user.id": str(interaction.user.id),
+                "product.name": product_name,
+                "order.id": str(self.order.id),
                 "stars": star_str,
-                "content": self.content_input.value or "",
-            }, guild_id=str(ctx.guild_id))
+                "stars.count": str(stars),
+                "content": self.content_input.value or "No comment",
+            }, guild_id=self.guild_id)
             embed.set_thumbnail(url=interaction.user.display_avatar.url)
+            if image_url:
+                embed.set_image(url=image_url)
 
-            sent_msg = None
             if config and config.feedback_channel_id:
                 ch = interaction.guild.get_channel(int(config.feedback_channel_id))
                 if ch:
@@ -78,38 +100,42 @@ class FeedbackModal(discord.ui.Modal):
 
             session.commit()
             await interaction.response.send_message(
-                f"✅ Thank you for reviewing **{self.product.name}**! {star_str}",
+                f"Thank you for reviewing **{product_name}**! {star_str}",
                 ephemeral=True,
             )
-        except Exception as e:
+        except Exception:
             session.rollback()
-            await interaction.response.send_message("❌ System error.", ephemeral=True)
+            await interaction.response.send_message("System error.", ephemeral=True)
         finally:
             session.close()
 
 
-class ProductSelectView(discord.ui.View):
-    """View showing product dropdown for feedback."""
-    def __init__(self, products: list, db_user_id: int):
+class OrderSelectView(discord.ui.View):
+    """View showing order dropdown for feedback — only unreviewed orders."""
+    def __init__(self, orders: list, db_user_id: int, guild_id: str):
         super().__init__(timeout=60)
-        options = [
-            discord.SelectOption(label=p.name[:25], value=str(p.id))
-            for p in products[:25]
-        ]
         self.db_user_id = db_user_id
-        self.products = {str(p.id): p for p in products}
+        self.guild_id = guild_id
+        self.orders = {str(o.id): o for o in orders}
+
+        options = []
+        for o in orders[:25]:
+            pname = o.product.name[:40] if o.product else "Unknown"
+            label = f"#{o.id} — {pname}"
+            desc = f"{o.quantity}x · {o.status}"
+            options.append(discord.SelectOption(label=label[:100], description=desc[:100], value=str(o.id)))
 
         select_menu = discord.ui.Select(
-            placeholder="Select a purchased product...",
+            placeholder="Select an order to review...",
             options=options,
         )
         select_menu.callback = self.on_select
         self.add_item(select_menu)
 
     async def on_select(self, interaction: discord.Interaction):
-        product = self.products.get(interaction.data["values"][0])
-        if product:
-            modal = FeedbackModal(product=product, user_id=self.db_user_id)
+        order = self.orders.get(interaction.data["values"][0])
+        if order:
+            modal = FeedbackModal(order=order, user_id=self.db_user_id, guild_id=self.guild_id)
             await interaction.response.send_modal(modal)
 
 
@@ -228,35 +254,40 @@ class ShopCog(discord.Cog):
             ).scalars().first()
 
             if not user:
-                await ctx.respond("❌ You have no purchases yet.", ephemeral=True)
+                await ctx.respond("You have no purchases yet.", ephemeral=True)
                 return
 
-            # Get purchased products (PAID/DELIVERED)
+            # Get reviewed order IDs
+            reviewed_order_ids = set(
+                r[0] for r in session.execute(
+                    select(Feedback.order_id).where(
+                        Feedback.user_id == user.id,
+                        Feedback.order_id.isnot(None),
+                    )
+                ).all()
+            )
+
+            # Get paid/delivered orders not yet reviewed
             paid_orders = session.execute(
                 select(Order)
                 .options(joinedload(Order.product))
                 .where(
                     Order.user_id == user.id,
+                    Order.guild_id == str(ctx.guild.id),
                     Order.status.in_(["PAID", "DELIVERED"]),
                 )
                 .order_by(Order.created_at.desc())
                 .limit(25)
             ).unique().scalars().all()
 
-            if not paid_orders:
-                await ctx.respond("❌ You have no paid orders to review.", ephemeral=True)
+            unreviewed = [o for o in paid_orders if o.id not in reviewed_order_ids]
+
+            if not unreviewed:
+                await ctx.respond("You have no unreviewed orders.", ephemeral=True)
                 return
 
-            # Deduplicate products
-            seen = set()
-            products = []
-            for o in paid_orders:
-                if o.product and o.product_id not in seen:
-                    seen.add(o.product_id)
-                    products.append(o.product)
-
-            view = ProductSelectView(products=products, db_user_id=user.id)
-            await ctx.respond("📝 Select the product you want to review:", view=view, ephemeral=True)
+            view = OrderSelectView(orders=unreviewed, db_user_id=user.id, guild_id=str(ctx.guild.id))
+            await ctx.respond("Select an order to review:", view=view, ephemeral=True)
         finally:
             session.close()
 

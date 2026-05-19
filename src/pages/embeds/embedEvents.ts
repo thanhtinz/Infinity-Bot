@@ -10,6 +10,7 @@ import {
   Heart, HelpCircle,
   CheckCircle, Package, PackageX, ClipboardList, Tag, UserPlus, Pin, UserMinus,
   ShieldCheck, Archive, RotateCcw, Users, BrainCircuit, ImageIcon,
+  XCircle, Bell, BarChart3, Rss, Sun, AtSign, UserCheck,
 } from "lucide-react";
 
 // ─── Event definitions ───────────────────────────────────────────────────────
@@ -64,8 +65,9 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "lockdown_start",   label: "Lockdown Start",     labelEn: "Lockdown Start",       icon: Shield,        desc: "When server enters lockdown mode" },
   { key: "lockdown_end",     label: "Lockdown End",     labelEn: "Lockdown End",         icon: ShieldOff,     desc: "When server exits lockdown" },
   // ── Utilities ──
-  { key: "afk_set",           label: "AFK Set",               labelEn: "AFK Set",              icon: Moon,          desc: "When user sets AFK status" },
-  { key: "afk_return",        label: "AFK Return",        labelEn: "AFK Return",           icon: Zap,           desc: "When AFK user returns" },
+  { key: "afk_set",           label: "AFK Set",               labelEn: "AFK Set",              icon: Moon,          desc: "When user goes AFK" },
+  { key: "afk_return",        label: "AFK Return",        labelEn: "AFK Return",           icon: Sun,           desc: "When user returns from AFK" },
+  { key: "afk_mention",       label: "AFK Mention",       labelEn: "AFK Mention",          icon: AtSign,        desc: "When an AFK user is mentioned" },
   { key: "sticky_message",    label: "Sticky Message", labelEn: "Sticky Message",       icon: Pin,           desc: "Auto sticky message embed" },
   // ── Help ──
   { key: "help_menu",         label: "Help Menu",     labelEn: "Help Menu",            icon: HelpCircle,    desc: "Welcome embed for /help" },
@@ -175,6 +177,19 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   // ── AI Chat ──
   { key: "ai_response",           label: "AI Response",            labelEn: "AI Response",            icon: BrainCircuit,  desc: "When AI bot responds to a question" },
   { key: "ai_image",              label: "AI Image Generated",     labelEn: "AI Image Generated",     icon: ImageIcon,     desc: "When AI generates an image" },
+  // ── Auto Role ──
+  { key: "autorole_assign",       label: "Role Assigned",          labelEn: "Role Assigned",          icon: UserCheck,     desc: "When an auto role is assigned" },
+  // ── Forms ──
+  { key: "form_submitted",        label: "Form Submitted",         labelEn: "Form Submitted",         icon: ClipboardList, desc: "When a form is submitted" },
+  { key: "form_approved",         label: "Form Approved",          labelEn: "Form Approved",          icon: CheckCircle,   desc: "When a submission is approved" },
+  { key: "form_rejected",         label: "Form Rejected",          labelEn: "Form Rejected",          icon: XCircle,       desc: "When a submission is rejected" },
+  // ── Reminders ──
+  { key: "reminder_fire",         label: "Reminder Fire",          labelEn: "Reminder Fire",          icon: Bell,          desc: "When a reminder fires" },
+  // ── Polls ──
+  { key: "poll_created",          label: "Poll Created",           labelEn: "Poll Created",           icon: BarChart3,     desc: "When a poll is created" },
+  { key: "poll_ended",            label: "Poll Ended",             labelEn: "Poll Ended",             icon: BarChart3,     desc: "When a poll ends" },
+  // ── Social Feeds ──
+  { key: "social_feed_post",      label: "Feed Post",              labelEn: "Feed Post",              icon: Rss,           desc: "When a new feed item is posted" },
 ];
 
 // ─── Event groups ────────────────────────────────────────────────────────────
@@ -183,7 +198,7 @@ export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] 
   { label: "Orders",    labelEn: "Orders",         keys: ["don_hang_moi", "qr_thanh_toan", "qr_thanh_toan_payos", "qr_thanh_toan_paypal", "qr_thanh_toan_crypto", "qr_thanh_toan_manual", "don_hang_het_han", "ghi_chu_don_hang", "bang_gia", "bxh_chi_tieu", "bxh_don_hang", "feedback", "thanh_toan", "giao_hang", "don_hang_chi_tiet", "coupon", "ban_shop", "unban_shop", "flash_sale_start", "flash_sale_end", "out_of_stock_admin", "spending_leaderboard_auto"] },
   { label: "Community",   labelEn: "Community",      keys: ["giveaway", "ket_qua_giveaway", "reaction_role_panel", "starboard_post", "giveaway_banned", "invite_join", "invite_leaderboard"] },
   { label: "Moderation", labelEn: "Moderation",      keys: ["canh_bao", "kick", "ban", "unban", "softban", "mute", "deafen", "rolepersist", "temprole", "lockdown_start", "lockdown_end", "automod_warn", "automod_mute", "automod_kick", "automod_delete", "timeout"] },
-  { label: "Utilities",    labelEn: "Utilities",       keys: ["afk_set", "afk_return", "sticky_message"] },
+  { label: "Utilities",    labelEn: "Utilities",       keys: ["afk_set", "afk_return", "afk_mention", "sticky_message"] },
   { label: "Help",        labelEn: "Help",            keys: ["help_menu", "help_category", "help_command"] },
   { label: "Logging",     labelEn: "Logging",         keys: ["log_message_delete", "log_message_edit", "log_message_bulk_delete", "log_voice_join", "log_voice_leave", "log_voice_move", "log_member_join", "log_member_leave", "log_nickname_change", "log_role_update", "log_channel_create", "log_channel_delete"] },
   { label: "Interactions — Targeted", labelEn: "Interactions — Targeted", keys: ["interact_airkiss", "interact_angrystare", "interact_bite", "interact_brofist", "interact_cuddle", "interact_handhold", "interact_hug", "interact_kiss", "interact_lick", "interact_nom", "interact_nuzzle", "interact_pat", "interact_pinch", "interact_poke", "interact_punch", "interact_slap", "interact_smack", "interact_tickle", "interact_wave", "interact_wink", "interact_stare", "interact_peek"] },
@@ -191,6 +206,12 @@ export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] 
   { label: "Security & Recovery", labelEn: "Security & Recovery", keys: ["verify_panel", "verification_log", "verification_denied", "verify_blacklist", "verify_whitelist", "backup_completed", "restore_started", "restore_completed", "member_pull_started", "member_pull_completed"] },
   { label: "Server Alerts", labelEn: "Server Alerts", keys: ["alert_mass_ban", "alert_mass_kick", "alert_channel_delete", "alert_role_delete", "alert_nuke_detect"] },
   { label: "AI Chat", labelEn: "AI Chat", keys: ["ai_response", "ai_image"] },
+  { label: "Auto Role", labelEn: "Auto Role", keys: ["autorole_assign"] },
+  { label: "Forms", labelEn: "Forms", keys: ["form_submitted", "form_approved", "form_rejected"] },
+  { label: "Reminders", labelEn: "Reminders", keys: ["reminder_fire"] },
+  { label: "Polls", labelEn: "Polls", keys: ["poll_created", "poll_ended"] },
+  { label: "Social Feeds", labelEn: "Social Feeds", keys: ["social_feed_post"] },
+  { label: "AFK", labelEn: "AFK", keys: ["afk_set", "afk_return", "afk_mention"] },
 ];
 
 // ─── Variables reference ─────────────────────────────────────────────────────
@@ -294,4 +315,27 @@ export const VARIABLES: { token: string; desc: string; descEn: string }[] = [
   { token: "{ai.prompt}",        desc: "Câu hỏi/prompt gửi cho AI",    descEn: "Prompt sent to AI" },
   { token: "{ai.provider}",      desc: "Provider AI (gemini/groq...)",  descEn: "AI provider name" },
   { token: "{ai.model}",         desc: "Model AI đang dùng",           descEn: "AI model name" },
+  // Auto Role
+  { token: "{role.name}",         desc: "Role name",                    descEn: "Role name" },
+  // Forms
+  { token: "{form.title}",        desc: "Form template title",          descEn: "Form template title" },
+  { token: "{form.id}",           desc: "Form ID",                      descEn: "Form ID" },
+  // Reminders
+  { token: "{reminder.message}",  desc: "Reminder message",             descEn: "Reminder message" },
+  // Polls
+  { token: "{poll.question}",     desc: "Poll question",                descEn: "Poll question" },
+  { token: "{poll.options}",      desc: "Poll options",                 descEn: "Poll options" },
+  { token: "{poll.results}",      desc: "Poll results",                 descEn: "Poll results" },
+  { token: "{poll.total_votes}",  desc: "Total votes",                  descEn: "Total votes" },
+  { token: "{poll.end_time}",     desc: "Poll end time",                descEn: "Poll end time" },
+  // Social Feeds
+  { token: "{feed.title}",        desc: "Feed item title",              descEn: "Feed item title" },
+  { token: "{feed.url}",          desc: "Feed item URL",                descEn: "Feed item URL" },
+  { token: "{feed.platform}",     desc: "Feed platform",                descEn: "Feed platform" },
+  { token: "{feed.author}",       desc: "Feed author",                  descEn: "Feed author" },
+  // AFK
+  { token: "{afk.reason}",        desc: "AFK reason",                   descEn: "AFK reason" },
+  { token: "{afk.duration}",      desc: "AFK duration",                 descEn: "AFK duration" },
+  { token: "{afk.user}",          desc: "AFK user",                     descEn: "AFK user" },
+  { token: "{afk.since}",         desc: "AFK since",                    descEn: "AFK since" },
 ];

@@ -147,6 +147,9 @@ def create_bot():
         "src.bot.cogs.interactions", "src.bot.cogs.help_cog",
         "src.bot.cogs.channel_admin", "src.bot.cogs.onboarding",
         "src.bot.cogs.fun", "src.bot.cogs.moderation_ext",
+        "src.bot.cogs.autorole", "src.bot.cogs.forms",
+        "src.bot.cogs.reminder", "src.bot.cogs.polls",
+        "src.bot.cogs.social_feeds", "src.bot.cogs.stats_channels",
         "src.bot.prefix_commands", "src.bot.embed_utils",
     ]
     for _mod_name in _cog_modules:
@@ -177,6 +180,12 @@ def create_bot():
     from src.bot.cogs.onboarding import OnboardingCog
     from src.bot.cogs.fun import FunCog
     from src.bot.cogs.moderation_ext import ModerationExtCog
+    from src.bot.cogs.autorole import AutoRoleCog
+    from src.bot.cogs.forms import FormsCog
+    from src.bot.cogs.reminder import ReminderCog
+    from src.bot.cogs.polls import PollsCog
+    from src.bot.cogs.social_feeds import SocialFeedsCog
+    from src.bot.cogs.stats_channels import StatsChannelsCog
     from src.bot.prefix_commands import PrefixCommandsCog
     from src.bot.cogs.ai_chat import AIChatCog
 
@@ -195,6 +204,12 @@ def create_bot():
         "ChannelAdminCog": "moderation",
         "FunCog": "fun",
         "ModerationExtCog": "moderation",
+        "AutoRoleCog": "autorole",
+        "FormsCog": "forms",
+        "ReminderCog": "reminder",
+        "PollsCog": "polls",
+        "SocialFeedsCog": "social_feeds",
+        "StatsChannelsCog": "stats_channels",
         "AIChatCog": "ai_chat",
         "PrefixCommandsCog": None,
     }
@@ -216,6 +231,12 @@ def create_bot():
         OnboardingCog(bot_client),
         FunCog(bot_client),
         ModerationExtCog(bot_client),
+        AutoRoleCog(bot_client),
+        FormsCog(bot_client),
+        ReminderCog(bot_client),
+        PollsCog(bot_client),
+        SocialFeedsCog(bot_client),
+        StatsChannelsCog(bot_client),
         AIChatCog(bot_client),
         PrefixCommandsCog(bot_client),
     ]

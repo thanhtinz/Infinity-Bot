@@ -26,6 +26,12 @@ FEATURE_DEFS: list[dict] = [
     {"key": "interactions",    "label": "Interactions",        "desc": "Anime GIF interaction commands (hug, kiss, slap…)", "icon": "Heart",   "cogs": ["InteractionCog"]},
     {"key": "fun",             "label": "Fun",                 "desc": "Fun & mini-game commands",                  "icon": "Smile",         "cogs": ["FunCog"]},
     {"key": "ai_chat",         "label": "AI Chat",             "desc": "AI assistant per server (Groq/Gemini/OpenAI/DeepSearch)", "icon": "BrainCircuit", "cogs": ["AIChatCog"]},
+    {"key": "autorole",        "label": "Auto Role",           "desc": "Auto-assign roles on join, with delay, or for bots", "icon": "UserPlus",  "cogs": ["AutoRoleCog"]},
+    {"key": "forms",           "label": "Forms",               "desc": "Application forms with review workflow",    "icon": "ClipboardList", "cogs": ["FormsCog"]},
+    {"key": "reminders",       "label": "Reminders & Todo",    "desc": "Personal reminders and todo lists",         "icon": "Bell",          "cogs": ["ReminderCog"]},
+    {"key": "polls",           "label": "Polls",               "desc": "Advanced polls with buttons and auto-end",  "icon": "BarChart3",     "cogs": ["PollsCog"]},
+    {"key": "social_feeds",    "label": "Social Feeds",        "desc": "Auto-post from YouTube, Twitch, RSS",       "icon": "Rss",           "cogs": ["SocialFeedsCog"]},
+    {"key": "stats_channels",  "label": "Stats Channels",      "desc": "Auto-updating stat display channels",       "icon": "Activity",      "cogs": ["StatsChannelsCog"]},
 ]
 
 

@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, Lock, Zap, Warehouse, BrainCircuit, Settings2, BookOpen, History, Image } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, Lock, Zap, Warehouse, BrainCircuit, Settings2, BookOpen, History, Image, ClipboardList, Rss, UserCheck } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense, Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -71,6 +71,12 @@ const AIConfigPage = lazy(() => import("./pages/ai-chat/AIConfigPage").then(m =>
 const AITrainingPage = lazy(() => import("./pages/ai-chat/AITrainingPage").then(m => ({ default: m.AITrainingPage })));
 const AIHistoryPage = lazy(() => import("./pages/ai-chat/AIHistoryPage").then(m => ({ default: m.AIHistoryPage })));
 const AIImageGenPage = lazy(() => import("./pages/ai-chat/AIImageGenPage").then(m => ({ default: m.AIImageGenPage })));
+const AutoRolePage = lazy(() => import("./pages/AutoRolePage").then(m => ({ default: m.AutoRolePage })));
+const FormsPage = lazy(() => import("./pages/FormsPage").then(m => ({ default: m.FormsPage })));
+const RemindersPage = lazy(() => import("./pages/RemindersPage").then(m => ({ default: m.RemindersPage })));
+const PollsPage = lazy(() => import("./pages/PollsPage").then(m => ({ default: m.PollsPage })));
+const SocialFeedsPage = lazy(() => import("./pages/SocialFeedsPage").then(m => ({ default: m.SocialFeedsPage })));
+const StatsChannelsPage = lazy(() => import("./pages/StatsChannelsPage").then(m => ({ default: m.StatsChannelsPage })));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -200,6 +206,66 @@ const navGroups: NavGroup[] = [
       { to: "/ai-chat/training", icon: BookOpen, label: "Training" },
       { to: "/ai-chat/history", icon: History, label: "History" },
       { to: "/ai-chat/images", icon: Image, label: "Image Gen" },
+    ],
+  },
+  {
+    key: "autorole",
+    icon: UserCheck,
+    label: "Auto Role",
+    feature: "autorole",
+    staffPerm: "can_utilities",
+    items: [
+      { to: "/autorole", icon: UserCheck, label: "Auto Role" },
+    ],
+  },
+  {
+    key: "forms",
+    icon: ClipboardList,
+    label: "Forms",
+    feature: "forms",
+    staffPerm: "can_forms",
+    items: [
+      { to: "/forms", icon: ClipboardList, label: "Forms" },
+    ],
+  },
+  {
+    key: "reminders",
+    icon: Bell,
+    label: "Reminders",
+    feature: "reminders",
+    staffPerm: "can_reminders",
+    items: [
+      { to: "/reminders", icon: Bell, label: "Reminders" },
+    ],
+  },
+  {
+    key: "polls",
+    icon: BarChart3,
+    label: "Polls",
+    feature: "polls",
+    staffPerm: "can_community",
+    items: [
+      { to: "/polls", icon: BarChart3, label: "Polls" },
+    ],
+  },
+  {
+    key: "social_feeds",
+    icon: Rss,
+    label: "Social Feeds",
+    feature: "social_feeds",
+    staffPerm: "can_utilities",
+    items: [
+      { to: "/social-feeds", icon: Rss, label: "Social Feeds" },
+    ],
+  },
+  {
+    key: "stats_channels",
+    icon: Activity,
+    label: "Stats Channels",
+    feature: "stats_channels",
+    staffPerm: "can_utilities",
+    items: [
+      { to: "/stats-channels", icon: Activity, label: "Stats Channels" },
     ],
   },
   {
@@ -818,6 +884,13 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/scheduled-messages/:id/edit" element={<ScheduledMessagesEditPage />} />
         <Route path="/embeds" element={<EmbedsManager />} />
         <Route path="/emojis" element={<EmojiManager />} />
+        {/* Auto Role, Forms, Reminders, Polls, Social Feeds, Stats Channels */}
+        <Route path="/autorole" element={<AutoRolePage />} />
+        <Route path="/forms" element={<FormsPage />} />
+        <Route path="/reminders" element={<RemindersPage />} />
+        <Route path="/polls" element={<PollsPage />} />
+        <Route path="/social-feeds" element={<SocialFeedsPage />} />
+        <Route path="/stats-channels" element={<StatsChannelsPage />} />
         {/* Premium */}
         <Route path="/my-plan" element={<MyPlan />} />
         <Route path="/premium/config" element={<OwnerRoute><PremiumPaymentConfig /></OwnerRoute>} />

@@ -28,6 +28,12 @@ from src.api.routes.alerts import router as alerts_router
 from src.api.routes.guild_bot import router as guild_bot_router
 from src.api.routes.premium import router as premium_router
 from src.api.routes.ai_chat import router as ai_chat_router
+from src.api.routes.autorole import router as autorole_router
+from src.api.routes.forms import router as forms_router
+from src.api.routes.reminders import router as reminders_router
+from src.api.routes.polls import router as polls_router
+from src.api.routes.social_feeds import router as social_feeds_router
+from src.api.routes.stats_channels import router as stats_channels_router
 
 router = APIRouter()
 
@@ -58,3 +64,9 @@ router.include_router(alerts_router, tags=["alerts"])
 router.include_router(guild_bot_router, tags=["guild-bot"])
 router.include_router(premium_router, tags=["premium"])
 router.include_router(ai_chat_router, tags=["ai-chat"])
+router.include_router(autorole_router, tags=["autorole"])
+router.include_router(forms_router, tags=["forms"])
+router.include_router(reminders_router, tags=["reminders"])
+router.include_router(polls_router, tags=["polls"])
+router.include_router(social_feeds_router, tags=["social-feeds"])
+router.include_router(stats_channels_router, tags=["stats-channels"])
