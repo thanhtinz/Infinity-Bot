@@ -333,7 +333,6 @@ export function EmbedsManager({ eventKeys, pageTitle, pageDescription }: EmbedsM
                   {group.keys.map((key) => {
                     const ev = allEvents.find((e) => e.key === key);
                     if (!ev) return null;
-                    const Icon = ev.icon;
                     const saved = savedMap.has(ev.key);
                     return (
                       <SelectItem key={ev.key} value={ev.key}>
