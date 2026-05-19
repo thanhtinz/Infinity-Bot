@@ -72,15 +72,7 @@ def get_discord_oauth_config(db, request: Request | None = None):
 
     # Auto-detect from request headers if still missing
     if not public_app_url and request:
-        origin = request.headers.get("origin")
-        if origin and "localhost" not in origin:
-            public_app_url = origin.rstrip("/")
-        else:
-            referer = request.headers.get("referer")
-            if referer and "localhost" not in referer:
-                from urllib.parse import urlparse
-                parsed = urlparse(referer)
-                public_app_url = f"{parsed.scheme}://{parsed.netloc}"
+        public_app_url = get_public_base_url(request)
         # Auto-save to DB
         if public_app_url and config and not config.public_app_url:
             config.public_app_url = public_app_url

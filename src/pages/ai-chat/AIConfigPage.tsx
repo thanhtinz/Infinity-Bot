@@ -112,18 +112,8 @@ export function AIConfigPage() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-primary/10">
-            <BrainCircuit className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">AI Chat</h1>
-            <p className="text-sm text-muted-foreground">Per-server AI assistant — Groq, Gemini, ChatGPT, DeepSearch</p>
-          </div>
-        </div>
+    <PageContainer>
+      <PageHeader title="AI Chat" icon={BrainCircuit} description="Per-server AI assistant — Groq, Gemini, ChatGPT, DeepSearch">
         <div className="flex items-center gap-2.5">
           <span className="text-sm text-muted-foreground">Enable</span>
           <Switch
@@ -138,7 +128,7 @@ export function AIConfigPage() {
             ? <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-300">Active</Badge>
             : <Badge variant="outline" className="text-muted-foreground">Disabled</Badge>}
         </div>
-      </div>
+      </PageHeader>
 
       {/* Provider */}
       <Card>
@@ -413,6 +403,6 @@ export function AIConfigPage() {
           />
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }
