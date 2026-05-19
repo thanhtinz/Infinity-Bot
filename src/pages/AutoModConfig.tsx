@@ -30,7 +30,6 @@ import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect } from "@/components/RoleSelect";
 import {
-  Shield,
   MessageSquareOff,
   Link2Off,
   Ban,

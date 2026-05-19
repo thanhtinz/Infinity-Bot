@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Trophy, Plus, Trash2,
+  Plus, Trash2,
   ChevronDown,
   RotateCcw, Save,
   Type, Layout,

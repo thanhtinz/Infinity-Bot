@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useGuild } from "@/contexts/GuildContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useT, useLanguage } from "@/i18n";
+import { useLanguage } from "@/i18n";
 import { Crown, Server, Globe, Palette, Clock, Copy, Check, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";

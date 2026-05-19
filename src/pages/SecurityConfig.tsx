@@ -24,7 +24,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
 import {
-  Shield,
   Key,
   Wifi,
   Loader2,
