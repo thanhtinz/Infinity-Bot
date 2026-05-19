@@ -31,7 +31,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
 import { cn } from "@/lib/utils";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import {
   CreditCard,
   Globe,

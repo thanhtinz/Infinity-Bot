@@ -18,7 +18,7 @@ import { useGuild } from "@/contexts/GuildContext";
 import {
   Rss, Plus, Trash2, Loader2, Play, Tv, Globe, Hash,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { cn } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

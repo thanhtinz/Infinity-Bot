@@ -30,7 +30,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
 import { cn } from "@/lib/utils";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { useState, useRef } from "react";
 import type { SystemConfig } from "../types";
 

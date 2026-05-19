@@ -12,7 +12,7 @@ import { useEntitlements } from "@/hooks/useEntitlements";
 import {
   Bot, Save, Loader2, Trash2, CheckCircle2, XCircle, AlertCircle, Eye, EyeOff,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 
 /* ── Types ──────────────────────────────────────── */
 

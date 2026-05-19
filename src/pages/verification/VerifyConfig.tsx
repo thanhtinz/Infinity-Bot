@@ -41,7 +41,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import {
   FaXTwitter, FaGithub, FaTelegram, FaTwitch,
   FaYoutube, FaInstagram, FaTiktok, FaDiscord,

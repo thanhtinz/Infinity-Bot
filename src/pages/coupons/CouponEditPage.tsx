@@ -8,7 +8,6 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
-import { PageContainer } from "@/components/yuri";
 import { apiFetch } from "@/hooks/useApi";
 
 interface Coupon {
@@ -122,19 +121,20 @@ export function CouponEditPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-10 border-b bg-card px-6 py-4 flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b px-6 py-3.5 flex items-center gap-4">
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold text-lg">{isNew ? "Create" : "Edit"}</h1>
-        <div className="ml-auto">
-          <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}
-            <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
-          </Button>
+        <div className="flex-1 min-w-0">
+          <h1 className="font-bold text-lg tracking-tight">{isNew ? "Create coupon" : "Edit coupon"}</h1>
+          <p className="text-xs text-muted-foreground">{isNew ? "Create new coupon" : "Edit coupon details"}</p>
         </div>
+        <Button className="rounded-xl gap-2" onClick={handleSave} disabled={isPending}>
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
+        </Button>
       </div>
-      <PageContainer size="sm">
+      <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
         {/* Code */}
         <div className="space-y-1.5">
           <Label>Coupon code <span className="text-destructive">*</span></Label>
@@ -201,7 +201,7 @@ export function CouponEditPage() {
             onCheckedChange={(v) => setForm((f) => ({ ...f, is_public: v }))}
           />
         </div>
-      </PageContainer>
+      </div>
     </div>
   );
 }

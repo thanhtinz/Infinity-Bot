@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Loader2, Save, Key, Image, Eye, EyeOff, Bot, Sparkles,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { DEFAULT_CONFIG } from "./shared";
 import type { AIChatConfig } from "./shared";
 

@@ -1,5 +1,5 @@
 /**
- * Yuri Admin Theme — Shared Layout Components
+ * Infinity Theme — Shared Layout Components
  */
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";

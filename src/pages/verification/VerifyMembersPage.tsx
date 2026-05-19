@@ -38,7 +38,7 @@ import {
   RefreshCw, Play, Square, Eye, Info, RotateCcw,
   Users,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { PremiumGate } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { apiFetch } from "@/hooks/useApi";

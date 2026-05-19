@@ -15,7 +15,7 @@ import {
   Loader2, Plus, Trash2, Upload, FileText, Eye, BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import type { TrainingDoc } from "./shared";
 
 export function AITrainingPage() {

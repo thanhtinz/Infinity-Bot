@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Users, UserCheck, Ban, DollarSign, Search, FileText, ShieldBan } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";

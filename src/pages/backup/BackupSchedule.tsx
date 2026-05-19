@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Clock, Calendar, Loader2, Save } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import type { BackupSchedule as BackupScheduleType } from "./shared";
 import { fetchSchedule, updateSchedule, formatDate } from "./shared";
 import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";

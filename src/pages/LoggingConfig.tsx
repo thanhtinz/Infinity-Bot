@@ -10,7 +10,7 @@ import { ChannelSelect } from "@/components/ChannelSelect";
 import { MultiRoleSelect } from "@/components/RoleSelect";
 import { ScrollText, Mic, ShieldCheck, Users, Server, Filter, X, FileText } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 
 interface LoggingConfigData {
   message_log_channel_id: string;

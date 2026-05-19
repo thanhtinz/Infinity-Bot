@@ -14,7 +14,7 @@ import {
   Loader2, Trash2, RefreshCw, History, Bot, User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import type { HistoryEntry } from "./shared";
 
 export function AIHistoryPage() {

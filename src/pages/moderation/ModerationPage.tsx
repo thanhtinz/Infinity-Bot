@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { ModerationCases } from "./ModerationCases";
 import { ModerationNotes } from "./ModerationNotes";
 import { ModerationActive } from "./ModerationActive";

@@ -33,7 +33,7 @@ import {
   EyeOff,
   Lock,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 

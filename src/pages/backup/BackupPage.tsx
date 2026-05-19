@@ -19,7 +19,7 @@ import {
   Database, Download, RotateCcw, Trash2, Plus, Settings2, Users, Clock,
   CheckCircle2, XCircle, Loader2, Save, Calendar, HardDrive,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { PremiumBadge, PremiumGate } from "@/components/ui/premium-gate";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import type { ServerBackupItem, BackupSchedule as BackupScheduleType } from "./shared";

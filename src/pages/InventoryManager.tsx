@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Package, Upload, Trash2, Loader2, AlertTriangle, Warehouse } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import type { Product } from "@/types";
 
 interface InventoryItem {

@@ -18,7 +18,7 @@ import {
   Plus,
 } from "lucide-react";
 import { MessageCircle } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 
 import type { AutoResponderRule } from "./auto-responder/arTypes";
 import { RuleCard } from "./auto-responder/RuleCard";

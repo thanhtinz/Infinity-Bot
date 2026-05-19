@@ -27,7 +27,7 @@ import {
   Hash,
 } from "lucide-react";
 import { MousePointer } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";
 

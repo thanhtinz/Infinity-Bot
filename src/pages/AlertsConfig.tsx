@@ -10,7 +10,7 @@ import {
   Bell, Bomb, UserX, LogOut, FolderMinus, Tag,
   ShieldCheck, Save, FlaskConical, Loader2,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import type { LucideIcon } from "lucide-react";
 import { useGuild } from "@/contexts/GuildContext";
 import { apiFetch } from "@/hooks/useApi";

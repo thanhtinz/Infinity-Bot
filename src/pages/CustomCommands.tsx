@@ -16,7 +16,7 @@ import {
   Terminal,
   Plus,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import type { CustomCommand } from "./custom-commands/ccTypes";
 import { CommandCard } from "./custom-commands/CommandCard";
 import { apiFetch } from "@/hooks/useApi";

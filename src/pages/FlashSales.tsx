@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Loader2, Zap } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
 import { useCurrency } from "@/hooks/useCurrency";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import type { Product } from "@/types";
 
 interface FlashSale {

@@ -20,7 +20,7 @@ import { useGuild } from "@/contexts/GuildContext";
 import { RoleSelect } from "@/components/RoleSelect";
 import { Trophy, Plus, Pencil, Trash2, Award, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 
 interface Milestone {
   id: number;

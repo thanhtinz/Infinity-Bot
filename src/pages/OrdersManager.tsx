@@ -13,7 +13,7 @@ import { EmojiTextarea } from "@/components/EmojiInput";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import { RefreshCw, Plus, ShoppingCart, User2, Truck, ExternalLink, Copy } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { cn } from "@/lib/utils";
 import type { Order, Product } from "../types";
 import { apiFetch } from "@/hooks/useApi";

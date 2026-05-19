@@ -20,7 +20,7 @@ import {
   ToggleLeft,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { apiFetch } from "@/hooks/useApi";
 
 interface Feature {

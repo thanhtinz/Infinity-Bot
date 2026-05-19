@@ -1,5 +1,5 @@
 import { BarChart3 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { VerifyStats } from "./VerifyStats";
 
 export default function VerifyStatsPage() {

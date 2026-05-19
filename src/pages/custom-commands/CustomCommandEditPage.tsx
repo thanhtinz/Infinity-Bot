@@ -21,7 +21,6 @@ import {
   Save,
   Loader2,
 } from "lucide-react";
-import { PageContainer } from "@/components/yuri";
 import type { CustomCommand, EmbedField } from "./ccTypes";
 import {
   DEFAULT_COLOR,
@@ -298,21 +297,20 @@ export function CustomCommandEditPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b bg-card px-6 py-4 flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/custom-commands")}>
+      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b px-6 py-3.5 flex items-center gap-4">
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10" onClick={() => navigate("/custom-commands")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-semibold">
-          {isNew ? "Create Custom Command" : "Edit Command"}
-        </h1>
-        <div className="ml-auto">
-          <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? <Loader2 className="h-4 w-4 animate-spin sm:mr-2" /> : <Save className="h-4 w-4 sm:mr-2" />}
-            <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
-          </Button>
+        <div className="flex-1 min-w-0">
+          <h1 className="font-bold text-lg tracking-tight">{isNew ? "Create Custom Command" : "Edit Command"}</h1>
+          <p className="text-xs text-muted-foreground">{isNew ? "Create new custom command" : "Edit custom command"}</p>
         </div>
+        <Button className="rounded-xl gap-2" onClick={handleSave} disabled={isPending}>
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
+        </Button>
       </div>
-      <PageContainer size="sm">
+      <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
         {/* ── Section: Basic Info ── */}
         <div className="space-y-4">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
@@ -460,7 +458,7 @@ export function CustomCommandEditPage() {
 
         {/* ── Section: System Actions ── */}
         <ActionsEditor form={form} onFormChange={setForm} open={actionsOpen} onOpenChange={setActionsOpen} />
-      </PageContainer>
+      </div>
     </div>
   );
 }

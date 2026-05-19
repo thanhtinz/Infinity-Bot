@@ -10,7 +10,7 @@ import { useGuild } from "@/contexts/GuildContext";
 import {
   Bell, Trash2, Clock, RefreshCw, CheckCircle, ListTodo,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

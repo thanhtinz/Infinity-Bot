@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoggingConfig } from "./LoggingConfig";
 import { LogViewer } from "./LogViewer";
 import { Settings2, ScrollText, FileText } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 
 export default function LoggingPage() {
   const [searchParams, setSearchParams] = useSearchParams();

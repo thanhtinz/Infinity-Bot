@@ -52,7 +52,7 @@ import {
   X,
   Crown,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 

@@ -3,14 +3,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { useGuild } from "@/contexts/GuildContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useLanguage } from "@/i18n";
-import { Crown, Server, Globe, Palette, Clock, Copy, Check, User } from "lucide-react";
+import { Crown, Server, Palette, Clock, Copy, Check, User, Database, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { apiFetch } from "@/hooks/useApi";
-import { PageContainer, PageHeader, SectionCard } from "@/components/yuri";
+import { PageContainer, PageHeader, SectionCard } from "@/components/infinity";
 
 const TIMEZONES = [
   "Asia/Ho_Chi_Minh", "Asia/Bangkok", "Asia/Tokyo", "Asia/Shanghai",
@@ -21,7 +21,6 @@ const TIMEZONES = [
 ];
 
 export function ProfilePage() {
-  const { language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { setSelectedGuildId } = useGuild();
@@ -138,26 +137,6 @@ export function ProfilePage() {
       {/* Preferences */}
       <SectionCard title="Preferences" icon={Palette} accent="secondary">
         <div className="space-y-5">
-          {/* Language */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <Label className="flex items-center gap-2 text-[14px]">
-                <Globe className="w-4 h-4 text-primary" />
-                Dashboard Language
-              </Label>
-              <p className="text-[12px] text-muted-foreground mt-0.5">Only affects dashboard UI, not bot commands</p>
-            </div>
-            <Select value={language} onValueChange={(v) => setLanguage(v as "en" | "vi")}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="vi">Tiếng Việt</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Theme */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
@@ -199,6 +178,22 @@ export function ProfilePage() {
               </SelectContent>
             </Select>
           </div>
+        </div>
+      </SectionCard>
+
+      {/* Backup & Restore */}
+      <SectionCard title="Sao lưu & Khôi phục" icon={Database} accent="amber">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <p className="text-[14px] text-card-foreground font-medium">Quản lý bản sao lưu cấu hình bot của bạn</p>
+            <p className="text-[12px] text-muted-foreground mt-1">Chưa có bản sao lưu nào</p>
+          </div>
+          <Button asChild variant="outline" className="shrink-0">
+            <Link to="/backup">
+              Quản lý sao lưu
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Link>
+          </Button>
         </div>
       </SectionCard>
     </PageContainer>

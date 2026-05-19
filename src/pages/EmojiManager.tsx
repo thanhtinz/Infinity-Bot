@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { SmilePlus, Copy, Trash2, Upload, ImageIcon, RefreshCw, Sticker, Smile } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
 import { useT } from "@/i18n";

@@ -316,10 +316,10 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#1a1d24]">
+    <div className="flex flex-col h-full bg-gradient-to-b from-[#0f1117] to-[#151822]">
       {/* ── Logo area ── */}
-      <div className="h-[76px] px-5 flex items-center gap-3 border-b border-white/[0.06]">
-        <div className="w-9 h-9 rounded-xl bg-[#009DB5] flex items-center justify-center shadow-lg shadow-[#009DB5]/20">
+      <div className="h-[76px] px-5 flex items-center gap-3 border-b border-white/[0.05]">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#009DB5] to-[#00d4f5] flex items-center justify-center shadow-lg shadow-[#009DB5]/20">
           <Bot className="w-5 h-5 text-white" />
         </div>
         <div>
@@ -330,15 +330,15 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
       {/* ── User profile section ── */}
       {user && (
-        <div className="px-5 py-4 border-b border-white/[0.06]">
+        <div className="px-5 py-4 border-b border-white/[0.05]">
           <div className="flex items-center gap-3">
             <div className="relative">
               <img
                 src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`}
                 alt=""
-                className="w-10 h-10 rounded-full ring-2 ring-[#009DB5]/30"
+                className="w-10 h-10 rounded-full ring-2 ring-[#6C5CE7]/30"
               />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-[#1a1d24]" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-[#0f1117]" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-white truncate">{user.username}</p>
@@ -349,7 +349,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       )}
 
       {/* ── Guild selector ── */}
-      <div className="px-3 py-3 border-b border-white/[0.06]">
+      <div className="px-3 py-3 border-b border-white/[0.05]">
         <GuildSelector />
       </div>
 
@@ -372,7 +372,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             className={cn(
               "flex items-center gap-3 px-4 py-[10px] rounded-lg text-[14px] font-medium transition-all duration-300",
               location.pathname === "/bot-settings"
-                ? "text-[#009DB5] bg-[#009DB5]/10"
+                ? "text-[#6C5CE7] bg-[#6C5CE7]/10"
                 : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.04]"
             )}
           >
@@ -403,7 +403,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 className={cn(
                   "flex items-center gap-3 px-4 py-[10px] rounded-lg text-[14px] font-medium transition-all duration-300",
                   isItemActive
-                    ? "text-[#009DB5] bg-[#009DB5]/10"
+                    ? "text-[#6C5CE7] bg-[#6C5CE7]/10"
                     : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.04]"
                 )}
               >
@@ -420,7 +420,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 className={cn(
                   "flex items-center justify-between w-full px-4 py-[10px] text-[14px] font-medium cursor-pointer rounded-lg transition-all duration-300",
                   isActive
-                    ? "text-[#009DB5]"
+                    ? "text-[#6C5CE7]"
                     : "text-[#9FA8C1] hover:text-white hover:bg-white/[0.04]"
                 )}
               >
@@ -437,7 +437,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                 "overflow-hidden transition-all duration-300 ease-in-out",
                 isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
               )}>
-                <div className="py-1 ml-[18px] pl-4 border-l border-white/[0.08]">
+                <div className="py-1 ml-[18px] pl-4 border-l border-[#6C5CE7]/20">
                   {group.items.map((item) => {
                     const isItemActive = location.pathname === item.to;
                     return (
@@ -448,13 +448,13 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                         className={cn(
                           "flex items-center gap-3 px-3 py-[8px] rounded-md text-[13px] transition-all duration-300",
                           isItemActive
-                            ? "text-[#009DB5] font-semibold"
+                            ? "text-[#6C5CE7] font-semibold"
                             : "text-[#9FA8C1]/70 hover:text-white"
                         )}
                       >
                         <span className={cn(
                           "w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-300",
-                          isItemActive ? "bg-[#009DB5]" : "bg-[#9FA8C1]/30"
+                          isItemActive ? "bg-[#6C5CE7]" : "bg-[#9FA8C1]/30"
                         )} />
                         {t(item.label as Parameters<typeof t>[0])}
                       </Link>

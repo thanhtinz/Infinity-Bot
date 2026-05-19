@@ -28,7 +28,7 @@ import {
   Calendar,
   Hash,
 } from "lucide-react";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 import { useT } from "@/i18n";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

@@ -9,7 +9,7 @@ import {
 } from "recharts";
 import { TrendingUp, ShoppingCart, Users, Package, BarChart as BarChartIcon } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
-import { PageContainer, PageHeader } from "@/components/yuri";
+import { PageContainer, PageHeader } from "@/components/infinity";
 
 interface Stats {
   chart: { date: string; revenue: number; orders: number }[];
