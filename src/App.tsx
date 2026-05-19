@@ -741,19 +741,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* Mobile nav (header on mobile) */}
-      <MobileNav />
-      {/* Desktop sidebar */}
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      {/* Desktop sidebar — fixed left */}
       <Sidebar />
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col md:ml-64 min-w-0 overflow-x-hidden">
+      {/* Content wrapper */}
+      <div className="flex flex-col md:ml-64 min-h-screen min-w-0 overflow-x-hidden">
+        {/* Mobile header */}
+        <MobileNav />
         {/* Desktop header */}
         <div className="hidden md:block">
           <Header />
         </div>
         {needsGuild && (
-          <div className="sticky top-16 md:top-16 z-30 flex items-center justify-between gap-3 bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-sm text-amber-600 dark:text-amber-400">
+          <div className="sticky top-14 md:top-16 z-30 flex items-center justify-between gap-3 bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-sm text-amber-600 dark:text-amber-400">
             <span>No server selected</span>
             <button
               onClick={() => navigate("/select-guild")}
