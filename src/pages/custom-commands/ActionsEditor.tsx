@@ -107,8 +107,8 @@ export function ActionsEditor({ form, onFormChange, open, onOpenChange }: Props)
           <SelectContent className="max-h-72">
             {ACTION_GROUPS.map((g) => (
               <SelectGroup key={g.group}>
-                <SelectLabel className="flex items-center gap-1.5">
-                  <g.icon className="h-3.5 w-3.5" />
+                <SelectLabel className="flex items-center gap-1.5 bg-muted/60 text-foreground text-xs uppercase tracking-wider font-semibold px-3 py-1.5 mt-1 first:mt-0">
+                  <g.icon className="h-3 w-3" />
                   {g.group}
                 </SelectLabel>
                 {g.actions.map((a) => (
