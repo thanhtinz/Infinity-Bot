@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import {
   TrendingUp, ShoppingCart, Users, Package,
-  BarChart as BarChartIcon, Search, Clock, CheckCircle2,
+  Search, Clock, CheckCircle2,
   XCircle, Truck, AlertCircle, CreditCard,
 } from "lucide-react";
 import { apiFetch } from "@/hooks/useApi";
