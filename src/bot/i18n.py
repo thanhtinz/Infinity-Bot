@@ -20,9 +20,7 @@ STRINGS: dict[str, str] = {
         "🛒 **Shop & Orders** — sell products, manage inventory & payments\n"
         "🎉 **Giveaways** — professional giveaways with reroll\n"
         "🔨 **Moderation** — ban, kick, timeout, automod\n"
-        "🎫 **Tickets** — support ticket system with panels\n"
-        "🎨 **Embed Builder** — customise every bot notification\n"
-        "🏆 **Leveling** — XP system with rank cards & rewards\n\n"
+        "🎨 **Embed Builder** — customise every bot notification\n\n"
         "Use `/help` to see all commands."
     ),
     "welcome_footer": "Configure your server at the dashboard",
