@@ -14,13 +14,13 @@ export function useCurrency() {
     queryFn: () => apiFetch("/api/config").then((r) => r.json()),
     staleTime: 60_000,
     select: (d: CurrencyConfig) => ({
-      currency: d.currency || "VND",
-      currency_symbol: d.currency_symbol || "₫",
+      currency: d.currency || "USD",
+      currency_symbol: d.currency_symbol || "$",
     }),
   });
 
-  const symbol = data?.currency_symbol ?? "₫";
-  const currency = data?.currency ?? "VND";
+  const symbol = data?.currency_symbol ?? "$";
+  const currency = data?.currency ?? "USD";
   const noDecimal = NO_DECIMAL.has(currency);
 
   /** Format full price: ₫299.000 or $29.99 */

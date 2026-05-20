@@ -72,7 +72,7 @@ def _validate_coupon_scope(coupon: Coupon, order, user_id: str, session) -> str 
 
 
 class CouponModal(discord.ui.Modal):
-    def __init__(self, order_id: int, original_price: float, view_ref: "OrderPayView", currency: str = "VND", currency_symbol: str = "₫"):
+    def __init__(self, order_id: int, original_price: float, view_ref: "OrderPayView", currency: str = "USD", currency_symbol: str = "$"):
         super().__init__(title="Enter Coupon Code")
         self.order_id = order_id
         self.original_price = original_price
@@ -95,8 +95,8 @@ class CouponModal(discord.ui.Modal):
             if not config:
                 config = session.execute(select(SystemConfig).limit(1)).scalars().first()
 
-            currency = getattr(config, "currency", "VND") or "VND"
-            currency_symbol = getattr(config, "currency_symbol", "₫") or "₫"
+            currency = getattr(config, "currency", "USD") or "USD"
+            currency_symbol = getattr(config, "currency_symbol", "$") or "$"
             payment_methods = getattr(config, "payment_methods", None) or ["payos"]
 
             coupon = session.execute(
@@ -173,7 +173,7 @@ class CouponModal(discord.ui.Modal):
 
 class OrderPayView(discord.ui.View):
     """View with Coupon button and Cancel order — attached to order embed."""
-    def __init__(self, order_id: int, price: float, checkout_url: str, admin_id: int, currency: str = "VND", currency_symbol: str = "₫"):
+    def __init__(self, order_id: int, price: float, checkout_url: str, admin_id: int, currency: str = "USD", currency_symbol: str = "$"):
         super().__init__(timeout=900)  # 15 minutes
         self.order_id = order_id
         self.price = price
@@ -242,8 +242,8 @@ class OrderPayView(discord.ui.View):
         original_price: float,
         new_price: float,
         checkout_url: str,
-        currency: str = "VND",
-        currency_symbol: str = "₫",
+        currency: str = "USD",
+        currency_symbol: str = "$",
     ):
         """Update payment button URL and embed after applying coupon."""
         self.checkout_url = checkout_url
@@ -373,8 +373,8 @@ class BangGiaSelect(discord.ui.Select):
             config = session.execute(select(SystemConfig).where(SystemConfig.guild_id == str(interaction.guild_id))).scalars().first()
             if not config:
                 config = session.execute(select(SystemConfig).limit(1)).scalars().first()
-            currency = getattr(config, "currency", "VND") or "VND"
-            currency_symbol = getattr(config, "currency_symbol", "₫") or "₫"
+            currency = getattr(config, "currency", "USD") or "USD"
+            currency_symbol = getattr(config, "currency_symbol", "$") or "$"
 
             # Try per-product embed first, fall back to generic san_pham_detail
             product_event = f"product_{product.id}"
@@ -479,8 +479,8 @@ class AdminShopCog(discord.Cog):
             if not config:
                 config = session.execute(select(SystemConfig).limit(1)).scalars().first()
 
-            currency = getattr(config, "currency", "VND") or "VND"
-            currency_symbol = getattr(config, "currency_symbol", "₫") or "₫"
+            currency = getattr(config, "currency", "USD") or "USD"
+            currency_symbol = getattr(config, "currency_symbol", "$") or "$"
             payment_methods = getattr(config, "payment_methods", None) or ["payos"]
 
             if not payment_methods:
@@ -755,8 +755,8 @@ class AdminShopCog(discord.Cog):
             if not config:
                 config = session.execute(select(SystemConfig).limit(1)).scalars().first()
 
-            currency = getattr(config, "currency", "VND") or "VND"
-            currency_symbol = getattr(config, "currency_symbol", "₫") or "₫"
+            currency = getattr(config, "currency", "USD") or "USD"
+            currency_symbol = getattr(config, "currency_symbol", "$") or "$"
             payment_methods = getattr(config, "payment_methods", None) or ["payos"]
 
             if not payment_methods:

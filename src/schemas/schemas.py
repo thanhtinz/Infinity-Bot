@@ -55,8 +55,8 @@ class SystemConfigSafe(BaseModel):
     bot_invisible: bool = False
     language: str = "en"
     # Currency & Payment
-    currency: str = "VND"
-    currency_symbol: str = "₫"
+    currency: str = "USD"
+    currency_symbol: str = "$"
     payment_methods: Optional[List[str]] = []
     has_paypal_client_id: bool = False
     has_paypal_client_secret: bool = False

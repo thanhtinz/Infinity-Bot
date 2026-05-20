@@ -81,6 +81,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { useStaffAccess } from "@/hooks/useStaffAccess";
+import { ShopSetupGuard } from "@/components/ShopSetupGuard";
 
 import type { LucideIcon } from "lucide-react";
 
@@ -795,17 +796,17 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/config/discord" element={<OwnerRoute><ConfigDiscord /></OwnerRoute>} />
         <Route path="/config/payments" element={<PaymentConfig />} />
         {/* Shop */}
-        <Route path="/products" element={<ProductsManager />} />
-        <Route path="/orders" element={<OrdersManager />} />
-        <Route path="/feedback" element={<FeedbackManager />} />
-        <Route path="/coupons" element={<CouponsManager />} />
-        <Route path="/coupons/new" element={<CouponEditPage />} />
-        <Route path="/coupons/:id/edit" element={<CouponEditPage />} />
-        <Route path="/users" element={<UsersManager />} />
+        <Route path="/products" element={<ShopSetupGuard><ProductsManager /></ShopSetupGuard>} />
+        <Route path="/orders" element={<ShopSetupGuard><OrdersManager /></ShopSetupGuard>} />
+        <Route path="/feedback" element={<ShopSetupGuard><FeedbackManager /></ShopSetupGuard>} />
+        <Route path="/coupons" element={<ShopSetupGuard><CouponsManager /></ShopSetupGuard>} />
+        <Route path="/coupons/new" element={<ShopSetupGuard><CouponEditPage /></ShopSetupGuard>} />
+        <Route path="/coupons/:id/edit" element={<ShopSetupGuard><CouponEditPage /></ShopSetupGuard>} />
+        <Route path="/users" element={<ShopSetupGuard><UsersManager /></ShopSetupGuard>} />
         <Route path="/config/shop-channels" element={<ShopChannels />} />
-        <Route path="/shop-stats" element={<ShopStats />} />
-        <Route path="/milestones" element={<SpendingMilestones />} />
-        <Route path="/flash-sales" element={<FlashSales />} />
+        <Route path="/shop-stats" element={<ShopSetupGuard><ShopStats /></ShopSetupGuard>} />
+        <Route path="/milestones" element={<ShopSetupGuard><SpendingMilestones /></ShopSetupGuard>} />
+        <Route path="/flash-sales" element={<ShopSetupGuard><FlashSales /></ShopSetupGuard>} />
         {/* Community */}
         <Route path="/warnings" element={<WarningsManager />} />
         <Route path="/moderation" element={<ModerationPage />} />
