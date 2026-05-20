@@ -1118,7 +1118,7 @@ class CustomCommandsCog(discord.Cog):
     # ── AUTOMOD events ────────────────────────────────────────────────────────
 
     @discord.Cog.listener()
-    async def on_automod_action(self, execution: discord.AutoModActionExecution):
+    async def on_automod_action(self, execution: discord.AutoModActionExecutionEvent):
         if not check_feature(self):
             return
         guild = self.bot.get_guild(execution.guild_id)
