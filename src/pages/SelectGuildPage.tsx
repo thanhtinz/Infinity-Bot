@@ -49,7 +49,7 @@ export function SelectGuildPage() {
                 <div className="flex items-center gap-3">
                   {guild.icon ? (
                     <img
-                      src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`}
+                      src={guild.icon}
                       alt=""
                       className="w-12 h-12 rounded-xl object-cover ring-2 ring-border group-hover:ring-primary/30 transition-all"
                     />

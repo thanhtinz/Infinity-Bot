@@ -622,18 +622,28 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/select-guild" replace />;
   }
 
+  const isSelectGuild = location.pathname === "/select-guild";
+  const showSidebar = !!selectedGuildId && !isSelectGuild;
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* Desktop sidebar — fixed left */}
-      <Sidebar />
+      {/* Desktop sidebar — fixed left, hidden when no guild */}
+      {showSidebar && <Sidebar />}
       {/* Content wrapper */}
-      <div className="flex flex-col md:ml-[265px] min-h-screen min-w-0 overflow-x-hidden">
+      <div className={cn("flex flex-col min-h-screen min-w-0 overflow-x-hidden", showSidebar && "md:ml-[265px]")}>
         {/* Mobile header */}
-        <MobileNav />
+        {showSidebar ? <MobileNav /> : (
+          <div className="md:hidden border-b bg-white px-4 py-3 flex items-center gap-3 sticky top-0 z-40">
+            <Bot className="w-5 h-5 text-[#6C5CE7]" />
+            <h1 className="font-bold text-base text-gray-900">Infinity Bot</h1>
+          </div>
+        )}
         {/* Desktop header */}
-        <div className="hidden md:block">
-          <Header />
-        </div>
+        {showSidebar && (
+          <div className="hidden md:block">
+            <Header />
+          </div>
+        )}
         {needsGuild && (
           <div className="sticky top-14 md:top-[76px] z-30 flex items-center justify-between gap-3 bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-sm text-amber-600 dark:text-amber-400">
             <span>No server selected</span>
