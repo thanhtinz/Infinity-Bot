@@ -148,6 +148,37 @@ def _payment_dict(p: SubscriptionPayment) -> dict:
     }
 
 
+# ── My Plan (simple view for profile) ──────────────────────────────────────────
+
+@router.get("/premium/my-plan")
+def get_my_plan(
+    guild_id: str = Depends(get_guild_id),
+    db=Depends(get_db),
+    user=Depends(require_auth),
+):
+    """Return minimal plan info for the current guild (used by ProfilePage)."""
+    sub = db.execute(
+        select(GuildSubscription)
+        .options(joinedload(GuildSubscription.plan))
+        .where(
+            GuildSubscription.guild_id == guild_id,
+            GuildSubscription.status.in_(["active", "trial"]),
+        )
+        .order_by(GuildSubscription.current_period_end.desc())
+        .limit(1)
+    ).scalars().first()
+
+    if not sub or not sub.plan:
+        return {"name": "Free", "features": []}
+
+    features = sub.plan.features or []
+    # Normalize legacy Record format → string[]
+    if isinstance(features, dict):
+        features = [k for k, v in features.items() if v]
+
+    return {"name": sub.plan.name, "features": features}
+
+
 # ── Premium Payment Config ─────────────────────────────────────────────────────
 
 @router.get("/premium/config")

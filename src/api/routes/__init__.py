@@ -32,6 +32,7 @@ from src.api.routes.reminders import router as reminders_router
 from src.api.routes.polls import router as polls_router
 from src.api.routes.social_feeds import router as social_feeds_router
 from src.api.routes.stats_channels import router as stats_channels_router
+from src.api.routes.welcome import router as welcome_router
 
 router = APIRouter()
 
@@ -64,3 +65,4 @@ router.include_router(reminders_router, tags=["reminders"])
 router.include_router(polls_router, tags=["polls"])
 router.include_router(social_feeds_router, tags=["social-feeds"])
 router.include_router(stats_channels_router, tags=["stats-channels"])
+router.include_router(welcome_router, tags=["welcome"])

@@ -55,7 +55,7 @@ interface PremiumPlan {
   sort_order: number;
   badge_text?: string;
   color: string;
-  features: Record<string, boolean | number | string>;
+  features: string[] | Record<string, boolean | number | string>;
   created_at?: string;
   updated_at?: string;
 }
