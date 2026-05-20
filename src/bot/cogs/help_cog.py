@@ -32,7 +32,7 @@ _EMOJI_MAP: dict[str, str] = {
     "invites fake": "🚫",
     # Utility
     "afk": "💤", "avatar": "🖼️", "banner": "🎨", "userinfo": "ℹ️",
-    "serverinfo": "🏠", "poll": "📊", "qr": "📷", "setprefix": "⚙️",
+    "serverinfo": "🏠", "poll": "📊", "qr": "📷", "report": "🐛", "setprefix": "⚙️",
     # Interactions
     "hug": "🫂", "pat": "🤚", "kiss": "💋", "slap": "🫲", "punch": "👊",
     "wave": "👋", "cuddle": "🤗", "poke": "👉", "tickle": "🤭", "bite": "😬",
@@ -53,7 +53,7 @@ _EMOJI_MAP: dict[str, str] = {
     "invites me": "📊", "invites info": "👤", "invites leaderboard": "🏆",
     "invites fake": "🚫",
     # Misc
-    "afk": "💤", "poll": "📊", "qr": "📷", "setprefix": "⚙️",
+    "afk": "💤", "poll": "📊", "qr": "📷", "report": "🐛", "setprefix": "⚙️",
     # Sticky
     "sticky create": "📝", "sticky embed": "📋", "sticky edit": "✏️",
     "sticky remove": "🗑️", "sticky enable": "✅", "sticky disable": "❌",
@@ -212,6 +212,7 @@ HELP_CATEGORIES = [
             _help_cmd("afk", "Set your AFK status.", "`/afk [reason]`"),
             _help_cmd("poll", "Create a quick poll.", "`/poll <question> <options...>`"),
             _help_cmd("qr", "Generate a QR code from text or a link.", "`/qr <content>`"),
+            _help_cmd("report", "Report a bug or issue to the bot owner.", "`/report`"),
             _help_cmd("setprefix", "Set the interaction command prefix.", "`/setprefix <prefix>`", True),
         ],
     },

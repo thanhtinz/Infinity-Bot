@@ -1,8 +1,11 @@
 # src/bot/cogs/utility.py
-"""Utility slash commands — /avatar, /serverinfo, /userinfo, /poll, /qr"""
+"""Utility slash commands — /avatar, /serverinfo, /userinfo, /poll, /qr, /report"""
 import discord
 import datetime
 import logging
+from sqlalchemy import select
+from src.database.config import SessionLocal
+from src.models.models import SystemConfig
 
 logger = logging.getLogger(__name__)
 
@@ -234,3 +237,89 @@ class UtilityCog(discord.Cog):
         embed.set_footer(text=f"Requested by {ctx.author}")
         embed.timestamp = datetime.datetime.utcnow()
         await ctx.respond(embed=embed)
+
+    # ── /report ──────────────────────────────────────────────
+    @discord.slash_command(name="report", description="Report a bug or issue to the bot owner")
+    async def report_cmd(self, ctx: discord.ApplicationContext):
+        modal = ReportModal(title="Bug Report")
+        await ctx.send_modal(modal)
+
+
+class ReportModal(discord.ui.Modal):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_item(discord.ui.InputText(
+            label="Title",
+            placeholder="Short summary of the issue...",
+            max_length=100,
+            style=discord.InputTextStyle.short,
+        ))
+        self.add_item(discord.ui.InputText(
+            label="Description",
+            placeholder="Describe the bug in detail. What happened? What did you expect?",
+            max_length=2000,
+            style=discord.InputTextStyle.long,
+        ))
+        self.add_item(discord.ui.InputText(
+            label="Steps to Reproduce",
+            placeholder="1. Go to...\n2. Click on...\n3. See error",
+            max_length=1000,
+            style=discord.InputTextStyle.long,
+            required=False,
+        ))
+
+    async def callback(self, interaction: discord.Interaction):
+        title = self.children[0].value
+        description = self.children[1].value
+        steps = self.children[2].value
+
+        # Find bot owner from SystemConfig
+        owner_id = None
+        try:
+            session = SessionLocal()
+            try:
+                cfg = session.execute(
+                    select(SystemConfig).where(SystemConfig.guild_id == str(interaction.guild_id))
+                ).scalars().first()
+                if not cfg:
+                    cfg = session.execute(select(SystemConfig).limit(1)).scalars().first()
+                if cfg and cfg.discord_token:
+                    # Use app info to get owner
+                    app_info = await interaction.client.application_info()
+                    owner_id = app_info.owner.id if app_info.owner else None
+            finally:
+                session.close()
+        except Exception as e:
+            logger.error(f"Report: failed to get owner: {e}")
+
+        if not owner_id:
+            await interaction.response.send_message("❌ Could not find bot owner. Please contact server admin.", ephemeral=True)
+            return
+
+        # Build report embed
+        embed = discord.Embed(
+            title=f"🐛 Bug Report: {title}",
+            color=0xED4245,
+            timestamp=datetime.datetime.utcnow(),
+        )
+        embed.add_field(name="📝 Description", value=description[:1024], inline=False)
+        if steps:
+            embed.add_field(name="🔄 Steps to Reproduce", value=steps[:1024], inline=False)
+        embed.add_field(name="👤 Reporter", value=f"{interaction.user} (`{interaction.user.id}`)", inline=True)
+        embed.add_field(name="🏠 Server", value=f"{interaction.guild.name} (`{interaction.guild_id}`)", inline=True)
+        if interaction.channel:
+            embed.add_field(name="📌 Channel", value=f"#{interaction.channel.name}", inline=True)
+        embed.set_footer(text=f"Report from {interaction.guild.name}")
+        if interaction.user.display_avatar:
+            embed.set_thumbnail(url=interaction.user.display_avatar.url)
+
+        # Send to owner DM
+        try:
+            owner = await interaction.client.fetch_user(owner_id)
+            await owner.send(embed=embed)
+            await interaction.response.send_message("✅ Report sent to the bot owner. Thank you!", ephemeral=True)
+        except discord.Forbidden:
+            await interaction.response.send_message("❌ Could not DM the bot owner. Their DMs may be closed.", ephemeral=True)
+        except Exception as e:
+            logger.error(f"Report: failed to send DM: {e}")
+            await interaction.response.send_message("❌ Failed to send report. Please try again later.", ephemeral=True)
