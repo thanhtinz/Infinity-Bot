@@ -416,8 +416,8 @@ def update_config(config_in: SystemConfigBase, request: Request, db=Depends(get_
         config = SystemConfig(**config_in.model_dump(exclude_none=True))
         db.add(config)
     else:
-        for key, value in config_in.model_dump().items():
-            if value is not None and value != "":
+        for key, value in config_in.model_dump(exclude_unset=True).items():
+            if value is not None:
                 setattr(config, key, value)
     db.commit()
     db.refresh(config)

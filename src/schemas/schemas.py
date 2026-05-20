@@ -21,6 +21,25 @@ class SystemConfigBase(BaseModel):
     command_prefix: Optional[str] = "!"
     bot_invisible: Optional[bool] = None
     language: Optional[str] = "en"
+    # Currency & Payment
+    currency: Optional[str] = None
+    currency_symbol: Optional[str] = None
+    payment_methods: Optional[List[str]] = None
+    paypal_client_id: Optional[str] = None
+    paypal_client_secret: Optional[str] = None
+    paypal_mode: Optional[str] = None
+    crypto_api_key: Optional[str] = None
+    crypto_provider: Optional[str] = None
+    manual_qr_image_id: Optional[str] = None
+    manual_bank_name: Optional[str] = None
+    manual_account_holder: Optional[str] = None
+    manual_account_number: Optional[str] = None
+    manual_instructions: Optional[str] = None
+    flash_sale_channel_id: Optional[str] = None
+    spending_leaderboard_channel_id: Optional[str] = None
+    spending_leaderboard_schedule: Optional[str] = None
+    spending_leaderboard_time: Optional[str] = None
+    inventory_low_stock_threshold: Optional[int] = None
     
 class SystemConfigResponse(SystemConfigBase):
     """Full response — dùng nội bộ (không expose qua API public)."""

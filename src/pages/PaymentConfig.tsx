@@ -257,7 +257,7 @@ export function PaymentConfig() {
   });
 
   useEffect(() => {
-    if (configQuery.data && !form) {
+    if (configQuery.data) {
       const d = configQuery.data;
       const methods = d.payment_methods ?? [];
       setForm({
@@ -354,6 +354,7 @@ export function PaymentConfig() {
       qc.invalidateQueries({ queryKey: ["payment-config"] });
       qc.invalidateQueries({ queryKey: ["config"] });
       qc.invalidateQueries({ queryKey: ["currency-config"] });
+      qc.invalidateQueries({ queryKey: ["payment-status"] });
     } catch {
       toast({ title: "Failed to save", variant: "destructive" });
     } finally {
