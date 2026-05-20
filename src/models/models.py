@@ -39,6 +39,7 @@ class SystemConfig(Base):
     bot_invisible = Column(Boolean, default=False)
     guild_name = Column(String, nullable=True)
     guild_icon = Column(String, nullable=True)
+    guild_member_count = Column(Integer, nullable=True)
     shard_count = Column(Integer, nullable=True)  # None = auto
     shop_leaderboard_reset_at = Column(DateTime, nullable=True)
     language = Column(String, default="en")

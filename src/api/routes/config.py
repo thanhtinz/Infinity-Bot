@@ -87,17 +87,28 @@ async def get_bot_guilds(request: Request, db=Depends(get_db)):
     result = []
     if bot_client and bot_client.is_ready():
         for guild in bot_client.guilds:
-            icon_url = None
-            if guild.icon:
-                icon_url = str(guild.icon.url)
+            icon_url = str(guild.icon.url) if guild.icon else None
+            member_count = guild.member_count or guild.approximate_member_count or len(guild.members) or 0
             result.append({
                 "id": str(guild.id),
                 "name": guild.name,
                 "icon": icon_url,
-                "member_count": guild.member_count,
+                "member_count": member_count,
             })
+            # Cache to DB for fallback
+            cfg = db.execute(
+                select(SystemConfig).where(SystemConfig.guild_id == str(guild.id))
+            ).scalars().first()
+            if cfg:
+                cfg.guild_name = guild.name
+                cfg.guild_icon = icon_url
+                cfg.guild_member_count = member_count
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
     else:
-        # Fallback: lấy từ DB SystemConfig rows (dùng cached guild_name/guild_icon)
+        # Fallback: lấy từ DB SystemConfig rows
         configs = db.execute(select(SystemConfig).where(SystemConfig.guild_id.isnot(None))).scalars().all()
         for cfg in configs:
             if cfg.guild_id:
@@ -105,7 +116,7 @@ async def get_bot_guilds(request: Request, db=Depends(get_db)):
                     "id": cfg.guild_id,
                     "name": cfg.guild_name or f"Guild {cfg.guild_id}",
                     "icon": cfg.guild_icon or None,
-                    "member_count": 0,
+                    "member_count": getattr(cfg, "guild_member_count", 0) or 0,
                 })
     return result
 
