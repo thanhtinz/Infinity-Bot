@@ -460,10 +460,23 @@ async def api_sync_commands():
     try:
         # Purge stale global commands
         await _bot.http.bulk_upsert_global_commands(_bot.user.id, [])
-        # Sync current commands to all guilds
+        # Sync via py-cord
         await _bot.sync_commands()
-        synced = len(_bot.pending_application_commands)
-        return {"message": f"Synced {synced} commands to {len(_bot.guilds)} guilds"}
+        # Force per-guild overwrite for ALL guilds
+        cmds = _bot.pending_application_commands
+        cmd_payloads = [cmd.to_dict() for cmd in cmds]
+        guild_ids = [g.id for g in _bot.guilds]
+        failed = []
+        for gid in guild_ids:
+            try:
+                await _bot.http.bulk_upsert_guild_commands(_bot.user.id, gid, cmd_payloads)
+            except Exception:
+                failed.append(gid)
+        synced = len(cmds)
+        msg = f"Synced {synced} commands to {len(guild_ids)} guilds"
+        if failed:
+            msg += f" ({len(failed)} failed: {failed})"
+        return {"message": msg}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

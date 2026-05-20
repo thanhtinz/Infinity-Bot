@@ -124,6 +124,8 @@ def create_bot():
     except Exception:
         pass
 
+    logger.info(f"Creating bot with debug_guilds={_debug_guilds or 'None (global sync)'}, shard_count={_shard_count or 'auto'}")
+
     # Multi-guild: use AutoShardedBot for automatic multi-shard support
     bot_client = discord.AutoShardedBot(
         intents=intents,
@@ -358,7 +360,21 @@ def create_bot():
             # 2. Sync current commands to each guild (instant update)
             guild_ids = [g.id for g in bot_client.guilds]
             logger.info(f"Syncing commands to {len(guild_ids)} guilds: {guild_ids}")
+            logger.info(f"debug_guilds={_debug_guilds}, pending_commands={len(bot_client.pending_application_commands)}")
             await bot_client.sync_commands()
+            # 3. Force per-guild overwrite for guilds not in debug_guilds
+            _synced_set = set(_debug_guilds) if _debug_guilds else set()
+            _missing = [gid for gid in guild_ids if gid not in _synced_set]
+            if _missing:
+                logger.info(f"Force-syncing {len(_missing)} guilds not in debug_guilds: {_missing}")
+                cmds = bot_client.pending_application_commands
+                cmd_payloads = [cmd.to_dict() for cmd in cmds]
+                for gid in _missing:
+                    try:
+                        await bot_client.http.bulk_upsert_guild_commands(bot_client.user.id, gid, cmd_payloads)
+                    except Exception as _guild_err:
+                        logger.warning(f"Failed to sync commands to guild {gid}: {_guild_err}")
+                logger.info("Force per-guild sync complete")
             logger.info("Command sync completed successfully")
         except Exception as sync_err:
             logger.error(f"Command sync failed (non-fatal): {sync_err}", exc_info=True)
@@ -398,12 +414,7 @@ def create_bot():
             bot_client.add_view(BangGiaView())
         except Exception as _pv_err:
             logger.warning(f"Persistent view register failed: {_pv_err}")
-        # Sync slash commands so new/updated commands register with Discord
-        try:
-            await bot_client.sync_commands()
-            logger.info("Slash commands synced successfully")
-        except Exception as _sync_err:
-            logger.warning(f"sync_commands failed: {_sync_err}")
+        # (sync already done above — no duplicate needed)
 
     @bot_client.event
     async def on_disconnect():

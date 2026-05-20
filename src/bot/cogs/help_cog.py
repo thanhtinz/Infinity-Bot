@@ -613,7 +613,7 @@ class HelpCog(commands.Cog):
             embed = build_embed("help_menu", session, vars={
                 "user.mention": ctx.author.mention,
                 "bot_name": ctx.bot.user.display_name if ctx.bot.user else "Bot",
-            }, guild_id=interaction.guild_id)
+            }, guild_id=ctx.guild_id)
         finally:
             session.close()
         await ctx.respond(embed=embed, view=HelpMenuView(is_admin))
