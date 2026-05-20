@@ -350,8 +350,12 @@ def create_bot():
         logger.info(f"Pending application commands: {len(bot_client.pending_application_commands)}")
         bot_start_time = datetime.datetime.utcnow()
 
-        # ── Force sync slash commands to all guilds bot is in ──
+        # ── Purge stale global commands then sync guild commands ──
         try:
+            # 1. Remove ALL global commands (old Vietnamese names live here)
+            await bot_client.http.bulk_upsert_global_commands(bot_client.user.id, [])
+            logger.info("Purged all global slash commands")
+            # 2. Sync current commands to each guild (instant update)
             guild_ids = [g.id for g in bot_client.guilds]
             logger.info(f"Syncing commands to {len(guild_ids)} guilds: {guild_ids}")
             await bot_client.sync_commands()
