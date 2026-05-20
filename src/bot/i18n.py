@@ -16,12 +16,13 @@ STRINGS: dict[str, str] = {
     # Onboarding / welcome
     "welcome_title": "👋 Thanks for adding {bot_name}!",
     "welcome_desc": (
-        "**{bot_name}** is a full-featured Discord bot. Here's what you can do:\n\n"
-        "🛒 **Shop & Orders** — sell products, manage orders with PayOS\n"
+        "**{bot_name}** has been added to your server. Here's what you can do:\n\n"
+        "🛒 **Shop & Orders** — sell products, manage inventory & payments\n"
         "🎉 **Giveaways** — professional giveaways with reroll\n"
         "🔨 **Moderation** — ban, kick, timeout, automod\n"
-        "🛡️ **Verification** — OAuth2 verify, VPN/alt detection, firewall\n"
-        "🎨 **Embed Builder** — customise every bot notification\n\n"
+        "🎫 **Tickets** — support ticket system with panels\n"
+        "🎨 **Embed Builder** — customise every bot notification\n"
+        "🏆 **Leveling** — XP system with rank cards & rewards\n\n"
         "Use `/help` to see all commands."
     ),
     "welcome_footer": "Configure your server at the dashboard",
