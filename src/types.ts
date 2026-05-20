@@ -58,12 +58,21 @@ export interface ProductPackage {
   auto_buy?: boolean;
 }
 
+export interface ProductCategory {
+  id: number;
+  guild_id: string;
+  name: string;
+  emoji?: string;
+  sort_order: number;
+}
+
 export interface Product {
   id: number;
   name: string;
   description?: string;
   note?: string;
   emoji?: string;
+  category_id?: number;
   packages: ProductPackage[];
   active: boolean;
   price: number; // legacy

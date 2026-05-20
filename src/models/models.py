@@ -81,10 +81,20 @@ class User(Base):
     
     orders = relationship("Order", back_populates="user")
 
+class ProductCategory(Base):
+    __tablename__ = "product_categories"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=False, index=True)
+    name = Column(String, nullable=False)
+    emoji = Column(String, nullable=True)
+    sort_order = Column(Integer, default=0)
+    __table_args__ = (UniqueConstraint("guild_id", "name"),)
+
 class Product(Base):
     __tablename__ = "products"
     id = Column(Integer, primary_key=True, index=True)
     guild_id = Column(String, nullable=True, index=True)
+    category_id = Column(Integer, ForeignKey("product_categories.id", ondelete="SET NULL"), nullable=True)
     name = Column(String)
     description = Column(Text, nullable=True)
     note = Column(Text, nullable=True)          # ghi chú nội bộ / hướng dẫn sau khi mua
@@ -93,6 +103,7 @@ class Product(Base):
     price = Column(Float, default=0)  # kept for compat, use packages instead
     packages = Column(JSON, default=list)  # [{"name": str, "price": float, "active": bool}]
     active = Column(Boolean, default=True)
+    category = relationship("ProductCategory")
 
 class Order(Base):
     __tablename__ = "orders"

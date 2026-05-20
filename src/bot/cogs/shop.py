@@ -7,7 +7,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 from src.database.config import SessionLocal
 from src.models.models import (
-    SystemConfig, User, Product, Order, Coupon, Feedback, FlashSale, SpendingMilestone
+    SystemConfig, User, Product, Order, Coupon, Feedback, FlashSale, SpendingMilestone, ProductCategory
 )
 
 
@@ -519,6 +519,111 @@ class ShopCog(discord.Cog):
     def cog_unload(self):
         self._flash_sale_expiry_check.cancel()
         self._spending_leaderboard_auto.cancel()
+
+    # ── /price_list command ───────────────────────────────────────
+
+    @discord.slash_command(name="price_list", description="View product price list by category")
+    async def price_list_cmd(self, ctx: discord.ApplicationContext):
+        session = get_session()
+        try:
+            guild_id = str(ctx.guild.id) if ctx.guild else None
+            if not guild_id:
+                return await ctx.respond("This command can only be used in a server.", ephemeral=True)
+
+            categories = session.execute(
+                select(ProductCategory)
+                .where(ProductCategory.guild_id == guild_id)
+                .order_by(ProductCategory.sort_order, ProductCategory.id)
+            ).scalars().all()
+
+            products = session.execute(
+                select(Product)
+                .where(Product.guild_id == guild_id, Product.active == True)
+                .order_by(Product.id)
+            ).scalars().all()
+
+            if not products:
+                return await ctx.respond("No products available.", ephemeral=True)
+
+            embed = self._build_price_embed(products, categories, None)
+            view = PriceListView(products, categories, ctx.author.id) if categories else None
+            await ctx.respond(embed=embed, view=view)
+        finally:
+            session.close()
+
+    @staticmethod
+    def _build_price_embed(products, categories, selected_cat_id):
+        """Build price list embed, optionally filtered by category."""
+        if selected_cat_id is not None:
+            filtered = [p for p in products if p.category_id == selected_cat_id]
+            cat = next((c for c in categories if c.id == selected_cat_id), None)
+            cat_name = cat.name if cat else "Unknown"
+            title = f"📋 Price List — {cat_name}"
+        else:
+            filtered = products
+            title = "📋 Price List — All Products"
+
+        embed = discord.Embed(title=title, color=0x57F287)
+
+        if not filtered:
+            embed.description = "No products in this category."
+            return embed
+
+        lines = []
+        for p in filtered:
+            emoji = p.emoji or "📦"
+            if p.packages:
+                active_pkgs = [pk for pk in p.packages if pk.get("active", True)]
+                if active_pkgs:
+                    prices = [f"{pk['name']}: **{pk['price']:,.0f}**" for pk in active_pkgs]
+                    lines.append(f"{emoji} **{p.name}**\n" + "\n".join(f"  └ {pr}" for pr in prices))
+                else:
+                    lines.append(f"{emoji} **{p.name}** — *No packages*")
+            else:
+                lines.append(f"{emoji} **{p.name}** — **{p.price:,.0f}**")
+
+        embed.description = "\n\n".join(lines)
+        embed.set_footer(text=f"{len(filtered)} product{'s' if len(filtered) != 1 else ''}")
+        return embed
+
+
+class PriceListView(discord.ui.View):
+    """Dropdown to filter price list by category."""
+
+    def __init__(self, products, categories, author_id):
+        super().__init__(timeout=120)
+        self.products = products
+        self.categories = categories
+        self.author_id = author_id
+
+        options = [discord.SelectOption(label="All Products", value="all", default=True)]
+        for cat in categories:
+            options.append(discord.SelectOption(label=cat.name, value=str(cat.id)))
+
+        self.select = discord.ui.Select(
+            placeholder="Select category",
+            options=options[:25],
+        )
+        self.select.callback = self.on_select
+        self.add_item(self.select)
+
+    async def on_select(self, interaction: discord.Interaction):
+        if interaction.user.id != self.author_id:
+            return await interaction.response.send_message("Use your own `/price_list`.", ephemeral=True)
+
+        value = self.select.values[0]
+        cat_id = None if value == "all" else int(value)
+
+        # Update default states
+        for opt in self.select.options:
+            opt.default = (opt.value == value)
+
+        embed = ShopCog._build_price_embed(self.products, self.categories, cat_id)
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    async def on_timeout(self):
+        for item in self.children:
+            item.disabled = True
 
 
 def setup(bot):

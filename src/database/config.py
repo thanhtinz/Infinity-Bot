@@ -185,6 +185,8 @@ async def init_db():
         pr = cols("products")
         if "emoji" not in pr:
             all_stmts.append("ALTER TABLE products ADD COLUMN emoji VARCHAR")
+        if "category_id" not in pr:
+            all_stmts.append("ALTER TABLE products ADD COLUMN category_id INTEGER REFERENCES product_categories(id) ON DELETE SET NULL")
 
         # orders
         ord_ = cols("orders")

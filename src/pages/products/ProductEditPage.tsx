@@ -10,17 +10,20 @@ import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PackagePlus, X, ArrowLeft, Save, Loader2, Warehouse, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EmojiPicker } from "@/components/EmojiPicker";
-import type { Product, ProductPackage } from "../../types";
+import type { Product, ProductPackage, ProductCategory } from "../../types";
 import { apiFetch } from "@/hooks/useApi";
+import { useGuild } from "@/contexts/GuildContext";
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   note: z.string().optional(),
   emoji: z.string().optional(),
+  category_id: z.number().nullable().optional(),
   active: z.boolean(),
 });
 type ProductForm = z.infer<typeof productSchema>;
@@ -43,11 +46,20 @@ export function ProductEditPage() {
     staleTime: 60_000,
   });
 
+  const { selectedGuildId } = useGuild();
+
+  const { data: categories = [] } = useQuery<ProductCategory[]>({
+    queryKey: ["categories", selectedGuildId],
+    queryFn: () => apiFetch("/api/categories").then((r) => r.json()),
+    staleTime: 60_000,
+    enabled: !!selectedGuildId,
+  });
+
   const item = id ? products?.find((p) => String(p.id) === id) : undefined;
 
   const form = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
-    defaultValues: { name: "", description: "", note: "", emoji: "", active: true },
+    defaultValues: { name: "", description: "", note: "", emoji: "", category_id: null, active: true },
   });
 
   useEffect(() => {
@@ -57,6 +69,7 @@ export function ProductEditPage() {
         description: item.description || "",
         note: item.note || "",
         emoji: item.emoji || "",
+        category_id: item.category_id ?? null,
         active: item.active,
       });
       setPackages(item.packages?.length ? item.packages.map((pkg) => ({ ...pkg })) : [emptyPackage()]);
@@ -145,6 +158,7 @@ export function ProductEditPage() {
           <ProductInfoForm
             form={form}
             packages={packages}
+            categories={categories}
             addPkg={addPkg}
             updatePkg={updatePkg}
             removePkg={removePkg}
@@ -157,6 +171,7 @@ export function ProductEditPage() {
           <ProductInfoForm
             form={form}
             packages={packages}
+            categories={categories}
             addPkg={addPkg}
             updatePkg={updatePkg}
             removePkg={removePkg}
@@ -172,13 +187,14 @@ export function ProductEditPage() {
 interface ProductInfoFormProps {
   form: ReturnType<typeof useForm<ProductForm>>;
   packages: ProductPackage[];
+  categories: ProductCategory[];
   addPkg: () => void;
   updatePkg: (i: number, field: keyof ProductPackage, value: string | number | boolean) => void;
   removePkg: (i: number) => void;
   onSubmit: (values: ProductForm) => void;
 }
 
-function ProductInfoForm({ form, packages, addPkg, updatePkg, removePkg, onSubmit }: ProductInfoFormProps) {
+function ProductInfoForm({ form, packages, categories, addPkg, updatePkg, removePkg, onSubmit }: ProductInfoFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -206,6 +222,32 @@ function ProductInfoForm({ form, packages, addPkg, updatePkg, removePkg, onSubmi
                 </Button>
               )}
             </div>
+            <FormMessage />
+          </FormItem>
+        )} />
+
+        {/* Category */}
+        <FormField control={form.control} name="category_id" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Category</FormLabel>
+            <Select
+              value={field.value == null ? "none" : String(field.value)}
+              onValueChange={(v) => field.onChange(v === "none" ? null : Number(v))}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="No Category" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="none">No Category</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={String(cat.id)}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <FormMessage />
           </FormItem>
         )} />

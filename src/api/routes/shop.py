@@ -5,7 +5,7 @@ from sqlalchemy.orm import joinedload
 import os, uuid, shutil, logging, datetime
 
 from src.database.config import get_db
-from src.models.models import SystemConfig, Product, Order, User, Coupon, SpendingMilestone, FlashSale, InventoryItem
+from src.models.models import SystemConfig, Product, Order, User, Coupon, SpendingMilestone, FlashSale, InventoryItem, ProductCategory
 from src.schemas.schemas import ProductBase, ProductResponse, OrderResponse
 from src.api.deps import get_guild_id, require_staff_perm
 
@@ -68,6 +68,67 @@ async def upload_product_image(file: UploadFile = File(...), db=Depends(get_db))
     db.add(uf)
     db.commit()
     return {"url": f"/api/files/{file_id}"}
+
+
+# ── Categories ────────────────────────────────────────────────────────────────
+
+@router.get("/categories")
+def get_categories(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    rows = db.execute(
+        select(ProductCategory)
+        .where(ProductCategory.guild_id == guild_id)
+        .order_by(ProductCategory.sort_order, ProductCategory.id)
+    ).scalars().all()
+    return [{"id": c.id, "guild_id": c.guild_id, "name": c.name, "emoji": c.emoji, "sort_order": c.sort_order} for c in rows]
+
+@router.post("/categories")
+def create_category(body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    name = (body.get("name") or "").strip()
+    if not name:
+        raise HTTPException(400, "Name is required")
+    existing = db.execute(
+        select(ProductCategory).where(ProductCategory.guild_id == guild_id, ProductCategory.name == name)
+    ).scalars().first()
+    if existing:
+        raise HTTPException(409, "Category already exists")
+    cat = ProductCategory(guild_id=guild_id, name=name, emoji=body.get("emoji"), sort_order=body.get("sort_order", 0))
+    db.add(cat)
+    db.commit()
+    db.refresh(cat)
+    return {"id": cat.id, "guild_id": cat.guild_id, "name": cat.name, "emoji": cat.emoji, "sort_order": cat.sort_order}
+
+@router.put("/categories/{cat_id}")
+def update_category(cat_id: int, body: dict, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cat = db.execute(
+        select(ProductCategory).where(ProductCategory.id == cat_id, ProductCategory.guild_id == guild_id)
+    ).scalars().first()
+    if not cat:
+        raise HTTPException(404, "Category not found")
+    if "name" in body:
+        cat.name = (body["name"] or "").strip() or cat.name
+    if "emoji" in body:
+        cat.emoji = body["emoji"]
+    if "sort_order" in body:
+        cat.sort_order = body["sort_order"]
+    db.commit()
+    return {"id": cat.id, "guild_id": cat.guild_id, "name": cat.name, "emoji": cat.emoji, "sort_order": cat.sort_order}
+
+@router.delete("/categories/{cat_id}")
+def delete_category(cat_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    cat = db.execute(
+        select(ProductCategory).where(ProductCategory.id == cat_id, ProductCategory.guild_id == guild_id)
+    ).scalars().first()
+    if not cat:
+        raise HTTPException(404, "Category not found")
+    # Unlink products from this category
+    db.execute(
+        select(Product).where(Product.category_id == cat_id)
+    )
+    for p in db.execute(select(Product).where(Product.category_id == cat_id)).scalars().all():
+        p.category_id = None
+    db.delete(cat)
+    db.commit()
+    return {"ok": True}
 
 
 @router.post("/products", response_model=ProductResponse)

@@ -13,6 +13,7 @@ _EMOJI_MAP: dict[str, str] = {
     # Shop
     "san_pham": "📦", "orders": "📋", "feedback": "⭐", "support": "🆘",
     "bxh": "📊", "tao_don": "🧾", "tao_don_custom": "✏️", "bang_gia": "💰",
+    "price_list": "📋",
     # Giveaway
     "giveaway": "🎁", "giveaway_list": "📋", "giveaway_reroll": "🔁",
     "giveaway_end": "🏁", "giveaway_ban": "🚫", "giveaway_unban": "✅",
@@ -174,6 +175,7 @@ HELP_CATEGORIES = [
             _help_cmd("tao_don", "Create an order for a member.", "`/tao_don`", True),
             _help_cmd("tao_don_custom", "Create a custom order with a custom name.", "`/tao_don_custom`", True),
             _help_cmd("bang_gia", "Send the product price list to a channel.", "`/bang_gia [#channel]`", True),
+            _help_cmd("price_list", "View price list with category filter.", "`/price_list`"),
         ],
     },
     {
