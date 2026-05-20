@@ -452,6 +452,22 @@ async def api_restart_bot():
     return {"message": "Bot restarting..."}
 
 
+@router.post("/bot/sync-commands")
+async def api_sync_commands():
+    from src.bot.manager import bot as _bot
+    if _bot is None or not _bot.is_ready():
+        raise HTTPException(status_code=400, detail="Bot is not running")
+    try:
+        # Purge stale global commands
+        await _bot.http.bulk_upsert_global_commands(_bot.user.id, [])
+        # Sync current commands to all guilds
+        await _bot.sync_commands()
+        synced = len(_bot.pending_application_commands)
+        return {"message": f"Synced {synced} commands to {len(_bot.guilds)} guilds"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/bot/info")
 async def api_bot_info():
     from src.bot.manager import bot as _bot, bot_start_time

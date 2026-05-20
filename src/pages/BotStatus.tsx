@@ -26,6 +26,7 @@ import {
   Timer,
   EyeOff,
   Activity,
+  RotateCw,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/i18n";
@@ -121,6 +122,13 @@ export function BotStatus() {
     mutationFn: () =>
       fetch("/api/bot/restart", { method: "POST", credentials: "include" }),
     onSuccess: (res) => handleMutationResponse(res, t("botStatus_restart")),
+    onError: () => toast({ variant: "destructive", title: t("toast_connectionError") }),
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: () =>
+      fetch("/api/bot/sync-commands", { method: "POST", credentials: "include" }),
+    onSuccess: (res) => handleMutationResponse(res, "Sync Commands"),
     onError: () => toast({ variant: "destructive", title: t("toast_connectionError") }),
   });
 
@@ -337,6 +345,19 @@ export function BotStatus() {
                   }`}
                 />{" "}
                 {t("botStatus_restart")}
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => syncMutation.mutate()}
+                disabled={!isRunning || syncMutation.isPending}
+                variant="outline"
+              >
+                <RotateCw
+                  className={`mr-1 h-3.5 w-3.5 ${
+                    syncMutation.isPending ? "animate-spin" : ""
+                  }`}
+                />{" "}
+                Sync Commands
               </Button>
               {inviteUrl && (
                 <Button size="sm" variant="secondary" asChild>
