@@ -184,7 +184,7 @@ class UtilityCog(discord.Cog):
         await ctx.respond(embed=embed)
 
     # ── /poll ────────────────────────────────────────────────
-    @discord.slash_command(name="poll", description="Create a quick poll")
+    @discord.slash_command(name="quickpoll", description="Create a quick poll")
     async def poll_cmd(
         self,
         ctx: discord.ApplicationContext,
