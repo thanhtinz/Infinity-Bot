@@ -215,7 +215,7 @@ async def auth_callback(code: str, request: Request, response: Response, db = De
         }
         token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
         
-        response = RedirectResponse(f"{domain}/")
+        response = RedirectResponse(f"{domain}/select-guild")
         response.set_cookie(
             key="dashboard_session", 
             value=token, 
