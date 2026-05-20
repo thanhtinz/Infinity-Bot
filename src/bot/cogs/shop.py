@@ -2,6 +2,7 @@
 # Slash commands: /help, /status, /account, /orders, /support, /feedback, /bxh, /san_pham
 
 import discord
+from discord.ext import tasks
 import datetime
 from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
@@ -409,7 +410,7 @@ class ShopCog(discord.Cog):
     # Background tasks
     # ─────────────────────────────────────────────────────────────────────
 
-    @discord.ext.tasks.loop(minutes=1)
+    @tasks.loop(minutes=1)
     async def _flash_sale_expiry_check(self):
         """Deactivate expired or sold-out flash sales and post end embed."""
         session = get_session()
@@ -454,7 +455,7 @@ class ShopCog(discord.Cog):
     async def before_flash_sale(self):
         await self.bot.wait_until_ready()
 
-    @discord.ext.tasks.loop(minutes=1)
+    @tasks.loop(minutes=1)
     async def _spending_leaderboard_auto(self):
         """Auto-post spending leaderboard on schedule."""
         session = get_session()
