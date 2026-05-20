@@ -293,7 +293,7 @@ def create_plan(
         sort_order=int(body.get("sort_order", 0)),
         badge_text=_validate_str(body.get("badge_text"), "badge_text", 32),
         color=_validate_str(body.get("color", "#6366f1"), "color", 16),
-        features=body.get("features") if isinstance(body.get("features"), dict) else {},
+        features=body.get("features") if isinstance(body.get("features"), (dict, list)) else {},
     )
     db.add(plan)
     db.commit()
@@ -330,7 +330,7 @@ def update_plan(
             setattr(plan, field, body[field])
 
     if "features" in body:
-        plan.features = body["features"] if isinstance(body["features"], dict) else {}
+        plan.features = body["features"] if isinstance(body["features"], (dict, list)) else {}
 
     plan.updated_at = datetime.datetime.utcnow()
     db.commit()

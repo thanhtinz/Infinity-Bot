@@ -42,6 +42,7 @@ import {
   Archive,
   Loader2,
   Gem,
+  Trash2,
 } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/infinity";
 
@@ -60,7 +61,7 @@ interface PremiumPlan {
   sort_order: number;
   badge_text?: string;
   color: string;
-  features: Record<string, boolean | number | string>;
+  features: string[] | Record<string, boolean | number | string>;  // new: string[], legacy: Record
   created_at?: string;
   updated_at?: string;
 }
@@ -81,14 +82,8 @@ const INTERVAL_OPTIONS = [
   { value: "lifetime", label: "Lifetime" },
 ];
 
-const FEATURE_KEYS = [
-  { key: "custom_bot", label: "Custom Bot", type: "boolean" as const },
-  { key: "advanced_captcha", label: "Advanced Captcha", type: "boolean" as const },
-  { key: "scheduled_backup", label: "Scheduled Backup", type: "boolean" as const },
-  { key: "backup_retention", label: "Backup Retention (days)", type: "number" as const },
-  { key: "remove_branding", label: "Remove Branding", type: "boolean" as const },
-  { key: "priority_support", label: "Priority Support", type: "boolean" as const },
-];
+const FEATURE_KEYS: { key: string; label: string; type: "boolean" | "number" }[] = [];
+// Features are now fully dynamic — user adds them per plan
 
 interface PlanFormState {
   code: string;
@@ -102,7 +97,7 @@ interface PlanFormState {
   sort_order: number;
   active: boolean;
   is_public: boolean;
-  features: Record<string, boolean | number | string>;
+  features: string[];  // simple list of feature strings
 }
 
 const EMPTY_PLAN: PlanFormState = {
@@ -117,14 +112,7 @@ const EMPTY_PLAN: PlanFormState = {
   sort_order: 0,
   active: true,
   is_public: true,
-  features: {
-    custom_bot: false,
-    advanced_captcha: false,
-    scheduled_backup: false,
-    backup_retention: 0,
-    remove_branding: false,
-    priority_support: false,
-  },
+  features: [],
 };
 
 // ── API ────────────────────────────────────────────────────────────────────
@@ -222,21 +210,46 @@ export function PremiumPlans() {
     []
   );
 
-  const updateFeature = useCallback((key: string, value: boolean | number | string) => {
+  const updateFeature = useCallback((index: number, value: string) => {
+    setForm((prev) => {
+      const features = [...prev.features];
+      features[index] = value;
+      return { ...prev, features };
+    });
+  }, []);
+
+  const addFeature = useCallback(() => {
+    setForm((prev) => ({ ...prev, features: [...prev.features, ""] }));
+  }, []);
+
+  const removeFeature = useCallback((index: number) => {
     setForm((prev) => ({
       ...prev,
-      features: { ...prev.features, [key]: value },
+      features: prev.features.filter((_, i) => i !== index),
     }));
   }, []);
 
   const openCreateDialog = () => {
     setEditingPlan(null);
-    setForm({ ...EMPTY_PLAN, features: { ...EMPTY_PLAN.features } });
+    setForm({ ...EMPTY_PLAN, features: [] });
     setDialogOpen(true);
   };
 
   const openEditDialog = (plan: PremiumPlan) => {
     setEditingPlan(plan);
+    // Convert features: could be old Record format or new string[] format
+    let features: string[] = [];
+    if (Array.isArray(plan.features)) {
+      features = plan.features as string[];
+    } else if (plan.features && typeof plan.features === "object") {
+      // Legacy: convert Record<string, boolean|number> → string list of enabled ones
+      features = Object.entries(plan.features)
+        .filter(([, v]) => !!v)
+        .map(([k, v]) => {
+          const label = k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+          return typeof v === "number" && v > 0 ? `${label}: ${v}` : label;
+        });
+    }
     setForm({
       code: plan.code,
       name: plan.name,
@@ -249,14 +262,7 @@ export function PremiumPlans() {
       sort_order: plan.sort_order,
       active: plan.active,
       is_public: plan.is_public,
-      features: {
-        custom_bot: (plan.features?.custom_bot as boolean) ?? false,
-        advanced_captcha: (plan.features?.advanced_captcha as boolean) ?? false,
-        scheduled_backup: (plan.features?.scheduled_backup as boolean) ?? false,
-        backup_retention: (plan.features?.backup_retention as number) ?? 0,
-        remove_branding: (plan.features?.remove_branding as boolean) ?? false,
-        priority_support: (plan.features?.priority_support as boolean) ?? false,
-      },
+      features,
     });
     setDialogOpen(true);
   };
@@ -566,34 +572,33 @@ export function PremiumPlans() {
 
             {/* Features */}
             <div className="space-y-3">
-              <Label className="text-base font-medium">Features</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {FEATURE_KEYS.map((feat) => (
-                  <div
-                    key={feat.key}
-                    className="flex items-center justify-between rounded-lg border px-3 py-2"
-                  >
-                    <Label htmlFor={`feat-${feat.key}`} className="text-sm cursor-pointer">
-                      {feat.label}
-                    </Label>
-                    {feat.type === "boolean" ? (
-                      <Switch
-                        id={`feat-${feat.key}`}
-                        checked={!!form.features[feat.key]}
-                        onCheckedChange={(v) => updateFeature(feat.key, v)}
-                      />
-                    ) : (
-                      <Input
-                        id={`feat-${feat.key}`}
-                        type="number"
-                        min={0}
-                        value={Number(form.features[feat.key]) || 0}
-                        onChange={(e) =>
-                          updateFeature(feat.key, Number(e.target.value) || 0)
-                        }
-                        className="w-20 h-8 text-sm"
-                      />
-                    )}
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-medium">Features</Label>
+                <Button type="button" variant="outline" size="sm" onClick={addFeature}>
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add
+                </Button>
+              </div>
+              {form.features.length === 0 && (
+                <p className="text-sm text-muted-foreground">No features added. Click "Add" to add plan features.</p>
+              )}
+              <div className="space-y-2">
+                {form.features.map((feat, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Input
+                      value={feat}
+                      onChange={(e) => updateFeature(i, e.target.value)}
+                      placeholder="e.g. Custom Bot, Priority Support, 30-day Backup..."
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeFeature(i)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
               </div>

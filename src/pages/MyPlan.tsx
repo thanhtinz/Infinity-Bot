@@ -158,6 +158,20 @@ const FEATURE_LABELS: Record<string, string> = {
   priority_support: "Priority support",
 };
 
+/** Normalize features: old Record format → string[], new string[] → as-is */
+function getFeatureList(features: unknown): string[] {
+  if (Array.isArray(features)) return features as string[];
+  if (features && typeof features === "object") {
+    return Object.entries(features as Record<string, unknown>)
+      .filter(([, v]) => (typeof v === "boolean" ? v : Number(v) > 0))
+      .map(([k, v]) => {
+        const label = FEATURE_LABELS[k] || k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        return typeof v === "number" && v > 0 ? `${label}: ${v} days` : label;
+      });
+  }
+  return [];
+}
+
 /** Ordered feature keys for the comparison table */
 const COMPARISON_FEATURE_KEYS = [
   "custom_bot",
@@ -501,41 +515,39 @@ export function MyPlan() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {COMPARISON_FEATURE_KEYS.map((key) => (
-                    <TableRow key={key}>
-                      <TableCell className="font-medium text-sm sticky left-0 bg-background z-10">
-                        {FEATURE_LABELS[key] || key}
-                      </TableCell>
-                      {/* Free column */}
-                      <TableCell className="text-center">
-                        {key === "backup_retention" ? (
-                          <span className="text-xs text-muted-foreground">7 days</span>
-                        ) : (
+                  {/* Collect all unique features across plans */}
+                  {(() => {
+                    const allFeats = new Set<string>();
+                    publicPlans.forEach((p) => getFeatureList(p.features).forEach((f) => allFeats.add(f)));
+                    return Array.from(allFeats).map((feat) => (
+                      <TableRow key={feat}>
+                        <TableCell className="font-medium text-sm sticky left-0 bg-background z-10">
+                          {feat}
+                        </TableCell>
+                        {/* Free column */}
+                        <TableCell className="text-center">
                           <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
-                        )}
-                      </TableCell>
-                      {/* Premium plan columns */}
-                      {publicPlans.map((plan) => {
-                        const value = plan.features?.[key];
-                        return (
-                          <TableCell key={plan.id} className="text-center">
-                            {typeof value === "number" && value > 0 ? (
-                              <span className="text-sm font-medium" style={{ color: plan.color || undefined }}>
-                                {value} days
-                              </span>
-                            ) : value === true ? (
-                              <CheckCircle2
-                                className="h-4 w-4 mx-auto"
-                                style={{ color: plan.color || "#22c55e" }}
-                              />
-                            ) : (
-                              <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        {/* Premium plan columns */}
+                        {publicPlans.map((plan) => {
+                          const planFeats = getFeatureList(plan.features);
+                          const has = planFeats.includes(feat);
+                          return (
+                            <TableCell key={plan.id} className="text-center">
+                              {has ? (
+                                <CheckCircle2
+                                  className="h-4 w-4 mx-auto"
+                                  style={{ color: plan.color || "#22c55e" }}
+                                />
+                              ) : (
+                                <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                              )}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    ));
+                  })()}
                 </TableBody>
               </Table>
             </div>
@@ -606,25 +618,16 @@ export function MyPlan() {
 
                     {/* Features */}
                     <div className="space-y-2">
-                      {Object.entries(plan.features || {})
-                        .filter(([, v]) =>
-                          typeof v === "boolean" ? v : Number(v) > 0
-                        )
-                        .map(([key, value]) => (
+                      {getFeatureList(plan.features).map((feat, i) => (
                           <div
-                            key={key}
+                            key={i}
                             className="flex items-center gap-2 text-sm"
                           >
                             <CheckCircle2
                               className="h-3.5 w-3.5 shrink-0"
                               style={{ color: plan.color || "#22c55e" }}
                             />
-                            <span>
-                              {FEATURE_LABELS[key] || key}
-                              {typeof value === "number" && value > 0
-                                ? `: ${value} days`
-                                : ""}
-                            </span>
+                            <span>{feat}</span>
                           </div>
                         ))}
                     </div>
@@ -914,45 +917,42 @@ export function MyPlan() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {COMPARISON_FEATURE_KEYS.map((key) => (
-                  <TableRow key={key}>
-                    <TableCell className="font-medium text-sm sticky left-0 bg-background z-10">
-                      {FEATURE_LABELS[key] || key}
-                    </TableCell>
-                    {/* Free column */}
-                    <TableCell className="text-center">
-                      {key === "backup_retention" ? (
-                        <span className="text-xs text-muted-foreground">7 days</span>
-                      ) : (
+                {(() => {
+                  const allFeats = new Set<string>();
+                  publicPlans.forEach((p) => getFeatureList(p.features).forEach((f) => allFeats.add(f)));
+                  return Array.from(allFeats).map((feat) => (
+                    <TableRow key={feat}>
+                      <TableCell className="font-medium text-sm sticky left-0 bg-background z-10">
+                        {feat}
+                      </TableCell>
+                      {/* Free column */}
+                      <TableCell className="text-center">
                         <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
-                      )}
-                    </TableCell>
-                    {/* Premium plan columns */}
-                    {publicPlans.map((plan) => {
-                      const value = plan.features?.[key];
-                      const isCurrentPlan = plan.id === subscription.plan_id;
-                      return (
-                        <TableCell
-                          key={plan.id}
-                          className={`text-center ${isCurrentPlan ? "bg-primary/5" : ""}`}
-                        >
-                          {typeof value === "number" && value > 0 ? (
-                            <span className="text-sm font-medium" style={{ color: plan.color || undefined }}>
-                              {value} days
-                            </span>
-                          ) : value === true ? (
-                            <CheckCircle2
-                              className="h-4 w-4 mx-auto"
-                              style={{ color: plan.color || "#22c55e" }}
-                            />
-                          ) : (
-                            <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      {/* Premium plan columns */}
+                      {publicPlans.map((plan) => {
+                        const planFeats = getFeatureList(plan.features);
+                        const has = planFeats.includes(feat);
+                        const isCurrentPlan = plan.id === subscription.plan_id;
+                        return (
+                          <TableCell
+                            key={plan.id}
+                            className={`text-center ${isCurrentPlan ? "bg-primary/5" : ""}`}
+                          >
+                            {has ? (
+                              <CheckCircle2
+                                className="h-4 w-4 mx-auto"
+                                style={{ color: plan.color || "#22c55e" }}
+                              />
+                            ) : (
+                              <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  ));
+                })()}
               </TableBody>
             </Table>
           </div>
@@ -1029,25 +1029,16 @@ export function MyPlan() {
                       </div>
 
                       <div className="space-y-2">
-                        {Object.entries(plan.features || {})
-                          .filter(([, v]) =>
-                            typeof v === "boolean" ? v : Number(v) > 0
-                          )
-                          .map(([key, value]) => (
+                        {getFeatureList(plan.features).map((feat, i) => (
                             <div
-                              key={key}
+                              key={i}
                               className="flex items-center gap-2 text-sm"
                             >
                               <CheckCircle2
                                 className="h-3.5 w-3.5 shrink-0"
                                 style={{ color: plan.color || "#22c55e" }}
                               />
-                              <span>
-                                {FEATURE_LABELS[key] || key}
-                                {typeof value === "number" && value > 0
-                                  ? `: ${value} days`
-                                  : ""}
-                              </span>
+                              <span>{feat}</span>
                             </div>
                           ))}
                       </div>
