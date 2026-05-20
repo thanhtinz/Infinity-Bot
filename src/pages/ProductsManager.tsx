@@ -16,6 +16,16 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { ProductDetailDialog } from "./products/ProductDetailDialog";
 import { ProductEditDialog } from "./products/ProductEditDialog";
 
+/** Render emoji — handles both Unicode and Discord custom format <:name:id> / <a:name:id> */
+function EmojiDisplay({ emoji, className }: { emoji: string; className?: string }) {
+  const match = emoji.match(/^<(a?):(\w+):(\d+)>$/);
+  if (match) {
+    const [, animated, , id] = match;
+    return <img src={`https://cdn.discordapp.com/emojis/${id}.${animated ? "gif" : "webp"}?size=48`} alt="" className={cn("inline-block", className)} />;
+  }
+  return <span className={className}>{emoji}</span>;
+}
+
 interface InventoryStat {
   product_id: number;
   product_name: string | null;
@@ -218,7 +228,7 @@ export function ProductsManager() {
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                     {p.emoji ? (
-                      <span className="text-lg">{p.emoji}</span>
+                      <EmojiDisplay emoji={p.emoji} className="h-5 w-5 text-lg" />
                     ) : (
                       <Package className="h-5 w-5 text-primary" />
                     )}

@@ -16,6 +16,16 @@ import { PackagePlus, X, Save, Loader2, Warehouse, Zap, Upload } from "lucide-re
 import { useToast } from "@/hooks/use-toast";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import type { Product, ProductPackage, ProductCategory } from "@/types";
+
+/** Render emoji — handles both Unicode and Discord custom format <:name:id> / <a:name:id> */
+function EmojiDisplay({ emoji, className }: { emoji: string; className?: string }) {
+  const match = emoji.match(/^<(a?):(\w+):(\d+)>$/);
+  if (match) {
+    const [, animated, , id] = match;
+    return <img src={`https://cdn.discordapp.com/emojis/${id}.${animated ? "gif" : "webp"}?size=48`} alt="" className={`inline-block ${className ?? ""}`} />;
+  }
+  return <span className={className}>{emoji}</span>;
+}
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
 
@@ -223,7 +233,7 @@ export function ProductEditDialog({ product, open, onClose }: Props) {
                   <FormLabel>Emoji <span className="text-xs text-muted-foreground font-normal">(shown in menu)</span></FormLabel>
                   <div className="flex items-center gap-2">
                     <div className="w-12 h-10 rounded border bg-muted flex items-center justify-center text-xl shrink-0">
-                      {field.value || "—"}
+                      {field.value ? <EmojiDisplay emoji={field.value} className="h-6 w-6" /> : "—"}
                     </div>
                     <EmojiPicker onSelect={(em) => field.onChange(em)} />
                     {field.value && (

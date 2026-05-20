@@ -7,6 +7,16 @@ import { EmojiTextarea } from "@/components/EmojiInput";
 import { Pencil, Trash2, Package, Warehouse, Upload, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
+
+/** Render emoji — handles both Unicode and Discord custom format <:name:id> / <a:name:id> */
+function EmojiDisplay({ emoji, className }: { emoji: string; className?: string }) {
+  const match = emoji.match(/^<(a?):(\w+):(\d+)>$/);
+  if (match) {
+    const [, animated, , id] = match;
+    return <img src={`https://cdn.discordapp.com/emojis/${id}.${animated ? "gif" : "webp"}?size=48`} alt="" className={cn("inline-block", className)} />;
+  }
+  return <span className={className}>{emoji}</span>;
+}
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -144,7 +154,7 @@ export function ProductDetailDialog({ product, onClose, onEdit, onDelete, invent
         <div className="flex items-center gap-3 p-4 border-b">
           <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
             {product.emoji ? (
-              <span className="text-xl">{product.emoji}</span>
+              <EmojiDisplay emoji={product.emoji} className="h-6 w-6 text-xl" />
             ) : (
               <Package className="h-6 w-6 text-primary" />
             )}
