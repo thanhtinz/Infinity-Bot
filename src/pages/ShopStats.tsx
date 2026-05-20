@@ -45,13 +45,13 @@ interface OrderItem {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  ALL: { label: "Tất cả", color: "bg-secondary text-secondary-foreground", icon: ShoppingCart },
-  PENDING: { label: "Chờ thanh toán", color: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400", icon: Clock },
-  PENDING_MANUAL: { label: "Chờ duyệt", color: "bg-orange-500/15 text-orange-600 dark:text-orange-400", icon: AlertCircle },
-  PAID: { label: "Đã thanh toán", color: "bg-green-500/15 text-green-600 dark:text-green-400", icon: CheckCircle2 },
-  DELIVERED: { label: "Đã giao", color: "bg-blue-500/15 text-blue-600 dark:text-blue-400", icon: Truck },
-  CANCELLED: { label: "Đã hủy", color: "bg-red-500/15 text-red-600 dark:text-red-400", icon: XCircle },
-  ERROR: { label: "Lỗi", color: "bg-destructive/15 text-destructive", icon: AlertCircle },
+  ALL: { label: "All", color: "bg-secondary text-secondary-foreground", icon: ShoppingCart },
+  PENDING: { label: "Pending", color: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400", icon: Clock },
+  PENDING_MANUAL: { label: "Pending Review", color: "bg-orange-500/15 text-orange-600 dark:text-orange-400", icon: AlertCircle },
+  PAID: { label: "Paid", color: "bg-green-500/15 text-green-600 dark:text-green-400", icon: CheckCircle2 },
+  DELIVERED: { label: "Delivered", color: "bg-blue-500/15 text-blue-600 dark:text-blue-400", icon: Truck },
+  CANCELLED: { label: "Cancelled", color: "bg-red-500/15 text-red-600 dark:text-red-400", icon: XCircle },
+  ERROR: { label: "Error", color: "bg-destructive/15 text-destructive", icon: AlertCircle },
 };
 
 function StatCard({
@@ -147,13 +147,13 @@ export function ShopStats() {
   const formatDate = (iso: string | null) => {
     if (!iso) return "—";
     const d = new Date(iso);
-    return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) +
-      " " + d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" }) +
+      " " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
   };
 
   return (
     <PageContainer size="lg">
-      <PageHeader title="Lịch sử giao dịch" icon={CreditCard} />
+      <PageHeader title="Transaction History" icon={CreditCard} />
 
       {/* ── Stats Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -227,7 +227,7 @@ export function ShopStats() {
       {/* ── Transaction History ── */}
       <Card className="mt-4">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">Lịch sử giao dịch</CardTitle>
+          <CardTitle className="text-base font-semibold">Transaction History</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Filters */}
@@ -235,7 +235,7 @@ export function ShopStats() {
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Tìm theo tên, Discord ID, sản phẩm, mã đơn..."
+                placeholder="Search by name, Discord ID, product, order code..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-9"
@@ -272,7 +272,7 @@ export function ShopStats() {
           ) : filteredOrders.length === 0 ? (
             <div className="h-32 flex flex-col items-center justify-center text-muted-foreground text-sm gap-1">
               <ShoppingCart className="h-8 w-8 opacity-30" />
-              Không có giao dịch nào
+              No transactions found
             </div>
           ) : (
             <div className="border rounded-lg overflow-hidden">
@@ -281,12 +281,12 @@ export function ShopStats() {
                   <thead>
                     <tr className="border-b bg-muted/50">
                       <th className="text-left p-3 font-medium text-muted-foreground">ID</th>
-                      <th className="text-left p-3 font-medium text-muted-foreground">Khách hàng</th>
-                      <th className="text-left p-3 font-medium text-muted-foreground">Sản phẩm</th>
-                      <th className="text-center p-3 font-medium text-muted-foreground">SL</th>
-                      <th className="text-right p-3 font-medium text-muted-foreground">Tổng tiền</th>
-                      <th className="text-center p-3 font-medium text-muted-foreground">Trạng thái</th>
-                      <th className="text-right p-3 font-medium text-muted-foreground">Thời gian</th>
+                      <th className="text-left p-3 font-medium text-muted-foreground">Customer</th>
+                      <th className="text-left p-3 font-medium text-muted-foreground">Product</th>
+                      <th className="text-center p-3 font-medium text-muted-foreground">Qty</th>
+                      <th className="text-right p-3 font-medium text-muted-foreground">Total</th>
+                      <th className="text-center p-3 font-medium text-muted-foreground">Status</th>
+                      <th className="text-right p-3 font-medium text-muted-foreground">Date</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -310,7 +310,7 @@ export function ShopStats() {
                 </table>
               </div>
               <div className="border-t px-3 py-2 bg-muted/30 text-xs text-muted-foreground">
-                Hiển thị {filteredOrders.length} / {orders?.length ?? 0} giao dịch
+                Showing {filteredOrders.length} / {orders?.length ?? 0} transactions
               </div>
             </div>
           )}
