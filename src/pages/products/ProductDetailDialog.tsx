@@ -4,7 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { EmojiTextarea } from "@/components/EmojiInput";
-import { Pencil, Trash2, X, Package, Warehouse, Upload, Loader2 } from "lucide-react";
+import { Pencil, Trash2, Package, Warehouse, Upload, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 import { apiFetch } from "@/hooks/useApi";
@@ -161,9 +161,6 @@ export function ProductDetailDialog({ product, onClose, onEdit, onDelete, invent
             </Button>
             <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:text-destructive" onClick={() => onDelete(product)}>
               <Trash2 className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={onClose}>
-              <X className="h-4 w-4" />
             </Button>
           </div>
         </div>
