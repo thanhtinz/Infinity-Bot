@@ -1,17 +1,47 @@
 import { Link } from "react-router-dom";
 import { LandingNavbar } from "@/components/LandingNavbar";
 import {
-  Bot, ShoppingCart, Gift, Shield, Zap, MessageSquare, Crown,
-  Users, Server, Terminal, ArrowRight, CheckCircle, Star,
+  Bot,
+  ShoppingCart,
+  Gift,
+  Shield,
+  Zap,
+  MessageSquare,
+  Crown,
+  Users,
+  Server,
+  Terminal,
+  ArrowRight,
+  CheckCircle,
+  Star,
 } from "lucide-react";
 
 const features = [
-  { icon: ShoppingCart, title: "Shop System", desc: "Built-in product management, orders, coupons, flash sales, and PayOS integration." },
-  { icon: Gift, title: "Giveaways", desc: "Create and manage giveaways with entries, winners, and fair random selection." },
-  { icon: Shield, title: "Moderation", desc: "AutoMod, warnings, kicks, bans, timeout — with full case logging." },
-  { icon: Zap, title: "Auto Responder", desc: "Custom triggers with regex, embeds, and conditional logic." },
-  { icon: MessageSquare, title: "Custom Commands", desc: "Create slash commands with variables, embeds, and permission controls." },
-  { icon: Crown, title: "Premium System", desc: "Sell subscriptions with plans, tiers, and payment management." },
+  {
+    icon: ShoppingCart,
+    title: "Shop System",
+    desc: "Built-in product management, orders, coupons, flash sales, and PayOS integration.",
+  },
+  {
+    icon: Gift,
+    title: "Giveaways",
+    desc: "Create and manage giveaways with entries, winners, and fair random selection.",
+  },
+  {
+    icon: Shield,
+    title: "Moderation",
+    desc: "AutoMod, warnings, kicks, bans, timeout — with full case logging.",
+  },
+  {
+    icon: Zap,
+    title: "Auto Responder",
+    desc: "Custom triggers with regex, embeds, and conditional logic.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Custom Commands",
+    desc: "Create slash commands with variables, embeds, and permission controls.",
+  },
 ];
 
 const stats = [
@@ -22,139 +52,191 @@ const stats = [
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#1E1E2D] text-white">
+    <div className="min-h-screen bg-white text-gray-900">
       <LandingNavbar />
 
       {/* ── Hero ───────────────────────────────────────────────── */}
-      <section className="relative pt-[72px] overflow-hidden">
-        {/* Gradient bg */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1E1E2D] via-[#262932] to-[#1E1E2D]" />
+      <section className="relative pt-16 overflow-hidden">
+        {/* Subtle top gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#F8F7FF] via-white to-white" />
 
-        <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-24 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#009DB5]/10 border border-[#009DB5]/20 mb-8">
-            <Star className="w-3.5 h-3.5 text-[#009DB5]" />
-            <span className="text-xs font-semibold text-[#009DB5]">All-in-one Discord Bot Platform</span>
+        <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-24 text-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#6C5CE7]/8 border border-[#6C5CE7]/15 mb-8">
+            <Star className="w-3.5 h-3.5 text-[#6C5CE7]" />
+            <span className="text-xs font-bold text-[#6C5CE7]">
+              All-in-one Discord Bot Platform
+            </span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight text-gray-900">
             Build your perfect
             <br />
-            <span className="bg-gradient-to-r from-[#009DB5] to-[#00d4f5] bg-clip-text text-transparent">
-              Discord server
-            </span>
+            <span className="text-[#6C5CE7]">Discord server</span>
           </h1>
 
-          <p className="mt-6 text-lg text-[#9FA8C1] max-w-2xl mx-auto leading-relaxed">
-            Shop, moderation, giveaways, custom commands, AI chat, and more — all managed from a beautiful dashboard.
+          <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            The all-in-one bot for shop management, giveaways, moderation, and
+            more. Set up in minutes and let Infinity Bot handle the rest.
           </p>
 
+          {/* CTAs */}
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/login"
-              className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#009DB5] text-white font-bold text-[15px] rounded-xl hover:bg-[#00b4cf] transition-all shadow-xl shadow-[#009DB5]/25 hover:shadow-[#009DB5]/40 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#6C5CE7] text-white text-sm font-bold hover:bg-[#5B4BD6] transition-colors shadow-sm"
             >
               Get Started
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               to="/commands"
-              className="inline-flex items-center gap-2 px-8 py-3.5 bg-white/[0.06] text-white/80 font-bold text-[15px] rounded-xl hover:bg-white/[0.1] hover:text-white transition-all border border-white/10"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-bold hover:border-gray-300 hover:bg-gray-50 transition-colors"
             >
               View Commands
             </Link>
           </div>
-        </div>
-      </section>
 
-      {/* ── Stats ──────────────────────────────────────────────── */}
-      <section className="relative -mt-16 z-10 max-w-4xl mx-auto px-6">
-        <div className="grid grid-cols-3 gap-4">
-          {stats.map(s => (
-            <div key={s.label} className="bg-[#262932] rounded-xl p-6 text-center border border-white/5 shadow-lg">
-              <s.icon className="w-6 h-6 text-[#009DB5] mx-auto mb-3" />
-              <p className="text-2xl sm:text-3xl font-black text-white">{s.value}</p>
-              <p className="text-sm text-[#9FA8C1] mt-1 font-medium">{s.label}</p>
-            </div>
-          ))}
+          {/* Stats */}
+          <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16">
+            {stats.map((s) => (
+              <div key={s.label} className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#6C5CE7]/8 flex items-center justify-center">
+                  <s.icon className="w-5 h-5 text-[#6C5CE7]" />
+                </div>
+                <div className="text-left">
+                  <div className="text-xl font-extrabold text-gray-900">
+                    {s.value}
+                  </div>
+                  <div className="text-xs font-semibold text-gray-400">
+                    {s.label}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── Features ───────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-6 py-28">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
-            Everything you need
-          </h2>
-          <p className="text-[#9FA8C1] mt-3 text-lg max-w-xl mx-auto">
-            A complete suite of tools to manage, grow, and monetize your Discord community.
-          </p>
-        </div>
+      <section className="bg-[#F9FAFB] py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
+              Everything you need
+            </h2>
+            <p className="mt-4 text-gray-500 max-w-xl mx-auto">
+              Powerful features to manage, grow, and monetize your Discord
+              community — all in one bot.
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map(f => (
-            <div
-              key={f.title}
-              className="group bg-[#262932] rounded-xl p-6 border border-white/5 hover:border-[#009DB5]/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#009DB5]/5"
-            >
-              <div className="w-11 h-11 rounded-xl bg-[#009DB5]/10 flex items-center justify-center mb-4 group-hover:bg-[#009DB5]/20 transition-colors">
-                <f.icon className="w-5 h-5 text-[#009DB5]" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((f) => (
+              <div
+                key={f.title}
+                className="group bg-white rounded-2xl p-7 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_20px_rgba(108,92,231,0.1)] transition-shadow duration-200"
+              >
+                <div className="w-11 h-11 rounded-xl bg-[#6C5CE7]/8 flex items-center justify-center mb-5 group-hover:bg-[#6C5CE7]/15 transition-colors">
+                  <f.icon className="w-5 h-5 text-[#6C5CE7]" />
+                </div>
+                <h3 className="text-base font-bold text-gray-900 mb-2">
+                  {f.title}
+                </h3>
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  {f.desc}
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white mb-2">{f.title}</h3>
-              <p className="text-sm text-[#9FA8C1] leading-relaxed">{f.desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ── CTA Banner ─────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-6 pb-28">
-        <div className="relative rounded-2xl overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#009DB5] to-[#007a8f]" />
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml,...')] opacity-5" />
-          <div className="relative px-8 py-16 sm:px-16 text-center">
-            <h2 className="text-2xl sm:text-3xl font-black text-white">Ready to level up your server?</h2>
-            <p className="text-white/80 mt-3 text-lg max-w-lg mx-auto">
-              Join hundreds of communities using Infinity Bot. Free to start.
-            </p>
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-2 mt-8 px-8 py-3.5 bg-white text-[#009DB5] font-bold text-[15px] rounded-xl hover:bg-white/90 transition-all shadow-xl"
-            >
-              <Bot className="w-5 h-5" />
-              Add to Discord
-            </Link>
+      {/* ── CTA ────────────────────────────────────────────────── */}
+      <section className="py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="relative rounded-2xl bg-gradient-to-br from-[#6C5CE7] to-[#8B7CF0] px-8 py-16 text-center overflow-hidden">
+            {/* Decorative circles */}
+            <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white/5" />
+            <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-white/5" />
+
+            <div className="relative">
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+                Ready to level up your server?
+              </h2>
+              <p className="mt-4 text-white/70 max-w-lg mx-auto">
+                Join thousands of servers already using Infinity Bot. Set up in
+                under 2 minutes.
+              </p>
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-2 mt-8 px-8 py-3.5 rounded-xl bg-white text-[#6C5CE7] text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm"
+              >
+                Get Started
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── Footer ─────────────────────────────────────────────── */}
-      <footer className="border-t border-white/5 bg-[#1a1a27]">
+      <footer className="border-t border-gray-100 bg-white">
         <div className="max-w-6xl mx-auto px-6 py-12">
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-8">
             {/* Brand */}
             <div className="sm:col-span-1">
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-[#009DB5] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[#6C5CE7] flex items-center justify-center">
                   <Bot className="w-4 h-4 text-white" />
                 </div>
-                <span className="font-extrabold text-white">Infinity Bot</span>
+                <span className="font-extrabold text-gray-900">
+                  Infinity Bot
+                </span>
               </div>
-              <p className="text-sm text-[#9FA8C1] leading-relaxed">
+              <p className="text-sm text-gray-400 leading-relaxed">
                 All-in-one Discord bot with dashboard management.
               </p>
             </div>
 
             {/* Links */}
             {[
-              { title: "Product", links: [{ to: "/commands", label: "Commands" }, { to: "/pricing", label: "Pricing" }, { to: "/status", label: "Status" }] },
-              { title: "Resources", links: [{ to: "#", label: "Documentation" }, { to: "#", label: "Support" }, { to: "#", label: "Changelog" }] },
-              { title: "Legal", links: [{ to: "#", label: "Privacy" }, { to: "#", label: "Terms" }, { to: "#", label: "Cookie Policy" }] },
-            ].map(col => (
+              {
+                title: "Product",
+                links: [
+                  { to: "/commands", label: "Commands" },
+                  { to: "/pricing", label: "Pricing" },
+                  { to: "/status", label: "Status" },
+                ],
+              },
+              {
+                title: "Resources",
+                links: [
+                  { to: "#", label: "Documentation" },
+                  { to: "#", label: "Support" },
+                  { to: "#", label: "Changelog" },
+                ],
+              },
+              {
+                title: "Legal",
+                links: [
+                  { to: "#", label: "Privacy" },
+                  { to: "#", label: "Terms" },
+                  { to: "#", label: "Cookie Policy" },
+                ],
+              },
+            ].map((col) => (
               <div key={col.title}>
-                <h4 className="text-xs font-extrabold uppercase tracking-widest text-white/40 mb-4">{col.title}</h4>
+                <h4 className="text-xs font-extrabold uppercase tracking-widest text-gray-300 mb-4">
+                  {col.title}
+                </h4>
                 <div className="space-y-2.5">
-                  {col.links.map(link => (
-                    <Link key={link.label} to={link.to} className="block text-sm text-[#9FA8C1] hover:text-[#009DB5] transition-colors">
+                  {col.links.map((link) => (
+                    <Link
+                      key={link.label}
+                      to={link.to}
+                      className="block text-sm text-gray-400 hover:text-[#6C5CE7] transition-colors"
+                    >
                       {link.label}
                     </Link>
                   ))}
@@ -163,15 +245,13 @@ export function LandingPage() {
             ))}
           </div>
 
-          <div className="mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-[#9FA8C1]/60">© 2025 Infinity Bot. All rights reserved.</p>
-            <div className="flex items-center gap-1.5">
-              {[CheckCircle].map((Icon, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 text-xs text-emerald-400/80">
-                  <Icon className="w-3 h-3" /> All systems operational
-                </span>
-              ))}
-            </div>
+          <div className="mt-12 pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-gray-300">
+              © 2025 Infinity Bot. All rights reserved.
+            </p>
+            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-500 font-semibold">
+              <CheckCircle className="w-3 h-3" /> All systems operational
+            </span>
           </div>
         </div>
       </footer>

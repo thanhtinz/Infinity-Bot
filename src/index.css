@@ -15,7 +15,7 @@
     --card-foreground: 240 22% 10.6%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 22% 10.6%;
-    --primary: 188 100% 35.5%;
+    --primary: 252 76% 64%;
     --primary-foreground: 0 0% 100%;
     --secondary: 337.1 93.5% 63.7%;
     --secondary-foreground: 0 0% 100%;
@@ -27,13 +27,13 @@
     --destructive-foreground: 0 0% 100%;
     --border: 220 18% 90%;
     --input: 220 18% 90%;
-    --ring: 188 100% 35.5%;
+    --ring: 252 76% 64%;
     --radius: 10px;
     --sidebar-bg: 220 14% 12%;
     --sidebar-text: 224 21% 69%;
-    --sidebar-active: 188 100% 35.5%;
-    --card-shadow: 0px 7.8px 17.3px rgba(0,157,181,.07);
-    --card-shadow-hover: 0 4px 24px rgba(0,157,181,.12);
+    --sidebar-active: 252 76% 64%;
+    --card-shadow: 0px 7.8px 17.3px rgba(108,92,231,.07);
+    --card-shadow-hover: 0 4px 24px rgba(108,92,231,.12);
   }
 }
 

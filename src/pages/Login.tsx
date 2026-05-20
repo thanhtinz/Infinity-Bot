@@ -5,19 +5,19 @@ const DISCORD_OAUTH_URL = "/api/auth/login";
 
 export function Login() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1E1E2D] to-[#262932] flex flex-col animate-fade-in">
+    <div className="min-h-screen bg-gray-50 flex flex-col animate-fade-in">
       <LandingNavbar />
       <div className="flex-1 flex items-center justify-center px-6 pt-[72px]">
         <div className="w-full max-w-[400px]">
-          <div className="bg-[#262932] rounded-[10px] p-8 shadow-[0px_7.8px_17.3px_rgba(0,157,181,0.07)] text-center">
+          <div className="bg-white rounded-[10px] p-8 border border-gray-100 shadow-lg shadow-[#6C5CE7]/5 text-center">
             {/* Bot logo */}
-            <div className="w-16 h-16 rounded-[10px] bg-[#009DB5] flex items-center justify-center mx-auto mb-6 shadow-lg shadow-[#009DB5]/25">
+            <div className="w-16 h-16 rounded-[10px] bg-[#6C5CE7] flex items-center justify-center mx-auto mb-6 shadow-lg shadow-[#6C5CE7]/25">
               <Bot className="w-8 h-8 text-white" />
             </div>
 
             {/* Heading */}
-            <h1 className="text-[22px] font-bold text-white mb-1.5">Welcome back</h1>
-            <p className="text-[13px] text-[#9FA8C1] mb-8">Sign in to manage your server</p>
+            <h1 className="text-[22px] font-bold text-gray-900 mb-1.5">Welcome back</h1>
+            <p className="text-[13px] text-gray-500 mb-8">Sign in to manage your server</p>
 
             {/* Discord OAuth button */}
             <a
@@ -32,7 +32,7 @@ export function Login() {
           </div>
 
           {/* Footer */}
-          <p className="text-center text-[12px] text-[#9FA8C1]/50 mt-6">
+          <p className="text-center text-[12px] text-gray-400 mt-6">
             By signing in, you agree to our Terms of Service and Privacy Policy.
           </p>
         </div>

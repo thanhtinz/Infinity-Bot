@@ -311,7 +311,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
       {/* ── Logo area ── */}
       <div className="h-[76px] px-5 flex items-center gap-3 border-b border-gray-200">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#009DB5] to-[#00d4f5] flex items-center justify-center shadow-lg shadow-[#009DB5]/20">
+        <div className="w-9 h-9 rounded-xl bg-[#6C5CE7] flex items-center justify-center shadow-lg shadow-[#6C5CE7]/20">
           <Bot className="w-5 h-5 text-white" />
         </div>
         <div>
@@ -730,7 +730,7 @@ function MobileNav() {
           </SheetContent>
         </Sheet>
         <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-[#009DB5]" />
+          <Bot className="w-5 h-5 text-[#6C5CE7]" />
           <h1 className="font-bold text-base">Infinity Bot</h1>
         </div>
       </div>

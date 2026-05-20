@@ -138,7 +138,7 @@ async def public_commands():
         "san_pham":        "product",
         "tao_don":         "create_order",
         "tao_don_custom":  "create_custom_order",
-        "bang_gia":        "price_list",
+        "bang_gia":        "bang_gia",
         "bxh":             "leaderboard",
     }
 
