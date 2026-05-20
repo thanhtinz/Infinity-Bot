@@ -12,9 +12,35 @@ from src.api.routes import router as bot_router
 async def lifespan(app: FastAPI):
     # Initialize DB on startup
     await init_db()
-    
+
+    # Auto-start bot if token is configured
+    try:
+        from sqlalchemy import select as _sel
+        from src.database.config import SessionLocal
+        from src.models.models import SystemConfig
+        from src.bot.manager import start_bot
+        if SessionLocal is not None:
+            session = SessionLocal()
+            try:
+                config = session.execute(_sel(SystemConfig).limit(1)).scalars().first()
+                if config and config.discord_token:
+                    import logging
+                    logging.getLogger(__name__).info("Auto-starting bot on container startup...")
+                    await start_bot()
+            finally:
+                session.close()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Auto-start bot failed: {e}")
+
     yield
-    # Bot runs independently — no forced stop on shutdown
+
+    # Graceful shutdown — stop bot
+    try:
+        from src.bot.manager import stop_bot
+        await stop_bot()
+    except Exception:
+        pass
 
 def create_app(static_dir: str) -> FastAPI:
     api = APIRouter()

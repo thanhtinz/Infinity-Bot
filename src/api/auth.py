@@ -15,9 +15,16 @@ router = APIRouter()
 
 JWT_SECRET = os.environ.get("JWT_SECRET_KEY") or os.environ.get("GEMINI_WORKSHOP_API_KEY")
 if not JWT_SECRET:
-    import secrets as _secrets
-    JWT_SECRET = _secrets.token_hex(32)
-    logger.warning("JWT_SECRET_KEY env var not set — using ephemeral random secret. Sessions will be invalidated on restart. Set JWT_SECRET_KEY for persistence.")
+    # Derive stable secret from DATABASE_URL so sessions survive restarts
+    _db_url = os.environ.get("DATABASE_URL") or os.environ.get("DB8624B53A_DATABASE_URL")
+    if _db_url:
+        import hashlib
+        JWT_SECRET = hashlib.sha256(f"jwt-salt-{_db_url}".encode()).hexdigest()
+        logger.info("JWT_SECRET_KEY not set — derived stable secret from DATABASE_URL.")
+    else:
+        import secrets as _secrets
+        JWT_SECRET = _secrets.token_hex(32)
+        logger.warning("JWT_SECRET_KEY env var not set — using ephemeral random secret. Sessions will be invalidated on restart.")
 
 
 def get_public_base_url(request: Request) -> str:

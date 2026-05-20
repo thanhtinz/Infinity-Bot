@@ -1,6 +1,7 @@
 # src/bot/cogs/admin_shop.py
 # /createorder: multi-payment, coupon button+Modal, timeout 15 min, update embed
 
+import os
 import discord
 import logging
 from sqlalchemy import select
@@ -130,7 +131,7 @@ class CouponModal(discord.ui.Modal):
 
             method = order.payment_method or payment_methods[0]
             provider = get_provider(method)
-            domain = config.public_app_url or "http://localhost:3034"
+            domain = config.public_app_url or os.environ.get("PUBLIC_APP_URL", "")
             if not domain.startswith("http"):
                 domain = f"https://{domain}"
 
@@ -551,7 +552,7 @@ class AdminShopCog(discord.Cog):
 
             # Create checkout via payment service
             provider = get_provider(method)
-            domain = config.public_app_url or "http://localhost:3034"
+            domain = config.public_app_url or os.environ.get("PUBLIC_APP_URL", "")
             if not domain.startswith("http"):
                 domain = f"https://{domain}"
 
@@ -795,7 +796,7 @@ class AdminShopCog(discord.Cog):
 
             # Create checkout via payment service
             provider = get_provider(method)
-            domain = config.public_app_url or "http://localhost:3034"
+            domain = config.public_app_url or os.environ.get("PUBLIC_APP_URL", "")
             if not domain.startswith("http"):
                 domain = f"https://{domain}"
 

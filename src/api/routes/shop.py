@@ -491,7 +491,7 @@ def create_order(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gui
             from src.bot.manager import bot as _bot
             import discord as _discord
 
-            domain = config.public_app_url or "http://localhost:3034"
+            domain = config.public_app_url or os.environ.get("PUBLIC_APP_URL", "")
             if not domain.startswith("http"):
                 domain = f"https://{domain}"
 
