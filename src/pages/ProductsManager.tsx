@@ -347,8 +347,6 @@ export function ProductsManager() {
       <ProductDetailDialog
         product={detailProduct}
         onClose={() => setDetailProduct(null)}
-        onEdit={(p) => { setDetailProduct(null); setEditProduct(p); }}
-        onDelete={(p) => { setDetailProduct(null); setDeleteTarget(p); }}
         inventoryStats={inventoryStats}
       />
 

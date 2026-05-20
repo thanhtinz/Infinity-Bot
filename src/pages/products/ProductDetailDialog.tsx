@@ -4,7 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { EmojiTextarea } from "@/components/EmojiInput";
-import { Pencil, Trash2, Package, Warehouse, Upload, Loader2 } from "lucide-react";
+import { Package, Trash2, Warehouse, Upload, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types";
 
@@ -44,12 +44,10 @@ interface InventoryItem {
 interface Props {
   product: Product | null;
   onClose: () => void;
-  onEdit: (p: Product) => void;
-  onDelete: (p: Product) => void;
   inventoryStats: InventoryStat[];
 }
 
-export function ProductDetailDialog({ product, onClose, onEdit, onDelete, inventoryStats }: Props) {
+export function ProductDetailDialog({ product, onClose, inventoryStats }: Props) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const { selectedGuildId } = useGuild();
@@ -164,14 +162,6 @@ export function ProductDetailDialog({ product, onClose, onEdit, onDelete, invent
             <p className="text-sm text-muted-foreground">
               {product.category_id ? "Category" : "Uncategorized"}
             </p>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => onEdit(product)}>
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:text-destructive" onClick={() => onDelete(product)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
