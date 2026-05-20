@@ -24,7 +24,7 @@ const productSchema = z.object({
   description: z.string().optional(),
   note: z.string().optional(),
   emoji: z.string().optional(),
-  category_id: z.number().nullable().optional(),
+  category_id: z.number({ required_error: "Category is required" }).min(1, "Category is required"),
   active: z.boolean(),
 });
 type ProductForm = z.infer<typeof productSchema>;
@@ -60,7 +60,7 @@ export function ProductEditPage() {
 
   const form = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
-    defaultValues: { name: "", description: "", note: "", emoji: "", category_id: null, active: true },
+    defaultValues: { name: "", description: "", note: "", emoji: "", category_id: undefined as unknown as number, active: true },
   });
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export function ProductEditPage() {
         description: item.description || "",
         note: item.note || "",
         emoji: item.emoji || "",
-        category_id: item.category_id ?? null,
+        category_id: item.category_id ?? (undefined as unknown as number),
         active: item.active,
       });
       setPackages(item.packages?.length ? item.packages.map((pkg) => ({ ...pkg })) : [emptyPackage()]);
@@ -223,25 +223,28 @@ function ProductInfoForm({ form, packages, categories, addPkg, updatePkg, remove
         {/* Category */}
         <FormField control={form.control} name="category_id" render={({ field }) => (
           <FormItem>
-            <FormLabel>Category</FormLabel>
-            <Select
-              value={field.value == null ? "none" : String(field.value)}
-              onValueChange={(v) => field.onChange(v === "none" ? null : Number(v))}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="No Category" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="none">No Category</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={String(cat.id)}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <FormLabel>Category <span className="text-destructive">*</span></FormLabel>
+            {categories.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No categories yet. Create a category first before adding products.</p>
+            ) : (
+              <Select
+                value={field.value ? String(field.value) : ""}
+                onValueChange={(v) => field.onChange(Number(v))}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category..." />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={String(cat.id)}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <FormMessage />
           </FormItem>
         )} />

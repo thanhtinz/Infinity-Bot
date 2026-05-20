@@ -103,7 +103,7 @@ class ProductBase(BaseModel):
     note: Optional[str] = None
     image_url: Optional[str] = None
     emoji: Optional[str] = None
-    category_id: Optional[int] = None
+    category_id: int  # required — must create category first
     packages: Optional[List[dict]] = []  # [{"name": str, "price": float, "active": bool}]
     active: bool = True
 

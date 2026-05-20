@@ -133,6 +133,15 @@ def delete_category(cat_id: int, db=Depends(get_db), guild_id: str = Depends(get
 
 @router.post("/products", response_model=ProductResponse)
 async def create_product(product_in: ProductBase, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    # Validate category exists
+    cat = db.execute(
+        select(ProductCategory).where(
+            ProductCategory.id == product_in.category_id,
+            ProductCategory.guild_id == guild_id,
+        )
+    ).scalars().first()
+    if not cat:
+        raise HTTPException(400, "Category not found. Create a category first.")
     data = product_in.model_dump()
     data.setdefault("price", 0)
     data["guild_id"] = guild_id
