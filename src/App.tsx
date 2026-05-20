@@ -113,7 +113,7 @@ const navGroups: NavGroup[] = [
       { to: "/orders", icon: ShoppingCart, label: "nav_orders" },
       { to: "/coupons", icon: Tag, label: "nav_coupons" },
       { to: "/users", icon: Users, label: "nav_users" },
-      { to: "/shop-stats", icon: BarChart, label: "nav_shopStats" },
+      { to: "/shop-stats", icon: History, label: "Lịch sử giao dịch" },
       { to: "/milestones", icon: Trophy, label: "Spending Milestones" },
       { to: "/flash-sales", icon: Zap, label: "Flash Sales" },
       { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
