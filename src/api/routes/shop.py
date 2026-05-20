@@ -860,6 +860,24 @@ def save_payos_config(body: dict, db=Depends(get_db), guild_id: str = Depends(ge
     ).scalars().first()
     if not config:
         raise HTTPException(status_code=404, detail="No config found for this guild")
+
+    client_id = body.get("payos_client_id") or config.payos_client_id
+    api_key = body.get("payos_api_key") or config.payos_api_key
+    checksum_key = body.get("payos_checksum_key") or config.payos_checksum_key
+
+    # Validate before saving — must pass test connection
+    if client_id and api_key and checksum_key:
+        try:
+            payos = PayOS(client_id=client_id, api_key=api_key, checksum_key=checksum_key)
+            payos.confirmWebhook("https://example.com/webhook")
+        except Exception as e:
+            err_msg = str(e)
+            if "Unauthorized" in err_msg or "401" in err_msg:
+                raise HTTPException(status_code=400, detail="Invalid API Key or Client ID")
+            if "checksum" in err_msg.lower():
+                raise HTTPException(status_code=400, detail="Invalid Checksum Key")
+            raise HTTPException(status_code=400, detail=f"PayOS validation failed: {err_msg}")
+
     if "payos_client_id" in body:
         config.payos_client_id = body["payos_client_id"] or None
     if "payos_api_key" in body and body["payos_api_key"] is not None:

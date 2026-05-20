@@ -205,6 +205,33 @@ def save_premium_config(
                 cfg.payment_methods = val
         elif key in allowed_str:
             setattr(cfg, key, _validate_str(val, key, max_len=2000) if val is not None else None)
+
+    # Validate PayPal credentials if any were updated
+    _pp_keys = {"paypal_client_id", "paypal_client_secret", "paypal_mode"}
+    if _pp_keys & set(body.keys()):
+        pp_id = cfg.paypal_client_id
+        pp_secret = cfg.paypal_client_secret
+        pp_mode = cfg.paypal_mode or "live"
+        if pp_id and pp_secret:
+            import httpx, base64 as _b64
+            _base = "https://api-m.sandbox.paypal.com" if pp_mode == "sandbox" else "https://api-m.paypal.com"
+            _creds = _b64.b64encode(f"{pp_id}:{pp_secret}".encode()).decode()
+            try:
+                _r = httpx.post(
+                    f"{_base}/v1/oauth2/token",
+                    headers={"Authorization": f"Basic {_creds}", "Content-Type": "application/x-www-form-urlencoded"},
+                    data="grant_type=client_credentials",
+                    timeout=10,
+                )
+                if _r.status_code == 401:
+                    raise HTTPException(400, "Invalid PayPal Client ID or Secret")
+                elif _r.status_code != 200:
+                    raise HTTPException(400, f"PayPal validation failed: HTTP {_r.status_code}")
+            except HTTPException:
+                raise
+            except Exception as _e:
+                raise HTTPException(400, f"PayPal connection error: {str(_e)}")
+
     db.commit()
     return {"ok": True}
 
