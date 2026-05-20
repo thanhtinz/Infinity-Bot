@@ -1,18 +1,16 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { LandingNavbar } from "@/components/LandingNavbar";
 import {
-  Bot,
   ShoppingCart,
   Gift,
   Shield,
   Zap,
   MessageSquare,
-  Crown,
   Users,
   Server,
   Terminal,
   ArrowRight,
-  CheckCircle,
   Star,
 } from "lucide-react";
 
@@ -44,13 +42,31 @@ const features = [
   },
 ];
 
-const stats = [
-  { icon: Server, value: "500+", label: "Servers" },
-  { icon: Users, value: "50K+", label: "Users" },
-  { icon: Terminal, value: "100+", label: "Commands" },
-];
-
 export function LandingPage() {
+  const [stats, setStats] = useState({ servers: "—", users: "—", commands: "—" });
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/public/status").then(r => r.json()).catch(() => null),
+      fetch("/api/public/commands").then(r => r.json()).catch(() => null),
+    ]).then(([status, cmds]) => {
+      const s = status?.guild_count;
+      const u = status?.member_count;
+      const c = Array.isArray(cmds) ? cmds.reduce((sum: number, cat: any) => sum + (cat.commands?.length || 0), 0) : null;
+      setStats({
+        servers: s ? s.toLocaleString() : "—",
+        users: u ? (u >= 1000 ? `${(u / 1000).toFixed(1).replace(/\.0$/, "")}K+` : String(u)) : "—",
+        commands: c ? String(c) + "+" : "—",
+      });
+    });
+  }, []);
+
+  const statItems = [
+    { icon: Server, value: stats.servers, label: "Servers" },
+    { icon: Users, value: stats.users, label: "Users" },
+    { icon: Terminal, value: stats.commands, label: "Commands" },
+  ];
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <LandingNavbar />
@@ -81,7 +97,7 @@ export function LandingPage() {
           </p>
 
           {/* CTAs */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="mt-10 flex items-center justify-center gap-4">
             <Link
               to="/login"
               className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#6C5CE7] text-white text-sm font-bold hover:bg-[#5B4BD6] transition-colors shadow-sm"
@@ -98,20 +114,14 @@ export function LandingPage() {
           </div>
 
           {/* Stats */}
-          <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-16">
-            {stats.map((s) => (
-              <div key={s.label} className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#6C5CE7]/8 flex items-center justify-center">
-                  <s.icon className="w-5 h-5 text-[#6C5CE7]" />
+          <div className="mt-16 flex items-center justify-center gap-10 sm:gap-20">
+            {statItems.map((s) => (
+              <div key={s.label} className="text-center">
+                <div className="w-14 h-14 rounded-2xl bg-[#6C5CE7]/8 flex items-center justify-center mx-auto mb-3">
+                  <s.icon className="w-7 h-7 text-[#6C5CE7]" />
                 </div>
-                <div className="text-left">
-                  <div className="text-xl font-extrabold text-gray-900">
-                    {s.value}
-                  </div>
-                  <div className="text-xs font-semibold text-gray-400">
-                    {s.label}
-                  </div>
-                </div>
+                <div className="text-3xl sm:text-4xl font-black text-gray-900">{s.value}</div>
+                <div className="text-sm font-semibold text-gray-400 mt-1">{s.label}</div>
               </div>
             ))}
           </div>
@@ -181,79 +191,13 @@ export function LandingPage() {
       </section>
 
       {/* ── Footer ─────────────────────────────────────────────── */}
-      <footer className="border-t border-gray-100 bg-white">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-8">
-            {/* Brand */}
-            <div className="sm:col-span-1">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-[#6C5CE7] flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
-                <span className="font-extrabold text-gray-900">
-                  Infinity Bot
-                </span>
-              </div>
-              <p className="text-sm text-gray-400 leading-relaxed">
-                All-in-one Discord bot with dashboard management.
-              </p>
-            </div>
-
-            {/* Links */}
-            {[
-              {
-                title: "Product",
-                links: [
-                  { to: "/commands", label: "Commands" },
-                  { to: "/pricing", label: "Pricing" },
-                  { to: "/status", label: "Status" },
-                ],
-              },
-              {
-                title: "Resources",
-                links: [
-                  { to: "#", label: "Documentation" },
-                  { to: "#", label: "Support" },
-                  { to: "#", label: "Changelog" },
-                ],
-              },
-              {
-                title: "Legal",
-                links: [
-                  { to: "#", label: "Privacy" },
-                  { to: "#", label: "Terms" },
-                  { to: "#", label: "Cookie Policy" },
-                ],
-              },
-            ].map((col) => (
-              <div key={col.title}>
-                <h4 className="text-xs font-extrabold uppercase tracking-widest text-gray-300 mb-4">
-                  {col.title}
-                </h4>
-                <div className="space-y-2.5">
-                  {col.links.map((link) => (
-                    <Link
-                      key={link.label}
-                      to={link.to}
-                      className="block text-sm text-gray-400 hover:text-[#6C5CE7] transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-12 pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-gray-300">
-              © 2025 Infinity Bot. All rights reserved.
-            </p>
-            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-500 font-semibold">
-              <CheckCircle className="w-3 h-3" /> All systems operational
-            </span>
-          </div>
+      <footer className="border-t border-gray-100 bg-white py-8 text-center text-xs text-gray-400">
+        <div className="flex items-center justify-center gap-6 mb-3">
+          <Link to="/terms" className="hover:text-[#6C5CE7] transition-colors">Terms</Link>
+          <Link to="/privacy" className="hover:text-[#6C5CE7] transition-colors">Privacy</Link>
+          <Link to="/refund" className="hover:text-[#6C5CE7] transition-colors">Refund</Link>
         </div>
+        <p>© 2025 Infinity Bot. All rights reserved.</p>
       </footer>
     </div>
   );

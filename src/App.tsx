@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, ChevronRight, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, CheckCircle, MousePointer, List, MessageCircle, Layout, Zap, Warehouse, BrainCircuit, Settings2, BookOpen, History, Image, ClipboardList, Rss, UserCheck, Sun, Moon, Search, User } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, MousePointer, List, MessageCircle, Layout, Zap, Warehouse, BrainCircuit, Settings2, BookOpen, History, Image, ClipboardList, Rss, UserCheck, Search, User } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense, Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -55,6 +55,9 @@ const LandingPage = lazy(() => import("./pages/LandingPage").then(m => ({ defaul
 const PublicCommandsPage = lazy(() => import("./pages/PublicCommandsPage").then(m => ({ default: m.PublicCommandsPage })));
 const PublicPricingPage = lazy(() => import("./pages/PublicPricingPage").then(m => ({ default: m.PublicPricingPage })));
 const PublicStatusPage = lazy(() => import("./pages/PublicStatusPage").then(m => ({ default: m.PublicStatusPage })));
+const TermsPage = lazy(() => import("./pages/TermsPage").then(m => ({ default: m.TermsPage })));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage").then(m => ({ default: m.PrivacyPage })));
+const RefundPage = lazy(() => import("./pages/RefundPage").then(m => ({ default: m.RefundPage })));
 const ShopChannels = lazy(() => import("./pages/ShopChannels").then(m => ({ default: m.ShopChannels })));
 const ShopStats = lazy(() => import("./pages/ShopStats").then(m => ({ default: m.ShopStats })));
 const FlashSales = lazy(() => import("./pages/FlashSales").then(m => ({ default: m.FlashSales })));
@@ -278,254 +281,120 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     return navGroups.filter(g => g.ownerOnly);
   }, [user]);
 
-  const defaultOpenGroups = useMemo(() => {
-    const open = new Set<string>();
-    for (const group of navGroups) {
-      if (group.items.some((item) => item.to === location.pathname)) {
-        open.add(group.key);
-      }
-    }
-    return open;
-  }, [location.pathname]);
-
-  const [openGroups, setOpenGroups] = useState<Set<string>>(defaultOpenGroups);
-
-  useEffect(() => {
-    setOpenGroups((prev) => {
-      const next = new Set(prev);
-      for (const key of defaultOpenGroups) next.add(key);
-      return next;
-    });
-  }, [defaultOpenGroups]);
-
-  const toggleGroup = (key: string) => {
-    setOpenGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+  const NavLink = ({ to, icon: Icon, label, amber }: { to: string; icon: LucideIcon; label: string; amber?: boolean }) => {
+    const isActive = location.pathname === to || location.pathname.startsWith(to + "/");
+    return (
+      <Link
+        to={to}
+        onClick={onClose}
+        className={cn(
+          "flex items-center gap-3 px-4 py-[9px] rounded-xl text-[13.5px] font-medium transition-all",
+          amber
+            ? isActive
+              ? "text-amber-500 bg-amber-500/10"
+              : "text-gray-500 hover:text-amber-500 hover:bg-amber-50"
+            : isActive
+              ? "text-[#6C5CE7] bg-[#6C5CE7]/10"
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+        )}
+      >
+        <Icon className="w-[18px] h-[18px] shrink-0 opacity-80" />
+        {label}
+      </Link>
+    );
   };
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200">
+    <div className="flex flex-col h-full bg-white border-r border-gray-100">
       {/* ── Logo area ── */}
-      <div className="h-[76px] px-5 flex items-center gap-3 border-b border-gray-200">
-        <div className="w-9 h-9 rounded-xl bg-[#6C5CE7] flex items-center justify-center shadow-lg shadow-[#6C5CE7]/20">
-          <Bot className="w-5 h-5 text-white" />
+      <div className="h-16 px-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[#6C5CE7] flex items-center justify-center">
+            <Bot className="w-[18px] h-[18px] text-white" />
+          </div>
+          <h1 className="font-bold text-[15px] text-gray-900 tracking-tight">Infinity Bot</h1>
         </div>
-        <div>
-          <h1 className="font-bold text-[15px] text-gray-900 leading-tight tracking-tight">Infinity Bot</h1>
-          <span className="text-[11px] text-gray-400">Dashboard</span>
-        </div>
+        {onClose && (
+          <button onClick={onClose} className="md:hidden text-gray-400 hover:text-gray-600 transition-colors p-1 -mr-1">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        )}
       </div>
 
-      {/* ── User profile section ── */}
-      {user && (
-        <div className="px-5 py-4 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <img
-                src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`}
-                alt=""
-                className="w-10 h-10 rounded-full ring-2 ring-[#6C5CE7]/30"
-              />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-white" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">{user.username}</p>
-              <p className="text-[11px] text-gray-500">{user.is_owner ? "Bot Owner" : "Staff"}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── Guild selector ── */}
-      <div className="px-3 py-3 border-b border-gray-200">
+      <div className="px-3 pb-3">
         <GuildSelector />
       </div>
 
       {/* ── Navigation ── */}
-      <nav className="flex-1 py-2 overflow-y-auto sidebar-scroll">
+      <nav className="flex-1 overflow-y-auto sidebar-scroll pb-4">
         {!selectedGuildId ? (
           <div className="text-center py-8">
             <p className="text-sm text-gray-400">Select a server to continue</p>
           </div>
         ) : (
-        <>
-        {/* Section title */}
-        <div className="sidebar-section-title">General</div>
+        <div className="px-3 space-y-[2px]">
+          {/* ── General ── */}
+          <div className="sidebar-section-title">General</div>
+          <NavLink to="/bot-settings" icon={Settings} label={t("nav_botSettings")} />
 
-        {/* Bot Settings — standalone */}
-        <div className="px-3">
-          <Link
-            to="/bot-settings"
-            onClick={onClose}
-            className={cn(
-              "flex items-center gap-3 px-4 py-[10px] rounded-lg text-[14px] font-medium transition-all duration-300",
-              location.pathname === "/bot-settings"
-                ? "text-[#6C5CE7] bg-[#6C5CE7]/10"
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-            )}
-          >
-            <Settings className="w-[18px] h-[18px] shrink-0" />
-            {t("nav_botSettings")}
-          </Link>
-        </div>
-
-        {/* Section title */}
-        <div className="sidebar-section-title mt-2">Features</div>
-
-        {/* Grouped nav */}
-        <div className="px-3 space-y-px">
-        {filteredGroups.map((group) => {
-          const isOpen = openGroups.has(group.key);
-          const isActive = group.items.some((item) => item.to === location.pathname);
-          const GroupIcon = group.icon;
-
-          if (group.items.length === 1) {
-            const item = group.items[0];
-            const ItemIcon = item.icon;
-            const isItemActive = location.pathname.startsWith(item.to);
-            return (
-              <Link
-                key={group.key}
-                to={item.to}
-                onClick={onClose}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-[10px] rounded-lg text-[14px] font-medium transition-all duration-300",
-                  isItemActive
-                    ? "text-[#6C5CE7] bg-[#6C5CE7]/10"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                )}
-              >
-                <ItemIcon className="w-[18px] h-[18px] shrink-0" />
-                {t(group.label as Parameters<typeof t>[0])}
-              </Link>
-            );
-          }
-
-          return (
+          {/* ── Dynamic groups (flat) ── */}
+          {filteredGroups.map((group) => (
             <div key={group.key}>
-              <button
-                onClick={() => toggleGroup(group.key)}
-                className={cn(
-                  "flex items-center justify-between w-full px-4 py-[10px] text-[14px] font-medium cursor-pointer rounded-lg transition-all duration-300",
-                  isActive
-                    ? "text-[#6C5CE7]"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                )}
-              >
-                <span className="flex items-center gap-3">
-                  <GroupIcon className="w-[18px] h-[18px] shrink-0" />
-                  {t(group.label as Parameters<typeof t>[0])}
-                </span>
-                <ChevronRight className={cn(
-                  "h-4 w-4 shrink-0 text-gray-400 transition-transform duration-300",
-                  isOpen && "rotate-90"
-                )} />
-              </button>
-              <div className={cn(
-                "overflow-hidden transition-all duration-300 ease-in-out",
-                isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
-              )}>
-                <div className="py-1 ml-[18px] pl-4 border-l border-[#6C5CE7]/20">
-                  {group.items.map((item) => {
-                    const isItemActive = location.pathname === item.to;
-                    return (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        onClick={onClose}
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-[8px] rounded-md text-[13px] transition-all duration-300",
-                          isItemActive
-                            ? "text-[#6C5CE7] font-semibold"
-                            : "text-gray-500 hover:text-gray-900"
-                        )}
-                      >
-                        <span className={cn(
-                          "w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-300",
-                          isItemActive ? "bg-[#6C5CE7]" : "bg-gray-300"
-                        )} />
-                        {t(item.label as Parameters<typeof t>[0])}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
+              <div className="sidebar-section-title mt-1">{t(group.label as Parameters<typeof t>[0])}</div>
+              {group.items.map((item) => (
+                <NavLink key={item.to} to={item.to} icon={item.icon} label={t(item.label as Parameters<typeof t>[0])} />
+              ))}
             </div>
-          );
-        })}
-        </div>
+          ))}
 
-        {/* Owner section */}
-        {ownerGroups.length > 0 && (
-          <div className="sidebar-section-title mt-3">
-            <span className="text-amber-500/70">Owner Only</span>
-          </div>
-        )}
-        <div className="px-3 space-y-px">
-        {ownerGroups.map((group) => {
-          const isOpen = openGroups.has(group.key);
-          const isActive = group.items.some((item) => item.to === location.pathname);
-          const GroupIcon = group.icon;
-          return (
-            <div key={group.key}>
-              <button
-                onClick={() => toggleGroup(group.key)}
-                className={cn(
-                  "flex items-center justify-between w-full px-4 py-[10px] text-[14px] font-medium cursor-pointer rounded-lg transition-all duration-300",
-                  isActive
-                    ? "text-amber-400"
-                    : "text-amber-400/60 hover:text-amber-400 hover:bg-amber-500/5"
-                )}
-              >
-                <span className="flex items-center gap-3">
-                  <GroupIcon className="w-[18px] h-[18px] shrink-0" />
-                  {t(group.label as Parameters<typeof t>[0])}
-                </span>
-                <ChevronRight className={cn(
-                  "h-4 w-4 shrink-0 text-amber-500/40 transition-transform duration-300",
-                  isOpen && "rotate-90"
-                )} />
-              </button>
-              <div className={cn(
-                "overflow-hidden transition-all duration-300 ease-in-out",
-                isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
-              )}>
-                <div className="py-1 ml-[18px] pl-4 border-l border-amber-500/20">
-                  {group.items.map((item) => {
-                    const isItemActive = location.pathname === item.to;
-                    return (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        onClick={onClose}
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-[8px] rounded-md text-[13px] transition-all duration-300",
-                          isItemActive
-                            ? "text-amber-400 font-semibold"
-                            : "text-gray-500 hover:text-amber-400"
-                        )}
-                      >
-                        <span className={cn(
-                          "w-1.5 h-1.5 rounded-full shrink-0 transition-colors duration-300",
-                          isItemActive ? "bg-amber-400" : "bg-gray-300"
-                        )} />
-                        {t(item.label as Parameters<typeof t>[0])}
-                      </Link>
-                    );
-                  })}
-                </div>
+          {/* ── Owner section ── */}
+          {ownerGroups.length > 0 && (
+            <>
+              <div className="sidebar-section-title mt-1">
+                <span className="text-amber-500/70">Owner Only</span>
               </div>
-            </div>
-          );
-        })}
+              {ownerGroups.flatMap((g) =>
+                g.items.map((item) => (
+                  <NavLink key={item.to} to={item.to} icon={item.icon} label={t(item.label as Parameters<typeof t>[0])} amber />
+                ))
+              )}
+            </>
+          )}
         </div>
-        </>
         )}
       </nav>
+
+      {/* ── User profile at bottom ── */}
+      {user && (
+        <div className="px-4 py-3 border-t border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="relative shrink-0">
+              <img
+                src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`}
+                alt=""
+                className="w-9 h-9 rounded-full"
+              />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-gray-900 truncate">{user.username}</p>
+              <p className="text-[11px] text-gray-400">{user.is_owner ? "Bot Owner" : "Staff"}</p>
+            </div>
+            <button
+              onClick={() => {
+                fetch("/api/auth/logout", { method: "POST", credentials: "include" }).then(() => {
+                  window.location.href = "/login";
+                });
+              }}
+              className="text-gray-300 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-gray-50"
+              title="Log out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -683,13 +552,13 @@ function Header() {
 
 function DashboardFooter() {
   return (
-    <footer className="border-t px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[13px] text-muted-foreground">
-      <span>© 2025 <span className="font-semibold text-foreground">Infinity Bot</span>. All rights reserved.</span>
-      <div className="flex items-center gap-4">
-        <a href="#" className="hover:text-primary transition-colors">Support</a>
-        <a href="#" className="hover:text-primary transition-colors">Docs</a>
-        <a href="/status" className="hover:text-primary transition-colors">Status</a>
+    <footer className="border-t py-5 text-center text-xs text-gray-400">
+      <div className="flex items-center justify-center gap-6 mb-2">
+        <a href="/terms" className="hover:text-primary transition-colors">Terms</a>
+        <a href="/privacy" className="hover:text-primary transition-colors">Privacy</a>
+        <a href="/refund" className="hover:text-primary transition-colors">Refund</a>
       </div>
+      <p>© 2025 Infinity Bot. All rights reserved.</p>
     </footer>
   );
 }
@@ -858,6 +727,9 @@ function SetupGate() {
         <Route path="/commands" element={<PublicCommandsPage />} />
         <Route path="/pricing" element={<PublicPricingPage />} />
         <Route path="/status" element={<PublicStatusPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/refund" element={<RefundPage />} />
         <Route path="/login" element={<Login />} />
         {/* ── Dashboard (cần auth) ── */}
         <Route path="/dashboard" element={<ProtectedAppRoutes root />} />

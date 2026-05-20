@@ -11,8 +11,8 @@ from src.database.config import SessionLocal
 
 _EMOJI_MAP: dict[str, str] = {
     # Shop
-    "san_pham": "📦", "orders": "📋", "feedback": "⭐", "support": "🆘",
-    "bxh": "📊", "tao_don": "🧾", "tao_don_custom": "✏️", "bang_gia": "💰",
+    "orders": "📋", "feedback": "⭐", "support": "🆘",
+    "leaderboard": "📊", "createorder": "🧾", "createorder_custom": "✏️",
     "price_list": "📋",
     # Giveaway
     "giveaway": "🎁", "giveaway_list": "📋", "giveaway_reroll": "🔁",
@@ -167,15 +167,13 @@ HELP_CATEGORIES = [
         "emoji": "🛒",
         "name": "shop",
         "commands": [
-            _help_cmd("san_pham", "Browse products and product details.", "`/san_pham [product]`"),
             _help_cmd("orders", "View your orders or a specific order.", "`/orders [id]`"),
             _help_cmd("feedback", "Leave product feedback.", "`/feedback`"),
             _help_cmd("support", "Contact server support.", "`/support`"),
-            _help_cmd("bxh", "View the shop leaderboard.", "`/bxh`"),
-            _help_cmd("tao_don", "Create an order for a member.", "`/tao_don`", True),
-            _help_cmd("tao_don_custom", "Create a custom order with a custom name.", "`/tao_don_custom`", True),
-            _help_cmd("bang_gia", "Send the product price list to a channel.", "`/bang_gia [#channel]`", True),
-            _help_cmd("price_list", "View price list with category filter.", "`/price_list`"),
+            _help_cmd("leaderboard", "View the shop leaderboard.", "`/leaderboard`"),
+            _help_cmd("createorder", "Create an order for a member.", "`/createorder`", True),
+            _help_cmd("createorder_custom", "Create a custom order with a custom name.", "`/createorder_custom`", True),
+            _help_cmd("price_list", "View price list with category filter.", "`/price_list`", True),
         ],
     },
     {

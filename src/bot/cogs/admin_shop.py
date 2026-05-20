@@ -265,7 +265,7 @@ class OrderPayView(discord.ui.View):
                 pass
 
 
-# ── Bang gia UI ───────────────────────────────────────────────────────────────
+# ── Price List UI ──────────────────────────────────────────────────────────────
 
 class BangGiaSelect(discord.ui.Select):
     def __init__(self, products: list):
@@ -693,10 +693,10 @@ class AdminShopCog(discord.Cog):
         self,
         ctx: discord.ApplicationContext,
         user: discord.Option(discord.Member, "Select a member"),
-        san_pham: discord.Option(str, "Custom product name"),
-        gia: discord.Option(int, "Price", min_value=1000),
-        ghi_chu: discord.Option(str, "Note / additional description (optional)", required=False, default=""),
-        so_luong: discord.Option(int, "Quantity", required=False, default=1, min_value=1, max_value=99),
+        product_name: discord.Option(str, "Custom product name"),
+        price: discord.Option(int, "Price", min_value=1000),
+        note: discord.Option(str, "Note / additional description (optional)", required=False, default=""),
+        quantity: discord.Option(int, "Quantity", required=False, default=1, min_value=1, max_value=99),
         channel: discord.Option(discord.TextChannel, "Payment channel (leave empty = current channel)", required=False, default=None),
         payment_method: discord.Option(str, "Payment method", required=False, choices=["payos", "paypal", "crypto", "manual"], default=None),
     ):
@@ -721,7 +721,7 @@ class AdminShopCog(discord.Cog):
                 await ctx.respond(f"⚠️ Payment method **{method}** is not enabled. Enabled: {', '.join(payment_methods)}", ephemeral=True)
                 return
 
-            total = float(gia) * so_luong
+            total = float(price) * quantity
 
             db_user = session.execute(
                 select(User).where(User.discord_id == str(user.id))
@@ -734,9 +734,9 @@ class AdminShopCog(discord.Cog):
             order = Order(
                 user_id=db_user.id,
                 product_id=None,
-                quantity=so_luong,
+                quantity=quantity,
                 total_price=total,
-                package_name=san_pham,
+                package_name=product_name,
                 status="PENDING",
                 payment_method=method,
                 currency=currency,
@@ -751,9 +751,9 @@ class AdminShopCog(discord.Cog):
             if not domain.startswith("http"):
                 domain = f"https://{domain}"
 
-            product_display = san_pham[:40]
-            if so_luong > 1:
-                product_display += f" x{so_luong}"
+            product_display = product_name[:40]
+            if quantity > 1:
+                product_display += f" x{quantity}"
 
             result = await provider.create_checkout(
                 amount=total,
@@ -786,7 +786,7 @@ class AdminShopCog(discord.Cog):
                 "user": user.display_name,
                 "user.id": user.id,
                 "product.name": product_display,
-                "package": san_pham,
+                "package": product_name,
                 "order.total": fmt_price(total, currency_symbol, currency),
             }
 
@@ -801,8 +801,8 @@ class AdminShopCog(discord.Cog):
                 don_hang_ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
                 if don_hang_ch:
                     order_embed = build_embed("don_hang_moi", session, vars=order_vars, guild_id=str(interaction.guild_id))
-                    if ghi_chu:
-                        order_embed.add_field(name="Note", value=ghi_chu, inline=False)
+                    if note:
+                        order_embed.add_field(name="Note", value=note, inline=False)
                     await don_hang_ch.send(
                         content=f"{user.mention} You have a new order!",
                         embed=order_embed,

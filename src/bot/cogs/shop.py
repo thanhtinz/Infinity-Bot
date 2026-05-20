@@ -291,7 +291,7 @@ class ShopCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="bxh", description="Purchase leaderboard")
+    @discord.slash_command(name="leaderboard", description="Purchase leaderboard")
     async def bxh_cmd(
         self,
         ctx: discord.ApplicationContext,

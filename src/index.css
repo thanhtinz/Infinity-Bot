@@ -171,10 +171,10 @@
    SIDEBAR
    ════════════════════════════════════════════════════════════════════════════ */
 .sidebar-section-title {
-  padding: 14px 20px 6px;
-  font-size: 10px; font-weight: 800;
-  letter-spacing: .1em; text-transform: uppercase;
-  color: rgba(0,0,0,.35);
+  padding: 16px 16px 6px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: rgba(0,0,0,.3);
   user-select: none;
 }
 
@@ -192,3 +192,17 @@
    SELECTION
    ════════════════════════════════════════════════════════════════════════════ */
 ::selection { background: hsl(var(--primary) / .15); }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   PROSE — policy pages
+   ════════════════════════════════════════════════════════════════════════════ */
+.prose-custom h2 {
+  font-size: 1.15rem; font-weight: 700; color: #111827;
+  margin-top: 2rem; margin-bottom: 0.75rem;
+}
+.prose-custom p { margin-bottom: 0.75rem; line-height: 1.75; font-size: 0.9375rem; }
+.prose-custom ul, .prose-custom ol { margin-bottom: 0.75rem; padding-left: 1.5rem; font-size: 0.9375rem; }
+.prose-custom ul { list-style: disc; }
+.prose-custom ol { list-style: decimal; }
+.prose-custom li { margin-bottom: 0.35rem; line-height: 1.7; }
+.prose-custom strong { color: #111827; }

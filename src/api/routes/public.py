@@ -133,14 +133,8 @@ async def public_commands():
     """Full public slash-command catalog for the landing page."""
     from src.bot.cogs.help_cog import HELP_CATEGORIES
 
-    # Display-name overrides for Vietnamese bot command names
-    DISPLAY_NAMES: dict[str, str] = {
-        "san_pham":        "product",
-        "tao_don":         "create_order",
-        "tao_don_custom":  "create_custom_order",
-        "bang_gia":        "bang_gia",
-        "bxh":             "leaderboard",
-    }
+    # Display-name overrides (no longer needed — commands already English)
+    DISPLAY_NAMES: dict[str, str] = {}
 
     category_labels = {
         "interaction": "Interactions",
