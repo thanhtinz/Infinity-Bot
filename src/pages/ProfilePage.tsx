@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useGuild } from "@/contexts/GuildContext";
-import { Crown, Clock, Copy, Check, User, Database, Download, Upload, Loader2 } from "lucide-react";
+import { Clock, Copy, Check, User, Database, Download, Upload, Loader2 } from "lucide-react";
 import { useState, useRef } from "react";
 import { apiFetch } from "@/hooks/useApi";
 import { PageContainer, PageHeader, SectionCard } from "@/components/infinity";

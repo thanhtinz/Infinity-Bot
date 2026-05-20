@@ -8,7 +8,6 @@ import { GuildProvider, useGuild } from "@/contexts/GuildContext";
 import { GuildSelector } from "@/components/GuildSelector";
 import { I18nProvider, useT } from "@/i18n";
 import { apiFetch } from "@/hooks/useApi";
-import { useTheme } from "@/contexts/ThemeContext";
 
 // ── Lazy-loaded pages (code-split per route) ─────────────────────────────────
 const ConfigDiscord = lazy(() => import("./pages/ConfigDiscord").then(m => ({ default: m.ConfigDiscord })));
@@ -429,7 +428,6 @@ function useBreadcrumb() {
 }
 
 function Header() {
-  const { theme, setTheme, resolved } = useTheme();
   const breadcrumb = useBreadcrumb();
   const { hasFeature } = useEntitlements();
 
@@ -441,12 +439,6 @@ function Header() {
     }),
     retry: false
   });
-
-  const cycleTheme = () => {
-    const order: Array<"light" | "dark" | "system"> = ["light", "dark", "system"];
-    const idx = order.indexOf(theme);
-    setTheme(order[(idx + 1) % order.length]);
-  };
 
   return (
     <header className="sticky top-0 z-40 h-[76px] border-b bg-white text-gray-900 backdrop-blur-sm flex items-center justify-between px-6 gap-4">
@@ -575,12 +567,6 @@ function Sidebar() {
 
 function MobileNav() {
   const [open, setOpen] = useState(false);
-  const { theme, setTheme, resolved } = useTheme();
-  const cycleTheme = () => {
-    const order: Array<"light" | "dark" | "system"> = ["light", "dark", "system"];
-    const idx = order.indexOf(theme);
-    setTheme(order[(idx + 1) % order.length]);
-  };
 
   return (
     <div className="md:hidden border-b bg-white text-gray-900 px-4 py-3 flex items-center justify-between sticky top-0 z-40">

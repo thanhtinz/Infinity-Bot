@@ -9,7 +9,7 @@ import {
   LogIn, Hash, Shield, Moon, Zap, ZapOff, AlertTriangle,
   Heart, HelpCircle,
   CheckCircle, Package, PackageX, ClipboardList, Tag, UserPlus, Pin, UserMinus,
-  ShieldCheck, Archive, RotateCcw, Users, BrainCircuit, ImageIcon,
+  Archive, RotateCcw, BrainCircuit, ImageIcon,
   XCircle, Bell, BarChart3, Rss, Sun, AtSign, UserCheck,
 } from "lucide-react";
 
