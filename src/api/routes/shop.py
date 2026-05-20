@@ -659,8 +659,16 @@ def get_coupons(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
     return [
         {
             "id": c.id, "code": c.code,
+            "discount_type": getattr(c, "discount_type", "percent") or "percent",
             "discount_percent": c.discount_percent,
             "discount_amount": c.discount_amount,
+            "buy_x": getattr(c, "buy_x", None),
+            "get_y": getattr(c, "get_y", None),
+            "apply_mode": getattr(c, "apply_mode", "all") or "all",
+            "apply_category_id": getattr(c, "apply_category_id", None),
+            "apply_product_id": getattr(c, "apply_product_id", None),
+            "customer_mode": getattr(c, "customer_mode", "all") or "all",
+            "customer_ids": getattr(c, "customer_ids", []) or [],
             "max_uses": c.max_uses, "used_count": c.used_count,
             "is_public": c.is_public,
         } for c in coupons
@@ -678,8 +686,16 @@ def create_coupon(body: dict, db=Depends(get_db), guild_id: str = Depends(get_gu
     coupon = Coupon(
         guild_id=guild_id,
         code=code,
+        discount_type=body.get("discount_type", "percent"),
         discount_percent=body.get("discount_percent") or None,
         discount_amount=body.get("discount_amount") or None,
+        buy_x=body.get("buy_x") or None,
+        get_y=body.get("get_y") or None,
+        apply_mode=body.get("apply_mode", "all"),
+        apply_category_id=body.get("apply_category_id") or None,
+        apply_product_id=body.get("apply_product_id") or None,
+        customer_mode=body.get("customer_mode", "all"),
+        customer_ids=body.get("customer_ids") or [],
         max_uses=int(body.get("max_uses", 1)),
         is_public=bool(body.get("is_public", False)),
     )
@@ -694,10 +710,17 @@ def update_coupon(coupon_id: int, body: dict, db=Depends(get_db), guild_id: str 
     coupon = db.execute(select(Coupon).where(Coupon.id == coupon_id, Coupon.guild_id == guild_id)).scalars().first()
     if not coupon:
         raise HTTPException(status_code=404, detail="Coupon not found")
-    for field in ("discount_percent", "discount_amount", "max_uses", "is_public"):
+    FIELDS = (
+        "discount_type", "discount_percent", "discount_amount",
+        "buy_x", "get_y",
+        "apply_mode", "apply_category_id", "apply_product_id",
+        "customer_mode", "customer_ids",
+        "max_uses", "is_public",
+    )
+    for field in FIELDS:
         if field in body:
             val = body[field]
-            if field in ("discount_percent", "discount_amount"):
+            if field in ("discount_percent", "discount_amount", "buy_x", "get_y", "apply_category_id", "apply_product_id"):
                 val = val or None
             setattr(coupon, field, val)
     db.commit()

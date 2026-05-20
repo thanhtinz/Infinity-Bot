@@ -17,7 +17,6 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import {
-  ArrowLeft,
   CalendarClock,
   FileText,
   Layout,
@@ -31,6 +30,7 @@ import type { EmbedField, ScheduledMessage, FormState } from "./smTypes";
 import { emptyEmbed, emptyForm, toDatetimeLocal } from "./smConstants";
 import { EmbedEditorSection } from "./EmbedEditorSection";
 import { apiFetch } from "@/hooks/useApi";
+import { PageContainer, PageEditHeader } from "@/components/infinity";
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -180,21 +180,18 @@ export function ScheduledMessagesEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b px-6 py-3.5 flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-lg tracking-tight">{isNew ? "Create schedule" : "Edit schedule"}</h1>
-          <p className="text-xs text-muted-foreground">{isNew ? "Create new scheduled message" : "Edit scheduled message"}</p>
-        </div>
+    <PageContainer size="sm">
+      <PageEditHeader
+        title={isNew ? "Create schedule" : "Edit schedule"}
+        description={isNew ? "Create new scheduled message" : "Edit scheduled message"}
+        onBack={() => navigate(-1)}
+      >
         <Button className="rounded-xl gap-2" onClick={handleSave} disabled={!form.channel_id || !form.send_at || isPending}>
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
         </Button>
-      </div>
-      <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
+      </PageEditHeader>
+      <div className="space-y-6">
         {/* ── Section 1: Send settings ── */}
         <div className="space-y-4">
           <p className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
@@ -401,6 +398,6 @@ export function ScheduledMessagesEditPage() {
           </>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }

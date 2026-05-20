@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { Save, Loader2 } from "lucide-react";
 
 import type { AutoResponderRule, EmbedField } from "./arTypes";
 import type { RuleForm } from "./arTypes";
@@ -13,6 +13,7 @@ import { TriggerSection } from "./TriggerSection";
 import { ResponseSection } from "./ResponseSection";
 import { FilterSection } from "./FilterSection";
 import { apiFetch } from "@/hooks/useApi";
+import { PageContainer, PageEditHeader } from "@/components/infinity";
 
 export function AutoResponderEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -269,21 +270,18 @@ export function AutoResponderEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b px-6 py-3.5 flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10" onClick={() => navigate("/autoresponder")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-lg tracking-tight">{isNew ? "Create Auto Responder" : "Edit Auto Responder"}</h1>
-          <p className="text-xs text-muted-foreground">{isNew ? "Create new auto responder" : "Edit auto responder rule"}</p>
-        </div>
+    <PageContainer size="sm">
+      <PageEditHeader
+        title={isNew ? "Create Auto Responder" : "Edit Auto Responder"}
+        description={isNew ? "Create new auto responder" : "Edit auto responder rule"}
+        onBack={() => navigate("/autoresponder")}
+      >
         <Button className="rounded-xl gap-2" onClick={handleSave} disabled={isPending}>
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
         </Button>
-      </div>
-      <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
+      </PageEditHeader>
+      <div className="space-y-6">
         <TriggerSection form={form} setForm={setForm} />
 
         <Separator />
@@ -320,6 +318,6 @@ export function AutoResponderEditPage() {
           removeBlockedChannel={removeBlockedChannel}
         />
       </div>
-    </div>
+    </PageContainer>
   );
 }

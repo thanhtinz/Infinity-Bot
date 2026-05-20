@@ -22,12 +22,53 @@ def get_session():
     return SessionLocal()
 
 
-def _apply_coupon(price: float, coupon: Coupon) -> float:
+def _apply_coupon(price: float, coupon: Coupon, quantity: int = 1) -> float:
+    """Calculate discounted price based on coupon type."""
+    dtype = getattr(coupon, "discount_type", "percent") or "percent"
+    if dtype == "percent" and coupon.discount_percent:
+        return max(0.0, price * (1 - coupon.discount_percent / 100))
+    if dtype == "fixed" and coupon.discount_amount:
+        return max(0.0, price - coupon.discount_amount)
+    if dtype == "buy_x_get_y":
+        bx = getattr(coupon, "buy_x", None) or 0
+        gy = getattr(coupon, "get_y", None) or 0
+        if bx > 0 and gy > 0 and quantity >= bx:
+            # e.g. buy 3 get 1 free → pay for (quantity - free_items)
+            unit = price / quantity if quantity > 0 else price
+            free = (quantity // bx) * gy
+            return max(0.0, unit * max(0, quantity - free))
+    # fallback — old-style: try percent then fixed
     if coupon.discount_percent:
         return max(0.0, price * (1 - coupon.discount_percent / 100))
     if coupon.discount_amount:
         return max(0.0, price - coupon.discount_amount)
     return price
+
+
+def _validate_coupon_scope(coupon: Coupon, order, user_id: str, session) -> str | None:
+    """Validate coupon apply_mode and customer_mode. Returns error message or None."""
+    # Check product / category restriction
+    apply_mode = getattr(coupon, "apply_mode", "all") or "all"
+    if apply_mode == "product":
+        target_pid = getattr(coupon, "apply_product_id", None)
+        if target_pid and order.product_id != target_pid:
+            return "❌ This coupon is not valid for this product."
+    elif apply_mode == "category":
+        target_cid = getattr(coupon, "apply_category_id", None)
+        if target_cid and order.product_id:
+            from src.models.models import Product
+            prod = session.execute(select(Product).where(Product.id == order.product_id)).scalars().first()
+            if prod and getattr(prod, "category_id", None) != target_cid:
+                return "❌ This coupon is not valid for this product category."
+
+    # Check customer restriction
+    cust_mode = getattr(coupon, "customer_mode", "all") or "all"
+    if cust_mode == "specific":
+        allowed_ids = getattr(coupon, "customer_ids", []) or []
+        if allowed_ids and user_id not in allowed_ids:
+            return "❌ This coupon is not available for your account."
+
+    return None
 
 
 class CouponModal(discord.ui.Modal):
@@ -72,13 +113,20 @@ class CouponModal(discord.ui.Modal):
                 await interaction.response.send_message("❌ Coupon has been used up.", ephemeral=True)
                 return
 
-            new_price = _apply_coupon(self.original_price, coupon)
-
-            # Create new checkout with discounted price via payment service
+            # Fetch order for product/quantity validation
             order = session.execute(select(Order).where(Order.id == self.order_id)).scalars().first()
             if not order:
                 await interaction.response.send_message("❌ Order no longer exists.", ephemeral=True)
                 return
+
+            # Validate scope (product/category/customer restrictions)
+            scope_err = _validate_coupon_scope(coupon, order, str(interaction.user.id), session)
+            if scope_err:
+                await interaction.response.send_message(scope_err, ephemeral=True)
+                return
+
+            qty = order.quantity or 1
+            new_price = _apply_coupon(self.original_price, coupon, quantity=qty)
 
             method = order.payment_method or payment_methods[0]
             provider = get_provider(method)

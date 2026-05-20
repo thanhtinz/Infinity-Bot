@@ -68,7 +68,7 @@ export const EmojiInput = React.forwardRef<HTMLInputElement, EmojiInputProps>(
     return (
       <div
         className={cn(
-          "flex w-full items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring",
+          "flex w-full items-center rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring/30 focus-within:border-primary transition-colors",
           wrapperClassName
         )}
       >
@@ -77,7 +77,7 @@ export const EmojiInput = React.forwardRef<HTMLInputElement, EmojiInputProps>(
           value={value}
           onChange={onChange}
           className={cn(
-            "flex h-9 w-full rounded-md bg-transparent px-3 py-1 text-base transition-colors placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 flex-1",
+            "flex h-9 w-full bg-transparent px-3 py-1 text-base placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 flex-1",
             className
           )}
           {...props}
@@ -128,7 +128,7 @@ export const EmojiTextarea = React.forwardRef<HTMLTextAreaElement, EmojiTextarea
     return (
       <div
         className={cn(
-          "flex w-full items-start rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring",
+          "flex w-full items-start rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring/30 focus-within:border-primary transition-colors",
           wrapperClassName
         )}
       >
@@ -138,7 +138,7 @@ export const EmojiTextarea = React.forwardRef<HTMLTextAreaElement, EmojiTextarea
           onChange={onChange}
           rows={rows}
           className={cn(
-            "flex min-h-[60px] w-full rounded-md bg-transparent px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 resize-y",
+            "flex min-h-[60px] w-full bg-transparent px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 resize-y",
             className
           )}
           {...props}

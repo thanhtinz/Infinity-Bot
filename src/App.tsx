@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, ShieldAlert, Pin, ChevronDown, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, MousePointer, List, MessageCircle, Layout, Zap, Warehouse, BrainCircuit, Settings2, BookOpen, History, Image, ClipboardList, Rss, UserCheck, Search, User } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, Pin, ChevronDown, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart, BarChart3, AlertTriangle, MousePointer, List, MessageCircle, Layout, Zap, BrainCircuit, Settings2, BookOpen, History, Image, ClipboardList, Rss, UserCheck, Search, User } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense, Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -25,7 +25,6 @@ const WarningsManager = lazy(() => import("./pages/WarningsManager").then(m => (
 const StickyManager = lazy(() => import("./pages/StickyManager").then(m => ({ default: m.StickyManager })));
 const StickyEditPage = lazy(() => import("./pages/sticky/StickyEditPage").then(m => ({ default: m.StickyEditPage })));
 const CouponEditPage = lazy(() => import("./pages/coupons/CouponEditPage").then(m => ({ default: m.CouponEditPage })));
-const ProductEditPage = lazy(() => import("./pages/products/ProductEditPage").then(m => ({ default: m.ProductEditPage })));
 const ButtonRoles = lazy(() => import("./pages/ButtonRoles").then(m => ({ default: m.ButtonRoles })));
 const SelectMenuRoles = lazy(() => import("./pages/SelectMenuRoles").then(m => ({ default: m.SelectMenuRoles })));
 const AutoModConfig = lazy(() => import("./pages/AutoModConfig").then(m => ({ default: m.AutoModConfig })));
@@ -40,8 +39,6 @@ const SelectMenuRoleEditPage = lazy(() => import("./pages/select-roles/SelectMen
 const AutoResponder = lazy(() => import("./pages/AutoResponder").then(m => ({ default: m.AutoResponder })));
 const AutoResponderEditPage = lazy(() => import("./pages/auto-responder/AutoResponderEditPage").then(m => ({ default: m.AutoResponderEditPage })));
 
-const FirewallLogs = lazy(() => import("./pages/firewall/FirewallLogs").then(m => ({ default: m.FirewallLogs })));
-const AlertsConfig = lazy(() => import("./pages/AlertsConfig").then(m => ({ default: m.AlertsConfig })));
 const ModerationPage = lazy(() => import("./pages/moderation/ModerationPage"));
 const LoggingPage = lazy(() => import("./pages/LoggingPage"));
 const InvitesPage = lazy(() => import("./pages/invites/InvitesPage"));
@@ -60,7 +57,6 @@ const RefundPage = lazy(() => import("./pages/RefundPage").then(m => ({ default:
 const ShopChannels = lazy(() => import("./pages/ShopChannels").then(m => ({ default: m.ShopChannels })));
 const ShopStats = lazy(() => import("./pages/ShopStats").then(m => ({ default: m.ShopStats })));
 const FlashSales = lazy(() => import("./pages/FlashSales").then(m => ({ default: m.FlashSales })));
-const InventoryManager = lazy(() => import("./pages/InventoryManager").then(m => ({ default: m.InventoryManager })));
 const SpendingMilestones = lazy(() => import("./pages/SpendingMilestones"));
 
 const PremiumPaymentConfig = lazy(() => import("./pages/PremiumPaymentConfig").then(m => ({ default: m.PremiumPaymentConfig })));
@@ -120,7 +116,6 @@ const navGroups: NavGroup[] = [
       { to: "/shop-stats", icon: BarChart, label: "nav_shopStats" },
       { to: "/milestones", icon: Trophy, label: "Spending Milestones" },
       { to: "/flash-sales", icon: Zap, label: "Flash Sales" },
-      { to: "/inventory", icon: Warehouse, label: "Inventory" },
       { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
       { to: "/config/shop-channels", icon: Hash, label: "nav_shopChannels", feature: "shop" },
       { to: "/config/payments", icon: CreditCard, label: "Payments" },
@@ -147,16 +142,6 @@ const navGroups: NavGroup[] = [
       { to: "/moderation", icon: Shield, label: "Moderation" },
       { to: "/automod", icon: Bot, label: "nav_automod" },
       { to: "/logging", icon: FileText, label: "Logging" },
-    ],
-  },
-  {
-    key: "security",
-    icon: ShieldAlert,
-    label: "nav_security",
-    staffPerm: "can_moderation",
-    items: [
-      { to: "/firewall/logs", icon: ShieldAlert, label: "Firewall Logs" },
-      { to: "/alerts", icon: Bell, label: "Server Alerts" },
     ],
   },
   {
@@ -811,8 +796,6 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/config/payments" element={<PaymentConfig />} />
         {/* Shop */}
         <Route path="/products" element={<ProductsManager />} />
-        <Route path="/products/new" element={<ProductEditPage />} />
-        <Route path="/products/:id/edit" element={<ProductEditPage />} />
         <Route path="/orders" element={<OrdersManager />} />
         <Route path="/feedback" element={<FeedbackManager />} />
         <Route path="/coupons" element={<CouponsManager />} />
@@ -823,7 +806,6 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/shop-stats" element={<ShopStats />} />
         <Route path="/milestones" element={<SpendingMilestones />} />
         <Route path="/flash-sales" element={<FlashSales />} />
-        <Route path="/inventory" element={<InventoryManager />} />
         {/* Community */}
         <Route path="/warnings" element={<WarningsManager />} />
         <Route path="/moderation" element={<ModerationPage />} />
@@ -845,8 +827,6 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         {/* Security */}
         <Route path="/backup" element={<BackupPage />} />
 
-        <Route path="/firewall/logs" element={<FirewallLogs />} />
-        <Route path="/alerts" element={<AlertsConfig />} />
         {/* Utilities */}
         <Route path="/sticky" element={<StickyManager />} />
         <Route path="/sticky/new" element={<StickyEditPage />} />

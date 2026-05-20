@@ -5,10 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useGuild } from "@/contexts/GuildContext";
-import { Clock, Copy, Check, User, Database, Download, Upload, Loader2 } from "lucide-react";
+import { Clock, Copy, Check, User, Database, Download, Upload, Loader2, Bot, Gem } from "lucide-react";
 import { useState, useRef } from "react";
 import { apiFetch } from "@/hooks/useApi";
 import { PageContainer, PageHeader, SectionCard } from "@/components/infinity";
+import { useToast } from "@/hooks/use-toast";
 
 const TIMEZONES = [
   "Asia/Ho_Chi_Minh", "Asia/Bangkok", "Asia/Tokyo", "Asia/Shanghai",
@@ -23,8 +24,10 @@ export function ProfilePage() {
   const [timezone, setTimezone] = useState(() => localStorage.getItem("tz") || "Asia/Ho_Chi_Minh");
   const [copied, setCopied] = useState(false);
   const [restoreMsg, setRestoreMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [backupType, setBackupType] = useState("full");
   const fileRef = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
+  const { toast } = useToast();
 
   const { data: user } = useQuery({
     queryKey: ["auth_me"],
@@ -54,17 +57,20 @@ export function ProfilePage() {
   // Backup: download JSON
   const backupMut = useMutation({
     mutationFn: async () => {
-      const res = await apiFetch("/api/backup");
+      const url = backupType === "full" ? "/api/backup" : `/api/backup?type=${backupType}`;
+      const res = await apiFetch(url);
       if (!res.ok) throw new Error("Backup failed");
       const data = await res.json();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
+      const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
-      a.download = `backup_${selectedGuildId}_${new Date().toISOString().slice(0, 10)}.json`;
+      a.href = blobUrl;
+      a.download = `backup_${backupType}_${selectedGuildId}_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(blobUrl);
     },
+    onSuccess: () => toast({ title: "Backup downloaded" }),
+    onError: (e) => toast({ title: "Backup failed", description: e instanceof Error ? e.message : "Unknown error", variant: "destructive" }),
   });
 
   // Restore: upload JSON
@@ -152,19 +158,34 @@ export function ProfilePage() {
         </div>
       </SectionCard>
 
-      {/* Backup & Restore — inline */}
+      {/* Backup & Restore */}
       <SectionCard title="Backup & Restore" icon={Database} accent="amber">
         <p className="text-[13px] text-muted-foreground mb-4">
           Download your bot configuration as a JSON file, or restore from a previous backup.
         </p>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Backup type</Label>
+            <Select value={backupType} onValueChange={setBackupType}>
+              <SelectTrigger className="w-[160px] h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="full">Full backup</SelectItem>
+                <SelectItem value="commands">Commands</SelectItem>
+                <SelectItem value="roles">Role panels</SelectItem>
+                <SelectItem value="embeds">Embed templates</SelectItem>
+                <SelectItem value="moderation">Moderation</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <Button
             variant="outline"
             onClick={() => backupMut.mutate()}
             disabled={backupMut.isPending || !selectedGuildId}
           >
             {backupMut.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-            Download Backup
+            Download
           </Button>
           <Button
             variant="outline"
@@ -172,7 +193,7 @@ export function ProfilePage() {
             disabled={restoreMut.isPending || !selectedGuildId}
           >
             {restoreMut.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-            Restore from File
+            Restore
           </Button>
           <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={handleRestore} />
         </div>
@@ -183,6 +204,42 @@ export function ProfilePage() {
         )}
         {!selectedGuildId && (
           <p className="text-[12px] text-amber-600 mt-2">Select a server first to use backup/restore.</p>
+        )}
+      </SectionCard>
+
+      {/* Custom Bot — Premium */}
+      <SectionCard title="Custom Bot" icon={Bot} accent="primary">
+        {plan && plan.name !== "Free" ? (
+          <div className="space-y-3">
+            <p className="text-[13px] text-muted-foreground">
+              Customize your bot's appearance — name, avatar, and status.
+            </p>
+            <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Bot className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold">Your Bot</p>
+                <p className="text-xs text-muted-foreground">Configure in Bot Settings → General</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => window.location.href = "/bot-settings"}>
+                Configure
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/30 border border-dashed">
+            <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+              <Gem className="w-6 h-6 text-amber-500" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold">Custom Bot</p>
+              <p className="text-xs text-muted-foreground">Upgrade to Premium to customize your bot's name, avatar, and status.</p>
+            </div>
+            <Button size="sm" onClick={() => window.location.href = "/my-plan"}>
+              Upgrade
+            </Button>
+          </div>
         )}
       </SectionCard>
     </PageContainer>

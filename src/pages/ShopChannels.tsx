@@ -24,26 +24,7 @@ interface ShopChannelsConfig {
   spending_leaderboard_schedule: string;
   spending_leaderboard_time: string;
   inventory_low_stock_threshold: number;
-  timezone: string;
 }
-
-const TIMEZONES = [
-  { value: "Asia/Ho_Chi_Minh", label: "Asia/Ho_Chi_Minh (UTC+7)" },
-  { value: "Asia/Bangkok",     label: "Asia/Bangkok (UTC+7)" },
-  { value: "Asia/Singapore",   label: "Asia/Singapore (UTC+8)" },
-  { value: "Asia/Tokyo",       label: "Asia/Tokyo (UTC+9)" },
-  { value: "Asia/Seoul",       label: "Asia/Seoul (UTC+9)" },
-  { value: "Asia/Shanghai",    label: "Asia/Shanghai (UTC+8)" },
-  { value: "Asia/Jakarta",     label: "Asia/Jakarta (UTC+7)" },
-  { value: "Asia/Kolkata",     label: "Asia/Kolkata (UTC+5:30)" },
-  { value: "Asia/Dubai",       label: "Asia/Dubai (UTC+4)" },
-  { value: "Europe/London",    label: "Europe/London (UTC+0/+1)" },
-  { value: "Europe/Paris",     label: "Europe/Paris (UTC+1/+2)" },
-  { value: "America/New_York", label: "America/New_York (UTC-5/-4)" },
-  { value: "America/Chicago",  label: "America/Chicago (UTC-6/-5)" },
-  { value: "America/Los_Angeles", label: "America/Los_Angeles (UTC-8/-7)" },
-  { value: "UTC",              label: "UTC (UTC+0)" },
-];
 
 const CHANNEL_FIELDS: { key: keyof ShopChannelsConfig; label: string }[] = [
   { key: "orders_channel_id", label: "Orders channel" },
@@ -71,7 +52,6 @@ export function ShopChannels() {
     spending_leaderboard_schedule: "daily",
     spending_leaderboard_time: "00:00",
     inventory_low_stock_threshold: 5,
-    timezone: "Asia/Ho_Chi_Minh",
   });
   const [isLoading, setIsLoading] = useState(true);
   const [savingCard, setSavingCard] = useState<string | null>(null);
@@ -93,7 +73,6 @@ export function ShopChannels() {
           spending_leaderboard_schedule: data.spending_leaderboard_schedule || "daily",
           spending_leaderboard_time: data.spending_leaderboard_time || "00:00",
           inventory_low_stock_threshold: data.inventory_low_stock_threshold ?? 5,
-          timezone: data.timezone || "Asia/Ho_Chi_Minh",
         });
       })
       .catch(() => toast({ title: t("error"), variant: "destructive" }))
@@ -142,7 +121,6 @@ export function ShopChannels() {
           channels: channelKeys,
           leaderboard: leaderboardKeys,
           inventory: inventoryKeys,
-          timezone: ["timezone"],
         };
 
         const keys = keyMap[cardId] ?? [];
@@ -281,34 +259,6 @@ export function ShopChannels() {
         </CardContent>
         <CardFooter className="border-t pt-4">
           <SaveBtn cardId="inventory" />
-        </CardFooter>
-      </Card>
-
-      {/* Card 4: Timezone */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Timezone</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Múi giờ</Label>
-            <Select
-              value={form.timezone}
-              onValueChange={(v) => set("timezone", v)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TIMEZONES.map((tz) => (
-                  <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-        <CardFooter className="border-t pt-4">
-          <SaveBtn cardId="timezone" />
         </CardFooter>
       </Card>
 

@@ -11,9 +11,10 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PackagePlus, X, ArrowLeft, Save, Loader2, Warehouse, Zap } from "lucide-react";
+import { PackagePlus, X, Save, Loader2, Warehouse, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EmojiPicker } from "@/components/EmojiPicker";
+import { PageContainer, PageEditHeader } from "@/components/infinity";
 import type { Product, ProductPackage, ProductCategory } from "../../types";
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
@@ -137,25 +138,21 @@ export function ProductEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b px-6 py-3.5 flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-lg tracking-tight">{isNew ? "Create product" : "Edit product"}</h1>
-          <p className="text-xs text-muted-foreground">{isNew ? "Create new product" : "Edit product details"}</p>
-        </div>
+    <PageContainer size="sm">
+      <PageEditHeader
+        title={isNew ? "Create product" : "Edit product"}
+        description={isNew ? "Create new product" : "Edit product details"}
+        onBack={() => navigate(-1)}
+      >
         <Button className="rounded-xl gap-2" onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
         </Button>
-      </div>
+      </PageEditHeader>
 
       {isNew ? (
         /* ── Create mode: no tabs, just the form ── */
-        <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
-          <ProductInfoForm
+        <ProductInfoForm
             form={form}
             packages={packages}
             categories={categories}
@@ -164,10 +161,8 @@ export function ProductEditPage() {
             removePkg={removePkg}
             onSubmit={onSubmit}
           />
-        </div>
       ) : (
         /* ── Edit mode: Info only (no Embed tab) ── */
-        <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
           <ProductInfoForm
             form={form}
             packages={packages}
@@ -177,9 +172,8 @@ export function ProductEditPage() {
             removePkg={removePkg}
             onSubmit={onSubmit}
           />
-        </div>
       )}
-    </div>
+    </PageContainer>
   );
 }
 
@@ -313,6 +307,17 @@ function ProductInfoForm({ form, packages, categories, addPkg, updatePkg, remove
               <div className="flex items-center gap-4 flex-wrap">
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <Switch
+                    checked={pkg.auto_buy ?? false}
+                    onCheckedChange={(v) => updatePkg(i, "auto_buy", v)}
+                  />
+                  <Zap className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Auto-buy</span>
+                  {pkg.auto_buy && (
+                    <span className="text-[10px] font-medium text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 px-1.5 py-0.5 rounded">Auto-buy</span>
+                  )}
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <Switch
                     checked={pkg.active}
                     onCheckedChange={(v) => updatePkg(i, "active", v)}
                   />
@@ -327,17 +332,6 @@ function ProductInfoForm({ form, packages, categories, addPkg, updatePkg, remove
                   <span className="text-xs text-muted-foreground">Inventory</span>
                   {pkg.use_inventory && (
                     <span className="text-[10px] font-medium text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded">Auto-delivery</span>
-                  )}
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <Switch
-                    checked={pkg.auto_buy ?? false}
-                    onCheckedChange={(v) => updatePkg(i, "auto_buy", v)}
-                  />
-                  <Zap className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Auto-buy</span>
-                  {pkg.auto_buy && (
-                    <span className="text-[10px] font-medium text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400 px-1.5 py-0.5 rounded">Auto-buy</span>
                   )}
                 </label>
               </div>

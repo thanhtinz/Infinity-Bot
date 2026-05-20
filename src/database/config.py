@@ -201,6 +201,21 @@ async def init_db():
             if col not in ord_:
                 all_stmts.append(stmt)
 
+        # coupons
+        cp = cols("coupons")
+        for col, stmt in {
+            "discount_type": "ALTER TABLE coupons ADD COLUMN discount_type VARCHAR DEFAULT 'percent'",
+            "buy_x": "ALTER TABLE coupons ADD COLUMN buy_x INTEGER",
+            "get_y": "ALTER TABLE coupons ADD COLUMN get_y INTEGER",
+            "apply_mode": "ALTER TABLE coupons ADD COLUMN apply_mode VARCHAR DEFAULT 'all'",
+            "apply_category_id": "ALTER TABLE coupons ADD COLUMN apply_category_id INTEGER",
+            "apply_product_id": "ALTER TABLE coupons ADD COLUMN apply_product_id INTEGER",
+            "customer_mode": "ALTER TABLE coupons ADD COLUMN customer_mode VARCHAR DEFAULT 'all'",
+            "customer_ids": "ALTER TABLE coupons ADD COLUMN customer_ids JSON DEFAULT '[]'",
+        }.items():
+            if col not in cp:
+                all_stmts.append(stmt)
+
         # ── Thực thi tất cả ALTER trong 1 transaction ──
         if all_stmts:
             logger.info(f"[init_db] Running {len(all_stmts)} migration(s): {all_stmts}")

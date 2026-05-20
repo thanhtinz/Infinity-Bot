@@ -10,13 +10,13 @@ import { EmojiInput, EmojiTextarea } from "@/components/EmojiInput";
 import { useToast } from "@/hooks/use-toast";
 import { ChannelSelect } from "@/components/ChannelSelect";
 import {
-  ArrowLeft,
   Hash,
   Save,
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiFetch } from "@/hooks/useApi";
+import { PageContainer, PageEditHeader } from "@/components/infinity";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -306,21 +306,18 @@ export function StickyEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b px-6 py-3.5 flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10" onClick={() => navigate("/sticky")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-lg tracking-tight">{isNew ? "Create Sticky" : "Edit Sticky"}</h1>
-          <p className="text-xs text-muted-foreground">{isNew ? "Create new sticky message" : "Edit sticky message"}</p>
-        </div>
+    <PageContainer size="sm">
+      <PageEditHeader
+        title={isNew ? "Create Sticky" : "Edit Sticky"}
+        description={isNew ? "Create new sticky message" : "Edit sticky message"}
+        onBack={() => navigate("/sticky")}
+      >
         <Button className="rounded-xl gap-2" onClick={handleSave} disabled={!form.channel_id || isPending}>
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           <span className="hidden sm:inline">{isPending ? "Saving..." : "Save"}</span>
         </Button>
-      </div>
-      <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
+      </PageEditHeader>
+      <div className="space-y-6">
         {/* Channel select */}
         <div className="space-y-2">
           <Label>Channel</Label>
@@ -517,6 +514,6 @@ export function StickyEditPage() {
           />
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

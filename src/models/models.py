@@ -135,8 +135,19 @@ class Coupon(Base):
     id = Column(Integer, primary_key=True, index=True)
     guild_id = Column(String, nullable=True, index=True)
     code = Column(String, unique=True, index=True)
+    # Discount type: "percent" | "fixed" | "buy_x_get_y"
+    discount_type = Column(String, default="percent")
     discount_percent = Column(Float, nullable=True)
     discount_amount = Column(Float, nullable=True)
+    buy_x = Column(Integer, nullable=True)   # buy X quantity …
+    get_y = Column(Integer, nullable=True)   # … get Y free
+    # Apply mode: "all" | "category" | "product"
+    apply_mode = Column(String, default="all")
+    apply_category_id = Column(Integer, nullable=True)
+    apply_product_id = Column(Integer, nullable=True)
+    # Customer targeting: "all" | "specific"
+    customer_mode = Column(String, default="all")
+    customer_ids = Column(JSON, default=list)  # discord user IDs
     max_uses = Column(Integer, default=1)
     used_count = Column(Integer, default=0)
     is_public = Column(Boolean, default=False)

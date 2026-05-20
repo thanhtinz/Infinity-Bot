@@ -18,8 +18,12 @@ import { useGuild } from "@/contexts/GuildContext";
 interface Coupon {
   id: number;
   code: string;
+  discount_type: string;
   discount_percent: number | null;
   discount_amount: number | null;
+  buy_x: number | null;
+  get_y: number | null;
+  apply_mode: string;
   max_uses: number;
   used_count: number;
   is_public: boolean;
@@ -103,10 +107,14 @@ export function CouponsManager() {
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground">{t("coupons_discount")}</p>
                       <p className="font-semibold">
-                        {c.discount_percent
+                        {(c.discount_type || "percent") === "percent" && c.discount_percent
                           ? `${c.discount_percent}%`
-                          : c.discount_amount
+                          : (c.discount_type || "percent") === "fixed" && c.discount_amount
                           ? formatPrice(c.discount_amount)
+                          : (c.discount_type) === "buy_x_get_y" && c.buy_x && c.get_y
+                          ? `Buy ${c.buy_x} Get ${c.get_y}`
+                          : c.discount_percent ? `${c.discount_percent}%`
+                          : c.discount_amount ? formatPrice(c.discount_amount)
                           : "—"}
                       </p>
                     </div>

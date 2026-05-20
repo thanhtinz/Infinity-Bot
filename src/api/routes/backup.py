@@ -2,7 +2,7 @@
 import json
 import logging
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 
@@ -21,7 +21,6 @@ router = APIRouter()
 # Tables to backup (table_name, model, has_guild_id)
 BACKUP_TABLES = [
     ("automod_config", AutoModConfig, True),
-    ("starboard_config", True),
     ("reaction_roles", ReactionRole, True),
     ("custom_commands", CustomCommand, True),
     ("scheduled_messages", ScheduledMessage, True),
@@ -31,6 +30,14 @@ BACKUP_TABLES = [
     ("select_menu_roles", SelectMenuRole, True),
     ("logging_config", LoggingConfig, True),
 ]
+
+# Type filters for selective backup
+BACKUP_TYPE_FILTER: dict[str, list[str]] = {
+    "commands": ["custom_commands"],
+    "roles": ["reaction_roles", "button_roles", "select_menu_roles"],
+    "embeds": ["embed_templates"],
+    "moderation": ["automod_config", "logging_config"],
+}
 
 # Fields to exclude from export (internal IDs, etc.)
 EXCLUDE_FIELDS = {"id", "_sa_instance_state"}
@@ -52,11 +59,16 @@ def _serialize(obj):
 
 
 @router.get("/backup")
-def create_backup(db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
-    """Export all config tables to JSON — scoped to guild."""
-    backup = {"version": 1, "guild_id": guild_id, "created_at": datetime.utcnow().isoformat(), "data": {}}
+def create_backup(db=Depends(get_db), guild_id: str = Depends(get_guild_id), type: str = Query("full")):
+    """Export config tables to JSON — scoped to guild. type=full|commands|roles|embeds|moderation"""
+    backup = {"version": 1, "guild_id": guild_id, "type": type, "created_at": datetime.utcnow().isoformat(), "data": {}}
 
-    for table_name, model, has_gid in BACKUP_TABLES:
+    tables = BACKUP_TABLES
+    if type != "full" and type in BACKUP_TYPE_FILTER:
+        allowed = BACKUP_TYPE_FILTER[type]
+        tables = [t for t in BACKUP_TABLES if t[0] in allowed]
+
+    for table_name, model, has_gid in tables:
         try:
             q = select(model)
             if has_gid and hasattr(model, "guild_id"):
