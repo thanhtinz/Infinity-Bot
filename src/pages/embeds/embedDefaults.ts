@@ -3187,4 +3187,104 @@ export const DEFAULTS: Record<string, { vi: EmbedLang; en: EmbedLang }> = {
       enabled: true,
     },
   },
+  // ── Alerts ──────────────────────────────────────────────────────────────
+  alert_mass_ban: {
+    vi: {
+      title: "🚨 Mass Ban Detected", description: "Multiple bans detected in a short period.",
+      color: "#ED4245", author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Actor", value: "{actor}", inline: true }, { name: "Events", value: "{event_count} in {window_minutes}m", inline: true }, { name: "Severity", value: "{severity}", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "🚨 Mass Ban Detected", description: "Multiple bans detected in a short period.",
+      color: "#ED4245", author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Actor", value: "{actor}", inline: true }, { name: "Events", value: "{event_count} in {window_minutes}m", inline: true }, { name: "Severity", value: "{severity}", inline: true }],
+      enabled: true,
+    },
+  },
+  alert_mass_kick: {
+    vi: {
+      title: "🚨 Mass Kick Detected", description: "Multiple kicks detected in a short period.",
+      color: "#ED4245", author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Actor", value: "{actor}", inline: true }, { name: "Events", value: "{event_count} in {window_minutes}m", inline: true }, { name: "Severity", value: "{severity}", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "🚨 Mass Kick Detected", description: "Multiple kicks detected in a short period.",
+      color: "#ED4245", author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Actor", value: "{actor}", inline: true }, { name: "Events", value: "{event_count} in {window_minutes}m", inline: true }, { name: "Severity", value: "{severity}", inline: true }],
+      enabled: true,
+    },
+  },
+  alert_channel_delete: {
+    vi: {
+      title: "⚠️ Channel Deletion Storm", description: "Multiple channels deleted in a short period.",
+      color: "#FEE75C", author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Actor", value: "{actor}", inline: true }, { name: "Events", value: "{event_count} in {window_minutes}m", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "⚠️ Channel Deletion Storm", description: "Multiple channels deleted in a short period.",
+      color: "#FEE75C", author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Actor", value: "{actor}", inline: true }, { name: "Events", value: "{event_count} in {window_minutes}m", inline: true }],
+      enabled: true,
+    },
+  },
+  alert_role_delete: {
+    vi: {
+      title: "⚠️ Role Deletion Storm", description: "Multiple roles deleted in a short period.",
+      color: "#FEE75C", author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Actor", value: "{actor}", inline: true }, { name: "Events", value: "{event_count} in {window_minutes}m", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "⚠️ Role Deletion Storm", description: "Multiple roles deleted in a short period.",
+      color: "#FEE75C", author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Actor", value: "{actor}", inline: true }, { name: "Events", value: "{event_count} in {window_minutes}m", inline: true }],
+      enabled: true,
+    },
+  },
+  alert_nuke_detect: {
+    vi: {
+      title: "🔴 NUKE ATTEMPT DETECTED", description: "Destructive actions detected from a single actor. Immediate attention required!",
+      color: "#ED4245", author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Suspected Actor", value: "{actor}", inline: true }, { name: "Actions", value: "{event_count} in {window_minutes}m", inline: true }, { name: "Severity", value: "CRITICAL", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "🔴 NUKE ATTEMPT DETECTED", description: "Destructive actions detected from a single actor. Immediate attention required!",
+      color: "#ED4245", author: "", author_icon_url: "", footer: "", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Suspected Actor", value: "{actor}", inline: true }, { name: "Actions", value: "{event_count} in {window_minutes}m", inline: true }, { name: "Severity", value: "CRITICAL", inline: true }],
+      enabled: true,
+    },
+  },
+  // ── AI Chat ─────────────────────────────────────────────────────────────
+  ai_response: {
+    vi: {
+      title: "🤖 AI Response", description: "{ai.response}",
+      color: "#5865F2", author: "", author_icon_url: "", footer: "Powered by {ai.provider}", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Question", value: "{ai.prompt}", inline: false }, { name: "Model", value: "{ai.model}", inline: true }],
+      enabled: true,
+    },
+    en: {
+      title: "🤖 AI Response", description: "{ai.response}",
+      color: "#5865F2", author: "", author_icon_url: "", footer: "Powered by {ai.provider}", thumbnail_url: "", image_url: "",
+      fields: [{ name: "Question", value: "{ai.prompt}", inline: false }, { name: "Model", value: "{ai.model}", inline: true }],
+      enabled: true,
+    },
+  },
+  ai_image: {
+    vi: {
+      title: "Image Generated", description: "**Prompt:** {ai.prompt}",
+      color: "#5865F2", author: "", author_icon_url: "", footer: "Generated by {ai.provider} - {user.name}", thumbnail_url: "", image_url: "",
+      fields: [],
+      enabled: true,
+    },
+    en: {
+      title: "Image Generated", description: "**Prompt:** {ai.prompt}",
+      color: "#5865F2", author: "", author_icon_url: "", footer: "Generated by {ai.provider} - {user.name}", thumbnail_url: "", image_url: "",
+      fields: [],
+      enabled: true,
+    },
+  },
 };

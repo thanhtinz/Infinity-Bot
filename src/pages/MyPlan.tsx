@@ -151,10 +151,8 @@ const PAYMENT_STATUS_BADGES: Record<string, { label: string; className: string }
 
 const FEATURE_LABELS: Record<string, string> = {
   custom_bot: "Custom Bot (custom name & avatar)",
-  advanced_captcha: "Advanced Captcha (hCaptcha / Turnstile)",
   scheduled_backup: "Scheduled automatic backup",
   backup_retention: "Longer backup retention",
-  remove_branding: "Hide Infinity Bot branding",
   priority_support: "Priority support",
 };
 
@@ -172,13 +170,11 @@ function getFeatureList(features: unknown): string[] {
   return [];
 }
 
-/** Ordered feature keys for the comparison table */
+/** Ordered feature keys for the comparison table (legacy fallback) */
 const COMPARISON_FEATURE_KEYS = [
   "custom_bot",
-  "advanced_captcha",
   "scheduled_backup",
   "backup_retention",
-  "remove_branding",
   "priority_support",
 ] as const;
 
