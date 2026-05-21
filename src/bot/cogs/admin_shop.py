@@ -669,7 +669,7 @@ class AdminShopCog(discord.Cog):
         finally:
             session.close()
 
-    @discord.slash_command(name="pricelist-send", description="[Admin] Send/update product price list to channel")
+    @discord.slash_command(name="pricelist", description="[Admin] Send/update product price list to channel")
     @discord.default_permissions(administrator=True)
     async def bang_gia_cmd(
         self,

@@ -13,7 +13,7 @@ _EMOJI_MAP: dict[str, str] = {
     # Shop
     "orders": "📋", "feedback": "⭐", "support": "🆘",
     "leaderboard": "📊", "createorder": "🧾", "createorder_custom": "✏️",
-    "price_list": "📋",
+
     # Giveaway
     "giveaway": "🎁", "giveaway_list": "📋", "giveaway_reroll": "🔁",
     "giveaway_end": "🏁", "giveaway_ban": "🚫", "giveaway_unban": "✅",
@@ -173,7 +173,7 @@ HELP_CATEGORIES = [
             _help_cmd("leaderboard", "View the shop leaderboard.", "`/leaderboard`"),
             _help_cmd("createorder", "Create an order for a member.", "`/createorder`", True),
             _help_cmd("createorder_custom", "Create a custom order with a custom name.", "`/createorder_custom`", True),
-            _help_cmd("price_list", "View price list with category filter.", "`/price_list`", True),
+            _help_cmd("pricelist", "Send/update product price list to channel.", "`/pricelist`", True),
         ],
     },
     {
