@@ -687,7 +687,7 @@ class AdminShopCog(discord.Cog):
                 return
 
             from src.bot.embed_utils import build_embed
-            embed = build_embed("bang_gia", session, guild_id=str(interaction.guild_id))
+            embed = build_embed("bang_gia", session, guild_id=str(ctx.guild_id))
             if not embed.footer:
                 embed.set_footer(text="Click a product name below to view package details")
 

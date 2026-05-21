@@ -206,7 +206,7 @@ class InteractionCog(discord.Cog):
         await _send_interaction(message.channel, message.author, cmd_name, meta, target, guild_id=str(message.guild.id))
 
     # ── Admin command: set prefix ─────────────────────────────────────────
-    @discord.slash_command(name="setprefix", description="🔧 Set interaction command prefix (Admin)")
+    @discord.slash_command(name="setprefix", description="[Admin] Set interaction command prefix")
     @discord.default_permissions(administrator=True)
     async def setprefix_cmd(
         self,
