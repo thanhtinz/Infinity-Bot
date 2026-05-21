@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/hooks/useApi";
 import { useGuild } from "@/contexts/GuildContext";
 import { RoleSelect } from "@/components/RoleSelect";
+import { useDiscordRoles } from "@/hooks/useDiscordData";
 import { Shield, Plus, Pencil, Trash2, Users, X } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/infinity";
 
@@ -81,21 +82,29 @@ export function StaffPermissions() {
     enabled: !!selectedGuildId,
   });
 
+  const { data: roles = [] } = useDiscordRoles(selectedGuildId || undefined);
+
   const save = useMutation({
     mutationFn: async () => {
-      const body = { role_id: roleId, ...perms };
+      const roleName = roles.find((r) => r.id === roleId)?.name ?? null;
+      const body = { role_id: roleId, role_name: roleName, ...perms };
+      let res: Response;
       if (editId) {
-        await apiFetch(`/api/staff-permissions/${editId}`, {
+        res = await apiFetch(`/api/staff-permissions/${editId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
       } else {
-        await apiFetch("/api/staff-permissions", {
+        res = await apiFetch("/api/staff-permissions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
+      }
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Failed to save");
       }
     },
     onSuccess: () => {
@@ -103,7 +112,7 @@ export function StaffPermissions() {
       setDialogOpen(false);
       toast({ title: editId ? "Updated" : "Added staff role" });
     },
-    onError: () => toast({ title: "Error", variant: "destructive" }),
+    onError: (e: Error) => toast({ title: e.message || "Error", variant: "destructive" }),
   });
 
   const remove = useMutation({
@@ -163,7 +172,7 @@ export function StaffPermissions() {
 
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold">
-                    {sp.role_name || sp.role_id}
+                    {sp.role_name || roles.find((r) => r.id === sp.role_id)?.name || sp.role_id}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {activeCount(sp)}/{PERM_LABELS.length} permissions enabled
