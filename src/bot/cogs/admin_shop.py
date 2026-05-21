@@ -463,7 +463,7 @@ class AdminShopCog(discord.Cog):
 
     @discord.slash_command(name="createorder", description="[Admin] Create order + payment link for user")
     @discord.default_permissions(administrator=True)
-    async def tao_don_cmd(
+    async def create_order_cmd(
         self,
         ctx: discord.ApplicationContext,
         user: discord.Option(discord.Member, "Select a member"),
@@ -664,7 +664,7 @@ class AdminShopCog(discord.Cog):
             await ctx.respond(" ".join(parts), ephemeral=True)
 
         except Exception as e:
-            logger.error(f"tao_don_cmd error: {e}")
+            logger.error(f"create_order_cmd error: {e}")
             await ctx.respond("❌ System error creating order.", ephemeral=True)
         finally:
             session.close()
@@ -738,7 +738,7 @@ class AdminShopCog(discord.Cog):
 
     @discord.slash_command(name="createorder_custom", description="[Admin] Create custom order (custom name, no product in system required)")
     @discord.default_permissions(administrator=True)
-    async def tao_don_custom_cmd(
+    async def create_order_custom_cmd(
         self,
         ctx: discord.ApplicationContext,
         user: discord.Option(discord.Member, "Select a member"),

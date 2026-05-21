@@ -32,17 +32,17 @@ class ChannelAdminCog(discord.Cog):
     async def purge_cmd(
         self,
         ctx: discord.ApplicationContext,
-        so_luong: discord.Option(int, "Number of messages to delete (1–300)", min_value=1, max_value=300),
-        thanh_vien: discord.Option(discord.Member, "Only delete messages from this member", required=False, default=None),
+        amount: discord.Option(int, "Number of messages to delete (1–300)", min_value=1, max_value=300),
+        member: discord.Option(discord.Member, "Only delete messages from this member", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         def check(m: discord.Message):
-            if thanh_vien:
-                return m.author.id == thanh_vien.id
+            if member:
+                return m.author.id == member.id
             return True
         try:
-            deleted = await ctx.channel.purge(limit=so_luong, check=check)
-            who = f" from **{thanh_vien.display_name}**" if thanh_vien else ""
+            deleted = await ctx.channel.purge(limit=amount, check=check)
+            who = f" from **{member.display_name}**" if member else ""
             await ctx.respond(f"🗑️ Deleted **{len(deleted)}** messages{who}.", ephemeral=True)
         except discord.Forbidden:
             await ctx.respond("❌ Bot lacks `Manage Messages` permission.", ephemeral=True)
@@ -56,10 +56,10 @@ class ChannelAdminCog(discord.Cog):
     async def nuke_cmd(
         self,
         ctx: discord.ApplicationContext,
-        kenh: discord.Option(discord.TextChannel, "Channel to nuke (leave empty = current channel)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Channel to nuke (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
-        target = kenh or ctx.channel
+        target = channel or ctx.channel
         try:
             position = target.position
             new_ch = await target.clone(reason=f"Nuke by {ctx.author}")
@@ -86,18 +86,18 @@ class ChannelAdminCog(discord.Cog):
     async def lock_cmd(
         self,
         ctx: discord.ApplicationContext,
-        kenh: discord.Option(discord.TextChannel, "Channel to lock (leave empty = current channel)", required=False, default=None),
-        ly_do: discord.Option(str, "Reason for locking", required=False, default=""),
+        channel: discord.Option(discord.TextChannel, "Channel to lock (leave empty = current channel)", required=False, default=None),
+        reason: discord.Option(str, "Reason for locking", required=False, default=""),
     ):
         await ctx.defer(ephemeral=True)
-        target = kenh or ctx.channel
+        target = channel or ctx.channel
         everyone = ctx.guild.default_role
         try:
             await target.set_permissions(everyone, send_messages=False,
-                                         reason=f"Lock by {ctx.author}: {ly_do}")
+                                         reason=f"Lock by {ctx.author}: {reason}")
             embed = discord.Embed(
                 title="🔒 Channel Locked",
-                description=f"{ctx.author.mention} locked {target.mention}.\n{'> ' + ly_do if ly_do else ''}",
+                description=f"{ctx.author.mention} locked {target.mention}.\n{'> ' + reason if reason else ''}",
                 color=0xFF6B6B,
                 timestamp=datetime.datetime.utcnow(),
             )
@@ -115,10 +115,10 @@ class ChannelAdminCog(discord.Cog):
     async def unlock_cmd(
         self,
         ctx: discord.ApplicationContext,
-        kenh: discord.Option(discord.TextChannel, "Channel to unlock (leave empty = current channel)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Channel to unlock (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
-        target = kenh or ctx.channel
+        target = channel or ctx.channel
         everyone = ctx.guild.default_role
         try:
             await target.set_permissions(everyone, send_messages=None,
@@ -144,10 +144,10 @@ class ChannelAdminCog(discord.Cog):
         self,
         ctx: discord.ApplicationContext,
         doi_tuong: discord.Option(str, "Mention @role or @user to hide from", required=False, default=None),
-        kenh: discord.Option(discord.TextChannel, "Channel to hide (leave empty = current channel)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Channel to hide (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
-        target_ch = kenh or ctx.channel
+        target_ch = channel or ctx.channel
         # Parse target role/user
         target = None
         if doi_tuong:
@@ -177,10 +177,10 @@ class ChannelAdminCog(discord.Cog):
         self,
         ctx: discord.ApplicationContext,
         doi_tuong: discord.Option(str, "Mention @role or @user to show to", required=False, default=None),
-        kenh: discord.Option(discord.TextChannel, "Channel to show (leave empty = current channel)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Channel to show (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
-        target_ch = kenh or ctx.channel
+        target_ch = channel or ctx.channel
         target = None
         if doi_tuong:
             import re
@@ -207,17 +207,17 @@ class ChannelAdminCog(discord.Cog):
     async def block_channel_cmd(
         self,
         ctx: discord.ApplicationContext,
-        thanh_vien: discord.Option(discord.Member, "Member to block", required=False, default=None),
+        member: discord.Option(discord.Member, "Member to block", required=False, default=None),
         role: discord.Option(discord.Role, "Role to block", required=False, default=None),
-        kenh: discord.Option(discord.TextChannel, "Channel to block in (leave empty = current channel)", required=False, default=None),
-        ly_do: discord.Option(str, "Reason", required=False, default=""),
+        channel: discord.Option(discord.TextChannel, "Channel to block in (leave empty = current channel)", required=False, default=None),
+        reason: discord.Option(str, "Reason", required=False, default=""),
     ):
         await ctx.defer(ephemeral=True)
-        target_ch = kenh or ctx.channel
-        target = thanh_vien or role or ctx.guild.default_role
+        target_ch = channel or ctx.channel
+        target = member or role or ctx.guild.default_role
         try:
             await target_ch.set_permissions(target, send_messages=False,
-                                            reason=f"Block channel by {ctx.author}: {ly_do}")
+                                            reason=f"Block channel by {ctx.author}: {reason}")
             who = getattr(target, "mention", str(target))
             await ctx.respond(f"🚫 Blocked {who} from sending in {target_ch.mention}.", ephemeral=True)
         except discord.Forbidden:
@@ -232,13 +232,13 @@ class ChannelAdminCog(discord.Cog):
     async def unblock_channel_cmd(
         self,
         ctx: discord.ApplicationContext,
-        thanh_vien: discord.Option(discord.Member, "Member to unblock", required=False, default=None),
+        member: discord.Option(discord.Member, "Member to unblock", required=False, default=None),
         role: discord.Option(discord.Role, "Role to unblock", required=False, default=None),
-        kenh: discord.Option(discord.TextChannel, "Channel (leave empty = current channel)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Channel (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
-        target_ch = kenh or ctx.channel
-        target = thanh_vien or role or ctx.guild.default_role
+        target_ch = channel or ctx.channel
+        target = member or role or ctx.guild.default_role
         try:
             await target_ch.set_permissions(target, send_messages=None,
                                             reason=f"Unblock channel by {ctx.author}")
@@ -257,10 +257,10 @@ class ChannelAdminCog(discord.Cog):
         self,
         ctx: discord.ApplicationContext,
         giay: discord.Option(int, "Slowmode seconds (0 = off, max 21600)", min_value=0, max_value=21600),
-        kenh: discord.Option(discord.TextChannel, "Channel to set slowmode (leave empty = current channel)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Channel to set slowmode (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
-        target = kenh or ctx.channel
+        target = channel or ctx.channel
         try:
             await target.edit(slowmode_delay=giay, reason=f"Slowmode by {ctx.author}")
             if giay == 0:
@@ -287,10 +287,10 @@ class ChannelAdminCog(discord.Cog):
         self,
         ctx: discord.ApplicationContext,
         bat_tat: discord.Option(str, "Enable or disable image-only mode", choices=["on", "off"]),
-        kenh: discord.Option(discord.TextChannel, "Channel (leave empty = current channel)", required=False, default=None),
+        channel: discord.Option(discord.TextChannel, "Channel (leave empty = current channel)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
-        target = kenh or ctx.channel
+        target = channel or ctx.channel
         if bat_tat == "on":
             self._image_only.add(target.id)
             await ctx.respond(
@@ -332,7 +332,7 @@ class ChannelAdminCog(discord.Cog):
         self,
         ctx: discord.ApplicationContext,
         message_id: discord.Option(str, "ID of the message to move"),
-        kenh_dich: discord.Option(discord.TextChannel, "Target channel"),
+        target_channel: discord.Option(discord.TextChannel, "Target channel"),
     ):
         await ctx.defer(ephemeral=True)
         try:
@@ -350,9 +350,9 @@ class ChannelAdminCog(discord.Cog):
             embed.set_author(name=msg.author.display_name, icon_url=msg.author.display_avatar.url)
             embed.set_footer(text=f"Moved from #{ctx.channel.name} by {ctx.author.display_name}")
             files = [await a.to_file() for a in msg.attachments[:10]]
-            await kenh_dich.send(embed=embed, files=files)
+            await target_channel.send(embed=embed, files=files)
             await msg.delete()
-            await ctx.respond(f"✅ Message moved to {kenh_dich.mention}.", ephemeral=True)
+            await ctx.respond(f"✅ Message moved to {target_channel.mention}.", ephemeral=True)
         except discord.Forbidden:
             await ctx.respond("❌ Bot lacks permissions in the target channel.", ephemeral=True)
         except Exception as e:
@@ -386,21 +386,21 @@ class ChannelAdminCog(discord.Cog):
     async def announce_cmd(
         self,
         ctx: discord.ApplicationContext,
-        noi_dung: discord.Option(str, "Announcement content (supports Discord markdown)"),
-        kenh: discord.Option(discord.TextChannel, "Target channel (leave empty = current channel)", required=False, default=None),
+        content: discord.Option(str, "Announcement content (supports Discord markdown)"),
+        channel: discord.Option(discord.TextChannel, "Target channel (leave empty = current channel)", required=False, default=None),
         tieu_de: discord.Option(str, "Embed title (leave empty = none)", required=False, default=""),
         mention: discord.Option(str, "Who to mention (@here, @everyone, @role)", required=False, default=""),
         mau: discord.Option(str, "Embed hex color (e.g. #FF0000)", required=False, default="#5865F2"),
     ):
         await ctx.defer(ephemeral=True)
-        target = kenh or ctx.channel
+        target = channel or ctx.channel
         try:
             color_int = int(mau.lstrip("#"), 16) if mau else 0x5865F2
         except Exception:
             color_int = 0x5865F2
         embed = discord.Embed(
             title=tieu_de or None,
-            description=noi_dung,
+            description=content,
             color=color_int,
             timestamp=datetime.datetime.utcnow(),
         )
@@ -463,13 +463,13 @@ class ChannelAdminCog(discord.Cog):
     async def role_add_cmd(
         self,
         ctx: discord.ApplicationContext,
-        thanh_vien: discord.Option(discord.Member, "Member"),
+        member: discord.Option(discord.Member, "Member"),
         role: discord.Option(discord.Role, "Role to add"),
     ):
         await ctx.defer(ephemeral=True)
         try:
-            await thanh_vien.add_roles(role, reason=f"Added by {ctx.author}")
-            await ctx.respond(f"✅ Added {role.mention} to {thanh_vien.mention}.", ephemeral=True)
+            await member.add_roles(role, reason=f"Added by {ctx.author}")
+            await ctx.respond(f"✅ Added {role.mention} to {member.mention}.", ephemeral=True)
         except discord.Forbidden:
             await ctx.respond("❌ Bot lacks `Manage Roles` permission or role is above bot.", ephemeral=True)
         except Exception as e:
@@ -480,13 +480,13 @@ class ChannelAdminCog(discord.Cog):
     async def role_remove_cmd(
         self,
         ctx: discord.ApplicationContext,
-        thanh_vien: discord.Option(discord.Member, "Member"),
+        member: discord.Option(discord.Member, "Member"),
         role: discord.Option(discord.Role, "Role to remove"),
     ):
         await ctx.defer(ephemeral=True)
         try:
-            await thanh_vien.remove_roles(role, reason=f"Removed by {ctx.author}")
-            await ctx.respond(f"✅ Removed {role.mention} from {thanh_vien.mention}.", ephemeral=True)
+            await member.remove_roles(role, reason=f"Removed by {ctx.author}")
+            await ctx.respond(f"✅ Removed {role.mention} from {member.mention}.", ephemeral=True)
         except discord.Forbidden:
             await ctx.respond("❌ Bot lacks `Manage Roles` permission.", ephemeral=True)
         except Exception as e:
@@ -498,16 +498,16 @@ class ChannelAdminCog(discord.Cog):
     async def nick_cmd(
         self,
         ctx: discord.ApplicationContext,
-        thanh_vien: discord.Option(discord.Member, "Member"),
+        member: discord.Option(discord.Member, "Member"),
         nickname: discord.Option(str, "New nickname (leave empty to reset)", required=False, default=None),
     ):
         await ctx.defer(ephemeral=True)
         try:
-            await thanh_vien.edit(nick=nickname, reason=f"Nickname changed by {ctx.author}")
+            await member.edit(nick=nickname, reason=f"Nickname changed by {ctx.author}")
             if nickname:
-                await ctx.respond(f"✅ Changed nickname of {thanh_vien.mention} to **{nickname}**.", ephemeral=True)
+                await ctx.respond(f"✅ Changed nickname of {member.mention} to **{nickname}**.", ephemeral=True)
             else:
-                await ctx.respond(f"✅ Cleared nickname of {thanh_vien.mention}.", ephemeral=True)
+                await ctx.respond(f"✅ Cleared nickname of {member.mention}.", ephemeral=True)
         except discord.Forbidden:
             await ctx.respond("❌ Bot lacks `Manage Nicknames` permission or cannot edit the owner's nickname.", ephemeral=True)
         except Exception as e:

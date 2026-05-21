@@ -301,7 +301,7 @@ class ShopCog(discord.Cog):
             choices=["chi_tieu", "don_hang"],
             default="chi_tieu",
         ),
-        thoi_gian: discord.Option(
+        duration: discord.Option(
             str, "Time period",
             choices=["daily", "7days", "30days", "all"],
             default="all",
@@ -316,7 +316,7 @@ class ShopCog(discord.Cog):
                 "7days": now - datetime.timedelta(days=7),
                 "30days": now - datetime.timedelta(days=30),
                 "all": datetime.datetime(2000, 1, 1),
-            }[thoi_gian]
+            }[duration]
 
             orders = session.execute(
                 select(Order)
@@ -356,7 +356,7 @@ class ShopCog(discord.Cog):
             from src.bot.embed_utils import build_embed
             event_key = "bxh_chi_tieu" if loai == "chi_tieu" else "bxh_don_hang"
             embed = build_embed(event_key, session, vars={
-                "time_label": time_map[thoi_gian],
+                "time_label": time_map[duration],
                 "leaderboard_lines": "\n".join(lines),
                 "updated_at": datetime.datetime.utcnow().strftime("%H:%M %d/%m/%Y"),
             }, guild_id=str(ctx.guild_id))
