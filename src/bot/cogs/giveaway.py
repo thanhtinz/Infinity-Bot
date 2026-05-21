@@ -84,7 +84,7 @@ async def end_giveaway(bot: discord.Bot, giveaway_id: int, reroll: bool = False)
                     "winners": winners_text,
                     "host": f"<@{giveaway.host_id}>" if giveaway.host_id else "Admin",
                     "winners_count": str(giveaway.winners_count),
-                }, guild_id=str(guild.id))
+                }, guild_id=giveaway.guild_id)
                 await msg.edit(embed=result_embed)
                 if winner_mentions:
                     await channel.send(
@@ -245,7 +245,7 @@ class GiveawayCog(discord.Cog):
                 "host": ctx.author.display_name,
                 "winners_count": str(winners),
                 "server": ctx.guild.name if ctx.guild else "Server",
-            }, guild_id=str(guild.id))
+            }, guild_id=giveaway.guild_id)
             if title:
                 embed.title = f"🎉 {title}"
             if description and not embed.description:
