@@ -19,10 +19,16 @@ def get_session():
     return SessionLocal()
 
 
-def get_prefix() -> str:
+def get_prefix(guild_id: str | None = None) -> str:
     session = get_session()
     try:
-        cfg = session.execute(select(SystemConfig).limit(1)).scalars().first()
+        cfg = None
+        if guild_id:
+            cfg = session.execute(
+                select(SystemConfig).where(SystemConfig.guild_id == guild_id)
+            ).scalars().first()
+        if not cfg:
+            cfg = session.execute(select(SystemConfig).limit(1)).scalars().first()
         return (cfg.command_prefix if cfg and cfg.command_prefix else "!")
     finally:
         session.close()
@@ -133,7 +139,7 @@ class PrefixCommandsCog(discord.Cog):
         if message.author.bot or not message.guild or not message.content:
             return
 
-        prefix = get_prefix()
+        prefix = get_prefix(guild_id=str(message.guild.id))
         content = message.content.strip()
         if not content.startswith(prefix):
             return

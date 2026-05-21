@@ -110,9 +110,15 @@ def get_session():
     return SessionLocal()
 
 
-def _get_prefix(session) -> str:
+def _get_prefix(session, guild_id: str | None = None) -> str:
     """Get command prefix from DB config."""
-    config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+    config = None
+    if guild_id:
+        config = session.execute(
+            select(SystemConfig).where(SystemConfig.guild_id == guild_id)
+        ).scalars().first()
+    if not config:
+        config = session.execute(select(SystemConfig).limit(1)).scalars().first()
     return (config.command_prefix if config and config.command_prefix else "!")
 
 
@@ -156,7 +162,7 @@ class InteractionCog(discord.Cog):
 
         session = get_session()
         try:
-            prefix = _get_prefix(session)
+            prefix = _get_prefix(session, guild_id=str(message.guild.id))
         finally:
             session.close()
 
@@ -214,7 +220,11 @@ class InteractionCog(discord.Cog):
 
         session = get_session()
         try:
-            config = session.execute(select(SystemConfig).limit(1)).scalars().first()
+            config = session.execute(
+                select(SystemConfig).where(SystemConfig.guild_id == str(ctx.guild_id))
+            ).scalars().first()
+            if not config:
+                config = session.execute(select(SystemConfig).limit(1)).scalars().first()
             if config:
                 config.command_prefix = prefix
                 session.commit()
