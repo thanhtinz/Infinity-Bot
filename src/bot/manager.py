@@ -344,40 +344,39 @@ def create_bot():
             session.close()
 
     # ── Events ───────────────────────────────────────────────
+    _commands_synced = False  # guard against duplicate syncs on reconnect
+
     @bot_client.event
     async def on_ready():
+        nonlocal _commands_synced
         global bot_start_time, bot_ready_event
         logger.info(f"Bot on_ready: Logged in as {bot_client.user} (ID: {bot_client.user.id})")
         logger.info(f"Loaded cogs: {list(bot_client.cogs.keys())}")
         logger.info(f"Pending application commands: {len(bot_client.pending_application_commands)}")
         bot_start_time = datetime.datetime.utcnow()
 
-        # ── Purge stale global commands then sync guild commands ──
-        try:
-            # 1. Remove ALL global commands (old Vietnamese names live here)
-            await bot_client.http.bulk_upsert_global_commands(bot_client.user.id, [])
-            logger.info("Purged all global slash commands")
-            # 2. Sync current commands to each guild (instant update)
-            guild_ids = [g.id for g in bot_client.guilds]
-            logger.info(f"Syncing commands to {len(guild_ids)} guilds: {guild_ids}")
-            logger.info(f"debug_guilds={_debug_guilds}, pending_commands={len(bot_client.pending_application_commands)}")
-            await bot_client.sync_commands()
-            # 3. Force per-guild overwrite for guilds not in debug_guilds
-            _synced_set = set(_debug_guilds) if _debug_guilds else set()
-            _missing = [gid for gid in guild_ids if gid not in _synced_set]
-            if _missing:
-                logger.info(f"Force-syncing {len(_missing)} guilds not in debug_guilds: {_missing}")
+        # ── Sync commands only once (on_ready fires on every reconnect) ──
+        if not _commands_synced:
+            _commands_synced = True
+            try:
+                # 1. Remove ALL global commands (old names may live here)
+                await bot_client.http.bulk_upsert_global_commands(bot_client.user.id, [])
+                logger.info("Purged all global slash commands")
+                # 2. Build command payloads once
+                guild_ids = [g.id for g in bot_client.guilds]
                 cmds = bot_client.pending_application_commands
                 cmd_payloads = [cmd.to_dict() for cmd in cmds]
-                for gid in _missing:
+                logger.info(f"Syncing {len(cmd_payloads)} commands to {len(guild_ids)} guilds")
+                # 3. Force per-guild overwrite for ALL guilds (single path, no duplicates)
+                for gid in guild_ids:
                     try:
                         await bot_client.http.bulk_upsert_guild_commands(bot_client.user.id, gid, cmd_payloads)
                     except Exception as _guild_err:
                         logger.warning(f"Failed to sync commands to guild {gid}: {_guild_err}")
-                logger.info("Force per-guild sync complete")
-            logger.info("Command sync completed successfully")
-        except Exception as sync_err:
-            logger.error(f"Command sync failed (non-fatal): {sync_err}", exc_info=True)
+                logger.info("Command sync completed successfully")
+            except Exception as sync_err:
+                _commands_synced = False  # allow retry on next reconnect
+                logger.error(f"Command sync failed (non-fatal): {sync_err}", exc_info=True)
 
         await asyncio.to_thread(update_bot_status, "running")
         if bot_ready_event and not bot_ready_event.is_set():

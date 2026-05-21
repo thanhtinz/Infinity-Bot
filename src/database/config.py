@@ -216,6 +216,19 @@ async def init_db():
             if col not in cp:
                 all_stmts.append(stmt)
 
+        # staff_permissions
+        sp = cols("staff_permissions")
+        for col, stmt in {
+            "can_ai": "ALTER TABLE staff_permissions ADD COLUMN can_ai BOOLEAN DEFAULT FALSE",
+            "can_forms": "ALTER TABLE staff_permissions ADD COLUMN can_forms BOOLEAN DEFAULT FALSE",
+            "can_reminders": "ALTER TABLE staff_permissions ADD COLUMN can_reminders BOOLEAN DEFAULT FALSE",
+        }.items():
+            if col not in sp:
+                all_stmts.append(stmt)
+        # Drop stale column
+        if "can_verification" in sp:
+            all_stmts.append("ALTER TABLE staff_permissions DROP COLUMN can_verification")
+
         # ── Thực thi tất cả ALTER trong 1 transaction ──
         if all_stmts:
             logger.info(f"[init_db] Running {len(all_stmts)} migration(s): {all_stmts}")
