@@ -878,7 +878,7 @@ def save_payos_config(body: dict, db=Depends(get_db), guild_id: str = Depends(ge
     if client_id and api_key and checksum_key:
         try:
             payos = PayOS(client_id=client_id, api_key=api_key, checksum_key=checksum_key)
-            payos.confirmWebhook("https://example.com/webhook")
+            payos.webhooks.confirm("https://example.com/webhook")
         except Exception as e:
             err_msg = str(e)
             if "Unauthorized" in err_msg or "401" in err_msg:
@@ -914,7 +914,7 @@ def test_payos_connection(db=Depends(get_db), guild_id: str = Depends(get_guild_
             api_key=config.payos_api_key,
             checksum_key=config.payos_checksum_key,
         )
-        payos.confirmWebhook("https://example.com/webhook")
+        payos.webhooks.confirm("https://example.com/webhook")
         return {"ok": True, "message": "PayOS connection successful"}
     except Exception as e:
         err_msg = str(e)
@@ -989,7 +989,7 @@ async def payos_webhook(request: Request, db=Depends(get_db)):
             api_key=config.payos_api_key,
             checksum_key=config.payos_checksum_key,
         )
-        webhook_data = payos.verifyPaymentWebhookData(body)
+        webhook_data = payos.webhooks.verify(body)
     except Exception as e:
         logger.error(f"PayOS webhook verify error: {e}")
         return {"code": "00", "desc": "verify error"}
