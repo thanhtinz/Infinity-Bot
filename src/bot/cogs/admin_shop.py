@@ -372,10 +372,14 @@ class CategorySelect(discord.ui.Select):
             await interaction.response.send_message("❌ No products in this category.", ephemeral=True)
             return
 
-        # Replace view with product select
-        view = discord.ui.View(timeout=None)
+        # Show product select as ephemeral — original message stays on CategorySelect
+        view = discord.ui.View(timeout=120)
         view.add_item(ProductSelect(products, self.guild_id))
-        await interaction.response.edit_message(view=view)
+        await interaction.response.send_message(
+            "🔍 Select a product to view details:",
+            view=view,
+            ephemeral=True,
+        )
 
 
 class ProductSelect(discord.ui.Select):
@@ -690,7 +694,7 @@ class AdminShopCog(discord.Cog):
             if config.don_hang_channel_id:
                 don_hang_ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
                 if don_hang_ch:
-                    order_embed = build_embed("don_hang_moi", session, vars=order_vars, guild_id=str(interaction.guild_id))
+                    order_embed = build_embed("don_hang_moi", session, vars=order_vars, guild_id=str(ctx.guild_id))
                     await don_hang_ch.send(
                         content=f"{user.mention} You have a new order!",
                         embed=order_embed,
@@ -701,7 +705,7 @@ class AdminShopCog(discord.Cog):
             embed_event = f"qr_thanh_toan_{method}"
             from src.models.models import EmbedTemplate
             specific_tmpl = session.execute(
-                select(EmbedTemplate).where(EmbedTemplate.event_type == embed_event, EmbedTemplate.guild_id == str(interaction.guild_id))
+                select(EmbedTemplate).where(EmbedTemplate.event_type == embed_event, EmbedTemplate.guild_id == str(ctx.guild_id))
             ).scalars().first()
             if not specific_tmpl:
                 embed_event = "qr_thanh_toan"
@@ -710,7 +714,7 @@ class AdminShopCog(discord.Cog):
                 **order_vars,
                 "qr_url": checkout_url or "",
                 "transfer_content": f"Order {order.id}",
-            }, guild_id=str(interaction.guild_id))
+            }, guild_id=str(ctx.guild_id))
 
             # Manual payment: set QR image if available
             if method == "manual" and result.raw and result.raw.get("qr_image_id"):
@@ -933,7 +937,7 @@ class AdminShopCog(discord.Cog):
             if config.don_hang_channel_id:
                 don_hang_ch = ctx.guild.get_channel(int(config.don_hang_channel_id))
                 if don_hang_ch:
-                    order_embed = build_embed("don_hang_moi", session, vars=order_vars, guild_id=str(interaction.guild_id))
+                    order_embed = build_embed("don_hang_moi", session, vars=order_vars, guild_id=str(ctx.guild_id))
                     if note:
                         order_embed.add_field(name="Note", value=note, inline=False)
                     await don_hang_ch.send(
@@ -944,7 +948,7 @@ class AdminShopCog(discord.Cog):
             # Try per-payment-type embed first, fall back to generic qr_thanh_toan
             embed_event = f"qr_thanh_toan_{method}"
             specific_tmpl = session.execute(
-                select(EmbedTemplate).where(EmbedTemplate.event_type == embed_event, EmbedTemplate.guild_id == str(interaction.guild_id))
+                select(EmbedTemplate).where(EmbedTemplate.event_type == embed_event, EmbedTemplate.guild_id == str(ctx.guild_id))
             ).scalars().first()
             if not specific_tmpl:
                 embed_event = "qr_thanh_toan"
@@ -953,7 +957,7 @@ class AdminShopCog(discord.Cog):
                 **order_vars,
                 "qr_url": checkout_url or "",
                 "transfer_content": f"Order {order.id}",
-            }, guild_id=str(interaction.guild_id))
+            }, guild_id=str(ctx.guild_id))
 
             # Manual payment: set QR image if available
             if method == "manual" and result.raw and result.raw.get("qr_image_id"):
