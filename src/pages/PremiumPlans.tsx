@@ -82,7 +82,6 @@ const INTERVAL_OPTIONS = [
   { value: "lifetime", label: "Lifetime" },
 ];
 
-const FEATURE_KEYS: { key: string; label: string; type: "boolean" | "number" }[] = [];
 // Features are now fully dynamic — user adds them per plan
 
 interface PlanFormState {

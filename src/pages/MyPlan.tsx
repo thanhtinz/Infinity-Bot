@@ -170,14 +170,6 @@ function getFeatureList(features: unknown): string[] {
   return [];
 }
 
-/** Ordered feature keys for the comparison table (legacy fallback) */
-const COMPARISON_FEATURE_KEYS = [
-  "custom_bot",
-  "scheduled_backup",
-  "backup_retention",
-  "priority_support",
-] as const;
-
 function formatDate(dateStr?: string): string {
   if (!dateStr) return "—";
   const d = new Date(dateStr);

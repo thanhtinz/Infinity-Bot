@@ -24,7 +24,7 @@ const productSchema = z.object({
   description: z.string().optional(),
   note: z.string().optional(),
   emoji: z.string().optional(),
-  category_id: z.number({ required_error: "Category is required" }).min(1, "Category is required"),
+  category_id: z.number({ error: "Category is required" }).min(1, "Category is required"),
   active: z.boolean(),
 });
 type ProductForm = z.infer<typeof productSchema>;
