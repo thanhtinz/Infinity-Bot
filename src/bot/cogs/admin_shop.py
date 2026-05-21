@@ -6,7 +6,7 @@ import discord
 import logging
 from sqlalchemy import select
 from src.database.config import SessionLocal
-from src.models.models import SystemConfig, User, Product, Order, Coupon
+from src.models.models import SystemConfig, User, Product, ProductCategory, Order, Coupon
 from src.services.payments import get_provider
 
 logger = logging.getLogger(__name__)
@@ -316,8 +316,72 @@ class OrderPayView(discord.ui.View):
 
 # ── Price List UI ──────────────────────────────────────────────────────────────
 
-class BangGiaSelect(discord.ui.Select):
-    def __init__(self, products: list):
+def _parse_emoji(raw: str):
+    """Parse emoji string for discord.SelectOption. Returns PartialEmoji or str."""
+    if not raw:
+        return None
+    raw = raw.strip()
+    if raw.startswith("<") and raw.endswith(">"):
+        raw = raw[1:-1]
+    if ":" in raw:
+        parts = raw.split(":")
+        try:
+            eid = int(parts[-1])
+            ename = parts[-2] if len(parts) >= 2 else "_"
+            return discord.PartialEmoji(name=ename, id=eid, animated=raw.startswith("a:"))
+        except (ValueError, IndexError):
+            pass
+    return raw  # Unicode emoji
+
+
+class CategorySelect(discord.ui.Select):
+    """Step 1: choose a category (or All)."""
+    def __init__(self, categories: list, guild_id: str):
+        self.guild_id = guild_id
+        options = [discord.SelectOption(label="📦 All Products", value="all")]
+        for cat in categories[:24]:
+            emoji = _parse_emoji(cat.emoji) if cat.emoji else None
+            opt = discord.SelectOption(
+                label=(cat.name or f"Category #{cat.id}")[:100],
+                value=str(cat.id),
+            )
+            if emoji:
+                opt.emoji = emoji
+            options.append(opt)
+        super().__init__(
+            placeholder="📂 Select a category...",
+            options=options,
+            min_values=1, max_values=1,
+            custom_id="pricelist_category",
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        cat_id = None if self.values[0] == "all" else int(self.values[0])
+        session = SessionLocal()
+        try:
+            where = [Product.active == True, Product.guild_id == self.guild_id]
+            if cat_id is not None:
+                where.append(Product.category_id == cat_id)
+            products = session.execute(
+                select(Product).where(*where).order_by(Product.id)
+            ).scalars().all()
+        finally:
+            session.close()
+
+        if not products:
+            await interaction.response.send_message("❌ No products in this category.", ephemeral=True)
+            return
+
+        # Replace view with product select
+        view = discord.ui.View(timeout=None)
+        view.add_item(ProductSelect(products, self.guild_id))
+        await interaction.response.edit_message(view=view)
+
+
+class ProductSelect(discord.ui.Select):
+    """Step 2: choose a product."""
+    def __init__(self, products: list, guild_id: str):
+        self.guild_id = guild_id
         options = []
         for p in products[:25]:
             opt = discord.SelectOption(
@@ -325,36 +389,22 @@ class BangGiaSelect(discord.ui.Select):
                 value=str(p.id),
                 description=(p.description[:100] if p.description else "View package details"),
             )
-            # Parse emoji — supports Unicode, custom <:name:id>, or :name:id
-            if p.emoji:
-                raw = p.emoji.strip()
-                if raw.startswith("<") and raw.endswith(">"):
-                    raw = raw[1:-1]  # strip < >
-                if ":" in raw:
-                    parts = raw.split(":")
-                    try:
-                        eid = int(parts[-1])
-                        ename = parts[-2] if len(parts) >= 2 else "_"
-                        opt.emoji = discord.PartialEmoji(name=ename, id=eid, animated=raw.startswith("a:"))
-                    except (ValueError, IndexError):
-                        pass
-                else:
-                    opt.emoji = raw  # Unicode emoji
+            emoji = _parse_emoji(p.emoji) if p.emoji else None
+            if emoji:
+                opt.emoji = emoji
             options.append(opt)
         super().__init__(
             placeholder="🔍 Select a product to view details...",
             options=options or [discord.SelectOption(label="No products available", value="_")],
-            min_values=1,
-            max_values=1,
-            custom_id="bang_gia_select_persistent",
+            min_values=1, max_values=1,
+            custom_id="pricelist_product",
         )
-        # Store plain data (no SQLAlchemy objects since session is closed)
-        self.product_ids = [str(p.id) for p in products[:25]]
 
     async def callback(self, interaction: discord.Interaction):
         product_id = self.values[0]
+        if product_id == "_":
+            return
 
-        from src.database.config import SessionLocal
         from src.bot.embed_utils import build_embed, resolve_image_url
         from src.models.models import EmbedTemplate
         session = SessionLocal()
@@ -362,7 +412,6 @@ class BangGiaSelect(discord.ui.Select):
             product = session.execute(
                 select(Product).where(Product.id == int(product_id))
             ).scalars().first()
-
             if not product:
                 await interaction.response.send_message("❌ Product not found.", ephemeral=True)
                 return
@@ -370,16 +419,14 @@ class BangGiaSelect(discord.ui.Select):
             pkgs = [pk for pk in (product.packages or []) if pk.get("active", True)]
             img = resolve_image_url(product.image_url, session)
 
-            # Get currency config
-            config = session.execute(select(SystemConfig).where(SystemConfig.guild_id == str(interaction.guild_id))).scalars().first()
+            config = session.execute(select(SystemConfig).where(SystemConfig.guild_id == self.guild_id)).scalars().first()
             if not config:
                 config = session.execute(select(SystemConfig).limit(1)).scalars().first()
             currency = getattr(config, "currency", "USD") or "USD"
             currency_symbol = getattr(config, "currency_symbol", "$") or "$"
 
-            # Try per-product embed first, fall back to generic san_pham_detail
             product_event = f"product_{product.id}"
-            _gid = str(interaction.guild_id)
+            _gid = self.guild_id
             tmpl = session.execute(
                 select(EmbedTemplate).where(EmbedTemplate.event_type == product_event, EmbedTemplate.guild_id == _gid)
             ).scalars().first()
@@ -395,7 +442,7 @@ class BangGiaSelect(discord.ui.Select):
                 "product.description": product.description or "No description.",
                 "product.image_url": img or "",
                 "package.name": first_pkg.get("name", ""),
-                "package.price": fmt_price(first_pkg.get('price', 0), currency_symbol, currency) if first_pkg else "",
+                "package.price": fmt_price(first_pkg.get("price", 0), currency_symbol, currency) if first_pkg else "",
                 "package.description": first_pkg.get("description", "") if first_pkg else "Contact admin for pricing.",
             }, guild_id=_gid)
 
@@ -414,29 +461,44 @@ class BangGiaSelect(discord.ui.Select):
 
             await interaction.response.send_message(embed=embed, ephemeral=True)
         except Exception as e:
-            logger.error(f"BangGiaSelect callback error: {e}")
+            logger.error(f"ProductSelect callback error: {e}")
             await interaction.response.send_message("❌ System error.", ephemeral=True)
         finally:
             session.close()
 
 
+# Keep BangGiaSelect as alias used by persistent BangGiaView
+BangGiaSelect = ProductSelect
+
+
 class BangGiaView(discord.ui.View):
-    def __init__(self, products: list | None = None):
+    """Persistent view: shows category select first, then product select."""
+    def __init__(self, guild_id: str | None = None, categories: list | None = None, products: list | None = None):
         super().__init__(timeout=None)
-        if products is not None:
-            self.add_item(BangGiaSelect(products))
-        else:
-            # Persistent re-register: load products from DB
-            session = SessionLocal()
-            try:
-                prods = session.execute(
-                    select(Product).where(Product.active == True).order_by(Product.id)
+        session = SessionLocal()
+        try:
+            if guild_id is None:
+                cfg = session.execute(select(SystemConfig).limit(1)).scalars().first()
+                guild_id = str(cfg.guild_id) if cfg else "0"
+            if categories is None:
+                categories = session.execute(
+                    select(ProductCategory).where(ProductCategory.guild_id == guild_id)
+                    .order_by(ProductCategory.sort_order, ProductCategory.id)
                 ).scalars().all()
-                self.add_item(BangGiaSelect(prods))
-            except Exception:
-                self.add_item(BangGiaSelect([]))
-            finally:
-                session.close()
+            if categories:
+                self.add_item(CategorySelect(categories, guild_id))
+            else:
+                # No categories — fall back to direct product select
+                if products is None:
+                    products = session.execute(
+                        select(Product).where(Product.active == True, Product.guild_id == guild_id)
+                        .order_by(Product.id)
+                    ).scalars().all()
+                self.add_item(ProductSelect(products, guild_id))
+        except Exception:
+            self.add_item(ProductSelect([], guild_id or "0"))
+        finally:
+            session.close()
 
 
 async def _autocomplete_product_names(ctx: discord.AutocompleteContext):
@@ -457,6 +519,28 @@ async def _autocomplete_product_names(ctx: discord.AutocompleteContext):
         session.close()
 
 
+async def _autocomplete_package_names(ctx: discord.AutocompleteContext):
+    session = SessionLocal()
+    try:
+        guild_id = str(ctx.interaction.guild_id) if ctx.interaction and ctx.interaction.guild_id else None
+        product_name = ctx.options.get("product_name", "")
+        if not product_name:
+            return []
+        where = [Product.active == True, Product.name == product_name]
+        if guild_id:
+            where.append(Product.guild_id == guild_id)
+        product = session.execute(select(Product).where(*where)).scalars().first()
+        if not product or not product.packages:
+            return []
+        pkgs = [pk for pk in product.packages if pk.get("active", True)]
+        query = (ctx.value or "").lower()
+        return [pk["name"] for pk in pkgs if pk.get("name") and query in pk["name"].lower()][:25]
+    except Exception:
+        return []
+    finally:
+        session.close()
+
+
 class AdminShopCog(discord.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -467,8 +551,8 @@ class AdminShopCog(discord.Cog):
         self,
         ctx: discord.ApplicationContext,
         user: discord.Option(discord.Member, "Select a member"),
-        product_id: discord.Option(int, "Product ID (see /product)"),
-        package_name: discord.Option(str, "Package name (leave empty = first package)", required=False, default=""),
+        product_name: discord.Option(str, "Product name", autocomplete=_autocomplete_product_names),
+        package_name: discord.Option(str, "Package name (leave empty = first package)", required=False, default="", autocomplete=_autocomplete_package_names),
         quantity: discord.Option(int, "Quantity", required=False, default=1, min_value=1, max_value=99),
         channel: discord.Option(discord.TextChannel, "Payment channel (leave empty = current channel)", required=False, default=None),
         payment_method: discord.Option(str, "Payment method", required=False, choices=["payos", "paypal", "crypto", "manual"], default=None),
@@ -495,10 +579,10 @@ class AdminShopCog(discord.Cog):
                 return
 
             product = session.execute(
-                select(Product).where(Product.id == product_id, Product.guild_id == str(ctx.guild_id))
+                select(Product).where(Product.name == product_name, Product.guild_id == str(ctx.guild_id))
             ).scalars().first()
             if not product:
-                await ctx.respond(f"❌ Product ID #{product_id} not found.", ephemeral=True)
+                await ctx.respond(f"❌ Product **{product_name}** not found.", ephemeral=True)
                 return
 
             # Calculate price from package
@@ -689,9 +773,9 @@ class AdminShopCog(discord.Cog):
             from src.bot.embed_utils import build_embed
             embed = build_embed("bang_gia", session, guild_id=str(ctx.guild_id))
             if not embed.footer:
-                embed.set_footer(text="Click a product name below to view package details")
+                embed.set_footer(text="Select a category, then choose a product to view details")
 
-            view = BangGiaView(products)
+            view = BangGiaView(guild_id=str(ctx.guild_id))
             target = channel or ctx.channel
 
             # Try to edit old message if exists

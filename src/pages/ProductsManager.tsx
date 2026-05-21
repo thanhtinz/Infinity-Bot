@@ -371,11 +371,13 @@ function CategoriesDialog({ open, onOpenChange, categories: initialCategories }:
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [newName, setNewName] = useState("");
+  const [newEmoji, setNewEmoji] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
+  const [editEmoji, setEditEmoji] = useState("");
 
   const createMutation = useMutation({
-    mutationFn: (body: { name: string }) =>
+    mutationFn: (body: { name: string; emoji?: string }) =>
       apiFetch("/api/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -385,13 +387,14 @@ function CategoriesDialog({ open, onOpenChange, categories: initialCategories }:
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       setNewName("");
+      setNewEmoji("");
       toast({ title: "Category created." });
     },
     onError: () => toast({ variant: "destructive", title: "Error creating category." }),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, ...body }: { id: number; name?: string }) =>
+    mutationFn: ({ id, ...body }: { id: number; name?: string; emoji?: string }) =>
       apiFetch(`/api/categories/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -420,18 +423,19 @@ function CategoriesDialog({ open, onOpenChange, categories: initialCategories }:
   const handleAdd = () => {
     const name = newName.trim();
     if (!name) return;
-    createMutation.mutate({ name });
+    createMutation.mutate({ name, emoji: newEmoji.trim() || undefined });
   };
 
   const startEdit = (cat: ProductCategory) => {
     setEditingId(cat.id);
     setEditName(cat.name);
+    setEditEmoji(cat.emoji || "");
   };
 
   const saveEdit = () => {
     const name = editName.trim();
     if (!name || editingId === null) return;
-    updateMutation.mutate({ id: editingId, name });
+    updateMutation.mutate({ id: editingId, name, emoji: editEmoji.trim() || undefined });
   };
 
   return (
@@ -450,9 +454,15 @@ function CategoriesDialog({ open, onOpenChange, categories: initialCategories }:
               {editingId === cat.id ? (
                 <div className="flex items-center gap-2 flex-1">
                   <Input
+                    value={editEmoji}
+                    onChange={(e) => setEditEmoji(e.target.value)}
+                    className="h-8 text-sm w-16 text-center"
+                    placeholder="Emoji"
+                  />
+                  <Input
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="h-8 text-sm"
+                    className="h-8 text-sm flex-1"
                     autoFocus
                     onKeyDown={(e) => e.key === "Enter" && saveEdit()}
                   />
@@ -465,6 +475,7 @@ function CategoriesDialog({ open, onOpenChange, categories: initialCategories }:
                 </div>
               ) : (
                 <>
+                  <span className="text-base w-6 text-center shrink-0">{cat.emoji || ""}</span>
                   <span className="flex-1 text-sm truncate">{cat.name}</span>
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEdit(cat)}>
                     <Pencil className="h-3 w-3" />
@@ -486,6 +497,12 @@ function CategoriesDialog({ open, onOpenChange, categories: initialCategories }:
 
         <DialogFooter className="gap-2 sm:gap-0">
           <div className="flex items-center gap-2 w-full">
+            <Input
+              placeholder="Emoji"
+              value={newEmoji}
+              onChange={(e) => setNewEmoji(e.target.value)}
+              className="h-8 text-sm w-16 text-center"
+            />
             <Input
               placeholder="New category name"
               value={newName}
