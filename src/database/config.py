@@ -229,57 +229,16 @@ async def init_db():
         if "can_verification" in sp:
             all_stmts.append("ALTER TABLE staff_permissions DROP COLUMN can_verification")
 
-        # orders — delivery + fraud columns
-        ord_ = cols("orders")
-        for col, stmt in {
-            "delivered_at":   "ALTER TABLE orders ADD COLUMN delivered_at TIMESTAMP",
-            "delivery_note":  "ALTER TABLE orders ADD COLUMN delivery_note TEXT",
-        }.items():
-            if col not in ord_:
-                all_stmts.append(stmt)
-
-        # users — CRM fields
-        usr = cols("users")
-        for col, stmt in {
-            "loyalty_tier":    "ALTER TABLE users ADD COLUMN loyalty_tier VARCHAR",
-            "tier_updated_at": "ALTER TABLE users ADD COLUMN tier_updated_at TIMESTAMP",
-            "reputation_score":"ALTER TABLE users ADD COLUMN reputation_score INTEGER DEFAULT 0",
-            "dispute_count":   "ALTER TABLE users ADD COLUMN dispute_count INTEGER DEFAULT 0",
-            "chargeback_count":"ALTER TABLE users ADD COLUMN chargeback_count INTEGER DEFAULT 0",
-            "tags":            "ALTER TABLE users ADD COLUMN tags JSON DEFAULT '[]'",
-            "internal_notes":  "ALTER TABLE users ADD COLUMN internal_notes TEXT",
-            "blacklisted":     "ALTER TABLE users ADD COLUMN blacklisted BOOLEAN DEFAULT FALSE",
-            "last_order_at":   "ALTER TABLE users ADD COLUMN last_order_at TIMESTAMP",
-        }.items():
-            if col not in usr:
-                all_stmts.append(stmt)
-
-        # inventory_items — delivery tracking
-        inv = cols("inventory_items")
-        for col, stmt in {
-            "delivered_at":             "ALTER TABLE inventory_items ADD COLUMN delivered_at TIMESTAMP",
-            "delivered_to_discord_id":  "ALTER TABLE inventory_items ADD COLUMN delivered_to_discord_id VARCHAR",
-        }.items():
-            if col not in inv:
-                all_stmts.append(stmt)
-
         # order_logs — metadata column
         ol = cols("order_logs")
         if "metadata" not in ol:
             all_stmts.append("ALTER TABLE order_logs ADD COLUMN metadata JSON DEFAULT '{}'")
 
-        # orders — fraud columns
-        for col, stmt in {
-            "flagged":          "ALTER TABLE orders ADD COLUMN flagged BOOLEAN DEFAULT FALSE",
-            "flag_reason":      "ALTER TABLE orders ADD COLUMN flag_reason VARCHAR",
-            "delivered_item_id":"ALTER TABLE orders ADD COLUMN delivered_item_id INTEGER REFERENCES inventory_items(id)",
-        }.items():
-            if col not in ord_:
-                all_stmts.append(stmt)
-
-        # orders — fraud & delivery cols
+        # orders — all delivery + fraud columns (single re-fetch to avoid stale snapshot)
         ord_ = cols("orders")
         for col, stmt in {
+            "delivered_at":      "ALTER TABLE orders ADD COLUMN delivered_at TIMESTAMP",
+            "delivery_note":     "ALTER TABLE orders ADD COLUMN delivery_note TEXT",
             "flagged":           "ALTER TABLE orders ADD COLUMN flagged BOOLEAN DEFAULT FALSE",
             "flag_reason":       "ALTER TABLE orders ADD COLUMN flag_reason VARCHAR",
             "delivered_item_id": "ALTER TABLE orders ADD COLUMN delivered_item_id INTEGER REFERENCES inventory_items(id)",
@@ -297,7 +256,7 @@ async def init_db():
             if col not in inv:
                 all_stmts.append(stmt)
 
-        # users — CRM cols
+        # users — all CRM fields (single block)
         usr = cols("users")
         for col, stmt in {
             "loyalty_tier":     "ALTER TABLE users ADD COLUMN loyalty_tier VARCHAR",
@@ -308,6 +267,7 @@ async def init_db():
             "tags":             "ALTER TABLE users ADD COLUMN tags JSON DEFAULT '[]'",
             "internal_notes":   "ALTER TABLE users ADD COLUMN internal_notes TEXT",
             "blacklisted":      "ALTER TABLE users ADD COLUMN blacklisted BOOLEAN DEFAULT FALSE",
+            "last_order_at":    "ALTER TABLE users ADD COLUMN last_order_at TIMESTAMP",
         }.items():
             if col not in usr:
                 all_stmts.append(stmt)
