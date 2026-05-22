@@ -205,6 +205,53 @@ DEFAULTS: dict[str, dict] = {
             {"name": "Total", "value": "{commission.amount}", "inline": True},
         ],
     },
+    # ── Queue / Support Tickets ───────────────────────────────────────────────
+    "ticket_opened": {
+        "title": "🎫 New Ticket #{ticket.number}",
+        "description": "**{ticket.subject}**\nOpened by {user.mention}",
+        "color": "#5865F2",
+        "footer": "Priority: {ticket.priority}",
+        "fields": [
+            {"name": "Status", "value": "Open", "inline": True},
+            {"name": "Category", "value": "{ticket.category}", "inline": True},
+        ],
+    },
+    "ticket_claimed": {
+        "title": "✋ Ticket #{ticket.number} Claimed",
+        "description": "**{staff.name}** has claimed this ticket and will assist you shortly.",
+        "color": "#F0B232",
+        "footer": "Support Queue",
+        "fields": [
+            {"name": "Staff", "value": "{staff.name}", "inline": True},
+            {"name": "Priority", "value": "{ticket.priority}", "inline": True},
+        ],
+    },
+    "ticket_resolved": {
+        "title": "✅ Ticket #{ticket.number} Resolved",
+        "description": "Your ticket has been resolved by **{staff.name}**.\nPlease rate your experience (1–5 ⭐).",
+        "color": "#57F287",
+        "footer": "Thank you for contacting support",
+        "fields": [],
+    },
+    "ticket_closed": {
+        "title": "🔒 Ticket #{ticket.number} Closed",
+        "description": "This ticket has been closed.",
+        "color": "#99AAB5",
+        "footer": "Support Queue",
+        "fields": [
+            {"name": "Rating", "value": "{ticket.rating}", "inline": True},
+        ],
+    },
+    "ticket_sla_breach": {
+        "title": "⚠️ SLA Breach — Ticket #{ticket.number}",
+        "description": "Ticket **#{ticket.number}** has exceeded the SLA limit.\nPlease respond immediately.",
+        "color": "#ED4245",
+        "footer": "SLA Alert",
+        "fields": [
+            {"name": "Created", "value": "{ticket.created_at}", "inline": True},
+            {"name": "Priority", "value": "{ticket.priority}", "inline": True},
+        ],
+    },
     # ── QR / Payment ──────────────────────────────────────────────────────────
     "qr_thanh_toan": {
         "title": "💳 Payment for Order #{order.id}",

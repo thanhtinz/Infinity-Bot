@@ -1189,3 +1189,71 @@ class AutomationLog(Base):
     error = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     rule = relationship("AutomationRule")
+
+
+# ── Smart Queue / Support Tickets ────────────────────────────────────────────
+
+class QueueConfig(Base):
+    """Per-guild queue / support ticket configuration."""
+    __tablename__ = "queue_configs"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, unique=True, index=True)
+    enabled = Column(Boolean, default=True)
+    category_id = Column(String, nullable=True)        # Discord category for ticket channels
+    support_role_id = Column(String, nullable=True)    # role pinged on new ticket
+    log_channel_id = Column(String, nullable=True)     # channel for ticket logs
+    # SLA settings
+    sla_response_minutes = Column(Integer, default=30) # time until first response SLA
+    sla_resolve_minutes = Column(Integer, default=1440) # 24h resolve SLA
+    # Ticket options
+    max_open_per_user = Column(Integer, default=1)     # max concurrent open tickets per user
+    close_on_resolve = Column(Boolean, default=False)  # auto-delete channel on resolve
+    transcript_channel_id = Column(String, nullable=True) # save transcript here
+    welcome_message = Column(Text, nullable=True)      # message sent on ticket open
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+
+class SupportTicket(Base):
+    """A single support ticket."""
+    __tablename__ = "support_tickets"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    ticket_number = Column(Integer, nullable=False)    # sequential per guild (e.g. #0042)
+    subject = Column(String, nullable=True)
+    status = Column(String, default="open")            # open | claimed | in_progress | pending | resolved | closed
+    priority = Column(String, default="normal")        # low | normal | high | urgent
+    category = Column(String, nullable=True)           # custom category (billing, tech, etc.)
+    creator_discord_id = Column(String, nullable=False, index=True)
+    creator_name = Column(String, nullable=True)
+    assigned_staff_id = Column(Integer, ForeignKey("staff_profiles.id", ondelete="SET NULL"), nullable=True)
+    channel_id = Column(String, nullable=True)         # Discord channel for this ticket
+    # SLA tracking
+    first_response_at = Column(DateTime, nullable=True)
+    resolved_at = Column(DateTime, nullable=True)
+    closed_at = Column(DateTime, nullable=True)
+    sla_response_breached = Column(Boolean, default=False)
+    sla_resolve_breached = Column(Boolean, default=False)
+    # Tags & metadata
+    tags = Column(JSON, default=list)
+    internal_note = Column(Text, nullable=True)
+    rating = Column(Integer, nullable=True)            # 1–5 star rating from user after close
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, index=True)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    assigned_staff = relationship("StaffProfile")
+    messages = relationship("TicketMessage", back_populates="ticket", cascade="all, delete-orphan")
+
+
+class TicketMessage(Base):
+    """Messages within a support ticket."""
+    __tablename__ = "ticket_messages"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    ticket_id = Column(Integer, ForeignKey("support_tickets.id", ondelete="CASCADE"), nullable=False, index=True)
+    discord_id = Column(String, nullable=False)        # author Discord ID
+    username = Column(String, nullable=True)
+    content = Column(Text, nullable=False)
+    is_staff = Column(Boolean, default=False)          # True if staff reply
+    is_internal = Column(Boolean, default=False)       # internal note, not shown to user
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    ticket = relationship("SupportTicket", back_populates="messages")

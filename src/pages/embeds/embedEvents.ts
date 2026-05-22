@@ -189,6 +189,12 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "staff_clockin",         label: "Staff Clocked In",       labelEn: "Staff Clocked In",       icon: UserCheck,     desc: "When a staff member clocks in" },
   { key: "staff_clockout",        label: "Staff Clocked Out",      labelEn: "Staff Clocked Out",      icon: UserCheck,     desc: "When a staff member clocks out" },
   { key: "staff_commission_paid", label: "Commission Paid",        labelEn: "Commission Paid",        icon: UserCheck,     desc: "When admin marks commission as paid" },
+  // ── Queue / Support Tickets ──
+  { key: "ticket_opened",         label: "Ticket Opened",          labelEn: "Ticket Opened",          icon: UserCheck,     desc: "When a support ticket is opened" },
+  { key: "ticket_claimed",        label: "Ticket Claimed",         labelEn: "Ticket Claimed",         icon: UserCheck,     desc: "When a staff member claims a ticket" },
+  { key: "ticket_resolved",       label: "Ticket Resolved",        labelEn: "Ticket Resolved",        icon: UserCheck,     desc: "When a ticket is marked resolved" },
+  { key: "ticket_closed",         label: "Ticket Closed",          labelEn: "Ticket Closed",          icon: UserCheck,     desc: "When a ticket is closed" },
+  { key: "ticket_sla_breach",     label: "Ticket SLA Breach",      labelEn: "Ticket SLA Breach",      icon: UserCheck,     desc: "When a ticket breaches its SLA" },
 ];
 
 // ─── Event groups ────────────────────────────────────────────────────────────
@@ -213,6 +219,7 @@ export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] 
   { label: "Polls", labelEn: "Polls", keys: ["poll_created", "poll_ended"] },
   { label: "Social Feeds", labelEn: "Social Feeds", keys: ["social_feed_post"] },
   { label: "Staff Management", labelEn: "Staff Management", keys: ["staff_clockin", "staff_clockout", "staff_commission_paid"] },
+  { label: "Support Queue", labelEn: "Support Queue", keys: ["ticket_opened", "ticket_claimed", "ticket_resolved", "ticket_closed", "ticket_sla_breach"] },
 ];
 
 // ─── Variables reference ─────────────────────────────────────────────────────
@@ -350,4 +357,11 @@ export const VARIABLES: { token: string; desc: string; descEn: string }[] = [
   { token: "{shift.duration}",     desc: "Shift duration (minutes)",     descEn: "Shift duration (minutes)" },
   { token: "{commission.amount}",  desc: "Commission amount",            descEn: "Commission amount" },
   { token: "{commission.order_count}", desc: "Number of orders in payout", descEn: "Number of orders in payout" },
+  // Queue / Support Tickets
+  { token: "{ticket.number}",      desc: "Ticket number",                descEn: "Ticket number" },
+  { token: "{ticket.subject}",     desc: "Ticket subject",               descEn: "Ticket subject" },
+  { token: "{ticket.priority}",    desc: "Ticket priority",              descEn: "Ticket priority" },
+  { token: "{ticket.category}",    desc: "Ticket category",              descEn: "Ticket category" },
+  { token: "{ticket.created_at}",  desc: "Ticket creation time",         descEn: "Ticket creation time" },
+  { token: "{ticket.rating}",      desc: "User rating (1-5)",            descEn: "User rating (1-5)" },
 ];

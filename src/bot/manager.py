@@ -154,6 +154,7 @@ def create_bot():
         "src.bot.cogs.social_feeds", "src.bot.cogs.stats_channels",
         "src.bot.prefix_commands", "src.bot.embed_utils",
         "src.bot.cogs.staff_cog",
+        "src.bot.cogs.queue_cog",
     ]
     for _mod_name in _cog_modules:
         if _mod_name in sys.modules:
@@ -192,6 +193,7 @@ def create_bot():
     from src.bot.prefix_commands import PrefixCommandsCog
     from src.bot.cogs.ai_chat import AIChatCog
     from src.bot.cogs.staff_cog import StaffCog
+    from src.bot.cogs.queue_cog import QueueCog
 
     # Tag cogs with feature keys for runtime check
     _COG_FEATURE_MAP = {
@@ -216,6 +218,7 @@ def create_bot():
         "StatsChannelsCog": "stats_channels",
         "AIChatCog": "ai_chat",
         "StaffCog": "staff",
+        "QueueCog": "queue",
         "PrefixCommandsCog": None,
     }
 
@@ -245,6 +248,7 @@ def create_bot():
         AIChatCog(bot_client),
         PrefixCommandsCog(bot_client),
         StaffCog(bot_client),
+        QueueCog(bot_client),
     ]
     for cog in cogs:
         cog.feature_key = _COG_FEATURE_MAP.get(type(cog).__name__)

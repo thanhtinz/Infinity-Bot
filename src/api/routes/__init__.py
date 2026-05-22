@@ -37,6 +37,7 @@ from src.api.routes.analytics import router as analytics_router
 from src.api.routes.crm import router as crm_router
 from src.api.routes.staff import router as staff_router
 from src.api.routes.automation import router as automation_router
+from src.api.routes.queue import router as queue_router
 
 router = APIRouter()
 
@@ -74,3 +75,4 @@ router.include_router(analytics_router, tags=["analytics"])
 router.include_router(crm_router, tags=["crm"])
 router.include_router(staff_router, tags=["staff"])
 router.include_router(automation_router, tags=["automation"])
+router.include_router(queue_router, tags=["queue"])

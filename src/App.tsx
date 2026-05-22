@@ -78,6 +78,7 @@ const Analytics = lazy(() => import("./pages/Analytics"));
 const CustomerCRM = lazy(() => import("./pages/CustomerCRM"));
 const StaffManagement = lazy(() => import("./pages/StaffManagement"));
 const AutomationEngine = lazy(() => import("./pages/AutomationEngine"));
+const QueueManager = lazy(() => import("./pages/QueueManager"));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -125,6 +126,7 @@ const navGroups: NavGroup[] = [
       { to: "/crm", icon: Users, label: "Customer CRM" },
       { to: "/staff", icon: Users, label: "Staff Management" },
       { to: "/automation", icon: Zap, label: "Automation Engine" },
+      { to: "/queue", icon: MessageSquare, label: "Support Queue" },
       { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
       { to: "/config/shop-channels", icon: Hash, label: "nav_shopChannels", feature: "shop" },
       { to: "/config/payments", icon: CreditCard, label: "Payments" },
@@ -819,6 +821,7 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/crm" element={<ShopSetupGuard><CustomerCRM /></ShopSetupGuard>} />
         <Route path="/staff" element={<ShopSetupGuard><StaffManagement /></ShopSetupGuard>} />
         <Route path="/automation" element={<ShopSetupGuard><AutomationEngine /></ShopSetupGuard>} />
+        <Route path="/queue" element={<ShopSetupGuard><QueueManager /></ShopSetupGuard>} />
         {/* Community */}
         <Route path="/warnings" element={<WarningsManager />} />
         <Route path="/moderation" element={<ModerationPage />} />
