@@ -179,18 +179,25 @@ export default function AutomationEngine() {
 
   // ── Queries ──
 
-  const { data: catalog, isLoading: catalogLoading } = useQuery<AutomationCatalog>({
+  const { data: catalogRaw, isLoading: catalogLoading } = useQuery<unknown>({
     queryKey: ["automation-catalog"],
     queryFn: () => apiFetch("/api/automation/catalog").then((r) => r.json()),
     staleTime: 5 * 60_000,
   });
+  const catalog: AutomationCatalog | null =
+    catalogRaw &&
+    typeof catalogRaw === "object" &&
+    "trigger_types" in (catalogRaw as object)
+      ? (catalogRaw as AutomationCatalog)
+      : null;
 
-  const { data: rules = [], isLoading: rulesLoading } = useQuery<AutomationRule[]>({
+  const { data: rulesRaw = [], isLoading: rulesLoading } = useQuery<unknown[]>({
     queryKey: ["automation-rules"],
     queryFn: () => apiFetch("/api/automation/rules").then((r) => r.json()),
   });
+  const rules: AutomationRule[] = Array.isArray(rulesRaw) ? (rulesRaw as AutomationRule[]) : [];
 
-  const { data: logs = [], isLoading: logsLoading } = useQuery<AutomationLog[]>({
+  const { data: logsRaw = [], isLoading: logsLoading } = useQuery<unknown[]>({
     queryKey: ["automation-logs", logFilterRuleId],
     queryFn: () => {
       const params = new URLSearchParams({ limit: "50" });
@@ -200,6 +207,7 @@ export default function AutomationEngine() {
       return apiFetch(`/api/automation/logs?${params}`).then((r) => r.json());
     },
   });
+  const logs: AutomationLog[] = Array.isArray(logsRaw) ? (logsRaw as AutomationLog[]) : [];
 
   // ── Derived ──
 

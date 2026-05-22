@@ -219,10 +219,11 @@ export default function QueueManager() {
   });
 
   /* ── Staff Query ─────────────────────────────────────────────────────── */
-  const { data: staffList } = useQuery<StaffProfile[]>({
+  const { data: staffListRaw } = useQuery<unknown>({
     queryKey: ["staff-profiles"],
     queryFn: () => apiFetch("/api/staff/profiles").then((r) => r.json()),
   });
+  const staffList: StaffProfile[] = Array.isArray(staffListRaw) ? (staffListRaw as StaffProfile[]) : [];
 
   /* ── Config Query ────────────────────────────────────────────────────── */
   const { data: config, isLoading: configLoading } = useQuery<QueueConfig>({
@@ -350,7 +351,7 @@ export default function QueueManager() {
 
   const handleAddTag = useCallback(() => {
     if (!newTag.trim() || !detail) return;
-    const tags = [...detail.tags, newTag.trim()];
+    const tags = [...(detail.tags ?? []), newTag.trim()];
     updateTicketMutation.mutate({ tags });
     setNewTag("");
   }, [newTag, detail, updateTicketMutation]);
@@ -358,7 +359,7 @@ export default function QueueManager() {
   const handleRemoveTag = useCallback(
     (tag: string) => {
       if (!detail) return;
-      const tags = detail.tags.filter((t) => t !== tag);
+      const tags = (detail.tags ?? []).filter((t) => t !== tag);
       updateTicketMutation.mutate({ tags });
     },
     [detail, updateTicketMutation]
@@ -860,7 +861,7 @@ export default function QueueManager() {
                       <SelectValue placeholder="Assign a staff member" />
                     </SelectTrigger>
                     <SelectContent>
-                      {staffList?.map((s) => (
+                      {staffList.map((s) => (
                         <SelectItem key={s.id} value={String(s.id)}>
                           {s.name}
                         </SelectItem>
@@ -917,8 +918,8 @@ export default function QueueManager() {
                     Tags
                   </Label>
                   <div className="flex flex-wrap gap-1.5 mb-2">
-                    {detail.tags.length > 0 ? (
-                      detail.tags.map((tag) => (
+                    {(detail.tags ?? []).length > 0 ? (
+                      (detail.tags ?? []).map((tag) => (
                         <Badge
                           key={tag}
                           variant="secondary"
