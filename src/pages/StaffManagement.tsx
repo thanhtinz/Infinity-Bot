@@ -1000,42 +1000,45 @@ export default function StaffManagement() {
                 <Skeleton key={i} className="h-10 w-full" />
               ))}
             </div>
-          ) : Array.isArray(shiftsQ.data) ? shiftsQ.data : [].length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">No shifts recorded</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Clock In</TableHead>
-                  <TableHead>Clock Out</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Note</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Array.isArray(shiftsQ.data) ? shiftsQ.data : [].slice(0, 10).map((shift) => (
-                  <TableRow key={shift.id}>
-                    <TableCell className="text-xs">{formatDate(shift.clock_in)}</TableCell>
-                    <TableCell className="text-xs">
-                      {shift.clock_out ? formatDate(shift.clock_out) : "—"}
-                    </TableCell>
-                    <TableCell>
-                      {shift.duration_minutes != null ? (
-                        <span className="font-medium tabular-nums">
-                          {Math.floor(shift.duration_minutes / 60)}h {shift.duration_minutes % 60}m
-                        </span>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground max-w-[120px] truncate">
-                      {shift.note ?? "—"}
-                    </TableCell>
+          ) : (() => {
+            const shifts: StaffShift[] = Array.isArray(shiftsQ.data) ? shiftsQ.data : [];
+            return shifts.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">No shifts recorded</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Clock In</TableHead>
+                    <TableHead>Clock Out</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Note</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+                </TableHeader>
+                <TableBody>
+                  {shifts.slice(0, 10).map((shift) => (
+                    <TableRow key={shift.id}>
+                      <TableCell className="text-xs">{formatDate(shift.clock_in)}</TableCell>
+                      <TableCell className="text-xs">
+                        {shift.clock_out ? formatDate(shift.clock_out) : "—"}
+                      </TableCell>
+                      <TableCell>
+                        {shift.duration_minutes != null ? (
+                          <span className="font-medium tabular-nums">
+                            {Math.floor(shift.duration_minutes / 60)}h {shift.duration_minutes % 60}m
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[120px] truncate">
+                        {shift.note ?? "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            );
+          })()}
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShiftsProfileId(null)}>
