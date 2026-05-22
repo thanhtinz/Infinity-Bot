@@ -33,6 +33,8 @@ from src.api.routes.polls import router as polls_router
 from src.api.routes.social_feeds import router as social_feeds_router
 from src.api.routes.stats_channels import router as stats_channels_router
 from src.api.routes.welcome import router as welcome_router
+from src.api.routes.analytics import router as analytics_router
+from src.api.routes.crm import router as crm_router
 
 router = APIRouter()
 
@@ -66,3 +68,5 @@ router.include_router(polls_router, tags=["polls"])
 router.include_router(social_feeds_router, tags=["social-feeds"])
 router.include_router(stats_channels_router, tags=["stats-channels"])
 router.include_router(welcome_router, tags=["welcome"])
+router.include_router(analytics_router, tags=["analytics"])
+router.include_router(crm_router, tags=["crm"])

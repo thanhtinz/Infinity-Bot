@@ -8,7 +8,8 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 from src.database.config import SessionLocal
 from src.models.models import (
-    SystemConfig, User, Product, Order, Coupon, Feedback, FlashSale, SpendingMilestone, ProductCategory
+    SystemConfig, User, Product, Order, Coupon, Feedback, FlashSale, SpendingMilestone, ProductCategory,
+    InventoryItem, OrderLog,
 )
 
 
@@ -513,13 +514,99 @@ class ShopCog(discord.Cog):
     async def before_bxh_auto(self):
         await self.bot.wait_until_ready()
 
+    # ─────────────────────────────────────────────────────────────────────
+    # Auto-delivery worker
+    # ─────────────────────────────────────────────────────────────────────
+
+    @tasks.loop(seconds=60)
+    async def _auto_delivery_worker(self):
+        """Auto-deliver inventory items for PAID orders that haven't been delivered yet."""
+        session = get_session()
+        try:
+            paid_orders = session.execute(
+                select(Order)
+                .options(joinedload(Order.user), joinedload(Order.product))
+                .where(
+                    Order.status == "PAID",
+                    Order.delivery_note.is_(None),
+                )
+            ).unique().scalars().all()
+
+            for order in paid_orders:
+                if not order.product or not order.user:
+                    continue
+
+                # Find the oldest available inventory item (FIFO)
+                inv_item = session.execute(
+                    select(InventoryItem).where(
+                        InventoryItem.guild_id == order.guild_id,
+                        InventoryItem.product_id == order.product_id,
+                        InventoryItem.package_name == (order.package_name or ""),
+                        InventoryItem.delivered_order_id.is_(None),
+                    ).order_by(InventoryItem.id)
+                ).scalars().first()
+
+                if not inv_item:
+                    continue  # no stock available — wait for manual delivery
+
+                # Mark item as delivered
+                inv_item.delivered_order_id = order.id
+                inv_item.delivered_at = datetime.datetime.utcnow()
+                inv_item.delivered_to_discord_id = order.user.discord_id
+
+                # Update order
+                order.status = "DELIVERED"
+                order.delivered_at = datetime.datetime.utcnow()
+                order.delivery_note = inv_item.content
+                order.delivered_item_id = inv_item.id
+                session.commit()
+
+                # DM the user with delivery content
+                try:
+                    discord_user = await self.bot.fetch_user(int(order.user.discord_id))
+                    if discord_user:
+                        from src.bot.embed_utils import build_embed
+                        embed = build_embed("giao_hang", session, vars={
+                            "order.id": order.id,
+                            "product.name": order.product.name or "",
+                            "package.name": order.package_name or "",
+                            "delivery.content": inv_item.content,
+                        }, guild_id=order.guild_id)
+                        await discord_user.send(embed=embed)
+                except Exception as dm_err:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Auto-delivery DM failed for order #{order.id}: {dm_err}")
+
+                # Log the delivery
+                log_entry = OrderLog(
+                    order_id=order.id,
+                    guild_id=order.guild_id,
+                    action="delivered",
+                    actor_discord_id="system",
+                    note=f"Auto-delivered inventory item #{inv_item.id}",
+                )
+                session.add(log_entry)
+                session.commit()
+
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"_auto_delivery_worker error: {e}", exc_info=True)
+        finally:
+            session.close()
+
+    @_auto_delivery_worker.before_loop
+    async def before_auto_delivery(self):
+        await self.bot.wait_until_ready()
+
     def cog_load(self):
         self._flash_sale_expiry_check.start()
         self._spending_leaderboard_auto.start()
+        self._auto_delivery_worker.start()
 
     def cog_unload(self):
         self._flash_sale_expiry_check.cancel()
         self._spending_leaderboard_auto.cancel()
+        self._auto_delivery_worker.cancel()
 
 
 

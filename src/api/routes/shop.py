@@ -5,7 +5,7 @@ from sqlalchemy.orm import joinedload
 import os, uuid, shutil, logging, datetime
 
 from src.database.config import get_db
-from src.models.models import SystemConfig, Product, Order, User, Coupon, SpendingMilestone, FlashSale, InventoryItem, ProductCategory
+from src.models.models import SystemConfig, Product, Order, User, Coupon, SpendingMilestone, FlashSale, InventoryItem, ProductCategory, OrderLog
 from src.schemas.schemas import ProductBase, ProductResponse, OrderResponse
 from src.api.deps import get_guild_id, require_staff_perm
 
@@ -595,7 +595,30 @@ def update_order_status(order_id: int, body: dict, db=Depends(get_db), guild_id:
         raise HTTPException(status_code=400, detail="Invalid status")
     order.status = new_status
     db.commit()
+    log_order_action(order_id, guild_id, new_status.lower(), db=db,
+                     actor_discord_id=body.get("actor_discord_id"),
+                     note=body.get("note"))
     return {"ok": True, "status": new_status}
+
+
+@router.get("/orders/{order_id}/logs")
+def get_order_logs(order_id: int, db=Depends(get_db), guild_id: str = Depends(get_guild_id)):
+    """Return audit log for a specific order."""
+    logs = db.execute(
+        select(OrderLog)
+        .where(OrderLog.order_id == order_id, OrderLog.guild_id == guild_id)
+        .order_by(OrderLog.created_at)
+    ).scalars().all()
+    return [
+        {
+            "id": lg.id,
+            "action": lg.action,
+            "actor_discord_id": lg.actor_discord_id,
+            "note": lg.note,
+            "created_at": lg.created_at.isoformat() if lg.created_at else None,
+        }
+        for lg in logs
+    ]
 
 
 @router.post("/orders/{order_id}/deliver")
@@ -612,6 +635,10 @@ async def deliver_order(order_id: int, body: dict, db=Depends(get_db), guild_id:
     order.status = "DELIVERED"
     # Deprecated: do not write to user.total_spent (cross-guild field); milestones use per-guild Order sum
     db.commit()
+
+    # Log the action
+    log_order_action(order.id, order.guild_id, "delivered", db=db,
+                     actor_discord_id=body.get("actor_discord_id"), note="Manual delivery")
 
     # Check spending milestones
     if order.user and order.guild_id:
@@ -1013,7 +1040,23 @@ async def payos_webhook(request: Request, db=Depends(get_db)):
                 ).scalars().first()
                 if coupon:
                     coupon.used_count = (coupon.used_count or 0) + 1
+            # Update last_order_at on user
+            if order.user:
+                order.user.last_order_at = datetime.datetime.utcnow()
             db.commit()
+            log_order_action(order.id, order.guild_id, "paid", db=db, note="PayOS webhook confirmed")
+
+            # Fraud velocity check
+            flag_reason = fraud_velocity_check(order, db)
+            if flag_reason:
+                order.flagged = True
+                order.flag_reason = flag_reason
+                db.commit()
+                log_order_action(order.id, order.guild_id, "flagged", db=db, note=flag_reason)
+                logger.warning(f"Order #{order.id} flagged: {flag_reason}")
+            else:
+                # Try auto-delivery from inventory
+                await auto_deliver_order(order, db)
 
             # Check spending milestones (per-guild total from Order table)
             if order.user and order.guild_id:
@@ -1141,8 +1184,121 @@ def delete_milestone(milestone_id: int, db=Depends(get_db), guild_id: str = Depe
     return {"ok": True}
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Core helpers: logging, fraud, auto-delivery
+# ─────────────────────────────────────────────────────────────────────────────
+
+def log_order_action(order_id: int, guild_id: str | None, action: str, db,
+                     actor_discord_id: str | None = None, note: str | None = None):
+    """Write an OrderLog entry. Call this on every status change."""
+    try:
+        entry = OrderLog(
+            order_id=order_id,
+            guild_id=guild_id,
+            action=action,
+            actor_discord_id=actor_discord_id,
+            note=note,
+        )
+        db.add(entry)
+        db.commit()
+    except Exception as e:
+        logger.warning(f"log_order_action failed: {e}")
+
+
+def fraud_velocity_check(order: Order, db) -> str | None:
+    """Return a flag reason string if fraud is detected, else None.
+
+    Rules (per guild, per discord_id):
+    - >5 PENDING/PAID orders created in the last 60 minutes → velocity flag
+    - User is blacklisted in CRM
+    """
+    if not order.user:
+        return None
+    # Blacklist check
+    if getattr(order.user, "blacklisted", False):
+        return "Blacklisted user"
+    # Velocity check: >5 orders in last hour
+    cutoff = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+    recent = db.execute(
+        select(func.count()).select_from(Order)
+        .where(
+            Order.guild_id == order.guild_id,
+            Order.user_id == order.user_id,
+            Order.created_at >= cutoff,
+            Order.status.in_(["PENDING", "PENDING_MANUAL", "PAID"]),
+        )
+    ).scalar() or 0
+    if recent > 5:
+        return f"Velocity: {recent} orders in last 60 min"
+    return None
+
+
+async def auto_deliver_order(order: Order, db) -> bool:
+    """Try to auto-deliver an inventory item to the user via DM.
+
+    Returns True if delivery succeeded.
+    Looks for an undelivered InventoryItem matching product + package (FIFO).
+    """
+    if not order.product or not order.user:
+        return False
+    pkg_name = order.package_name or ""
+    # Find oldest undelivered item for this product + package
+    item = db.execute(
+        select(InventoryItem)
+        .where(
+            InventoryItem.product_id == order.product_id,
+            InventoryItem.guild_id == order.guild_id,
+            InventoryItem.delivered_order_id.is_(None),
+            InventoryItem.package_name == pkg_name,
+        )
+        .order_by(InventoryItem.id)
+        .limit(1)
+        .with_for_update(skip_locked=True)
+    ).scalars().first()
+
+    if not item:
+        return False  # No stock — manual delivery required
+
+    # Mark delivered
+    item.delivered_order_id = order.id
+    item.delivered_at = datetime.datetime.utcnow()
+    item.delivered_to_discord_id = order.user.discord_id
+    order.delivered_item_id = item.id
+    order.status = "DELIVERED"
+    db.commit()
+
+    # DM the user
+    try:
+        from src.bot.manager import get_bot_client
+        from src.bot.embed_utils import build_embed
+        import discord as _discord
+        bot = get_bot_client()
+        if bot and bot.is_ready():
+            discord_user = await bot.fetch_user(int(order.user.discord_id))
+            if discord_user:
+                embed = build_embed("giao_hang", db, vars={
+                    "order.id": order.id,
+                    "user.mention": f"<@{order.user.discord_id}>",
+                    "user": order.user.username or order.user.discord_id,
+                    "product.name": order.product.name if order.product else "",
+                    "package": pkg_name,
+                    "order.total": f"{order.total_price:,.0f}",
+                }, guild_id=order.guild_id)
+                embed.add_field(name="📦 Your Item", value=f"||{item.content}||", inline=False)
+                if item.serial_number:
+                    embed.add_field(name="🔑 Serial", value=f"`{item.serial_number}`", inline=True)
+                await discord_user.send(embed=embed)
+                log_order_action(order.id, order.guild_id, "delivered",
+                                 actor_discord_id=None,
+                                 note=f"Auto-delivered item #{item.id}", db=db)
+                return True
+    except Exception as e:
+        logger.error(f"auto_deliver_order DM error: {e}")
+    return False
+
+
 async def check_spending_milestones(user: User, guild_id: str, db):
-    """Check if user reached any spending milestones and grant roles."""
+    """Check if user reached any spending milestones, grant roles, update tier, DM on new milestone."""
     if not user or not user.discord_id:
         return
     milestones = db.execute(
@@ -1153,11 +1309,13 @@ async def check_spending_milestones(user: User, guild_id: str, db):
     if not milestones:
         return
 
-    # Per-guild total from Order (not global user.total_spent)
+    # Per-guild total from PAID/DELIVERED orders
     total = db.execute(
         select(func.sum(Order.total_price))
-        .where(Order.user_id == user.id, Order.guild_id == guild_id, Order.status == "PAID")
+        .where(Order.user_id == user.id, Order.guild_id == guild_id,
+               Order.status.in_(["PAID", "DELIVERED"]))
     ).scalar() or 0
+
     from src.bot.manager import get_bot_client
     bot = get_bot_client()
     if not bot or not bot.is_ready():
@@ -1172,12 +1330,45 @@ async def check_spending_milestones(user: User, guild_id: str, db):
     except Exception:
         return
 
+    from src.bot.embed_utils import build_embed
+
+    # Determine highest reached milestone → update loyalty_tier
+    highest_reached: SpendingMilestone | None = None
+    for m in milestones:
+        if total >= m.threshold:
+            highest_reached = m
+
+    if highest_reached:
+        new_tier = highest_reached.name.lower().replace(" ", "_")
+        if getattr(user, "loyalty_tier", None) != new_tier:
+            user.loyalty_tier = new_tier
+            user.tier_updated_at = datetime.datetime.utcnow()
+            try:
+                db.commit()
+            except Exception:
+                pass
+
     for m in milestones:
         if total >= m.threshold:
             role = guild.get_role(int(m.role_id))
             if role and role not in member.roles:
                 try:
-                    await member.add_roles(role, reason=f"Spending milestone: {m.name} ({m.threshold:,.0f})")
+                    await member.add_roles(role, reason=f"Spending milestone: {m.name}")
+                    # DM user on new milestone
+                    try:
+                        config = db.execute(select(SystemConfig).where(SystemConfig.guild_id == guild_id)).scalars().first()
+                        currency_symbol = getattr(config, "currency_symbol", "$") or "$"
+                        currency = getattr(config, "currency", "USD") or "USD"
+                        dm_embed = build_embed("milestone_reached", db, vars={
+                            "user.mention": member.mention,
+                            "milestone.name": m.name,
+                            "milestone.threshold": f"{m.threshold:,.0f} {currency_symbol}",
+                            "role.mention": role.mention,
+                            "user.total": f"{total:,.0f} {currency_symbol}",
+                        }, guild_id=guild_id)
+                        await member.send(embed=dm_embed)
+                    except Exception:
+                        pass  # DM blocked — non-fatal
                 except Exception as e:
                     logger.warning(f"Failed to add milestone role {m.name}: {e}")
 

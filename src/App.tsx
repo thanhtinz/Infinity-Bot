@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, Pin, ChevronDown, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart3, AlertTriangle, MousePointer, List, MessageCircle, Layout, Zap, BrainCircuit, Settings2, BookOpen, History, Image, ClipboardList, Rss, UserCheck, Search, User } from "lucide-react";
+import { Bot, Settings, ShoppingCart, Menu, LogOut, Tag, Package, Users, Gift, MessageSquare, Trophy, Pin, ChevronDown, Hash, CreditCard, Activity, Smile, UserPlus, ToggleLeft, Loader2, Shield, Clock, Terminal, Database, FileText, Bell, Crown, Gem, BarChart3, BarChart2, AlertTriangle, MousePointer, List, MessageCircle, Layout, Zap, BrainCircuit, Settings2, BookOpen, History, Image, ClipboardList, Rss, UserCheck, Search, User } from "lucide-react";
 import { useState, useMemo, useEffect, lazy, Suspense, Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -74,6 +74,8 @@ const PollsPage = lazy(() => import("./pages/PollsPage").then(m => ({ default: m
 const SocialFeedsPage = lazy(() => import("./pages/SocialFeedsPage").then(m => ({ default: m.SocialFeedsPage })));
 const StatsChannelsPage = lazy(() => import("./pages/StatsChannelsPage").then(m => ({ default: m.StatsChannelsPage })));
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then(m => ({ default: m.ProfilePage })));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const CustomerCRM = lazy(() => import("./pages/CustomerCRM"));
 import { cn } from "./lib/utils";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -117,6 +119,8 @@ const navGroups: NavGroup[] = [
       { to: "/shop-stats", icon: History, label: "Transaction History" },
       { to: "/milestones", icon: Trophy, label: "Spending Milestones" },
       { to: "/flash-sales", icon: Zap, label: "Flash Sales" },
+      { to: "/analytics", icon: BarChart2, label: "Analytics" },
+      { to: "/crm", icon: Users, label: "Customer CRM" },
       { to: "/feedback", icon: MessageSquare, label: "nav_feedback" },
       { to: "/config/shop-channels", icon: Hash, label: "nav_shopChannels", feature: "shop" },
       { to: "/config/payments", icon: CreditCard, label: "Payments" },
@@ -807,6 +811,8 @@ function ProtectedAppRoutes({ root }: { root?: boolean }) {
         <Route path="/shop-stats" element={<ShopSetupGuard><ShopStats /></ShopSetupGuard>} />
         <Route path="/milestones" element={<ShopSetupGuard><SpendingMilestones /></ShopSetupGuard>} />
         <Route path="/flash-sales" element={<ShopSetupGuard><FlashSales /></ShopSetupGuard>} />
+        <Route path="/analytics" element={<ShopSetupGuard><Analytics /></ShopSetupGuard>} />
+        <Route path="/crm" element={<ShopSetupGuard><CustomerCRM /></ShopSetupGuard>} />
         {/* Community */}
         <Route path="/warnings" element={<WarningsManager />} />
         <Route path="/moderation" element={<ModerationPage />} />

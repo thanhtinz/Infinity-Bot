@@ -167,6 +167,13 @@ DEFAULTS: dict[str, dict] = {
         "footer": "Updated: {updated_at}",
         "fields": [],
     },
+    "milestone_reached": {
+        "title": "🏆 Milestone Reached!",
+        "description": "Congratulations {user.mention}!\nYou've reached the **{milestone.name}** milestone with a total spend of **{milestone.threshold}**.\nYou've been granted the role {role.mention}!",
+        "color": "#F0B232",
+        "footer": "Total spent: {user.total}",
+        "fields": [],
+    },
     # ── QR / Payment ──────────────────────────────────────────────────────────
     "qr_thanh_toan": {
         "title": "💳 Payment for Order #{order.id}",

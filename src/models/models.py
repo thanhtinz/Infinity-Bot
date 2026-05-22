@@ -79,7 +79,17 @@ class User(Base):
     total_spent = Column(Float, default=0)
     guild_id = Column(String, nullable=True, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    
+    # ── CRM fields ──
+    loyalty_tier = Column(String, nullable=True)            # bronze | silver | gold | vip
+    tier_updated_at = Column(DateTime, nullable=True)
+    reputation_score = Column(Integer, default=0)          # admin-set score
+    dispute_count = Column(Integer, default=0)
+    chargeback_count = Column(Integer, default=0)
+    tags = Column(JSON, default=list)                       # ["VIP", "Wholesale", ...]
+    internal_notes = Column(Text, nullable=True)            # admin private notes
+    blacklisted = Column(Boolean, default=False)
+    last_order_at = Column(DateTime, nullable=True)    # last paid order timestamp
+
     orders = relationship("Order", back_populates="user")
 
 class ProductCategory(Base):
@@ -126,7 +136,13 @@ class Order(Base):
     payment_id = Column(String, nullable=True)         # PayPal order ID / crypto invoice ID
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     expires_at = Column(DateTime, nullable=True)  # PENDING order auto-expire (24h)
-    
+    # ── Fraud & delivery ──
+    flagged = Column(Boolean, default=False)           # fraud velocity flag
+    flag_reason = Column(String, nullable=True)        # reason for flag
+    delivered_item_id = Column(Integer, ForeignKey("inventory_items.id"), nullable=True)  # auto-delivered item
+    delivered_at = Column(DateTime, nullable=True)     # when auto-delivery completed
+    delivery_note = Column(Text, nullable=True)        # content sent to user (key/account)
+
     user = relationship("User", back_populates="orders")
     product = relationship("Product")
 
@@ -172,28 +188,45 @@ class FlashSale(Base):
     product = relationship("Product")
 
 class InventoryItem(Base):
-    """Một item trong kho hàng — gắn với package của sản phẩm."""
+    """A stock item — tied to a product package."""
     __tablename__ = "inventory_items"
     id = Column(Integer, primary_key=True, index=True)
     guild_id = Column(String, nullable=False, index=True)
     product_id = Column(Integer, ForeignKey("products.id"))
     package_name = Column(String, nullable=False)
-    content = Column(Text, nullable=False)              # nội dung giao hàng
-    delivered_order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)  # None = chưa giao
+    content = Column(Text, nullable=False)              # delivery content (key/account/serial)
+    delivered_order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
+    # ── Delivery tracking ──
+    delivered_at = Column(DateTime, nullable=True)
+    delivered_to_discord_id = Column(String, nullable=True)
+    serial_number = Column(String, nullable=True)       # optional serial for tracking
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     product = relationship("Product")
 
 class SpendingMilestone(Base):
-    """Mốc chi tiêu — tự động gán role khi user đạt mốc."""
+    """Spending milestone — auto-grant role when user reaches threshold."""
     __tablename__ = "spending_milestones"
     id = Column(Integer, primary_key=True, index=True)
     guild_id = Column(String, nullable=True, index=True)
-    name = Column(String, nullable=False)             # e.g. "VIP", "Diamond"
-    threshold = Column(Float, nullable=False)          # amount in VNĐ
-    role_id = Column(String, nullable=False)           # Discord role ID to grant
-    emoji = Column(String, nullable=True)              # display emoji
+    name = Column(String, nullable=False)
+    threshold = Column(Float, nullable=False)
+    role_id = Column(String, nullable=False)
+    emoji = Column(String, nullable=True)
     active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class OrderLog(Base):
+    """Audit log for every order status change."""
+    __tablename__ = "order_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, index=True)
+    guild_id = Column(String, nullable=True, index=True)
+    action = Column(String, nullable=False)             # created | paid | delivered | cancelled | refunded | flagged | note
+    actor_discord_id = Column(String, nullable=True)    # who performed the action (None = system)
+    note = Column(Text, nullable=True)
+    metadata_ = Column("metadata", JSON, default=dict)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    order = relationship("Order")
 
 class Feedback(Base):
     __tablename__ = "feedback"
