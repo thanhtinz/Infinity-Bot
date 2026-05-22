@@ -393,7 +393,8 @@ export default function QueueManager() {
   }, [cfgForm, saveConfigMutation]);
 
   /* ── Active tickets for overview ─────────────────────────────────────── */
-  const activeTickets = tickets?.filter((t) => !["resolved", "closed"].includes(t.status)) ?? [];
+  const ticketList = Array.isArray(tickets) ? tickets : [];
+  const activeTickets = ticketList.filter((t) => !["resolved", "closed"].includes(t.status));
 
   /* ── Render ──────────────────────────────────────────────────────────── */
 
@@ -589,7 +590,7 @@ export default function QueueManager() {
                     </div>
                   ))}
                 </div>
-              ) : tickets && tickets.length > 0 ? (
+              ) : ticketList.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -604,7 +605,7 @@ export default function QueueManager() {
                       </tr>
                     </thead>
                     <tbody>
-                      {tickets.map((t) => (
+                      {ticketList.map((t) => (
                         <tr
                           key={t.id}
                           className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"

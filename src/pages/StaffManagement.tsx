@@ -414,13 +414,16 @@ export default function StaffManagement() {
   }
 
   /* ── Derived data ── */
+  const profilesList: StaffProfile[] = Array.isArray(profilesQ.data) ? profilesQ.data : [];
+  const rulesList: CommissionRule[] = Array.isArray(rulesQ.data) ? rulesQ.data : [];
+  const logsList: CommissionLog[] = Array.isArray(logsQ.data) ? logsQ.data : [];
 
   const clockedProfiles = useMemo(
-    () => (profilesQ.data ?? []).filter((p) => p.clocked_in),
-    [profilesQ.data]
+    () => profilesList.filter((p) => p.clocked_in),
+    [profilesList]
   );
 
-  const unpaidLogs = logsQ.data ?? [];
+  const unpaidLogs = logsList;
 
   /* ── Render ── */
 
@@ -595,7 +598,7 @@ export default function StaffManagement() {
                 <Skeleton key={i} className="h-20 rounded-[10px]" />
               ))}
             </div>
-          ) : (profilesQ.data ?? []).length === 0 ? (
+          ) : profilesList.length === 0 ? (
             <EmptyState
               icon={Users}
               title="No staff yet"
@@ -607,7 +610,7 @@ export default function StaffManagement() {
               </Button>
             </EmptyState>
           ) : (
-            (profilesQ.data ?? []).map((profile) => (
+            profilesList.map((profile) => (
               <div
                 key={profile.id}
                 className="bg-card rounded-[10px] shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)] transition-shadow px-5 py-4"
@@ -739,7 +742,7 @@ export default function StaffManagement() {
                 <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
-          ) : (rulesQ.data ?? []).length === 0 ? (
+          ) : rulesList.length === 0 ? (
             <EmptyState
               icon={DollarSign}
               title="No commission rules"
@@ -765,7 +768,7 @@ export default function StaffManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(rulesQ.data ?? []).map((rule) => (
+                    {rulesList.map((rule) => (
                       <TableRow key={rule.id}>
                         <TableCell className="font-medium">{rule.name}</TableCell>
                         <TableCell>
@@ -997,7 +1000,7 @@ export default function StaffManagement() {
                 <Skeleton key={i} className="h-10 w-full" />
               ))}
             </div>
-          ) : (shiftsQ.data ?? []).length === 0 ? (
+          ) : Array.isArray(shiftsQ.data) ? shiftsQ.data : [].length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">No shifts recorded</p>
           ) : (
             <Table>
@@ -1010,7 +1013,7 @@ export default function StaffManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(shiftsQ.data ?? []).slice(0, 10).map((shift) => (
+                {Array.isArray(shiftsQ.data) ? shiftsQ.data : [].slice(0, 10).map((shift) => (
                   <TableRow key={shift.id}>
                     <TableCell className="text-xs">{formatDate(shift.clock_in)}</TableCell>
                     <TableCell className="text-xs">
