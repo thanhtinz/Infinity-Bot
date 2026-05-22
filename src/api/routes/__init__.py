@@ -35,6 +35,8 @@ from src.api.routes.stats_channels import router as stats_channels_router
 from src.api.routes.welcome import router as welcome_router
 from src.api.routes.analytics import router as analytics_router
 from src.api.routes.crm import router as crm_router
+from src.api.routes.staff import router as staff_router
+from src.api.routes.automation import router as automation_router
 
 router = APIRouter()
 
@@ -70,3 +72,5 @@ router.include_router(stats_channels_router, tags=["stats-channels"])
 router.include_router(welcome_router, tags=["welcome"])
 router.include_router(analytics_router, tags=["analytics"])
 router.include_router(crm_router, tags=["crm"])
+router.include_router(staff_router, tags=["staff"])
+router.include_router(automation_router, tags=["automation"])

@@ -1084,3 +1084,108 @@ class StatsChannel(Base):
     stat_type = Column(String, nullable=False)       # members | online | boosts | roles | channels | avg_rating
     format_template = Column(String, default="{value}")  # e.g. "Members: {value}"
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+# ── Staff Management ────────────────────────────────────────────────────────
+
+class StaffProfile(Base):
+    """Per-guild staff member profile — links Discord user to staff role."""
+    __tablename__ = "staff_profiles"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    discord_id = Column(String, nullable=False, index=True)
+    display_name = Column(String, nullable=True)      # cached from Discord
+    avatar_url = Column(String, nullable=True)
+    role_title = Column(String, nullable=True)         # e.g. "Sales", "Support", "Manager"
+    commission_rate = Column(Float, default=0.0)       # % of handled order value
+    total_orders_handled = Column(Integer, default=0)
+    total_commission_earned = Column(Float, default=0.0)
+    total_hours_worked = Column(Float, default=0.0)    # accumulated from shifts
+    is_active = Column(Boolean, default=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    __table_args__ = (UniqueConstraint("guild_id", "discord_id", name="uq_staff_profile"),)
+    shifts = relationship("StaffShift", back_populates="staff", cascade="all, delete-orphan")
+
+
+class StaffShift(Base):
+    """Clock-in / clock-out records for a staff member."""
+    __tablename__ = "staff_shifts"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    staff_id = Column(Integer, ForeignKey("staff_profiles.id", ondelete="CASCADE"), nullable=False)
+    clock_in = Column(DateTime, nullable=False)
+    clock_out = Column(DateTime, nullable=True)         # null = currently clocked in
+    duration_minutes = Column(Integer, nullable=True)   # computed on clock-out
+    note = Column(String, nullable=True)                # optional shift note
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    staff = relationship("StaffProfile", back_populates="shifts")
+
+
+class CommissionRule(Base):
+    """Configurable commission rules per guild (override per-staff default)."""
+    __tablename__ = "commission_rules"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    name = Column(String, nullable=False)              # e.g. "Holiday Bonus"
+    rule_type = Column(String, default="flat_rate")    # flat_rate | tier | per_category
+    rate = Column(Float, nullable=False)               # % rate
+    min_order_value = Column(Float, default=0.0)       # minimum order value to qualify
+    category_id = Column(Integer, ForeignKey("product_categories.id", ondelete="SET NULL"), nullable=True)
+    active = Column(Boolean, default=True)
+    priority = Column(Integer, default=0)              # higher = applied first
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+class CommissionLog(Base):
+    """Audit log of commissions earned per order."""
+    __tablename__ = "commission_logs"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    staff_id = Column(Integer, ForeignKey("staff_profiles.id", ondelete="CASCADE"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id", ondelete="SET NULL"), nullable=True)
+    order_value = Column(Float, nullable=False)
+    commission_rate = Column(Float, nullable=False)
+    commission_amount = Column(Float, nullable=False)
+    rule_id = Column(Integer, ForeignKey("commission_rules.id", ondelete="SET NULL"), nullable=True)
+    paid = Column(Boolean, default=False)              # marked paid by admin
+    paid_at = Column(DateTime, nullable=True)
+    note = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    staff = relationship("StaffProfile")
+    order = relationship("Order")
+
+
+# ── Automation Engine ───────────────────────────────────────────────────────
+
+class AutomationRule(Base):
+    """IF-THEN automation rules — event trigger → one or more actions."""
+    __tablename__ = "automation_rules"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    enabled = Column(Boolean, default=True)
+    trigger_type = Column(String, nullable=False)      # order_placed | order_paid | member_join | role_add | keyword | etc.
+    trigger_config = Column(JSON, default=dict)        # trigger-specific config (e.g. {product_id: 5, role_id: "123"})
+    conditions = Column(JSON, default=list)            # [{field, operator, value}] — all must pass
+    actions = Column(JSON, default=list)               # [{type, config}]
+    run_count = Column(Integer, default=0)
+    last_run_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+
+class AutomationLog(Base):
+    """Execution log for each automation rule run."""
+    __tablename__ = "automation_logs"
+    id = Column(Integer, primary_key=True)
+    guild_id = Column(String, nullable=False, index=True)
+    rule_id = Column(Integer, ForeignKey("automation_rules.id", ondelete="CASCADE"), nullable=False)
+    trigger_data = Column(JSON, default=dict)           # snapshot of trigger context
+    actions_taken = Column(JSON, default=list)          # [{type, status, error?}]
+    success = Column(Boolean, default=True)
+    error = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    rule = relationship("AutomationRule")

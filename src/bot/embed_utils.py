@@ -174,6 +174,37 @@ DEFAULTS: dict[str, dict] = {
         "footer": "Total spent: {user.total}",
         "fields": [],
     },
+    # ── Staff Management ──────────────────────────────────────────────────────
+    "staff_clockin": {
+        "title": "🟢 Staff Clocked In",
+        "description": "**{staff.name}** has clocked in.",
+        "color": "#57F287",
+        "footer": "Staff Management",
+        "fields": [
+            {"name": "Role", "value": "{staff.role_title}", "inline": True},
+            {"name": "Clocked In", "value": "{shift.clock_in}", "inline": True},
+        ],
+    },
+    "staff_clockout": {
+        "title": "🔴 Staff Clocked Out",
+        "description": "**{staff.name}** has clocked out after **{shift.duration}** minutes.",
+        "color": "#ED4245",
+        "footer": "Staff Management",
+        "fields": [
+            {"name": "Duration", "value": "{shift.duration} min", "inline": True},
+            {"name": "Commission", "value": "{commission.amount}", "inline": True},
+        ],
+    },
+    "staff_commission_paid": {
+        "title": "💰 Commission Paid",
+        "description": "**{staff.name}** has received a commission payout of **{commission.amount}**.",
+        "color": "#F0B232",
+        "footer": "Commission Management",
+        "fields": [
+            {"name": "Orders Covered", "value": "{commission.order_count}", "inline": True},
+            {"name": "Total", "value": "{commission.amount}", "inline": True},
+        ],
+    },
     # ── QR / Payment ──────────────────────────────────────────────────────────
     "qr_thanh_toan": {
         "title": "💳 Payment for Order #{order.id}",

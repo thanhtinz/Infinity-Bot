@@ -185,6 +185,10 @@ export const EMBED_EVENTS: EmbedEventDef[] = [
   { key: "poll_ended",            label: "Poll Ended",             labelEn: "Poll Ended",             icon: BarChart3,     desc: "When a poll ends" },
   // ── Social Feeds ──
   { key: "social_feed_post",      label: "Feed Post",              labelEn: "Feed Post",              icon: Rss,           desc: "When a new feed item is posted" },
+  // ── Staff Management ──
+  { key: "staff_clockin",         label: "Staff Clocked In",       labelEn: "Staff Clocked In",       icon: UserCheck,     desc: "When a staff member clocks in" },
+  { key: "staff_clockout",        label: "Staff Clocked Out",      labelEn: "Staff Clocked Out",      icon: UserCheck,     desc: "When a staff member clocks out" },
+  { key: "staff_commission_paid", label: "Commission Paid",        labelEn: "Commission Paid",        icon: UserCheck,     desc: "When admin marks commission as paid" },
 ];
 
 // ─── Event groups ────────────────────────────────────────────────────────────
@@ -208,6 +212,7 @@ export const EVENT_GROUPS: { label: string; labelEn: string; keys: string[] }[] 
   { label: "Forms", labelEn: "Forms", keys: ["form_submitted", "form_approved", "form_rejected"] },
   { label: "Polls", labelEn: "Polls", keys: ["poll_created", "poll_ended"] },
   { label: "Social Feeds", labelEn: "Social Feeds", keys: ["social_feed_post"] },
+  { label: "Staff Management", labelEn: "Staff Management", keys: ["staff_clockin", "staff_clockout", "staff_commission_paid"] },
 ];
 
 // ─── Variables reference ─────────────────────────────────────────────────────
@@ -338,4 +343,11 @@ export const VARIABLES: { token: string; desc: string; descEn: string }[] = [
   { token: "{afk.duration}",      desc: "AFK duration",                 descEn: "AFK duration" },
   { token: "{afk.user}",          desc: "AFK user",                     descEn: "AFK user" },
   { token: "{afk.since}",         desc: "AFK since",                    descEn: "AFK since" },
+  // Staff Management
+  { token: "{staff.name}",         desc: "Staff member name",            descEn: "Staff member name" },
+  { token: "{staff.role_title}",   desc: "Staff role title",             descEn: "Staff role title" },
+  { token: "{shift.clock_in}",     desc: "Shift clock-in time",          descEn: "Shift clock-in time" },
+  { token: "{shift.duration}",     desc: "Shift duration (minutes)",     descEn: "Shift duration (minutes)" },
+  { token: "{commission.amount}",  desc: "Commission amount",            descEn: "Commission amount" },
+  { token: "{commission.order_count}", desc: "Number of orders in payout", descEn: "Number of orders in payout" },
 ];

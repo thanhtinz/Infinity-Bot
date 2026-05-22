@@ -312,6 +312,21 @@ async def init_db():
             if col not in usr:
                 all_stmts.append(stmt)
 
+        # ── Phase 2: Staff Management tables (new table cols handled by create_all) ──
+        # staff_profiles extra cols
+        sp2 = cols("staff_profiles")
+        for col, stmt in {
+            "role_title":             "ALTER TABLE staff_profiles ADD COLUMN role_title VARCHAR",
+            "commission_rate":        "ALTER TABLE staff_profiles ADD COLUMN commission_rate FLOAT DEFAULT 0.0",
+            "total_orders_handled":   "ALTER TABLE staff_profiles ADD COLUMN total_orders_handled INTEGER DEFAULT 0",
+            "total_commission_earned":"ALTER TABLE staff_profiles ADD COLUMN total_commission_earned FLOAT DEFAULT 0.0",
+            "total_hours_worked":     "ALTER TABLE staff_profiles ADD COLUMN total_hours_worked FLOAT DEFAULT 0.0",
+            "is_active":              "ALTER TABLE staff_profiles ADD COLUMN is_active BOOLEAN DEFAULT TRUE",
+            "notes":                  "ALTER TABLE staff_profiles ADD COLUMN notes TEXT",
+        }.items():
+            if col not in sp2:
+                all_stmts.append(stmt)
+
         # ── Execute all ALTERs in one transaction ──
         if all_stmts:
             logger.info(f"[init_db] Running {len(all_stmts)} migration(s): {all_stmts}")

@@ -153,6 +153,7 @@ def create_bot():
         "src.bot.cogs.reminder", "src.bot.cogs.polls",
         "src.bot.cogs.social_feeds", "src.bot.cogs.stats_channels",
         "src.bot.prefix_commands", "src.bot.embed_utils",
+        "src.bot.cogs.staff_cog",
     ]
     for _mod_name in _cog_modules:
         if _mod_name in sys.modules:
@@ -190,6 +191,7 @@ def create_bot():
     from src.bot.cogs.stats_channels import StatsChannelsCog
     from src.bot.prefix_commands import PrefixCommandsCog
     from src.bot.cogs.ai_chat import AIChatCog
+    from src.bot.cogs.staff_cog import StaffCog
 
     # Tag cogs with feature keys for runtime check
     _COG_FEATURE_MAP = {
@@ -213,6 +215,7 @@ def create_bot():
         "SocialFeedsCog": "social_feeds",
         "StatsChannelsCog": "stats_channels",
         "AIChatCog": "ai_chat",
+        "StaffCog": "staff",
         "PrefixCommandsCog": None,
     }
 
@@ -241,6 +244,7 @@ def create_bot():
         StatsChannelsCog(bot_client),
         AIChatCog(bot_client),
         PrefixCommandsCog(bot_client),
+        StaffCog(bot_client),
     ]
     for cog in cogs:
         cog.feature_key = _COG_FEATURE_MAP.get(type(cog).__name__)
