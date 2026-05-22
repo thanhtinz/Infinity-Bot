@@ -46,7 +46,6 @@ import {
   Timer,
   CheckCircle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 /* ── Types ──────────────────────────────────────────────────────────────── */
 

@@ -257,8 +257,8 @@ export function Analytics() {
                   className="text-muted-foreground"
                 />
                 <Tooltip
-                  formatter={(value: number) => [formatPrice(value), "Revenue"]}
-                  labelFormatter={(label: string) => fmtDate(label)}
+                  formatter={(value) => [formatPrice(Number(value ?? 0)), "Revenue"]}
+                  labelFormatter={(label) => fmtDate(String(label ?? ""))}
                   contentStyle={{
                     borderRadius: 8,
                     fontSize: 12,

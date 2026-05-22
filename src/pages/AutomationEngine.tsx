@@ -109,10 +109,6 @@ function truncateJson(obj: unknown, maxLen = 80): string {
   return s.length > maxLen ? s.slice(0, maxLen) + "…" : s;
 }
 
-function parseActions(actions: Action[]): Action[] {
-  return actions.map((a) => ({ ...a }));
-}
-
 function buildRulePayload(form: RuleFormData) {
   return {
     name: form.name,
