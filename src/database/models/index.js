@@ -27,6 +27,13 @@ const ReactionRoles = require('./ReactionRoles');
 const TicketConfig = require('./TicketConfig');
 const TicketCategory = require('./TicketCategory');
 const Ticket = require('./Ticket');
+const StatsChannelConfig = require('./StatsChannelConfig');
+const Birthday = require('./Birthday');
+const BirthdayConfig = require('./BirthdayConfig');
+const StarboardConfig = require('./StarboardConfig');
+const StarboardPost = require('./StarboardPost');
+const VerificationConfig = require('./VerificationConfig');
+const StickyNickname = require('./StickyNickname');
 
 const modelList = [
     NoPrefix,
@@ -53,7 +60,14 @@ const modelList = [
     ReactionRoles,
     TicketConfig,
     TicketCategory,
-    Ticket
+    Ticket,
+    StatsChannelConfig,
+    Birthday,
+    BirthdayConfig,
+    StarboardConfig,
+    StarboardPost,
+    VerificationConfig,
+    StickyNickname
 ];
 
 for (const model of modelList) {
@@ -88,6 +102,13 @@ const models = {
     TicketConfig,
     TicketCategory,
     Ticket,
+    StatsChannelConfig,
+    Birthday,
+    BirthdayConfig,
+    StarboardConfig,
+    StarboardPost,
+    VerificationConfig,
+    StickyNickname,
     sequelize
 };
 
