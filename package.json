@@ -12,7 +12,12 @@
     "dashboard:server": "node dashboard/server/server.js",
     "dashboard:dev": "npm run dev --prefix dashboard",
     "dashboard:install": "npm install --prefix dashboard",
-    "dashboard:build": "npm install --prefix dashboard && npm run build --prefix dashboard"
+    "dashboard:build": "npm install --prefix dashboard && npm run build --prefix dashboard",
+    "admin:server": "node owner-admin/server/server.js",
+    "admin:dev": "npm run dev --prefix owner-admin",
+    "admin:install": "npm install --prefix owner-admin",
+    "admin:build": "npm install --prefix owner-admin && npm run build --prefix owner-admin",
+    "create-admin": "node scripts/create-admin.js"
   },
   "keywords": [
     "discord",
@@ -25,6 +30,7 @@
   "dependencies": {
     "@napi-rs/canvas": "^0.1.80",
     "axios": "^1.11.0",
+    "bcryptjs": "^2.4.3",
     "bytez.js": "^3.0.0",
     "canvafy": "^7.2.1",
     "connect-session-sequelize": "^7.1.7",
@@ -42,6 +48,7 @@
     "ms": "^2.1.3",
     "passport": "^0.7.0",
     "passport-discord": "^0.1.4",
+    "passport-local": "^1.0.0",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
     "pg-mem": "^3.0.14",

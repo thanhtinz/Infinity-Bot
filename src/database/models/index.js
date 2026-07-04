@@ -34,6 +34,8 @@ const StarboardConfig = require('./StarboardConfig');
 const StarboardPost = require('./StarboardPost');
 const VerificationConfig = require('./VerificationConfig');
 const StickyNickname = require('./StickyNickname');
+const AdminUser = require('./AdminUser');
+const BotRuntimeConfig = require('./BotRuntimeConfig');
 
 const modelList = [
     NoPrefix,
@@ -67,7 +69,9 @@ const modelList = [
     StarboardConfig,
     StarboardPost,
     VerificationConfig,
-    StickyNickname
+    StickyNickname,
+    AdminUser,
+    BotRuntimeConfig
 ];
 
 for (const model of modelList) {
@@ -109,6 +113,8 @@ const models = {
     StarboardPost,
     VerificationConfig,
     StickyNickname,
+    AdminUser,
+    BotRuntimeConfig,
     sequelize
 };
 

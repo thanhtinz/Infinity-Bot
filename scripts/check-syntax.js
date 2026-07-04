@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const sourceDirs = ['src/bot', 'src/database', 'dashboard/server'];
+const sourceDirs = ['src/bot', 'src/database', 'dashboard/server', 'owner-admin/server'];
 const files = [];
 
 function collect(dir) {

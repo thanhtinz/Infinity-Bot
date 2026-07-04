@@ -2,6 +2,9 @@ node_modules/
 dashboard/node_modules/
 dashboard/dist/
 dashboard/build/
+owner-admin/node_modules/
+owner-admin/dist/
+owner-admin/build/
 
 .env
 .env.local
