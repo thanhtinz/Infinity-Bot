@@ -1,168 +1,166 @@
-# 🤖 Infinity Bot
+# Main
 
-Bot Discord đa năng với dashboard quản lý trực quan — hệ thống shop, thanh toán (PayOS/PayPal/Crypto), kiểm duyệt, giveaway, AI chat, và 29 module tính năng.
-
-**Tác giả:** thanhtinz — thanhtinz23072003@gmail.com  
-**License:** MIT
+Bot Discord đa năng kèm web dashboard chuyên nghiệp, quản lý riêng cho từng server. Gộp và viết lại từ hai dự án mã nguồn mở [Pogy-Bot](https://github.com/devrock07/Pogy-Bot) và [astryx](https://github.com/devrock07/astryx), **không bao gồm tính năng nghe nhạc**.
 
 ---
 
-## ✨ Tính năng chính
+## ✨ Tính năng
 
-| Module | Mô tả |
-|--------|-------|
-| 🛒 **Shop** | Sản phẩm, danh mục, đơn hàng, thanh toán QR (PayOS), PayPal, Crypto, coupon, flash sale |
-| 🎉 **Giveaway** | Tạo giveaway, quay số tự động, ban/unban người tham gia |
-| 🛡️ **Moderation** | Warn, kick, ban, timeout, softban, lockdown, role persist, temp role |
-| 🤖 **Moderation Ext** | Bulk delete, slowmode, channel lock nâng cao |
-| 🔍 **AutoMod** | Tự động xóa/kick/mute/warn khi vi phạm |
-| 📊 **Invite Tracking** | Theo dõi invite, leaderboard mời |
-| 📋 **Logging** | Log message, voice, member, role, channel events |
-| 📌 **Sticky Message** | Tin nhắn ghim tự động |
-| 💤 **AFK** | Đặt trạng thái AFK, thông báo khi mention |
-| 🎭 **Reaction Roles** | Phân role qua reaction, button, select menu |
-| 🔄 **Auto Role** | Tự động gán role khi member join |
-| ⏰ **Scheduler** | Lên lịch gửi tin nhắn tự động |
-| 💬 **Auto Responder** | Tự động trả lời theo từ khóa/regex |
-| 🧩 **Custom Commands** | Tạo lệnh tùy chỉnh qua dashboard |
-| 📝 **Forms** | Tạo form đăng ký, duyệt/từ chối submissions |
-| 🗳️ **Polls** | Tạo bình chọn với nhiều tùy chọn |
-| ⏲️ **Reminders** | Đặt nhắc nhở cá nhân |
-| 📡 **Social Feeds** | Theo dõi và đăng feed từ mạng xã hội |
-| 📊 **Stats Channels** | Kênh hiển thị thống kê server tự động |
-| 🤗 **Interactions** | Hug, pat, kiss, slap... 70+ tương tác |
-| 🎮 **Fun** | Mini games, random commands |
-| 🛠️ **Utility** | Info, avatar, server info, /report |
-| 📢 **Channel Admin** | Quản lý kênh nâng cao |
-| 👋 **Onboarding** | Welcome embed, /language command |
-| 🤖 **AI Chat** | Chat AI (Gemini), tạo ảnh, training docs |
-| 💎 **Premium** | Gói subscription, coupon, payment tracking |
-| 🎨 **Embeds Manager** | Tùy chỉnh 151 embed events qua dashboard |
-| ❓ **Help** | Help menu, category, command details |
-| ⚡ **Prefix Commands** | Hỗ trợ prefix commands |
+| Nhóm | Mô tả |
+|------|-------|
+| 🛡️ **Moderation** | Ban, kick, mute, timeout, softban, tempban, temprole, lock/unlock kênh, slowmode |
+| ⚠️ **Warn/Case** | `/warn`, `/case` (xem/sửa/xoá/gỡ án), `/warnpunish` — tự động mute/kick/ban khi đạt ngưỡng cảnh cáo |
+| ⚔️ **Anti-Nuke** | Chống raid, phát hiện hành vi phá hoại, whitelist, tự động phản ứng |
+| 🚔 **AutoMod** | Chống spam, invite link, scam, từ cấm, whitelist |
+| 🎫 **Tickets** | Hệ thống hỗ trợ qua ticket, nhiều category, panel tuỳ chỉnh |
+| 🎁 **Giveaways** | Tạo, kết thúc, reroll giveaway |
+| 🎭 **Reaction Roles** | Gán role qua reaction |
+| 👋 **Welcome/Farewell** | Tin nhắn chào mừng/tạm biệt tuỳ chỉnh |
+| 📋 **Logging** | Log hoạt động server (message, member, role, channel...) |
+| 🤖 **AI Chat** | Trò chuyện AI, phân tích ảnh |
+| 😄 **Fun & Roleplay** | Meme, minigame, tương tác (hug/pat/slap...), Truth or Dare |
+| 🔍 **Utility** | Avatar, banner, thông tin user/server, đổi đơn vị, mã hoá/giải mã |
+| 📁 **Export** | Xuất dữ liệu kênh, thành viên, role |
+| 🐾 **Animals · 💰 Crypto · 📚 Wikipedia · 📰 News** | Tiện ích tra cứu nhanh |
+| 🔊 **Voice & Join-to-Create** | Quản lý kênh thoại, tự tạo kênh riêng |
+| ⏰ **AFK · Auto-react · Auto-bump · Reminders · Todo** | Tiện ích cá nhân/server |
 
----
+Toàn bộ tính năng trên **có thể cấu hình qua web dashboard**, riêng cho từng server bot tham gia.
 
 ## 🏗️ Kiến trúc
 
 ```
-┌──────────────────────────────────────────────────┐
-│                   Dashboard                       │
-│         React 19 + TypeScript + shadcn/ui         │
-│              112 pages · Tailwind CSS             │
-├──────────────────────────────────────────────────┤
-│                   Backend API                     │
-│           FastAPI + SQLAlchemy ORM                │
-│          30 route modules · JWT Auth              │
-├──────────────────────────────────────────────────┤
-│                   Discord Bot                     │
-│           py-cord · 29 cogs loaded                │
-│       151 customizable embed events               │
-├──────────────────────────────────────────────────┤
-│                   Database                        │
-│              Neon PostgreSQL                      │
-│              63 models                            │
-└──────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────┐
+│              Dashboard (React + Vite)         │
+│      Đăng nhập Discord OAuth2 · 10 trang      │
+│         cấu hình riêng cho từng server        │
+├──────────────────────────────────────────────┤
+│         Dashboard Backend (Express)           │
+│   dashboard/server — API + phiên đăng nhập    │
+├──────────────────────────────────────────────┤
+│              Discord Bot (discord.js v14)     │
+│   src/bot — lệnh slash/prefix/hybrid, events  │
+│   + Bot Status API nội bộ (src/bot/dashboardApi.js) │
+├──────────────────────────────────────────────┤
+│              PostgreSQL (Sequelize)           │
+│           src/database/models — 25+ models    │
+└──────────────────────────────────────────────┘
 ```
 
----
-
-## 🖥️ Yêu cầu
-
-| | Tối thiểu | Khuyến nghị |
-|-|-----------|-------------|
-| **CPU** | 1 vCore | 2 vCore |
-| **RAM** | 1 GB | 2 GB |
-| **Disk** | 5 GB | 10 GB |
-| **Python** | 3.12+ | 3.12+ |
-| **Node** | 22+ (build only) | 22+ |
-| **Bun** | 1.0+ (build only) | 1.1+ |
-
----
-
-## 🚀 Deploy
-
-### Railway / Cloud
-
-1. Push code lên GitHub
-2. Kết nối Railway / Render với repo
-3. Set environment variables:
-   - `DATABASE_URL` — PostgreSQL connection string
-   - `DISCORD_TOKEN` — Bot token (hoặc config qua dashboard)
-   - `JWT_SECRET_KEY` — (optional, tự generate từ DATABASE_URL nếu không set)
-   - `PUBLIC_APP_URL` — URL public của dashboard (cho payment links)
-4. Deploy tự động qua Dockerfile
-
-### VPS
-
-```bash
-chmod +x start_vps.sh
-./start_vps.sh
-```
-
-Chi tiết trong **[DEPLOY.md](DEPLOY.md)**
-
----
+Dashboard và Bot là hai tiến trình riêng biệt, giao tiếp qua:
+- **Postgres dùng chung** cho dữ liệu cấu hình (đọc/ghi trực tiếp qua Sequelize).
+- **Bot Status API** (bảo vệ bằng secret key) cho dữ liệu Discord "sống" (danh sách server, kênh, role, quyền thành viên) mà dashboard không thể tự lấy nếu bot không online.
 
 ## 📁 Cấu trúc project
 
 ```
-infinity-bot/
-├── app.py                  # Entry point ASGI
-├── routes.py               # FastAPI app factory + static serve
-├── Dockerfile              # Multi-stage build (Node → Python)
-├── start_vps.sh            # Script chạy trên VPS
+Main/
 ├── src/
-│   ├── api/
-│   │   ├── auth.py         # OAuth Discord + JWT
-│   │   ├── deps.py         # Dependencies (auth, guild, permissions)
-│   │   └── routes/         # 30 API route modules
-│   ├── bot/
-│   │   ├── cogs/           # 29 bot modules
-│   │   ├── embed_utils.py  # Embed system (151 events + DB override)
-│   │   ├── i18n.py         # Đa ngôn ngữ (EN/VI)
-│   │   └── manager.py      # Bot lifecycle management
-│   ├── database/
-│   │   └── config.py       # PostgreSQL connection
-│   ├── models/
-│   │   └── models.py       # 63 SQLAlchemy models
-│   └── schemas/
-│       └── schemas.py      # Pydantic schemas
-├── src/pages/              # 112 React dashboard pages
-├── src/components/         # Shared React components
-├── pyproject.toml          # Python dependencies
-└── package.json            # Frontend dependencies
+│   ├── bot/                  # Discord bot (discord.js v14)
+│   │   ├── commands/         # Slash commands (moderation, warn/case, warnpunish, ...)
+│   │   ├── hybrid/           # Lệnh hybrid slash+prefix (ticket, giveaway, automod, antinuke, ...)
+│   │   ├── pCommands/        # Lệnh prefix
+│   │   ├── events/           # Event listeners
+│   │   ├── utils/, helpers/  # Tiện ích dùng chung
+│   │   ├── dashboardApi.js   # Bot Status API cho dashboard
+│   │   ├── config.js         # Đọc biến môi trường
+│   │   └── index.js          # Entry point của bot
+│   └── database/
+│       ├── models/           # Sequelize models (Postgres)
+│       └── sequelize.js      # Kết nối DB
+├── dashboard/
+│   ├── server/                # Express backend (OAuth2, API cấu hình)
+│   └── src/                   # React (Vite) frontend
+├── scripts/
+│   ├── run-services.js        # Chạy bot + dashboard cùng lúc
+│   ├── check-syntax.js        # Kiểm tra cú pháp toàn bộ source
+│   └── upload-application-emojis.js
+├── .env.example
+└── package.json
 ```
-
----
-
-## 🎨 Hệ thống Embed
-
-Bot sử dụng hệ thống embed tùy chỉnh hoàn toàn:
-
-- **151 embed events** — đơn hàng, kiểm duyệt, logging, giveaway, AI, alerts...
-- **Dashboard editor** — preview Discord embed real-time, kéo thả fields
-- **Variables** — `{user.mention}`, `{order.id}`, `{product.name}`...
-- **DB override** — user customize qua dashboard → lưu DB, fallback về defaults
-- **Đa ngôn ngữ** — mỗi event có template VI/EN
-
----
-
-## 🌐 Ngôn ngữ
-
-- **Dashboard**: Tiếng Việt
-- **Bot**: Cấu hình per-guild (EN/VI) qua `/language` command hoặc dashboard Bot Settings
-
----
 
 ## ⚙️ Tech Stack
 
-**Frontend:** React 19 · TypeScript · Tailwind CSS · shadcn/ui · TanStack Query · React Router 7 · Recharts · Zod 4
+**Bot:** Node.js · discord.js v14 · Sequelize · PostgreSQL
 
-**Backend:** FastAPI · SQLAlchemy · py-cord · asyncpg · PyJWT · Pillow
+**Dashboard:** React 18 + Vite (frontend) · Express + Passport (Discord OAuth2) + connect-session-sequelize (backend)
 
-**Database:** Neon PostgreSQL
+**AI:** Groq / Gemini-compatible chat completions
 
-**Build:** Bun (frontend) · uv (Python) · Docker multi-stage
+## 🚀 Cài đặt
 
-**Deploy:** Railway / Render / VPS
+### 1. Cài dependencies
+
+```bash
+npm install
+npm run dashboard:install
+```
+
+### 2. Tạo file môi trường
+
+```bash
+cp .env.example .env
+```
+
+Điền các giá trị bắt buộc:
+
+| Biến | Mô tả |
+|------|-------|
+| `DATABASE_URL` | Chuỗi kết nối PostgreSQL |
+| `BOT_TOKEN` | Token bot Discord |
+| `CLIENT_ID` | Application ID |
+| `OWNER_ID` | Discord user ID của chủ bot |
+| `DISCORD_CLIENT_SECRET` | Client secret (Discord Developer Portal) — cần cho dashboard đăng nhập |
+| `DASHBOARD_SESSION_SECRET` | Chuỗi ngẫu nhiên ký session — tạo bằng `openssl rand -hex 32` |
+| `BOT_API_SECRET` | Chuỗi ngẫu nhiên dùng chung giữa bot và dashboard — tạo bằng `openssl rand -hex 32` |
+
+Xem đầy đủ trong [`.env.example`](.env.example) — mỗi biến đều có ghi chú giải thích.
+
+Trong Discord Developer Portal, thêm redirect URL OAuth2:
+```
+http://localhost:3000/api/auth/discord/callback
+```
+(đổi domain khi deploy production, khớp với `DASHBOARD_CALLBACK_URL`).
+
+### 3. Chạy
+
+```bash
+# Build dashboard trước (production)
+npm run dashboard:build
+
+# Chạy bot + dashboard cùng lúc
+npm start
+
+# Hoặc chế độ dev (bot + dashboard backend + Vite HMR)
+npm run dev
+```
+
+## 📜 Scripts
+
+| Lệnh | Mô tả |
+|------|-------|
+| `npm start` | Chạy bot + dashboard backend (production, cần build dashboard trước) |
+| `npm run dev` | Chạy bot + dashboard backend + Vite dev server (hot reload) |
+| `npm run dev:bot` | Chỉ chạy bot |
+| `npm run dashboard:server` | Chỉ chạy dashboard backend |
+| `npm run dashboard:dev` | Chỉ chạy Vite dev server cho frontend |
+| `npm run dashboard:build` | Build frontend dashboard ra `dashboard/dist` |
+| `npm run check` | Kiểm tra cú pháp toàn bộ `src/bot`, `src/database`, `dashboard/server` |
+| `npm run emojis:upload` | Đồng bộ application emoji lên Discord |
+
+## 🗺️ Roadmap (chưa triển khai ở bản này)
+
+Những tính năng phụ, chưa đưa vào bản lõi hiện tại — dự kiến bổ sung ở các bản sau:
+
+- Kênh thống kê tự động (voice channel đếm số thành viên)
+- Hệ thống sinh nhật (birthday)
+- Starboard
+- Cổng xác minh thành viên (verification gate)
+- Ảnh profile card với background tuỳ chỉnh
+- Kho lệnh fun/tương tác mở rộng (roleplay rate/flavor-text)
+
+## 📄 License
+
+MIT — xem [LICENSE](LICENSE). Dự án kế thừa code từ Pogy-Bot (dùng theo sự cho phép của chủ sở hữu) và astryx (MELON Open Source License — xem ghi công bên dưới).
+
+**Ghi công:** một phần kiến trúc bot dựa trên [astryx](https://github.com/devrock07/astryx) của itsfizys (Aegis); kiến trúc dashboard dựa trên "Zenith" của [Pogy-Bot](https://github.com/devrock07/Pogy-Bot) (devrock07).

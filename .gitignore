@@ -1,33 +1,19 @@
-# Python
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.egg-info/
-.pytest_cache/
-
-# Node
 node_modules/
-dist/
+dashboard/node_modules/
+dashboard/dist/
+dashboard/build/
 
-# OS
+.env
+.env.local
+.env.*.local
+
+*.log
+npm-debug.log*
+
 .DS_Store
 Thumbs.db
 
-# Workshop sandbox (không upload lên)
-.workshop/
-start.ps1
-tasks/
-tasks.json
-plans/
+*.sqlite
+*.sqlite3
 
-# Secrets / env
-.env
-.env.*
-secrets_utils.py
-
-# Upload tạm
-static/uploads/*
-!static/uploads/.gitkeep
-start.sh
+.command_hash
