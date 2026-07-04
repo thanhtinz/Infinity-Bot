@@ -17,6 +17,10 @@ import ReactionRoles from './guild/ReactionRoles';
 import Welcome from './guild/Welcome';
 import Logging from './guild/Logging';
 import Settings from './guild/Settings';
+import StatsChannels from './guild/StatsChannels';
+import Verification from './guild/Verification';
+import StickyNicknames from './guild/StickyNicknames';
+import Community from './guild/Community';
 
 const PAGE_COMPONENTS = {
   overview: Overview,
@@ -27,6 +31,10 @@ const PAGE_COMPONENTS = {
   giveaways: Giveaways,
   'reaction-roles': ReactionRoles,
   welcome: Welcome,
+  'stats-channels': StatsChannels,
+  verification: Verification,
+  'sticky-nicknames': StickyNicknames,
+  community: Community,
   logging: Logging,
   settings: Settings
 };

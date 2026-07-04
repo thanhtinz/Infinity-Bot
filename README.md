@@ -157,7 +157,6 @@ npm run dev
 ## 🗺️ Roadmap (chưa triển khai ở bản này)
 
 - Kho lệnh fun/tương tác mở rộng kiểu Pogy-Bot (~300 lệnh rate/flavor-text như `/trollrate`, `/geniusrate`...) — phần lớn tương tác phổ biến (hug/pat/kiss/slap...) đã có sẵn qua `/roleplay`, phần còn lại là các lệnh "rate" ngẫu nhiên trùng lặp, giá trị thấp nên chưa ưu tiên
-- Trang dashboard riêng cho stats channels / birthday / starboard / verification gate / sticky nickname (hiện các tính năng này cấu hình qua lệnh Discord, chưa có UI trên web dashboard)
 
 ## 📄 License
 

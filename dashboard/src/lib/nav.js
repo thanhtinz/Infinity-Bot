@@ -7,6 +7,10 @@ export const NAV_ITEMS = [
   { key: 'giveaways', label: 'Giveaways', icon: 'fa-gift', title: 'Giveaways' },
   { key: 'reaction-roles', label: 'Reaction Roles', icon: 'fa-at', title: 'Reaction Roles' },
   { key: 'welcome', label: 'Welcome', icon: 'fa-door-open', title: 'Welcome & Farewell' },
+  { key: 'stats-channels', label: 'Stats Channels', icon: 'fa-chart-line', title: 'Stats Channels' },
+  { key: 'verification', label: 'Verification', icon: 'fa-user-shield', title: 'Verification Gate' },
+  { key: 'sticky-nicknames', label: 'Sticky Nicknames', icon: 'fa-id-badge', title: 'Sticky Nicknames' },
+  { key: 'community', label: 'Community', icon: 'fa-cake-candles', title: 'Birthdays & Starboard' },
   { key: 'logging', label: 'Logging', icon: 'fa-stream', title: 'Logging' },
   { key: 'settings', label: 'Settings', icon: 'fa-sliders', title: 'Settings' }
 ];

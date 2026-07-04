@@ -8,12 +8,13 @@ const config = require('../config');
  * Express routes should import this module.
  */
 
-async function request(path, { timeoutMs = 4000 } = {}) {
+async function request(path, { timeoutMs = 4000, method = 'GET' } = {}) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
         const response = await fetch(`${config.botApiBaseUrl}${path}`, {
+            method,
             headers: { 'x-api-secret': config.botApiSecret, accept: 'application/json' },
             signal: controller.signal
         });
@@ -41,4 +42,8 @@ function getMember(guildId, userId) {
     return request(`/guilds/${guildId}/member/${userId}`);
 }
 
-module.exports = { getGuilds, getGuild, getMember };
+function postVerificationPanel(guildId) {
+    return request(`/guilds/${guildId}/verification/panel`, { method: 'POST', timeoutMs: 8000 });
+}
+
+module.exports = { getGuilds, getGuild, getMember, postVerificationPanel };

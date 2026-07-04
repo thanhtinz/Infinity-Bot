@@ -14,6 +14,8 @@
  */
 
 const express = require('express');
+const { VerificationConfig } = require('../database/models');
+const { postVerificationPanel } = require('./utils/verificationPanel');
 
 const TEXT_LIKE_TYPES = new Set([0, 5, 15]); // GuildText, GuildAnnouncement, GuildForum
 
@@ -125,6 +127,32 @@ function createDashboardApi(client, { secret } = {}) {
             });
         } catch (error) {
             res.status(500).json({ error: error.message || 'failed to read member data' });
+        }
+    });
+
+    // Posts (or re-posts) the verify-button panel for a guild, mirroring `/verification panel`.
+    // The dashboard only ever writes to VerificationConfig via its own DB access; this is the one
+    // action that needs the live bot connection, since posting a message requires the gateway.
+    app.post('/guilds/:id/verification/panel', async (req, res) => {
+        if (!client.isReady()) return res.status(503).json({ error: 'bot is not ready yet' });
+
+        const guild = client.guilds.cache.get(req.params.id);
+        if (!guild) return res.status(404).json({ error: 'bot is not in this guild' });
+
+        try {
+            const config = await VerificationConfig.findOne({ where: { guildId: guild.id } });
+            if (!config || !config.enabled || !config.channelId) {
+                return res.status(400).json({ error: 'verification is not configured for this server yet' });
+            }
+
+            const panelMsg = await postVerificationPanel(config, guild);
+            if (!panelMsg) {
+                return res.status(400).json({ error: 'the configured verification channel no longer exists' });
+            }
+
+            res.json({ ok: true, panelMessageId: panelMsg.id });
+        } catch (error) {
+            res.status(500).json({ error: error.message || 'failed to post the verification panel' });
         }
     });
 

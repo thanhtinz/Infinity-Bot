@@ -21,6 +21,11 @@ const reactionRolesRoutes = require('./routes/reactionRoles');
 const welcomeRoutes = require('./routes/welcome');
 const loggingRoutes = require('./routes/logging');
 const settingsRoutes = require('./routes/settings');
+const statsChannelsRoutes = require('./routes/statsChannels');
+const birthdayRoutes = require('./routes/birthday');
+const starboardRoutes = require('./routes/starboard');
+const verificationRoutes = require('./routes/verification');
+const stickyNicknamesRoutes = require('./routes/stickyNicknames');
 
 function createApp() {
     const app = express();
@@ -53,6 +58,11 @@ function createApp() {
     guildRouter.use('/welcome', welcomeRoutes);
     guildRouter.use('/logging', loggingRoutes);
     guildRouter.use('/settings', settingsRoutes);
+    guildRouter.use('/stats-channels', statsChannelsRoutes);
+    guildRouter.use('/birthday', birthdayRoutes);
+    guildRouter.use('/starboard', starboardRoutes);
+    guildRouter.use('/verification', verificationRoutes);
+    guildRouter.use('/sticky-nicknames', stickyNicknamesRoutes);
     app.use('/api/guilds/:guildId', ensureAuthenticated, ensureGuildAccess, guildRouter);
 
     app.use('/api', (req, res) => res.status(404).json({ error: 'not found' }));
