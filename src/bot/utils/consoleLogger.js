@@ -56,12 +56,18 @@ function printHeader() {
   const rule = palette.dim('-'.repeat(62));
   const dot = palette.dim('>');
   const name =
-    palette.b1('A') +
-    palette.b2('S') +
-    palette.b3('T') +
-    palette.b4('R') +
-    palette.b5('Y') +
-    palette.b1('X');
+    palette.b1('I') +
+    palette.b2('N') +
+    palette.b3('F') +
+    palette.b4('I') +
+    palette.b5('N') +
+    palette.b1('I') +
+    palette.b2('T') +
+    palette.b3('Y') +
+    ' ' +
+    palette.b4('B') +
+    palette.b5('O') +
+    palette.b1('T');
 
   const lines = [
     '',
