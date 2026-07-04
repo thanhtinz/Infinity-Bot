@@ -113,7 +113,12 @@ if (fs.existsSync(eventsPath)) {
   const standaloneInits = [
     { file: 'welcomeEvent.js', label: 'welcome' },
     { file: 'farewellEvent.js', label: 'farewell' },
-    { file: 'snipeEvent.js',   label: 'snipe' }
+    { file: 'snipeEvent.js',   label: 'snipe' },
+    { file: 'verificationEvent.js', label: 'verification' },
+    { file: 'stickyNicknameEvent.js', label: 'stickynick' },
+    { file: 'statsChannelEvent.js', label: 'statschannel' },
+    { file: 'birthdayEvent.js', label: 'birthday' },
+    { file: 'starboardEvent.js', label: 'starboard' }
   ];
   const standaloneLoaded = [];
   for (const { file, label } of standaloneInits) {

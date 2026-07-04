@@ -29,7 +29,7 @@ const categories = {
     moderation: {
         name: 'Moderation',
         emoji: emojis.cat_moderation,
-        commands: ['kick', 'ban', 'softban', 'unban', 'slowmode', 'lock', 'unlock', 'tempban', 'mute', 'unmute', 'temprole', 'rolegive', 'roleremove', 'nick', 'warn add', 'warn list', 'case view', 'case edit', 'case delete', 'case restore', 'case clear', 'warnpunish set', 'warnpunish list', 'warnpunish remove']
+        commands: ['kick', 'ban', 'softban', 'unban', 'slowmode', 'lock', 'unlock', 'tempban', 'mute', 'unmute', 'temprole', 'rolegive', 'roleremove', 'nick', 'warn add', 'warn list', 'case view', 'case edit', 'case delete', 'case restore', 'case clear', 'warnpunish set', 'warnpunish list', 'warnpunish remove', 'verification setup', 'verification disable', 'verification panel', 'stickynick set', 'stickynick remove']
     },
     antinuke: {
         name: 'Antinuke',
@@ -140,6 +140,11 @@ const categories = {
         name: 'Reaction Roles',
         emoji: emojis.cat_reactionroles,
         commands: ['reactionroles setup', 'reactionroles remove']
+    },
+    community: {
+        name: 'Community',
+        emoji: emojis.dots,
+        commands: ['statschannel add', 'statschannel remove', 'statschannel list', 'birthday set', 'birthday remove', 'birthday view', 'birthday config', 'starboard setup', 'starboard disable']
     }
 };
 

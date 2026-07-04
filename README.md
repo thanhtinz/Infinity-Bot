@@ -24,6 +24,12 @@ Bot Discord đa năng kèm web dashboard chuyên nghiệp, quản lý riêng cho
 | 🐾 **Animals · 💰 Crypto · 📚 Wikipedia · 📰 News** | Tiện ích tra cứu nhanh |
 | 🔊 **Voice & Join-to-Create** | Quản lý kênh thoại, tự tạo kênh riêng |
 | ⏰ **AFK · Auto-react · Auto-bump · Reminders · Todo** | Tiện ích cá nhân/server |
+| 📊 **Stats Channels** | Kênh voice tự động hiển thị số thành viên/bot/boost/role |
+| 🎂 **Birthday** | Lưu ngày sinh, tự động thông báo + gán role sinh nhật |
+| ⭐ **Starboard** | Ghim tin nhắn nổi bật lên kênh riêng khi đủ số reaction |
+| 🚪 **Verification Gate** | Cổng xác minh thành viên mới bằng nút bấm trước khi vào server |
+| 🖼️ **Profile Card** | Ảnh profile tuỳ chỉnh (bio, background, social) bằng canvas |
+| 🏷️ **Sticky Nickname** | Ép nickname cố định, tự khôi phục nếu bị đổi |
 
 Toàn bộ tính năng trên **có thể cấu hình qua web dashboard**, riêng cho từng server bot tham gia.
 
@@ -150,14 +156,8 @@ npm run dev
 
 ## 🗺️ Roadmap (chưa triển khai ở bản này)
 
-Những tính năng phụ, chưa đưa vào bản lõi hiện tại — dự kiến bổ sung ở các bản sau:
-
-- Kênh thống kê tự động (voice channel đếm số thành viên)
-- Hệ thống sinh nhật (birthday)
-- Starboard
-- Cổng xác minh thành viên (verification gate)
-- Ảnh profile card với background tuỳ chỉnh
-- Kho lệnh fun/tương tác mở rộng (roleplay rate/flavor-text)
+- Kho lệnh fun/tương tác mở rộng kiểu Pogy-Bot (~300 lệnh rate/flavor-text như `/trollrate`, `/geniusrate`...) — phần lớn tương tác phổ biến (hug/pat/kiss/slap...) đã có sẵn qua `/roleplay`, phần còn lại là các lệnh "rate" ngẫu nhiên trùng lặp, giá trị thấp nên chưa ưu tiên
+- Trang dashboard riêng cho stats channels / birthday / starboard / verification gate / sticky nickname (hiện các tính năng này cấu hình qua lệnh Discord, chưa có UI trên web dashboard)
 
 ## 📄 License
 
