@@ -253,6 +253,19 @@ async function gracefulShutdown(signal) {
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
+// Dashboard status API: a small, secret-protected HTTP server the web dashboard backend calls
+// server-to-server to read live guild/channel/role/member data. Purely additive - does not affect
+// Discord client startup, commands, or events.
+try {
+  const { createDashboardApi } = require('./dashboardApi');
+  const dashboardApiPort = Number(process.env.BOT_API_PORT) || 3002;
+  createDashboardApi(client).listen(dashboardApiPort, () => {
+    printSuccess(`Dashboard status API listening on :${dashboardApiPort}`);
+  });
+} catch (error) {
+  printError(`Failed to start dashboard status API: ${error.message}`);
+}
+
 printLoading('Discord authentication');
 dbInitPromise.then(() => {
   return client.login(config.BOT_TOKEN);

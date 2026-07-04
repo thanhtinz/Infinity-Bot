@@ -29,7 +29,7 @@ const categories = {
     moderation: {
         name: 'Moderation',
         emoji: emojis.cat_moderation,
-        commands: ['kick', 'ban', 'softban', 'unban', 'slowmode', 'lock', 'unlock', 'tempban', 'mute', 'unmute', 'temprole', 'rolegive', 'roleremove', 'nick']
+        commands: ['kick', 'ban', 'softban', 'unban', 'slowmode', 'lock', 'unlock', 'tempban', 'mute', 'unmute', 'temprole', 'rolegive', 'roleremove', 'nick', 'warn add', 'warn list', 'case view', 'case edit', 'case delete', 'case restore', 'case clear', 'warnpunish set', 'warnpunish list', 'warnpunish remove']
     },
     antinuke: {
         name: 'Antinuke',
