@@ -194,7 +194,7 @@ async function createHomeContainer({ client, user, guildId }) {
         : `${emojis.arrow} **Use \`${guildPrefix}help <category>\` for category help**`;
 
     const intro = [
-        `**Hello, I'm ${client.user.username || 'Main'}**`,
+        `**Hello, I'm ${client.user.username || 'Infinity Bot'}**`,
         `${emojis.arrow} **Prefix for this server:** \`${guildPrefix}\``,
         `${emojis.arrow} **Set prefix with:** **/setprefix**`,
         supportLine,
