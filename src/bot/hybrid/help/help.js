@@ -61,6 +61,11 @@ const categories = {
         emoji: emojis.cat_fun,
         commands: ['howdumb', 'howgay', 'dare', 'truth', 'simprate', 'pickup', 'rickroll', 'meme', 'nitro', 'token', 'texttoemoji', 'wizz', 'hack']
     },
+    funextra: {
+        name: 'Fun Extra',
+        emoji: emojis.cat_fun,
+        commands: ['geniusrate', 'trollrate', 'cursedrate', 'basedrate', 'villainrate', 'uppercase', 'leetspeak', 'reversetext', 'fortune', 'magic8', 'coinflip', 'chaosquestion', 'admire', 'roast', '150+ more - use tab-complete on / to browse']
+    },
     roleplay: {
         name: 'Roleplay',
         emoji: emojis.cat_roleplay,
