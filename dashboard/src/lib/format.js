@@ -89,3 +89,7 @@ const SNOWFLAKE_RE = /^[0-9]{15,22}$/;
 export function isValidSnowflake(value) {
   return typeof value === 'string' && SNOWFLAKE_RE.test(value.trim());
 }
+
+export function isAccessError(err) {
+  return err && (err.status === 403 || err.status === 404);
+}

@@ -130,6 +130,13 @@ function createDashboardApi(client, { secret } = {}) {
 
     app.use((req, res) => res.status(404).json({ error: 'not found' }));
 
+    // eslint-disable-next-line no-unused-vars
+    app.use((err, req, res, next) => {
+        console.error('[Dashboard Status API] Unhandled error:', err);
+        if (res.headersSent) return;
+        res.status(500).json({ error: 'internal error' });
+    });
+
     return app;
 }
 

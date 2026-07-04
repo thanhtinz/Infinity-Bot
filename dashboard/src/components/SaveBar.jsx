@@ -1,4 +1,4 @@
-export default function SaveBar({ visible, saving, onRevert, onSave, message = 'You have unsaved changes.' }) {
+export default function SaveBar({ visible, saving, onRevert, onSave, message = 'You have unsaved changes.', saveDisabled }) {
   return (
     <div className={`save-bar-container ${visible ? 'visible' : ''}`}>
       <div className="save-bar">
@@ -10,7 +10,7 @@ export default function SaveBar({ visible, saving, onRevert, onSave, message = '
           <button type="button" className="btn-revert" onClick={onRevert} disabled={saving}>
             Revert
           </button>
-          <button type="button" className="btn-save" onClick={onSave} disabled={saving}>
+          <button type="button" className="btn-save" onClick={onSave} disabled={saving || saveDisabled}>
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>

@@ -44,7 +44,9 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(await parseErrorMessage(response));
+    const error = new Error(await parseErrorMessage(response));
+    error.status = response.status;
+    throw error;
   }
 
   if (response.status === 204) return null;

@@ -3,11 +3,16 @@
   "version": "1.0.0",
   "main": "src/bot/index.js",
   "scripts": {
-    "start": "node src/bot/index.js",
+    "start": "node scripts/run-services.js",
+    "dev": "node scripts/run-services.js --with-vite",
     "dev:bot": "node src/bot/index.js",
     "check": "node scripts/check-syntax.js",
     "emojis:upload": "node scripts/upload-application-emojis.js --write-source",
-    "emojis:dry-run": "node scripts/upload-application-emojis.js --dry-run"
+    "emojis:dry-run": "node scripts/upload-application-emojis.js --dry-run",
+    "dashboard:server": "node dashboard/server/server.js",
+    "dashboard:dev": "npm run dev --prefix dashboard",
+    "dashboard:install": "npm install --prefix dashboard",
+    "dashboard:build": "npm install --prefix dashboard && npm run build --prefix dashboard"
   },
   "keywords": [
     "discord",
