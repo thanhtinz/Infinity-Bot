@@ -208,7 +208,7 @@ module.exports = {
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('-# Admin restricted access | Main')
+                    new TextDisplayBuilder().setContent('-# Admin restricted access | Infinity Bot')
                 );
 
             return message.reply({
@@ -393,7 +393,7 @@ module.exports = {
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`-# ${statusText} · ${executionTime.toFixed(0)}ms · Type: \`${resultType}\` | Main`)
+                    new TextDisplayBuilder().setContent(`-# ${statusText} · ${executionTime.toFixed(0)}ms · Type: \`${resultType}\` | Infinity Bot`)
                 );
 
             return message.reply({
@@ -422,7 +422,7 @@ module.exports = {
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`-# Page ${pageData.pageNum}/${totalPages} · ${statusText} · ${executionTime.toFixed(0)}ms · Type: \`${resultType}\` | Main`)
+                    new TextDisplayBuilder().setContent(`-# Page ${pageData.pageNum}/${totalPages} · ${statusText} · ${executionTime.toFixed(0)}ms · Type: \`${resultType}\` | Infinity Bot`)
                 );
 
             return container;

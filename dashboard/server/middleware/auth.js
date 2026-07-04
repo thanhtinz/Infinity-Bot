@@ -31,7 +31,7 @@ async function ensureGuildAccess(req, res, next) {
     let member;
     try {
         botGuild = await botApi.getGuild(guildId);
-        if (!botGuild) return res.status(404).json({ error: 'Main is not in this server' });
+        if (!botGuild) return res.status(404).json({ error: 'Infinity Bot is not in this server' });
 
         member = await botApi.getMember(guildId, req.user.id);
     } catch (error) {

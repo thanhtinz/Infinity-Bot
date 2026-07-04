@@ -98,4 +98,4 @@ All subcommands include:
 
 ---
 
-*Developed by Main*
+*Developed by Infinity Bot*

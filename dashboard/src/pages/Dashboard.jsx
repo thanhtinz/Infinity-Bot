@@ -149,10 +149,10 @@ export default function Dashboard() {
     return (
       <div className="loading-stage">
         <div className="loading-orb">
-          <span>M</span>
+          <span>I</span>
         </div>
         <div className="loading-copy">
-          <p className="topbar-eyebrow">Main Control Surface</p>
+          <p className="topbar-eyebrow">Infinity Bot Control Surface</p>
           <h1>Syncing your dashboard</h1>
           <p>Checking your session and server access.</p>
         </div>
@@ -201,7 +201,7 @@ export default function Dashboard() {
                   <i className="fa-solid fa-bars" />
                 </button>
                 <div className="topbar-title-wrap">
-                  <p className="topbar-eyebrow">{currentGuild?.name || 'Main Dashboard'}</p>
+                  <p className="topbar-eyebrow">{currentGuild?.name || 'Infinity Bot Dashboard'}</p>
                   <h1>{navMeta?.title || 'Dashboard'}</h1>
                 </div>
               </div>

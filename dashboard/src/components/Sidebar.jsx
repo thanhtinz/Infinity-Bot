@@ -16,7 +16,7 @@ export default function Sidebar({
       <div className="sidebar-header">
         <div className="sidebar-brand-block">
           <p className="sidebar-kicker">Discord Automation</p>
-          <h2 className="brand-wordmark">MAIN</h2>
+          <h2 className="brand-wordmark">INFINITY</h2>
         </div>
         <button type="button" className="btn-icon mobile-only" onClick={onCloseMobile} aria-label="Close menu">
           <i className="fa-solid fa-xmark" />

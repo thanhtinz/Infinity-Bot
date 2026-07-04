@@ -132,8 +132,8 @@ const processAiResponse = (response) => {
 
     for (const pattern of modelPatterns) {
         processed = processed.replace(pattern, (match) => {
-            if (/Main/i.test(match)) return match;
-            return 'Main';
+            if (/Infinity/i.test(match)) return match;
+            return 'Infinity Bot';
         });
     }
 

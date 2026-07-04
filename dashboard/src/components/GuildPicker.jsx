@@ -13,7 +13,7 @@ export default function GuildPicker({ guilds, onSelect, onClose, notice }) {
           </button>
         )}
         <h2>Choose a server</h2>
-        <p className="modal-subtitle">Pick which Discord server you want to manage with Main.</p>
+        <p className="modal-subtitle">Pick which Discord server you want to manage with Infinity Bot.</p>
         {notice && (
           <div className="inline-notice">
             <i className="fa-solid fa-circle-info" /> {notice}

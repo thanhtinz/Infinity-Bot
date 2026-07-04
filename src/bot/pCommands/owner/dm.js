@@ -27,7 +27,7 @@ module.exports = {
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('-# Admin restricted access | Main')
+                    new TextDisplayBuilder().setContent('-# Admin restricted access | Infinity Bot')
                 );
 
             return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
@@ -57,7 +57,7 @@ module.exports = {
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('-# Admin restricted access | Main')
+                        new TextDisplayBuilder().setContent('-# Admin restricted access | Infinity Bot')
                     );
 
                 return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
@@ -74,7 +74,7 @@ module.exports = {
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('-# Admin restricted access | Main')
+                    new TextDisplayBuilder().setContent('-# Admin restricted access | Infinity Bot')
                 );
 
             return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
@@ -97,7 +97,7 @@ module.exports = {
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('-# Admin restricted access | Main')
+                    new TextDisplayBuilder().setContent('-# Admin restricted access | Infinity Bot')
                 );
 
             return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });
@@ -113,7 +113,7 @@ module.exports = {
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('-# Admin restricted access | Main')
+                    new TextDisplayBuilder().setContent('-# Admin restricted access | Infinity Bot')
                 );
 
             return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 });

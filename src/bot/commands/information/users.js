@@ -17,7 +17,7 @@ const emojis = require("../../emojis.json");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("users")
-    .setDescription("Checks total users of Main"),
+    .setDescription("Checks total users of Infinity Bot"),
 
   async execute(interaction) {
     const { client } = interaction;

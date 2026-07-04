@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Lightweight, secret-protected, server-to-server status API for the Main web dashboard.
+ * Lightweight, secret-protected, server-to-server status API for the Infinity Bot web dashboard.
  *
  * The dashboard's Express backend (dashboard/server) is a *separate* Node process from the bot
  * and never sees the bot token. Instead it calls this API (over plain HTTP on localhost, or a
@@ -14,8 +14,22 @@
  */
 
 const express = require('express');
-const { VerificationConfig } = require('../database/models');
+const { VerificationConfig, BotRuntimeConfig } = require('../database/models');
 const { postVerificationPanel } = require('./utils/verificationPanel');
+
+// Best-effort persistence of the "should the bot be running" intent, so that a Stop from the
+// owner admin panel survives a process restart (the bot won't silently come back online on its
+// own) and a Start/Restart clears that flag again. Never throws - this is a courtesy write, not a
+// blocker for the actual login/logout action.
+async function setEnabledFlag(enabled) {
+    try {
+        const [row] = await BotRuntimeConfig.findOrCreate({ where: { id: 1 }, defaults: { id: 1 } });
+        row.enabled = enabled;
+        await row.save();
+    } catch (_) {
+        // ignore - the in-memory client state is still authoritative for this process's lifetime
+    }
+}
 
 const TEXT_LIKE_TYPES = new Set([0, 5, 15]); // GuildText, GuildAnnouncement, GuildForum
 
@@ -49,7 +63,51 @@ function serializeRole(role) {
     };
 }
 
-function createDashboardApi(client, { secret } = {}) {
+// After calling client.login(), discord.js resolves the promise once the token is validated, but
+// the `clientReady` event (guilds cached, presence usable) can fire a moment later. The owner
+// admin panel's start/restart control actions wait briefly for that so they report an accurate
+// online state instead of racing it.
+function waitForReady(client, timeoutMs = 15000) {
+    if (client.isReady()) return Promise.resolve(true);
+    return new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(client.isReady()), timeoutMs);
+        client.once('clientReady', () => {
+            clearTimeout(timer);
+            resolve(true);
+        });
+    });
+}
+
+function serializeClientUser(client) {
+    if (!client.isReady() || !client.user) return null;
+    return {
+        id: client.user.id,
+        username: client.user.username,
+        avatar: client.user.avatarURL ? client.user.avatarURL({ size: 256 }) : null
+    };
+}
+
+async function applyPresence(client, statusText) {
+    if (!client.isReady() || !client.user) return;
+    try {
+        client.user.setPresence({
+            status: 'idle',
+            activities: statusText ? [{ name: statusText, type: 2 /* ActivityType.Listening */ }] : []
+        });
+    } catch (_) {
+        // presence is best-effort - never fail a control action because of it
+    }
+}
+
+/**
+ * @param {import('discord.js').Client} client
+ * @param {{ secret?: string, resolveRuntimeConfig?: () => Promise<object> }} [options]
+ *   resolveRuntimeConfig is the function from src/bot/index.js that reads BotRuntimeConfig (falling
+ *   back to env vars) - passed in here so /control/restart and /control/start can pick up a token
+ *   or prefix change the owner just saved in the admin panel without touching this module's own
+ *   database imports.
+ */
+function createDashboardApi(client, { secret, resolveRuntimeConfig } = {}) {
     const app = express();
     app.disable('x-powered-by');
     app.use(express.json());
@@ -153,6 +211,88 @@ function createDashboardApi(client, { secret } = {}) {
             res.json({ ok: true, panelMessageId: panelMsg.id });
         } catch (error) {
             res.status(500).json({ error: error.message || 'failed to post the verification panel' });
+        }
+    });
+
+    // ---- Owner Admin Panel control endpoints -----------------------------------------------
+    // These let owner-admin/server proxy start/stop/restart actions and guild management, all
+    // behind the same shared-secret gate above. No process exit is involved for any of these -
+    // the discord.js client is destroyed and/or logged back in, in-process.
+
+    app.get('/control/status', (req, res) => {
+        const online = client.isReady();
+        res.json({
+            online,
+            uptimeMs: online ? client.uptime : 0,
+            guildCount: online ? client.guilds.cache.size : 0,
+            ping: online ? client.ws.ping : null,
+            user: serializeClientUser(client)
+        });
+    });
+
+    app.post('/control/restart', async (req, res) => {
+        try {
+            if (client.isReady()) {
+                await client.destroy();
+            }
+
+            const runtime = resolveRuntimeConfig ? await resolveRuntimeConfig() : null;
+            const token = runtime?.token || process.env.BOT_TOKEN;
+            if (!token) return res.status(400).json({ error: 'no bot token configured' });
+            if (runtime) client.runtimeConfig = runtime;
+
+            await client.login(token);
+            const online = await waitForReady(client);
+            if (online) await applyPresence(client, runtime?.statusText);
+            await setEnabledFlag(true);
+
+            res.json({ ok: true, online });
+        } catch (error) {
+            res.status(500).json({ error: error.message || 'failed to restart the bot' });
+        }
+    });
+
+    app.post('/control/stop', async (req, res) => {
+        try {
+            if (client.isReady()) await client.destroy();
+            await setEnabledFlag(false);
+            res.json({ ok: true, online: client.isReady() });
+        } catch (error) {
+            res.status(500).json({ error: error.message || 'failed to stop the bot' });
+        }
+    });
+
+    app.post('/control/start', async (req, res) => {
+        try {
+            if (client.isReady()) return res.json({ ok: true, online: true });
+
+            const runtime = resolveRuntimeConfig ? await resolveRuntimeConfig() : null;
+            const token = runtime?.token || process.env.BOT_TOKEN;
+            if (!token) return res.status(400).json({ error: 'no bot token configured' });
+            if (runtime) client.runtimeConfig = runtime;
+
+            await client.login(token);
+            const online = await waitForReady(client);
+            if (online) await applyPresence(client, runtime?.statusText);
+            await setEnabledFlag(true);
+
+            res.json({ ok: true, online });
+        } catch (error) {
+            res.status(500).json({ error: error.message || 'failed to start the bot' });
+        }
+    });
+
+    app.delete('/guilds/:id', async (req, res) => {
+        if (!client.isReady()) return res.status(503).json({ error: 'bot is not ready yet' });
+
+        const guild = client.guilds.cache.get(req.params.id);
+        if (!guild) return res.status(404).json({ error: 'bot is not in this guild' });
+
+        try {
+            await guild.leave();
+            res.json({ ok: true });
+        } catch (error) {
+            res.status(500).json({ error: error.message || 'failed to leave the guild' });
         }
     });
 

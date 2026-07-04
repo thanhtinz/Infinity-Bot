@@ -17,7 +17,7 @@ module.exports = {
         const action = args[0]?.toLowerCase();
 
         const footer = new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true);
-        const footerText = new TextDisplayBuilder().setContent('-# Admin restricted access | Main');
+        const footerText = new TextDisplayBuilder().setContent('-# Admin restricted access | Infinity Bot');
 
         if (action === 'add') {
             const targetUser = message.mentions.users.first() || await message.client.users.fetch(args[1]).catch(() => null);

@@ -31,14 +31,14 @@ derivative of "ASTRYX" by itsfizys (Aegis) (https://github.com/devrock07/astryx)
 used and redistributed under the MELON OPEN SOURCE LICENSE reproduced in full
 below, per its Section 2 conditions (retain copyright notice, attribute the
 author, preserve license terms, document changes). Changes made: rebranded
-from ASTRYX to "Main"; removed unused music-related dependencies and dead
+from ASTRYX to "Infinity Bot"; removed unused music-related dependencies and dead
 code; added a warn/case moderation module with auto-escalating punishment;
 added a web dashboard.
 
 This project's web dashboard (under dashboard/) is a modified derivative of
 the "Zenith" dashboard from Pogy-Bot by devrock07
 (https://github.com/devrock07/Pogy-Bot), used with the permission of its
-copyright holder. Changes made: rebranded from Pogy/Zenith to "Main"; data
+copyright holder. Changes made: rebranded from Pogy/Zenith to "Infinity Bot"; data
 layer rewritten from MongoDB/Mongoose to PostgreSQL/Sequelize to match this
 project's bot; pages and API routes adapted to this project's feature set
 (including tickets, giveaways, reaction roles, and the warn/case system,

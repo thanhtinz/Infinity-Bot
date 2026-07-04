@@ -219,7 +219,7 @@ module.exports = {
 
     async logError(error, context = 'Unknown', client = null) {
         try {
-            const botName   = client?.user?.username ?? 'Main';
+            const botName   = client?.user?.username ?? 'Infinity Bot';
             const botAvatar = client?.user?.displayAvatarURL({ size: 256 }) ?? null;
             const now       = Math.floor(Date.now() / 1000);
 

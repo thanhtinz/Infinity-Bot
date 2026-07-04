@@ -21,7 +21,7 @@
     "moderation"
   ],
   "license": "MIT",
-  "description": "Main - Discord bot da nang voi web dashboard rieng cho tung server",
+  "description": "Infinity Bot - Discord bot da nang voi web dashboard rieng cho tung server",
   "dependencies": {
     "@napi-rs/canvas": "^0.1.80",
     "axios": "^1.11.0",

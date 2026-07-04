@@ -20,7 +20,7 @@ function formatStartupError(error) {
 const missingEnv = config.getMissingRequiredEnv();
 if (missingEnv.length > 0) {
   printError(`Missing required environment variables: ${missingEnv.join(', ')}`);
-  printInfo('Create a .env file from .env.example before starting Main.');
+  printInfo('Create a .env file from .env.example before starting Infinity Bot.');
   process.exit(1);
 }
 
@@ -166,10 +166,11 @@ const dbInitPromise = Promise.all([
 client.once('clientReady', async () => {
   printSuccess(`Authentication successful -> ${colors.PURPLE}${client.user.tag}${colors.RESET}`);
 
+  const runtime = client.runtimeConfig || {};
   client.user.setPresence({
     status: 'idle',
     activities: [{
-      name: `${config.PREFIX}help | @Main`,
+      name: runtime.statusText || `${runtime.prefix || config.PREFIX}help | @Infinity Bot`,
       type: ActivityType.Listening
     }]
   });
@@ -225,10 +226,53 @@ async function registerCommands() {
     return;
   }
 
-  const rest = new REST({ version: '10' }).setToken(config.BOT_TOKEN);
-  await rest.put(Routes.applicationCommands(config.CLIENT_ID), { body: commands });
+  const runtime = client.runtimeConfig || {};
+  const rest = new REST({ version: '10' }).setToken(runtime.token || config.BOT_TOKEN);
+  await rest.put(Routes.applicationCommands(runtime.clientId || config.CLIENT_ID), { body: commands });
 
   fs.writeFileSync(COMMAND_HASH_FILE, currentHash, 'utf8');
+}
+
+/**
+ * Reads BotRuntimeConfig (see src/database/models/BotRuntimeConfig.js), the owner admin panel's
+ * (owner-admin/) DB-backed override of the .env-based startup config. Any field left null there
+ * falls back to the equivalent static config.js/env value, so this is purely additive - a bot that
+ * has never had the admin panel touched behaves exactly as before.
+ *
+ * This has to be an async function called after the database is ready (not a change to the
+ * synchronous config.js, which is require()'d before any DB connection exists) - see the call site
+ * in the startup sequence below, and createDashboardApi(client, { resolveRuntimeConfig }) which
+ * lets /control/restart and /control/start pick up changes the same way.
+ */
+async function resolveRuntimeConfig() {
+  const fallback = {
+    token: config.BOT_TOKEN,
+    clientId: config.CLIENT_ID,
+    ownerId: config.OWNER_ID,
+    prefix: config.PREFIX,
+    statusText: null,
+    enabled: true
+  };
+
+  try {
+    const { BotRuntimeConfig } = models;
+    let row = await BotRuntimeConfig.findByPk(1);
+    if (!row) {
+      row = await BotRuntimeConfig.create({ id: 1 });
+    }
+
+    return {
+      token: row.botToken || fallback.token,
+      clientId: row.clientId || fallback.clientId,
+      ownerId: row.ownerId || fallback.ownerId,
+      prefix: row.prefix || fallback.prefix,
+      statusText: row.statusText || null,
+      enabled: row.enabled !== false
+    };
+  } catch (error) {
+    printError('Failed to resolve runtime config from the database, falling back to env vars: ' + formatStartupError(error));
+    return fallback;
+  }
 }
 
 client.on('error', (error) => {
@@ -264,7 +308,7 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 try {
   const { createDashboardApi } = require('./dashboardApi');
   const dashboardApiPort = Number(process.env.BOT_API_PORT) || 3002;
-  createDashboardApi(client).listen(dashboardApiPort, () => {
+  createDashboardApi(client, { resolveRuntimeConfig }).listen(dashboardApiPort, () => {
     printSuccess(`Dashboard status API listening on :${dashboardApiPort}`);
   });
 } catch (error) {
@@ -272,8 +316,16 @@ try {
 }
 
 printLoading('Discord authentication');
-dbInitPromise.then(() => {
-  return client.login(config.BOT_TOKEN);
+dbInitPromise.then(async () => {
+  const runtime = await resolveRuntimeConfig();
+  client.runtimeConfig = runtime;
+
+  if (runtime.enabled === false) {
+    printInfo('Bot is disabled via the owner admin panel - skipping automatic login. Use the admin panel\'s Start action to bring it online.');
+    return;
+  }
+
+  return client.login(runtime.token);
 }).catch(error => {
   printError(`Startup failed: ${formatStartupError(error)}`);
   process.exit(1);

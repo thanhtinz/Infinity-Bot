@@ -54,7 +54,7 @@ module.exports = {
                     srlimit: 10
                 },
                 headers: {
-                    'User-Agent': 'MainBot/1.0'
+                    'User-Agent': 'InfinityBot/1.0'
                 },
                 timeout: 8000
             });
@@ -98,7 +98,7 @@ module.exports = {
                         format: 'json'
                     },
                     headers: {
-                        'User-Agent': 'MainBot/1.0'
+                        'User-Agent': 'InfinityBot/1.0'
                     },
                     timeout: 8000
                 });
@@ -123,7 +123,7 @@ module.exports = {
                         format: 'json'
                     },
                     headers: {
-                        'User-Agent': 'MainBot/1.0'
+                        'User-Agent': 'InfinityBot/1.0'
                     },
                     timeout: 8000
                 }).catch(() => null);

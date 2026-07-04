@@ -13,7 +13,7 @@ const {
 
 module.exports = {
   name: "users",
-  description: "Checks total users of Main",
+  description: "Checks total users of Infinity Bot",
   aliases: [],
 
   async execute(message, args) {

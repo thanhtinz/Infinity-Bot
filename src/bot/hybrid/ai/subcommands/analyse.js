@@ -96,7 +96,7 @@ module.exports = {
             const base64Image = Buffer.from(imageBuffer).toString('base64');
             const mimeType = attachment.contentType;
 
-            const visionPrompt = `You are ${interactionOrMessage.client.user.username}, an AI assistant by Main. Analyze this image and respond to the user's request. Never mention other AI models or companies.
+            const visionPrompt = `You are ${interactionOrMessage.client.user.username}, an AI assistant by Infinity Bot. Analyze this image and respond to the user's request. Never mention other AI models or companies.
 
 User's request: ${prompt}`;
 

@@ -102,7 +102,7 @@ function printSystemReady() {
   process.stdout.write('\n');
   process.stdout.write(`  ${rule}\n`);
   process.stdout.write(
-    `  ${palette.b1('*')}  ${palette.white('System online')}  ${palette.dim('-')}  ${palette.muted('Main is operational')}\n`
+    `  ${palette.b1('*')}  ${palette.white('System online')}  ${palette.dim('-')}  ${palette.muted('Infinity Bot is operational')}\n`
   );
   process.stdout.write(`  ${rule}\n`);
   process.stdout.write('\n');

@@ -78,7 +78,7 @@ function createApp() {
 
     // eslint-disable-next-line no-unused-vars
     app.use((err, req, res, next) => {
-        console.error('[Main Dashboard] Unhandled error:', err);
+        console.error('[Infinity Bot Dashboard] Unhandled error:', err);
         if (res.headersSent) return;
         res.status(500).json({ error: 'internal server error' });
     });
