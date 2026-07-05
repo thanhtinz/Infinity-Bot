@@ -37,6 +37,7 @@ const VerificationConfig = require('./VerificationConfig');
 const StickyNickname = require('./StickyNickname');
 const AdminUser = require('./AdminUser');
 const BotRuntimeConfig = require('./BotRuntimeConfig');
+const MessageOverride = require('./MessageOverride');
 
 const modelList = [
     NoPrefix,
@@ -73,7 +74,8 @@ const modelList = [
     VerificationConfig,
     StickyNickname,
     AdminUser,
-    BotRuntimeConfig
+    BotRuntimeConfig,
+    MessageOverride
 ];
 
 for (const model of modelList) {
@@ -118,6 +120,7 @@ const models = {
     StickyNickname,
     AdminUser,
     BotRuntimeConfig,
+    MessageOverride,
     sequelize
 };
 

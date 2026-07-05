@@ -40,6 +40,8 @@ function resolvePath(obj, key) {
 /**
  * Interpolate {placeholders} in a template string with values from `vars`.
  * Missing variables are left as-is (e.g. "{user}") rather than throwing.
+ * Shared by both the static-catalog lookup (`t`) and the DB-override lookup (`tg`) so the two
+ * paths always substitute placeholders identically.
  */
 function interpolate(template, vars) {
     if (!vars || typeof template !== 'string') return template;
@@ -72,6 +74,12 @@ function t(lang, key, vars) {
 /**
  * Async convenience wrapper: resolves the guild's configured language, then
  * translates. Falls back to English if no guildId is available or lookup fails.
+ *
+ * Unlike `t()`, this also consults `MessageOverride` (owner-admin-editable custom templates) for
+ * the resolved (key, language) pair before falling back to the static JSON catalogs - this is the
+ * ONLY lookup path that does so. `t()` stays static-file-only and synchronous on purpose: many
+ * call sites use it directly without a guildId/DB context available, and must keep working exactly
+ * as before.
  * @param {string} guildId
  * @param {string} key
  * @param {object} [vars]
@@ -86,6 +94,17 @@ async function tg(guildId, key, vars) {
     } catch {
         lang = DEFAULT_LANGUAGE;
     }
+
+    try {
+        const MessageOverride = require('../../database/models/MessageOverride');
+        const override = await MessageOverride.getTemplate(key, lang);
+        if (typeof override === 'string' && override.length > 0) {
+            return interpolate(override, vars);
+        }
+    } catch {
+        // DB unavailable or lookup failed - fall through to the static catalog, same as always.
+    }
+
     return t(lang, key, vars);
 }
 

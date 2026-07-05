@@ -60,6 +60,10 @@ Fully localized (EN/VI) modules: moderation, warn/case/warnpunish, automod, anti
 
 Everything else (fun, roleplay/reactions, utility converters, animals/crypto/wiki/news, AI chat, profile cards, stats channels, birthday, starboard, sticky nickname, owner commands) is **English-only for now** — these commands still work normally, they just haven't been translated yet.
 
+### ✏️ Customizing bot replies (Owner Admin Panel)
+
+The bot owner can override the exact wording of any already-bilingual reply/embed template from the **Messages** page in the Owner Admin Panel (`owner-admin/`) — search or filter the ~567-key catalog by category, edit the English and/or Vietnamese text per key (with a list of `{placeholder}` variables you can insert), save, or reset a key back to its default. This is scoped to the same modules listed above (moderation, warn/case/warnpunish, automod, antinuke, tickets, giveaways, welcome/farewell, logging, verification, reaction roles, `/help`) — it does **not** cover the ~800 other, not-yet-bilingual commands. Saved overrides are stored in the `MessageOverride` table and take effect on the live bot within seconds (short in-memory cache, invalidated immediately on save) — no restart needed.
+
 ## 📄 License
 
 Dự án cá nhân, không phát hành công khai.

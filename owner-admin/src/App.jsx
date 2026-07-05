@@ -6,6 +6,7 @@ import Overview from './pages/Overview';
 import Control from './pages/Control';
 import DiscordConfig from './pages/DiscordConfig';
 import Guilds from './pages/Guilds';
+import Messages from './pages/Messages';
 import Account from './pages/Account';
 
 function RequireAuth({ children }) {
@@ -41,6 +42,7 @@ function AppRoutes() {
         <Route path="control" element={<Control />} />
         <Route path="discord-config" element={<DiscordConfig />} />
         <Route path="guilds" element={<Guilds />} />
+        <Route path="messages" element={<Messages />} />
         <Route path="account" element={<Account />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
