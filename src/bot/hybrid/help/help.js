@@ -69,7 +69,7 @@ const categories = {
     roleplay: {
         name: 'Roleplay',
         emoji: emojis.cat_roleplay,
-        commands: ['hug', 'kiss', 'lick', 'pat', 'slap', 'tickle', 'poke', 'deathstare', 'dance', 'cry', 'laugh', 'smile', 'blush', 'wink', 'thumbsup', 'clap', 'bow', 'salute', 'facepalm', 'shrug', 'sleep', 'eat', 'kill', 'run']
+        commands: ['hug', 'kiss', 'lick', 'pat', 'slap', 'tickle', 'poke', 'deathstare', 'dance', 'cry', 'laugh', 'smile', 'blush', 'wink', 'thumbsup', 'clap', 'bow', 'salute', 'facepalm', 'shrug', 'sleep', 'eat', 'kill', 'run', 'gif']
     },
     social: {
         name: 'Social',
