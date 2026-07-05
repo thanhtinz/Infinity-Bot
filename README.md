@@ -62,4 +62,4 @@ Everything else (fun, roleplay/reactions, utility converters, animals/crypto/wik
 
 ## 📄 License
 
-MIT — xem [LICENSE](LICENSE).
+Dự án cá nhân, không phát hành công khai.
