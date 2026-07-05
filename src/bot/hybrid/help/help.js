@@ -66,10 +66,15 @@ const categories = {
         emoji: emojis.cat_fun,
         commands: ['geniusrate', 'trollrate', 'cursedrate', 'basedrate', 'villainrate', 'uppercase', 'leetspeak', 'reversetext', 'fortune', 'magic8', 'coinflip', 'chaosquestion', 'admire', 'roast', '150+ more - use tab-complete on / to browse']
     },
+    otakureactions: {
+        name: 'Reactions',
+        emoji: emojis.cat_roleplay,
+        commands: ['happy', 'sad', 'cry', 'dance', 'blush', 'smug', 'hug', 'kiss', 'pat', 'slap', 'tickle', 'poke', 'cuddle', 'wave', '70+ reaction commands - use /help or tab-complete to browse']
+    },
     roleplay: {
         name: 'Roleplay',
         emoji: emojis.cat_roleplay,
-        commands: ['hug', 'kiss', 'lick', 'pat', 'slap', 'tickle', 'poke', 'deathstare', 'dance', 'cry', 'laugh', 'smile', 'blush', 'wink', 'thumbsup', 'clap', 'bow', 'salute', 'facepalm', 'shrug', 'sleep', 'eat', 'kill', 'run', 'gif']
+        commands: ['hug', 'kiss', 'lick', 'pat', 'slap', 'tickle', 'poke', 'deathstare', 'dance', 'cry', 'laugh', 'smile', 'blush', 'wink', 'thumbsup', 'clap', 'bow', 'salute', 'facepalm', 'shrug', 'sleep', 'eat', 'kill', 'run']
     },
     social: {
         name: 'Social',
