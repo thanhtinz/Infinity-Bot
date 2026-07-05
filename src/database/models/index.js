@@ -38,6 +38,13 @@ const StickyNickname = require('./StickyNickname');
 const AdminUser = require('./AdminUser');
 const BotRuntimeConfig = require('./BotRuntimeConfig');
 const MessageOverride = require('./MessageOverride');
+const ShopCategory = require('./ShopCategory');
+const ShopProduct = require('./ShopProduct');
+const ShopCoupon = require('./ShopCoupon');
+const ShopOrder = require('./ShopOrder');
+const ShopFlashSale = require('./ShopFlashSale');
+const PremiumSubscription = require('./PremiumSubscription');
+const PaymentGatewayConfig = require('./PaymentGatewayConfig');
 
 const modelList = [
     NoPrefix,
@@ -75,7 +82,14 @@ const modelList = [
     StickyNickname,
     AdminUser,
     BotRuntimeConfig,
-    MessageOverride
+    MessageOverride,
+    ShopCategory,
+    ShopProduct,
+    ShopCoupon,
+    ShopOrder,
+    ShopFlashSale,
+    PremiumSubscription,
+    PaymentGatewayConfig
 ];
 
 for (const model of modelList) {
@@ -121,6 +135,13 @@ const models = {
     AdminUser,
     BotRuntimeConfig,
     MessageOverride,
+    ShopCategory,
+    ShopProduct,
+    ShopCoupon,
+    ShopOrder,
+    ShopFlashSale,
+    PremiumSubscription,
+    PaymentGatewayConfig,
     sequelize
 };
 

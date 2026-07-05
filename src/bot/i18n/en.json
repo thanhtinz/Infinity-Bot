@@ -360,11 +360,26 @@
     "configHint": "-# Use logging setup to modify • logging reset to clear",
     "configError": "An error occurred while fetching logging configuration.",
     "categories": {
-      "messageLogs": { "label": "Message Logs", "description": "Delete, edit & bulk delete" },
-      "memberLogs": { "label": "Member Logs", "description": "Join, leave & profile updates" },
-      "moderationLogs": { "label": "Moderation Logs", "description": "Ban, unban, kick & timeout" },
-      "serverLogs": { "label": "Server Logs", "description": "Channels, roles & server settings" },
-      "voiceLogs": { "label": "Voice Logs", "description": "Join, leave, switch & mute" }
+      "messageLogs": {
+        "label": "Message Logs",
+        "description": "Delete, edit & bulk delete"
+      },
+      "memberLogs": {
+        "label": "Member Logs",
+        "description": "Join, leave & profile updates"
+      },
+      "moderationLogs": {
+        "label": "Moderation Logs",
+        "description": "Ban, unban, kick & timeout"
+      },
+      "serverLogs": {
+        "label": "Server Logs",
+        "description": "Channels, roles & server settings"
+      },
+      "voiceLogs": {
+        "label": "Voice Logs",
+        "description": "Join, leave, switch & mute"
+      }
     }
   },
   "farewell": {
@@ -722,6 +737,206 @@
       "success": "**User:** {user}\n**Unmuted by:** {moderator}",
       "errorPermission": "I lack the permissions to unmute this user.",
       "errorGeneric": "Failed to unmute user."
+    }
+  },
+  "shop": {
+    "common": {
+      "guildOnly": "This command can only be used in a server.",
+      "noPermission": "You need the **Manage Server** permission to do that.",
+      "error": "Something went wrong. Please try again in a moment."
+    },
+    "browse": {
+      "title": "Shop",
+      "empty": "This server doesn't have any products for sale yet.",
+      "footer": "Select a product below to view details and purchase.",
+      "placeholder": "Choose a product...",
+      "priceVnd": "{amount}₫",
+      "priceUsd": "${amount}",
+      "onSale": "🔥 {percent}% off (flash sale)",
+      "outOfStock": "Out of stock",
+      "categoryHeader": "**{name}**"
+    },
+    "buy": {
+      "productNotFound": "That product could not be found. It may have been removed.",
+      "productInactive": "That product is not currently available for purchase.",
+      "outOfStock": "Sorry, that product is out of stock.",
+      "choosePaymentTitle": "Choose a Payment Method",
+      "choosePaymentBody": "**{name}**\n{description}\n\n**Price:** {price}",
+      "methodPayos": "PayOS (QR / Bank Transfer)",
+      "methodPaypal": "PayPal",
+      "methodCrypto": "Crypto",
+      "noVndPrice": "This product doesn't have a VND price set, so PayOS isn't available for it.",
+      "noUsdPrice": "This product doesn't have a USD price set, so this payment method isn't available for it.",
+      "payosNotConfigured": "PayOS payments aren't configured on this bot yet. Please try another payment method or contact a server admin.",
+      "paypalNotConfigured": "PayPal payments aren't configured on this bot yet. Please try another payment method or contact a server admin.",
+      "cryptoNotConfigured": "No crypto wallet is configured for that asset yet. Please try another payment method or contact a server admin.",
+      "payosCreatedTitle": "Scan to Pay (PayOS)",
+      "payosCreatedBody": "**Order:** #{orderId}\n**Amount:** {amount}₫\n\nScan the QR code or open the link below to complete payment. This order will update automatically once PayOS confirms the transfer.",
+      "openCheckout": "Open Checkout",
+      "paypalCreatedTitle": "Complete Your PayPal Payment",
+      "paypalCreatedBody": "**Order:** #{orderId}\n**Amount:** ${amount}\n\nClick below to approve the payment on PayPal.",
+      "approveOnPaypal": "Pay with PayPal",
+      "cryptoCreatedTitle": "Crypto Payment Instructions",
+      "cryptoCreatedBody": "**Order:** #{orderId}\n**Asset:** {asset}\n**Amount:** ${amount} (equivalent)\n**Address:** `{address}`\n**Reference:** `{reference}`\n\nInclude the reference above if your wallet supports a memo/note. Once you've sent the payment, a server admin will manually confirm it - this may take some time.",
+      "paymentFailed": "Failed to start the payment. Please try again in a moment.",
+      "selectAssetPlaceholder": "Choose a crypto asset...",
+      "couponApplied": "Coupon **{code}** applied: -{amount}",
+      "orderSummaryTitle": "Order Summary",
+      "orderSummaryBody": "**Product:** {name}\n**Subtotal:** {subtotal}\n**Discount:** -{discount}\n**Total:** {total}"
+    },
+    "orders": {
+      "title": "Your Orders",
+      "empty": "You haven't placed any orders yet. Use `/shop browse` to see what's available.",
+      "row": "**#{id}** · {product} · {total} · `{status}` · {date}"
+    },
+    "redeem": {
+      "usage": "Enter a coupon code to check if it's valid before checkout.",
+      "notFound": "That coupon code doesn't exist.",
+      "inactive": "That coupon is no longer active.",
+      "expired": "That coupon has expired.",
+      "exhausted": "That coupon has reached its maximum number of uses.",
+      "valid": "Coupon **{code}** is valid: {discount} off. Use `/shop buy` and it will be applied automatically at checkout."
+    },
+    "category": {
+      "added": "Category **{name}** created.",
+      "removed": "Category **{name}** removed.",
+      "notFound": "No category found with that name.",
+      "listTitle": "Shop Categories",
+      "listEmpty": "No categories yet. Add one with `/shop category add`.",
+      "listRow": "**{name}** (position {position}){description}"
+    },
+    "product": {
+      "added": "Product **{name}** created.",
+      "removed": "Product **{name}** removed.",
+      "updated": "Product **{name}** updated.",
+      "notFound": "No product found with that name.",
+      "listTitle": "Shop Products",
+      "listEmpty": "No products yet. Add one with `/shop product add`.",
+      "listRow": "**{name}** · {price} · {status} · stock: {stock}"
+    },
+    "coupon": {
+      "added": "Coupon **{code}** created.",
+      "removed": "Coupon **{code}** removed.",
+      "duplicate": "A coupon with that code already exists.",
+      "notFound": "No coupon found with that code.",
+      "listTitle": "Shop Coupons",
+      "listEmpty": "No coupons yet. Add one with `/shop coupon add`.",
+      "listRow": "**{code}** · {discount} · used {used}{max} · {status}"
+    },
+    "flashsale": {
+      "added": "Flash sale created for **{product}**: {percent}% off until {ends}.",
+      "removed": "Flash sale #{id} removed.",
+      "notFound": "No flash sale found with that ID.",
+      "listTitle": "Flash Sales",
+      "listEmpty": "No flash sales yet. Add one with `/shop flashsale add`.",
+      "listRow": "**#{id}** · {product} · {percent}% off · {starts} → {ends} · {status}"
+    }
+  },
+  "roleplay": {
+    "blush": {
+      "title": "# Blushing",
+      "body": "**{actor}** is blushing!"
+    },
+    "bow": {
+      "title": "# Taking a Bow",
+      "body": "**{actor}** takes a respectful bow!"
+    },
+    "clap": {
+      "title": "# Clapping",
+      "body": "**{actor}** is clapping!"
+    },
+    "cry": {
+      "title": "# Crying",
+      "body": "**{actor}** is crying"
+    },
+    "dance": {
+      "title": "# Dance Time",
+      "body": "**{actor}** is dancing!"
+    },
+    "deathstare": {
+      "title": "# Death Stare",
+      "body": "**{actor}** gives **{target}** a deadly stare",
+      "buttonLabel": "Stare Back"
+    },
+    "eat": {
+      "title": "# Eating",
+      "body": "**{actor}** is eating!"
+    },
+    "facepalm": {
+      "title": "# Facepalm",
+      "body": "**{actor}** facepalms!"
+    },
+    "hug": {
+      "title": "# Hug Time",
+      "body": "**{actor}** gives **{target}** a warm hug",
+      "buttonLabel": "Hug Back"
+    },
+    "kill": {
+      "title": "# Kill Action",
+      "body": "**{actor}** eliminates **{target}**",
+      "buttonLabel": "Fight Back"
+    },
+    "kiss": {
+      "title": "# Kiss",
+      "body": "**{actor}** kisses **{target}**",
+      "buttonLabel": "Kiss Back"
+    },
+    "laugh": {
+      "title": "# Laughing",
+      "body": "**{actor}** is laughing out loud!"
+    },
+    "lick": {
+      "title": "# Lick",
+      "body": "**{actor}** licks **{target}**",
+      "buttonLabel": "Lick Back"
+    },
+    "pat": {
+      "title": "# Pat Pat",
+      "body": "**{actor}** pats **{target}** on the head",
+      "buttonLabel": "Pat Back"
+    },
+    "poke": {
+      "title": "# Poke",
+      "body": "**{actor}** pokes **{target}**",
+      "buttonLabel": "Poke Back"
+    },
+    "run": {
+      "title": "# Running Away",
+      "body": "**{actor}** is running away!"
+    },
+    "salute": {
+      "title": "# Salute",
+      "body": "**{actor}** salutes!"
+    },
+    "shrug": {
+      "title": "# Shrug",
+      "body": "**{actor}** shrugs!"
+    },
+    "slap": {
+      "title": "# Slap",
+      "body": "**{actor}** slaps **{target}**",
+      "buttonLabel": "Slap Back"
+    },
+    "sleep": {
+      "title": "# Sleeping",
+      "body": "**{actor}** is going to sleep!"
+    },
+    "smile": {
+      "title": "# Smiling",
+      "body": "**{actor}** is smiling!"
+    },
+    "thumbsup": {
+      "title": "# Thumbs Up",
+      "body": "**{actor}** gives a thumbs up!"
+    },
+    "tickle": {
+      "title": "# Tickle Time",
+      "body": "**{actor}** tickles **{target}**",
+      "buttonLabel": "Tickle Back"
+    },
+    "wink": {
+      "title": "# Wink",
+      "body": "**{actor}** winks!"
     }
   }
 }

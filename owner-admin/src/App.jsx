@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Overview from './pages/Overview';
 import Control from './pages/Control';
 import DiscordConfig from './pages/DiscordConfig';
+import Payments from './pages/Payments';
 import Guilds from './pages/Guilds';
 import Messages from './pages/Messages';
 import Account from './pages/Account';
@@ -41,6 +42,7 @@ function AppRoutes() {
         <Route index element={<Overview />} />
         <Route path="control" element={<Control />} />
         <Route path="discord-config" element={<DiscordConfig />} />
+        <Route path="payments" element={<Payments />} />
         <Route path="guilds" element={<Guilds />} />
         <Route path="messages" element={<Messages />} />
         <Route path="account" element={<Account />} />

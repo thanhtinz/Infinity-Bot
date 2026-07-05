@@ -26,6 +26,8 @@ const birthdayRoutes = require('./routes/birthday');
 const starboardRoutes = require('./routes/starboard');
 const verificationRoutes = require('./routes/verification');
 const stickyNicknamesRoutes = require('./routes/stickyNicknames');
+const shopRoutes = require('./routes/shop');
+const webhooksRoutes = require('./routes/webhooks');
 
 function createApp() {
     const app = express();
@@ -45,6 +47,9 @@ function createApp() {
     app.use(passport.session());
 
     app.use('/api/auth', authRoutes);
+    // Public - no Discord session. Verified independently per-route (PayOS: HMAC signature;
+    // PayPal: capture call round-trips through PayPal itself). See routes/webhooks.js.
+    app.use('/api/webhooks', webhooksRoutes);
     app.use('/api/guilds', ensureAuthenticated, guildsRoutes);
 
     const guildRouter = express.Router({ mergeParams: true });
@@ -63,6 +68,7 @@ function createApp() {
     guildRouter.use('/starboard', starboardRoutes);
     guildRouter.use('/verification', verificationRoutes);
     guildRouter.use('/sticky-nicknames', stickyNicknamesRoutes);
+    guildRouter.use('/shop', shopRoutes);
     app.use('/api/guilds/:guildId', ensureAuthenticated, ensureGuildAccess, guildRouter);
 
     app.use('/api', (req, res) => res.status(404).json({ error: 'not found' }));

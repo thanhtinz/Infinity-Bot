@@ -360,11 +360,26 @@
     "configHint": "-# Dùng logging setup để chỉnh sửa • logging reset để xóa",
     "configError": "Đã xảy ra lỗi khi lấy cấu hình logging.",
     "categories": {
-      "messageLogs": { "label": "Log Tin Nhắn", "description": "Xóa, chỉnh sửa & xóa hàng loạt" },
-      "memberLogs": { "label": "Log Thành Viên", "description": "Tham gia, rời đi & cập nhật hồ sơ" },
-      "moderationLogs": { "label": "Log Kiểm Duyệt", "description": "Ban, unban, kick & timeout" },
-      "serverLogs": { "label": "Log Server", "description": "Kênh, vai trò & cài đặt server" },
-      "voiceLogs": { "label": "Log Voice", "description": "Tham gia, rời đi, chuyển kênh & mute" }
+      "messageLogs": {
+        "label": "Log Tin Nhắn",
+        "description": "Xóa, chỉnh sửa & xóa hàng loạt"
+      },
+      "memberLogs": {
+        "label": "Log Thành Viên",
+        "description": "Tham gia, rời đi & cập nhật hồ sơ"
+      },
+      "moderationLogs": {
+        "label": "Log Kiểm Duyệt",
+        "description": "Ban, unban, kick & timeout"
+      },
+      "serverLogs": {
+        "label": "Log Server",
+        "description": "Kênh, vai trò & cài đặt server"
+      },
+      "voiceLogs": {
+        "label": "Log Voice",
+        "description": "Tham gia, rời đi, chuyển kênh & mute"
+      }
     }
   },
   "farewell": {
@@ -722,6 +737,206 @@
       "success": "**Người dùng:** {user}\n**Unmute bởi:** {moderator}",
       "errorPermission": "Tôi không có quyền để unmute người này.",
       "errorGeneric": "Unmute người dùng thất bại."
+    }
+  },
+  "shop": {
+    "common": {
+      "guildOnly": "Lệnh này chỉ có thể dùng trong server.",
+      "noPermission": "Bạn cần quyền **Quản Lý Server** để làm việc này.",
+      "error": "Đã có lỗi xảy ra. Vui lòng thử lại sau."
+    },
+    "browse": {
+      "title": "Cửa Hàng",
+      "empty": "Server này chưa có sản phẩm nào để bán.",
+      "footer": "Chọn một sản phẩm bên dưới để xem chi tiết và mua hàng.",
+      "placeholder": "Chọn một sản phẩm...",
+      "priceVnd": "{amount}₫",
+      "priceUsd": "${amount}",
+      "onSale": "🔥 Giảm {percent}% (flash sale)",
+      "outOfStock": "Hết hàng",
+      "categoryHeader": "**{name}**"
+    },
+    "buy": {
+      "productNotFound": "Không tìm thấy sản phẩm này. Có thể nó đã bị xóa.",
+      "productInactive": "Sản phẩm này hiện không được bán.",
+      "outOfStock": "Xin lỗi, sản phẩm này đã hết hàng.",
+      "choosePaymentTitle": "Chọn Phương Thức Thanh Toán",
+      "choosePaymentBody": "**{name}**\n{description}\n\n**Giá:** {price}",
+      "methodPayos": "PayOS (QR / Chuyển khoản)",
+      "methodPaypal": "PayPal",
+      "methodCrypto": "Tiền điện tử",
+      "noVndPrice": "Sản phẩm này chưa có giá VND, nên không thể thanh toán qua PayOS.",
+      "noUsdPrice": "Sản phẩm này chưa có giá USD, nên không thể dùng phương thức thanh toán này.",
+      "payosNotConfigured": "PayOS chưa được cấu hình trên bot này. Vui lòng chọn phương thức khác hoặc liên hệ quản trị viên server.",
+      "paypalNotConfigured": "PayPal chưa được cấu hình trên bot này. Vui lòng chọn phương thức khác hoặc liên hệ quản trị viên server.",
+      "cryptoNotConfigured": "Chưa có ví tiền điện tử nào được cấu hình cho loại này. Vui lòng chọn phương thức khác hoặc liên hệ quản trị viên server.",
+      "payosCreatedTitle": "Quét Mã Để Thanh Toán (PayOS)",
+      "payosCreatedBody": "**Đơn hàng:** #{orderId}\n**Số tiền:** {amount}₫\n\nQuét mã QR hoặc mở liên kết bên dưới để hoàn tất thanh toán. Đơn hàng sẽ tự động cập nhật khi PayOS xác nhận giao dịch.",
+      "openCheckout": "Mở Trang Thanh Toán",
+      "paypalCreatedTitle": "Hoàn Tất Thanh Toán PayPal",
+      "paypalCreatedBody": "**Đơn hàng:** #{orderId}\n**Số tiền:** ${amount}\n\nNhấn vào bên dưới để xác nhận thanh toán trên PayPal.",
+      "approveOnPaypal": "Thanh Toán Bằng PayPal",
+      "cryptoCreatedTitle": "Hướng Dẫn Thanh Toán Tiền Điện Tử",
+      "cryptoCreatedBody": "**Đơn hàng:** #{orderId}\n**Loại tiền:** {asset}\n**Số tiền:** ${amount} (quy đổi)\n**Địa chỉ:** `{address}`\n**Mã tham chiếu:** `{reference}`\n\nVui lòng ghi mã tham chiếu ở trên vào phần memo/note nếu ví của bạn hỗ trợ. Sau khi chuyển tiền, quản trị viên server sẽ xác nhận thủ công - việc này có thể mất một chút thời gian.",
+      "paymentFailed": "Không thể khởi tạo thanh toán. Vui lòng thử lại sau.",
+      "selectAssetPlaceholder": "Chọn loại tiền điện tử...",
+      "couponApplied": "Đã áp dụng mã giảm giá **{code}**: -{amount}",
+      "orderSummaryTitle": "Tóm Tắt Đơn Hàng",
+      "orderSummaryBody": "**Sản phẩm:** {name}\n**Tạm tính:** {subtotal}\n**Giảm giá:** -{discount}\n**Tổng cộng:** {total}"
+    },
+    "orders": {
+      "title": "Đơn Hàng Của Bạn",
+      "empty": "Bạn chưa đặt đơn hàng nào. Dùng `/shop browse` để xem sản phẩm.",
+      "row": "**#{id}** · {product} · {total} · `{status}` · {date}"
+    },
+    "redeem": {
+      "usage": "Nhập mã giảm giá để kiểm tra trước khi thanh toán.",
+      "notFound": "Mã giảm giá này không tồn tại.",
+      "inactive": "Mã giảm giá này không còn hoạt động.",
+      "expired": "Mã giảm giá này đã hết hạn.",
+      "exhausted": "Mã giảm giá này đã đạt số lần sử dụng tối đa.",
+      "valid": "Mã **{code}** hợp lệ: giảm {discount}. Dùng `/shop buy` và mã sẽ tự động được áp dụng khi thanh toán."
+    },
+    "category": {
+      "added": "Đã tạo danh mục **{name}**.",
+      "removed": "Đã xóa danh mục **{name}**.",
+      "notFound": "Không tìm thấy danh mục nào với tên này.",
+      "listTitle": "Danh Mục Cửa Hàng",
+      "listEmpty": "Chưa có danh mục nào. Thêm bằng `/shop category add`.",
+      "listRow": "**{name}** (vị trí {position}){description}"
+    },
+    "product": {
+      "added": "Đã tạo sản phẩm **{name}**.",
+      "removed": "Đã xóa sản phẩm **{name}**.",
+      "updated": "Đã cập nhật sản phẩm **{name}**.",
+      "notFound": "Không tìm thấy sản phẩm nào với tên này.",
+      "listTitle": "Sản Phẩm Cửa Hàng",
+      "listEmpty": "Chưa có sản phẩm nào. Thêm bằng `/shop product add`.",
+      "listRow": "**{name}** · {price} · {status} · tồn kho: {stock}"
+    },
+    "coupon": {
+      "added": "Đã tạo mã giảm giá **{code}**.",
+      "removed": "Đã xóa mã giảm giá **{code}**.",
+      "duplicate": "Mã giảm giá này đã tồn tại.",
+      "notFound": "Không tìm thấy mã giảm giá này.",
+      "listTitle": "Mã Giảm Giá",
+      "listEmpty": "Chưa có mã giảm giá nào. Thêm bằng `/shop coupon add`.",
+      "listRow": "**{code}** · {discount} · đã dùng {used}{max} · {status}"
+    },
+    "flashsale": {
+      "added": "Đã tạo flash sale cho **{product}**: giảm {percent}% đến {ends}.",
+      "removed": "Đã xóa flash sale #{id}.",
+      "notFound": "Không tìm thấy flash sale với ID này.",
+      "listTitle": "Flash Sale",
+      "listEmpty": "Chưa có flash sale nào. Thêm bằng `/shop flashsale add`.",
+      "listRow": "**#{id}** · {product} · giảm {percent}% · {starts} → {ends} · {status}"
+    }
+  },
+  "roleplay": {
+    "blush": {
+      "title": "# Đỏ Mặt",
+      "body": "**{actor}** đang đỏ mặt kìa!"
+    },
+    "bow": {
+      "title": "# Cúi Chào",
+      "body": "**{actor}** cúi chào một cách lịch sự!"
+    },
+    "clap": {
+      "title": "# Vỗ Tay",
+      "body": "**{actor}** đang vỗ tay rần rần!"
+    },
+    "cry": {
+      "title": "# Khóc",
+      "body": "**{actor}** đang khóc nè"
+    },
+    "dance": {
+      "title": "# Giờ Nhảy Múa",
+      "body": "**{actor}** đang quẩy tưng bừng!"
+    },
+    "deathstare": {
+      "title": "# Ánh Mắt Tử Thần",
+      "body": "**{actor}** liếc **{target}** một cái chết khiếp",
+      "buttonLabel": "Liếc Lại"
+    },
+    "eat": {
+      "title": "# Ăn Uống",
+      "body": "**{actor}** đang ăn ngon lành!"
+    },
+    "facepalm": {
+      "title": "# Vả Mặt",
+      "body": "**{actor}** vả mặt luôn!"
+    },
+    "hug": {
+      "title": "# Giờ Ôm Ấp",
+      "body": "**{actor}** ôm **{target}** một cái thật ấm áp",
+      "buttonLabel": "Ôm Lại"
+    },
+    "kill": {
+      "title": "# Hành Động Kill",
+      "body": "**{actor}** hạ gục **{target}**",
+      "buttonLabel": "Đánh Trả"
+    },
+    "kiss": {
+      "title": "# Nụ Hôn",
+      "body": "**{actor}** hôn **{target}**",
+      "buttonLabel": "Hôn Lại"
+    },
+    "laugh": {
+      "title": "# Cười",
+      "body": "**{actor}** đang cười lăn cười bò!"
+    },
+    "lick": {
+      "title": "# Liếm",
+      "body": "**{actor}** liếm **{target}**",
+      "buttonLabel": "Liếm Lại"
+    },
+    "pat": {
+      "title": "# Xoa Đầu",
+      "body": "**{actor}** xoa đầu **{target}**",
+      "buttonLabel": "Xoa Lại"
+    },
+    "poke": {
+      "title": "# Chọc",
+      "body": "**{actor}** chọc **{target}**",
+      "buttonLabel": "Chọc Lại"
+    },
+    "run": {
+      "title": "# Bỏ Chạy",
+      "body": "**{actor}** đang bỏ chạy!"
+    },
+    "salute": {
+      "title": "# Chào",
+      "body": "**{actor}** đứng nghiêm chào!"
+    },
+    "shrug": {
+      "title": "# Nhún Vai",
+      "body": "**{actor}** nhún vai!"
+    },
+    "slap": {
+      "title": "# Tát",
+      "body": "**{actor}** tát **{target}**",
+      "buttonLabel": "Tát Lại"
+    },
+    "sleep": {
+      "title": "# Ngủ",
+      "body": "**{actor}** chuẩn bị đi ngủ!"
+    },
+    "smile": {
+      "title": "# Cười Tươi",
+      "body": "**{actor}** đang cười tươi!"
+    },
+    "thumbsup": {
+      "title": "# Like Đó",
+      "body": "**{actor}** giơ ngón cái like!"
+    },
+    "tickle": {
+      "title": "# Giờ Cù Lét",
+      "body": "**{actor}** cù lét **{target}**",
+      "buttonLabel": "Cù Lét Lại"
+    },
+    "wink": {
+      "title": "# Nháy Mắt",
+      "body": "**{actor}** nháy mắt!"
     }
   }
 }

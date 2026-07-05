@@ -14,8 +14,9 @@
  */
 
 const express = require('express');
-const { VerificationConfig, BotRuntimeConfig } = require('../database/models');
+const { VerificationConfig, BotRuntimeConfig, ShopOrder, ShopProduct, ShopCoupon } = require('../database/models');
 const { postVerificationPanel } = require('./utils/verificationPanel');
+const { fulfillOrderRewards } = require('./utils/shopUtils');
 
 // Best-effort persistence of the "should the bot be running" intent, so that a Stop from the
 // owner admin panel survives a process restart (the bot won't silently come back online on its
@@ -279,6 +280,39 @@ function createDashboardApi(client, { secret, resolveRuntimeConfig } = {}) {
             res.json({ ok: true, online });
         } catch (error) {
             res.status(500).json({ error: error.message || 'failed to start the bot' });
+        }
+    });
+
+    // Called by dashboard/server (dashboard/server/lib/botApi.js's fulfillOrder) once a PayOS
+    // webhook, a PayPal return-capture, or a dashboard admin's manual crypto confirmation has
+    // marked a ShopOrder 'paid' in the DB. This endpoint does the part that needs the live gateway
+    // connection: granting the product's Discord role and recording a PremiumSubscription.
+    app.post('/shop/fulfill-order', async (req, res) => {
+        const { orderId } = req.body || {};
+        if (!orderId) return res.status(400).json({ error: 'orderId is required' });
+
+        try {
+            const order = await ShopOrder.findByPk(orderId);
+            if (!order) return res.status(404).json({ error: 'order not found' });
+
+            const product = await ShopProduct.findByPk(order.productId);
+            if (product) {
+                const guild = client.isReady() ? client.guilds.cache.get(order.guildId) : null;
+                await fulfillOrderRewards(guild, order, product);
+
+                if (product.stock != null) {
+                    product.stock = Math.max(0, product.stock - (order.quantity || 1));
+                    await product.save();
+                }
+            }
+
+            if (order.couponCode) {
+                await ShopCoupon.increment('usesCount', { where: { guildId: order.guildId, code: order.couponCode } });
+            }
+
+            res.json({ ok: true });
+        } catch (error) {
+            res.status(500).json({ error: error.message || 'failed to fulfill order' });
         }
     });
 

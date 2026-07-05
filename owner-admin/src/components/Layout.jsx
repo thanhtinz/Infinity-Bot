@@ -5,6 +5,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Overview', icon: 'bi-speedometer2', end: true },
   { to: '/control', label: 'Bot Control', icon: 'bi-power' },
   { to: '/discord-config', label: 'Discord Config', icon: 'bi-gear-fill' },
+  { to: '/payments', label: 'Payments', icon: 'bi-credit-card-fill' },
   { to: '/guilds', label: 'Guilds', icon: 'bi-hdd-network' },
   { to: '/messages', label: 'Messages', icon: 'bi-chat-left-text-fill' },
   { to: '/account', label: 'Account', icon: 'bi-person-circle' }

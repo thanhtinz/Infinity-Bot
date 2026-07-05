@@ -15,6 +15,7 @@ const configRoutes = require('./routes/config');
 const controlRoutes = require('./routes/control');
 const accountRoutes = require('./routes/account');
 const messagesRoutes = require('./routes/messages');
+const paymentsRoutes = require('./routes/payments');
 
 function createApp() {
     const app = express();
@@ -45,6 +46,7 @@ function createApp() {
     app.use('/api', controlRoutes);
     app.use('/api/account', accountRoutes);
     app.use('/api/messages', messagesRoutes);
+    app.use('/api/payments', paymentsRoutes);
 
     app.use('/api', (req, res) => res.status(404).json({ error: 'not found' }));
 

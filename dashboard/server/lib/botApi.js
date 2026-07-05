@@ -8,14 +8,18 @@ const config = require('../config');
  * Express routes should import this module.
  */
 
-async function request(path, { timeoutMs = 4000, method = 'GET' } = {}) {
+async function request(path, { timeoutMs = 4000, method = 'GET', body } = {}) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
+        const headers = { 'x-api-secret': config.botApiSecret, accept: 'application/json' };
+        if (body !== undefined) headers['content-type'] = 'application/json';
+
         const response = await fetch(`${config.botApiBaseUrl}${path}`, {
             method,
-            headers: { 'x-api-secret': config.botApiSecret, accept: 'application/json' },
+            headers,
+            body: body !== undefined ? JSON.stringify(body) : undefined,
             signal: controller.signal
         });
 
@@ -46,4 +50,11 @@ function postVerificationPanel(guildId) {
     return request(`/guilds/${guildId}/verification/panel`, { method: 'POST', timeoutMs: 8000 });
 }
 
-module.exports = { getGuilds, getGuild, getMember, postVerificationPanel };
+// Tells the live bot process a shop order was just confirmed paid (by a PayOS/PayPal webhook, or a
+// dashboard admin manually confirming a crypto payment) so it can grant the product's role and
+// record a PremiumSubscription - see src/bot/dashboardApi.js POST /shop/fulfill-order.
+function fulfillOrder(orderId) {
+    return request('/shop/fulfill-order', { method: 'POST', timeoutMs: 8000, body: { orderId } });
+}
+
+module.exports = { getGuilds, getGuild, getMember, postVerificationPanel, fulfillOrder };

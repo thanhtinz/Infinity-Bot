@@ -12,6 +12,7 @@ import Moderation from './guild/Moderation';
 import AutoModeration from './guild/AutoModeration';
 import Protection from './guild/Protection';
 import Tickets from './guild/Tickets';
+import Shop from './guild/Shop';
 import Giveaways from './guild/Giveaways';
 import ReactionRoles from './guild/ReactionRoles';
 import Welcome from './guild/Welcome';
@@ -28,6 +29,7 @@ const PAGE_COMPONENTS = {
   automod: AutoModeration,
   protection: Protection,
   tickets: Tickets,
+  shop: Shop,
   giveaways: Giveaways,
   'reaction-roles': ReactionRoles,
   welcome: Welcome,
