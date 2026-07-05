@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -10,6 +7,7 @@ const {
   PermissionFlagsBits,
 } = require('discord.js');
 const { ModLog } = require('../../../../../database/models');
+const { tg } = require('../../../../utils/i18n');
 
 function modReply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -24,26 +22,31 @@ module.exports = {
   description: 'View a moderation case',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
     const caseNumber = interaction.options.getInteger('case_number');
 
     if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers))
-      return modReply(interaction, 'Permission Denied', 'You need the **Moderate Members** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Moderate Members' }), true);
 
     const modCase = await ModLog.findOne({
       where: { guildId: interaction.guild.id, caseNumber }
     });
 
     if (!modCase)
-      return modReply(interaction, 'Case Not Found', `No case with number **#${caseNumber}** exists in this server.`, true);
+      return modReply(interaction, await tg(guildId, 'case.common.caseNotFoundTitle'), await tg(guildId, 'case.common.caseNotFoundBody', { caseNumber }), true);
 
-    const body =
-      `**Action:** ${modCase.action}\n` +
-      `**Target:** ${modCase.targetTag} (${modCase.targetId})\n` +
-      `**Moderator:** ${modCase.moderatorTag} (${modCase.moderatorId})\n` +
-      `**Reason:** ${modCase.reason || 'No reason provided'}\n` +
-      `**Source:** ${modCase.source}\n` +
-      `**Date:** <t:${Math.floor(new Date(modCase.createdAt).getTime() / 1000)}:f>`;
+    const noReason = await tg(guildId, 'common.noReasonProvided');
+    const body = await tg(guildId, 'case.view.body', {
+      action: modCase.action,
+      target: modCase.targetTag,
+      targetId: modCase.targetId,
+      moderator: modCase.moderatorTag,
+      moderatorId: modCase.moderatorId,
+      reason: modCase.reason || noReason,
+      source: modCase.source,
+      date: `<t:${Math.floor(new Date(modCase.createdAt).getTime() / 1000)}:f>`,
+    });
 
-    await modReply(interaction, `Case #${caseNumber}`, body);
+    await modReply(interaction, await tg(guildId, 'case.view.title', { caseNumber }), body);
   },
 };

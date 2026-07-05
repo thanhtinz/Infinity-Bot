@@ -1,7 +1,5 @@
-
-
-
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { tg } = require('../../utils/i18n');
 
 module.exports = {
   name: 'reactionroles',
@@ -50,7 +48,7 @@ module.exports = {
       } else if (sub === 'remove') {
         const messageId = args[1];
         if (!messageId) {
-          return interactionOrMessage.reply('Please provide a message ID. Usage: `.rr remove <message_id>`');
+          return interactionOrMessage.reply(await tg(interactionOrMessage.guild?.id, 'reactionroles.usagePrefix'));
         }
         return this._remove(interactionOrMessage, messageId);
       } else {
@@ -62,6 +60,7 @@ module.exports = {
   async _remove(ctx, messageId) {
     const ReactionRoles = require('../../../database/models/ReactionRoles');
     const isSlash = typeof ctx.isCommand === 'function' && ctx.isCommand();
+    const guildId = ctx.guild.id;
 
     const config = await ReactionRoles.findOne({
       where: { messageId, guildId: ctx.guild.id }
@@ -69,7 +68,7 @@ module.exports = {
 
     if (!config) {
       return ctx.reply({
-        content: 'Reaction roles message not found!',
+        content: await tg(guildId, 'reactionroles.notFound'),
         flags: isSlash ? MessageFlags.Ephemeral : undefined
       });
     }
@@ -88,7 +87,7 @@ module.exports = {
     });
 
     return ctx.reply({
-      content: '✅ Reaction roles message removed!',
+      content: `✅ ${await tg(guildId, 'reactionroles.removed')}`,
       flags: isSlash ? MessageFlags.Ephemeral : undefined
     });
   }

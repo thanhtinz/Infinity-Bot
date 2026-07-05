@@ -31,6 +31,35 @@ Infinity Bot là bot Discord đa năng, tích hợp đầy đủ các hệ thố
 
 Toàn bộ tính năng trên có thể cấu hình qua web dashboard, riêng cho từng server bot tham gia.
 
+## 🌐 Ngôn ngữ / Language
+
+Bot hỗ trợ song ngữ **Tiếng Việt** và **English** cho phần lõi (core) — mỗi server tự chọn ngôn ngữ riêng bằng lệnh `/language set <en|vi>` (xem ngôn ngữ hiện tại bằng `/language view`, cần quyền **Manage Server** để đổi).
+
+Các module đã được dịch đầy đủ (song ngữ EN/VI):
+- Moderation (ban, kick, mute, lock, slowmode, softban, tempban, temprole, role give/remove, unban, unlock, unmute)
+- Warn / Case / Warnpunish
+- AutoMod
+- Anti-Nuke
+- Tickets
+- Giveaways
+- Welcome / Farewell
+- Logging
+- Verification
+- Reaction Roles
+- Menu `/help`
+
+Các lệnh khác (fun, roleplay/reactions, utility converters, animals/crypto/wiki/news, AI chat, profile card, stats channel, birthday, starboard, sticky nickname, các lệnh owner...) **hiện chỉ có tiếng Anh** — chúng vẫn hoạt động bình thường, chỉ chưa được bản địa hoá trong đợt này.
+
+Framework dịch (i18n) nằm ở `src/bot/i18n/en.json` / `src/bot/i18n/vi.json` và `src/bot/utils/i18n.js`, dễ dàng mở rộng thêm ngôn ngữ hoặc module mới trong tương lai.
+
+---
+
+The bot supports bilingual **English** and **Vietnamese** replies for its core feature set — each server picks its own language with `/language set <en|vi>` (view the current setting with `/language view`; changing it requires **Manage Server** permission).
+
+Fully localized (EN/VI) modules: moderation, warn/case/warnpunish, automod, antinuke, tickets, giveaways, welcome/farewell, logging, verification, reaction roles, and the `/help` menu.
+
+Everything else (fun, roleplay/reactions, utility converters, animals/crypto/wiki/news, AI chat, profile cards, stats channels, birthday, starboard, sticky nickname, owner commands) is **English-only for now** — these commands still work normally, they just haven't been translated yet.
+
 ## 📄 License
 
 MIT — xem [LICENSE](LICENSE).

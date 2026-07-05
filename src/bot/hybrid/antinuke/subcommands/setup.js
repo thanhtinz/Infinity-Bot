@@ -14,6 +14,7 @@ const {
     ButtonStyle
 } = require('discord.js');
 const { AntinukeConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'setup',
@@ -22,11 +23,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (guild.ownerId !== member.id) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Only the **Server Owner** can setup antinuke.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.ownerOnlySetup'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -37,9 +39,9 @@ module.exports = {
         const existingConfig = await AntinukeConfig.findOne({ where: { guildId: guild.id } });
         if (existingConfig) {
             const container = new ContainerBuilder()
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Already Configured'))
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.alreadyConfiguredTitle')}`))
                 .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent('> Use `antinuke settings` to modify or `antinuke disable` to reset.'));
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.alreadyConfiguredBody')));
             return interactionOrMessage.reply({ components: [container], flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral });
         }
 

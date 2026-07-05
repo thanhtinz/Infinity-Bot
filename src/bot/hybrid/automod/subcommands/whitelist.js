@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -16,6 +13,7 @@ const {
     StringSelectMenuBuilder
 } = require('discord.js');
 const { AutomodWhitelist } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 const MODULES = AutomodWhitelist.MODULES;
 
@@ -26,12 +24,13 @@ module.exports = {
     async execute(interactionOrMessage, args = []) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const isSlash = interactionOrMessage.isCommand?.();
 
         if (!member.permissions.has('ManageGuild')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Manage Server** permission to manage the whitelist.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.noPermissionWhitelist'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -50,13 +49,13 @@ module.exports = {
         if (action === 'add') {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Add to Whitelist')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.whitelistAddTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Select what type to whitelist:')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.whitelistAddPrompt'))
                 )
                 .addActionRowComponents(
                     new ActionRowBuilder().addComponents(
@@ -87,7 +86,7 @@ module.exports = {
             if (whitelist.length === 0) {
                 const container = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('The whitelist is empty.')
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'automod.whitelistEmpty'))
                     );
                 return interactionOrMessage.reply({
                     components: [container],
@@ -106,13 +105,13 @@ module.exports = {
 
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Remove from Whitelist')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.whitelistRemoveTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Select an entry to remove:')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.whitelistRemovePrompt'))
                 )
                 .addActionRowComponents(
                     new ActionRowBuilder().addComponents(
@@ -142,28 +141,28 @@ module.exports = {
 
         let listContent = '';
         if (whitelist.length === 0) {
-            listContent = 'No entries in the whitelist.';
+            listContent = await tg(guildId, 'automod.whitelistNoEntries');
         } else {
             if (users.length > 0) {
-                listContent += `**Users (${users.length}):**\n${users.map(u => `<@${u.targetId}>`).join(', ')}\n\n`;
+                listContent += (await tg(guildId, 'automod.whitelistUsersLine', { count: users.length, list: users.map(u => `<@${u.targetId}>`).join(', ') })) + '\n\n';
             }
             if (roles.length > 0) {
-                listContent += `**Roles (${roles.length}):**\n${roles.map(r => `<@&${r.targetId}>`).join(', ')}\n\n`;
+                listContent += (await tg(guildId, 'automod.whitelistRolesLine', { count: roles.length, list: roles.map(r => `<@&${r.targetId}>`).join(', ') })) + '\n\n';
             }
             if (channels.length > 0) {
-                listContent += `**Channels (${channels.length}):**\n${channels.map(c => `<#${c.targetId}>`).join(', ')}`;
+                listContent += await tg(guildId, 'automod.whitelistChannelsLine', { count: channels.length, list: channels.map(c => `<#${c.targetId}>`).join(', ') });
             }
         }
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`### AutoMod Whitelist (${whitelist.length})`)
+                new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.whitelistTitle', { count: whitelist.length })}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(listContent.trim() || 'No entries.')
+                new TextDisplayBuilder().setContent(listContent.trim() || await tg(guildId, 'automod.whitelistNoEntries'))
             )
             .addActionRowComponents(
                 new ActionRowBuilder().addComponents(
@@ -190,18 +189,19 @@ module.exports = {
 };
 
 async function showWhitelistDetailed(interactionOrMessage, guild) {
+    const guildId = guild.id;
     const whitelist = await AutomodWhitelist.findAll({ where: { guildId: guild.id } });
 
     if (whitelist.length === 0) {
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('### AutoMod Whitelist')
+                new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.whitelistTitle', { count: 0 })}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('No entries in the whitelist.')
+                new TextDisplayBuilder().setContent(await tg(guildId, 'automod.whitelistNoEntries'))
             );
         return interactionOrMessage.reply({
             components: [container],
@@ -229,7 +229,7 @@ async function showWhitelistDetailed(interactionOrMessage, guild) {
 
     const container = new ContainerBuilder()
         .addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(`### AutoMod Whitelist - Detailed (${whitelist.length})`)
+            new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.whitelistDetailedTitle', { count: whitelist.length })}`)
         )
         .addSeparatorComponents(
             new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)

@@ -2,6 +2,7 @@
 const { ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, SeparatorSpacingSize, MessageFlags } = require('discord.js');
 const { TicketConfig, Ticket } = require('../../../../database/models');
 const { logTicketEvent, hasSupportRole } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -22,6 +23,7 @@ function replyTitled(ctx, title, body) {
 module.exports = {
     async execute(interactionOrMessage) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const channel = interactionOrMessage.channel;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
 
@@ -29,14 +31,14 @@ module.exports = {
             Ticket.findOne({ where: { channelId: channel.id } }),
             TicketConfig.findOne({ where: { guildId: guild.id } })
         ]);
-        if (!ticket) return reply(interactionOrMessage, 'This channel is not a valid ticket channel.');
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured.');
+        if (!ticket) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.invalidTicketChannel'));
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfiguredPlain'));
 
-        if (ticket.status !== 'closed') return reply(interactionOrMessage, `This ticket is already ${ticket.status}.`);
+        if (ticket.status !== 'closed') return reply(interactionOrMessage, await tg(guildId, 'ticket.open.alreadyStatus', { status: ticket.status }));
 
         const member = guild.members.cache.get(userId);
         if (!hasSupportRole(member, config)) {
-            return reply(interactionOrMessage, 'Only support staff can reopen tickets.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.open.noPermission'));
         }
 
         try {
@@ -47,11 +49,13 @@ module.exports = {
 
             await channel.permissionOverwrites.edit(ticket.userId, { SendMessages: true });
 
-            const statusText = newStatus === 'claimed' ? `Claimed by <@${ticket.claimedBy}>` : 'Open';
-            return replyTitled(interactionOrMessage, '### Ticket Reopened', `This ticket has been reopened by <@${userId}>.\n<@${ticket.userId}> You can now continue the conversation.\n**Status:** ${statusText}`);
+            const statusText = newStatus === 'claimed'
+                ? await tg(guildId, 'ticket.open.claimedByStatus', { user: `<@${ticket.claimedBy}>` })
+                : await tg(guildId, 'ticket.open.statusOpen');
+            return replyTitled(interactionOrMessage, `### ${await tg(guildId, 'ticket.open.reopenedTitle')}`, await tg(guildId, 'ticket.open.reopenedBody', { reopener: `<@${userId}>`, creator: `<@${ticket.userId}>`, status: statusText }));
         } catch (error) {
             console.error('Ticket reopen error:', error);
-            return reply(interactionOrMessage, 'Failed to reopen the ticket. Please try again.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.open.failed'));
         }
     }
 };

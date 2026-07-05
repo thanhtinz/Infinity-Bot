@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -12,6 +9,7 @@ const {
     ButtonStyle
 } = require('discord.js');
 const { FarewellConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'setup',
@@ -20,21 +18,22 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
 
         const existing = await FarewellConfig.findOne({ where: { guildId: guild.id } });
         if (existing?.channelId) {
             const container = new ContainerBuilder()
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Already Configured'))
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'farewell.alreadyConfiguredTitle')}`))
                 .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent('> Use `farewell config` to modify or `farewell reset` to start over.'));
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guildId, 'farewell.alreadyConfiguredBody')));
             return interactionOrMessage.reply({ components: [container], flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral });
         }
 
         if (!member.permissions.has('Administrator')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Administrator** permission to use this command.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'farewell.noPermission'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -59,13 +58,13 @@ module.exports = {
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('### Farewell Setup')
+                new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'farewell.setupTitle')}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('Choose the type of farewell message you want to create:\n\n**Simple**\nSend a plain text farewell message. You can use placeholders to personalize it.\n\n**Container**\nSend a farewell message in a container format. You can customize the embed with a title, description, image, etc.')
+                new TextDisplayBuilder().setContent(await tg(guildId, 'farewell.setupPrompt'))
             )
             .addActionRowComponents(buttonRow);
 

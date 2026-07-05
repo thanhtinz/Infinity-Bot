@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -9,6 +6,7 @@ const {
   MessageFlags,
   PermissionFlagsBits,
 } = require('discord.js');
+const { tg } = require('../../../utils/i18n');
 
 function modReply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -23,22 +21,23 @@ module.exports = {
   description: 'Prevent messages in a channel',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
     const channel = interaction.options.getChannel('channel') || interaction.channel;
-    const reason = interaction.options.getString('reason') || 'No reason provided';
+    const reason = interaction.options.getString('reason') || await tg(guildId, 'common.noReasonProvided');
 
     if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels))
-      return modReply(interaction, 'Permission Denied', 'You need the **Manage Channels** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Manage Channels' }), true);
 
     if (!interaction.guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels))
-      return modReply(interaction, 'Missing Permissions', 'I need the **Manage Channels** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.missingPermissions'), await tg(guildId, 'common.iNeedPermission', { permission: 'Manage Channels' }), true);
 
     try {
       await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { SendMessages: false }, { reason });
-      await modReply(interaction, 'Channel Locked',
-        `**Channel:** ${channel}\n**Locked by:** ${interaction.user.tag}\n**Reason:** ${reason}`);
+      await modReply(interaction, await tg(guildId, 'moderation.lock.successTitle'),
+        await tg(guildId, 'moderation.lock.success', { channel: `${channel}`, moderator: interaction.user.tag, reason }));
     } catch (error) {
-      const msg = error.code === 50013 ? 'I lack the permissions to modify this channel.' : 'Failed to lock channel.';
-      await modReply(interaction, 'Error', msg, true);
+      const msg = error.code === 50013 ? await tg(guildId, 'moderation.lock.errorPermission') : await tg(guildId, 'moderation.lock.errorGeneric');
+      await modReply(interaction, await tg(guildId, 'common.error'), msg, true);
     }
   },
 };

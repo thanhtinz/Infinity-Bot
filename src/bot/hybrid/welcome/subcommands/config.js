@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -13,6 +10,7 @@ const {
     MediaGalleryItemBuilder
 } = require('discord.js');
 const { WelcomeConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'config',
@@ -21,11 +19,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (!member.permissions.has('Administrator')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Administrator** permission to use this command.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.noPermission'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -39,13 +38,13 @@ module.exports = {
             if (!config) {
                 const container = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('### Welcome Configuration')
+                        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'welcome.configTitle')}`)
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('No welcome configuration found.\nUse `welcome setup` to configure welcome messages.')
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.configNotFound'))
                     );
                 return interactionOrMessage.reply({
                     components: [container],
@@ -53,29 +52,32 @@ module.exports = {
                 });
             }
 
-            const channelDisplay = config.channelId ? `<#${config.channelId}>` : '`Not set`';
-            const typeDisplay = config.type === 'container' ? 'Container' : 'Simple';
+            const notSet = await tg(guildId, 'welcome.configNotSet');
+            const channelDisplay = config.channelId ? `<#${config.channelId}>` : `\`${notSet}\``;
+            const typeDisplay = config.type === 'container' ? await tg(guildId, 'welcome.typeContainer') : await tg(guildId, 'welcome.typeSimple');
 
             if (config.type === 'simple') {
                 const container = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('### Welcome Configuration')
+                        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'welcome.configTitle')}`)
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
                         new TextDisplayBuilder().setContent(
-                            `**Type:** ${typeDisplay}\n` +
-                            `**Channel:** ${channelDisplay}\n` +
-                            `**Message:**\n${config.message || '`Not set`'}`
+                            await tg(guildId, 'welcome.configSimpleBody', {
+                                type: typeDisplay,
+                                channel: channelDisplay,
+                                message: config.message || `\`${notSet}\``,
+                            })
                         )
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('-# Use `welcome setup` to modify • `welcome reset` to clear')
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.configHint'))
                     );
 
                 return interactionOrMessage.reply({
@@ -84,9 +86,11 @@ module.exports = {
                 });
             } else {
                 const container = new ContainerBuilder();
+                const defaultTitle = await tg(guildId, 'welcome.defaultTitle');
+                const noDescription = await tg(guildId, 'welcome.noDescriptionSet');
 
                 container.addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`### ${config.title || 'Welcome'}`)
+                    new TextDisplayBuilder().setContent(`### ${config.title || defaultTitle}`)
                 );
 
                 container.addSeparatorComponents(
@@ -98,7 +102,7 @@ module.exports = {
                 if (isValidUrl(config.thumbnailUrl)) {
                     const section = new SectionBuilder()
                         .addTextDisplayComponents(
-                            new TextDisplayBuilder().setContent(config.description || 'No description set.')
+                            new TextDisplayBuilder().setContent(config.description || noDescription)
                         )
                         .setThumbnailAccessory(
                             new ThumbnailBuilder().setURL(config.thumbnailUrl)
@@ -106,7 +110,7 @@ module.exports = {
                     container.addSectionComponents(section);
                 } else {
                     container.addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(config.description || 'No description set.')
+                        new TextDisplayBuilder().setContent(config.description || noDescription)
                     );
                 }
 
@@ -123,23 +127,21 @@ module.exports = {
 
                 const infoContainer = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('### Welcome Configuration')
+                        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'welcome.configTitle')}`)
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
                         new TextDisplayBuilder().setContent(
-                            `**Type:** ${typeDisplay}\n` +
-                            `**Channel:** ${channelDisplay}\n\n` +
-                            `**Preview shown above**`
+                            await tg(guildId, 'welcome.configContainerBody', { type: typeDisplay, channel: channelDisplay })
                         )
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('-# Use `welcome setup` to modify • `welcome reset` to clear')
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.configHint'))
                     );
 
                 return interactionOrMessage.reply({
@@ -152,7 +154,7 @@ module.exports = {
             console.error('Welcome config error:', error);
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('An error occurred while fetching welcome configuration.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.configError'))
                 );
             return interactionOrMessage.reply({
                 components: [container],

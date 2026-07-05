@@ -6,6 +6,7 @@ const {
     MessageFlags, MediaGalleryBuilder, MediaGalleryItemBuilder
 } = require('discord.js');
 const { TicketConfig, TicketCategory } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -17,21 +18,22 @@ function reply(ctx, text) {
 module.exports = {
     async execute(interactionOrMessage) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const member = interactionOrMessage.member;
 
         if (!member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return reply(interactionOrMessage, 'You need **Administrator** permission.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.panel.adminRequired'));
         }
 
         const config = await TicketConfig.findOne({ where: { guildId: guild.id } });
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured. Use `ticket setup` first.');
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfigured'));
 
         const categories = await TicketCategory.findAll({ where: { guildId: guild.id }, order: [['id', 'ASC']] });
-        if (categories.length === 0) return reply(interactionOrMessage, 'No ticket categories found. Please run setup again.');
+        if (categories.length === 0) return reply(interactionOrMessage, await tg(guildId, 'ticket.panel.noCategories'));
 
         try {
             const panelChannel = guild.channels.cache.get(config.panelChannelId);
-            if (!panelChannel) return reply(interactionOrMessage, 'Panel channel not found. Please reconfigure.');
+            if (!panelChannel) return reply(interactionOrMessage, await tg(guildId, 'ticket.panel.channelNotFound'));
 
             const panelContainer = new ContainerBuilder();
 
@@ -82,10 +84,10 @@ module.exports = {
             const panelMsg = await panelChannel.send({ components: [panelContainer], flags: MessageFlags.IsComponentsV2 });
             config.panelMessageId = panelMsg.id;
             await config.save();
-            return reply(interactionOrMessage, 'Ticket panel sent successfully.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.panel.sentSuccess'));
         } catch (error) {
             console.error('Panel send error:', error);
-            return reply(interactionOrMessage, 'Failed to send ticket panel. Please check channel permissions.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.panel.failed'));
         }
     }
 };

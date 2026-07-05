@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -9,6 +6,7 @@ const {
     MessageFlags
 } = require('discord.js');
 const { AutomodConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'enable',
@@ -17,11 +15,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (!member.permissions.has('ManageGuild')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Manage Server** permission to enable automod.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.noPermissionEnable'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -34,13 +33,13 @@ module.exports = {
         if (!config) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Setup Required')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.setupRequiredTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Run `/automod setup` first to configure automod.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.setupRequiredBody'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -51,13 +50,13 @@ module.exports = {
         if (config.enabled) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Already Enabled')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.alreadyEnabledTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('AutoMod is already enabled on this server.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.alreadyEnabledBody'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -69,13 +68,13 @@ module.exports = {
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('### AutoMod Enabled')
+                new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.enabledTitle')}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('AutoMod is now active. Messages will be moderated based on your configuration.')
+                new TextDisplayBuilder().setContent(await tg(guildId, 'automod.enabledBody'))
             );
 
         return interactionOrMessage.reply({

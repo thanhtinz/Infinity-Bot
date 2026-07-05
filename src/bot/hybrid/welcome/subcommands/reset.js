@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -9,6 +6,7 @@ const {
     MessageFlags
 } = require('discord.js');
 const { WelcomeConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'reset',
@@ -17,11 +15,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (!member.permissions.has('Administrator')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Administrator** permission to use this command.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.noPermission'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -35,13 +34,13 @@ module.exports = {
             if (!config) {
                 const container = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('### Welcome Reset')
+                        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'welcome.resetTitle')}`)
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('No welcome configuration found for this server.')
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.resetNotFound'))
                     );
                 return interactionOrMessage.reply({
                     components: [container],
@@ -53,13 +52,13 @@ module.exports = {
 
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Welcome Reset')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'welcome.resetTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('All welcome settings have been reset successfully.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.resetSuccess'))
                 );
 
             return interactionOrMessage.reply({
@@ -71,7 +70,7 @@ module.exports = {
             console.error('Welcome reset error:', error);
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('An error occurred while resetting welcome settings.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.resetError'))
                 );
             return interactionOrMessage.reply({
                 components: [container],

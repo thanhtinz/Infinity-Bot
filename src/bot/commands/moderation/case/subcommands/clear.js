@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -10,6 +7,7 @@ const {
   PermissionFlagsBits,
 } = require('discord.js');
 const { ModLog } = require('../../../../../database/models');
+const { tg } = require('../../../../utils/i18n');
 
 function modReply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -24,15 +22,16 @@ module.exports = {
   description: 'Delete all moderation cases for a user',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
     const targetUser = interaction.options.getUser('user');
 
     if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers))
-      return modReply(interaction, 'Permission Denied', 'You need the **Moderate Members** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Moderate Members' }), true);
 
     const deletedCount = await ModLog.destroy({
       where: { guildId: interaction.guild.id, targetId: targetUser.id }
     });
 
-    await modReply(interaction, 'Cases Cleared', `Deleted **${deletedCount}** case(s) for ${targetUser.tag}.`);
+    await modReply(interaction, await tg(guildId, 'case.clear.successTitle'), await tg(guildId, 'case.clear.success', { count: deletedCount, user: targetUser.tag }));
   },
 };

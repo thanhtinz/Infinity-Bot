@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -14,6 +11,7 @@ const {
     ButtonStyle
 } = require('discord.js');
 const { LoggingConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 const LOG_CATEGORIES = [
     { value: 'messageLogs', label: 'Message Logs', description: 'Delete, edit & bulk delete' },
@@ -23,6 +21,10 @@ const LOG_CATEGORIES = [
     { value: 'voiceLogs', label: 'Voice Logs', description: 'Join, leave, switch & mute' }
 ];
 
+// NOTE: kept synchronous with English labels — this is also called (with no
+// args) from src/bot/events/interactions/loggingHandler.js, so changing its
+// signature/behavior here would break that call site. Localizing this
+// select-menu's labels is deferred (see report).
 function buildCategorySelect(placeholder = 'Select a log type to configure') {
     const menu = new StringSelectMenuBuilder()
         .setCustomId('logging_category_select')
@@ -48,11 +50,12 @@ module.exports = {
 
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
+        const guildId = interactionOrMessage.guild.id;
 
         if (!member.permissions.has('Administrator')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Administrator** permission to use this command.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'logging.noPermission'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -64,13 +67,13 @@ module.exports = {
         if (existing) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Already Configured')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'logging.alreadyConfiguredTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Logging is already set up for this server.\nUse **logging config** to view or **logging reset** to start over.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'logging.alreadyConfiguredBody'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -80,10 +83,7 @@ module.exports = {
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(
-                    '**Logging Setup**\n' +
-                    'Pick a log category below to assign a channel.'
-                )
+                new TextDisplayBuilder().setContent(await tg(guildId, 'logging.setupPrompt'))
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)

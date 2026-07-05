@@ -8,6 +8,7 @@ const {
     MediaGalleryBuilder, MediaGalleryItemBuilder
 } = require('discord.js');
 const { TicketConfig, TicketCategory } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -26,17 +27,18 @@ function createValidLabel(name, prefix = '') {
 module.exports = {
     async execute(interactionOrMessage, args) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
         const member = guild.members.cache.get(userId);
 
         if (!member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return reply(interactionOrMessage, 'You need **Administrator** permission to use this command.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.adminRequired'));
         }
 
         const existing = await TicketConfig.findOne({ where: { guildId: guild.id } });
 
         if (existing) {
-            return reply(interactionOrMessage, 'Ticket system is already configured. Use `ticket reset` first to clear the current configuration before running setup again.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.setup.alreadyConfigured'));
         }
 
         await startSetupFlow(interactionOrMessage, guild, false);
@@ -120,9 +122,9 @@ async function startSetupFlow(context, guild, isEdit) {
             console.error('Ticket setup error:', error);
             try {
                 const errContainer = new ContainerBuilder()
-                    .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Setup Error'))
+                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guild.id, 'ticket.setup.errorTitle')}`))
                     .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-                    .addTextDisplayComponents(new TextDisplayBuilder().setContent('An error occurred during setup. Please try again.'));
+                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guild.id, 'ticket.setup.errorBody')));
                 if (interaction.deferred || interaction.replied) {
                     await interaction.editReply({ components: [errContainer], flags: MessageFlags.IsComponentsV2 });
                 } else {
@@ -163,9 +165,9 @@ async function showChannelRoleSelection(interaction, guild, setupData) {
 
     if (allTextChannels.length === 0 || allRoles.length === 0) {
         const errContainer = new ContainerBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Setup Requirements Not Met'))
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guild.id, 'ticket.setup.requirementsTitle')}`))
             .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent('Missing text channels or assignable roles. Please ensure the bot has proper permissions.'));
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guild.id, 'ticket.setup.requirementsBody')));
         return await interaction.update({ components: [errContainer] });
     }
 
@@ -254,7 +256,7 @@ async function showCustomizeModal(interaction, setupData) {
         try { setupData.panelDescription = m.fields.getTextInputValue('panel_description') || setupData.panelDescription; } catch {}
         try { setupData.panelImage = m.fields.getTextInputValue('panel_image') || null; } catch {}
         try { setupData.panelThumbnail = m.fields.getTextInputValue('panel_thumbnail') || null; } catch {}
-        await m.reply({ content: 'Panel customized successfully.', ephemeral: true });
+        await m.reply({ content: await tg(m.guild.id, 'ticket.setup.customizedSuccess'), ephemeral: true });
     } catch {}
 }
 
@@ -274,16 +276,17 @@ async function finishSetup(interaction, guild, setupData) {
         });
 
         const doneContainer = new ContainerBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Setup Complete'))
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guild.id, 'ticket.setup.completeTitle')}`))
             .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent('> Use `ticket addcategory` to add ticket categories, then `ticket panel` to send the panel.'));
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`> ${await tg(guild.id, 'ticket.setup.completeBody')}`));
 
         await interaction.update({ components: [doneContainer] });
     } catch (error) {
         console.error('Finish setup error:', error);
         try {
-            if (interaction.replied || interaction.deferred) await interaction.editReply({ content: 'Failed to complete setup. Please try again.' });
-            else await interaction.reply({ content: 'Failed to complete setup. Please try again.', ephemeral: true });
+            const failMsg = await tg(guild.id, 'ticket.setup.failed');
+            if (interaction.replied || interaction.deferred) await interaction.editReply({ content: failMsg });
+            else await interaction.reply({ content: failMsg, ephemeral: true });
         } catch {}
     }
 }

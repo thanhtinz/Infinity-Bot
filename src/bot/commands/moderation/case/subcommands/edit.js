@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -10,6 +7,7 @@ const {
   PermissionFlagsBits,
 } = require('discord.js');
 const { ModLog } = require('../../../../../database/models');
+const { tg } = require('../../../../utils/i18n');
 
 function modReply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -24,22 +22,23 @@ module.exports = {
   description: 'Edit the reason of a moderation case',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
     const caseNumber = interaction.options.getInteger('case_number');
     const reason = interaction.options.getString('reason');
 
     if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers))
-      return modReply(interaction, 'Permission Denied', 'You need the **Moderate Members** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Moderate Members' }), true);
 
     const modCase = await ModLog.findOne({
       where: { guildId: interaction.guild.id, caseNumber }
     });
 
     if (!modCase)
-      return modReply(interaction, 'Case Not Found', `No case with number **#${caseNumber}** exists in this server.`, true);
+      return modReply(interaction, await tg(guildId, 'case.common.caseNotFoundTitle'), await tg(guildId, 'case.common.caseNotFoundBody', { caseNumber }), true);
 
     modCase.reason = reason;
     await modCase.save();
 
-    await modReply(interaction, 'Case Updated', `**Case #${caseNumber}** reason updated to:\n${reason}`);
+    await modReply(interaction, await tg(guildId, 'case.edit.successTitle'), await tg(guildId, 'case.edit.success', { caseNumber, reason }));
   },
 };

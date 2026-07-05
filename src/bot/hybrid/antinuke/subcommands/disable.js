@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -9,6 +6,7 @@ const {
     MessageFlags
 } = require('discord.js');
 const { AntinukeConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'disable',
@@ -17,11 +15,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (guild.ownerId !== member.id) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Only the **Server Owner** can disable antinuke.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.ownerOnlyDisable'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -34,13 +33,13 @@ module.exports = {
         if (!config || !config.enabled) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Not Enabled')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.notEnabledTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Antinuke is not currently enabled on this server.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.notEnabledBody'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -52,13 +51,13 @@ module.exports = {
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('### Antinuke Disabled')
+                new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.disabledTitle')}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('Antinuke has been disabled. Your server is no longer protected from nuking attacks.')
+                new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.disabledBody'))
             );
 
         return interactionOrMessage.reply({

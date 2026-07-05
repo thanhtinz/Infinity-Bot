@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -10,6 +7,7 @@ const {
   PermissionFlagsBits,
 } = require('discord.js');
 const { WarnPunishConfig } = require('../../../../../database/models');
+const { tg } = require('../../../../utils/i18n');
 
 function modReply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -24,18 +22,19 @@ module.exports = {
   description: 'Remove a warning punishment threshold',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
     const warnCount = interaction.options.getInteger('warn_count');
 
     if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild))
-      return modReply(interaction, 'Permission Denied', 'You need the **Manage Server** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Manage Server' }), true);
 
     const deletedCount = await WarnPunishConfig.destroy({
       where: { guildId: interaction.guild.id, warnCount }
     });
 
     if (deletedCount === 0)
-      return modReply(interaction, 'Not Found', `No punishment threshold configured for **${warnCount}** warning(s).`, true);
+      return modReply(interaction, await tg(guildId, 'common.notFound'), await tg(guildId, 'warnpunish.remove.notFound', { warnCount }), true);
 
-    await modReply(interaction, 'Threshold Removed', `Removed the punishment threshold for **${warnCount}** warning(s).`);
+    await modReply(interaction, await tg(guildId, 'warnpunish.remove.successTitle'), await tg(guildId, 'warnpunish.remove.success', { warnCount }));
   },
 };

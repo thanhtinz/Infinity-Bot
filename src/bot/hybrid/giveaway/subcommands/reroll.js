@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -14,22 +11,24 @@ const {
 const Giveaway = require('../../../../database/models/Giveaway');
 const GiveawayEntry = require('../../../../database/models/GiveawayEntry');
 const emojis = require('../../../emojis.json');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
   async execute(interactionOrMessage, args = []) {
     const isSlash = interactionOrMessage.isCommand?.();
     const member = interactionOrMessage.member;
+    const guildId = interactionOrMessage.guild.id;
 
     if (!member.permissions.has('ManageGuild')) {
       const container = new ContainerBuilder();
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('**Permission Denied**')
+        new TextDisplayBuilder().setContent(`**${await tg(guildId, 'common.permissionDenied')}**`)
       );
       container.addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       );
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('You need `Manage Server` permission to reroll giveaways!')
+        new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.reroll.noPermission'))
       );
 
       return interactionOrMessage.reply({
@@ -50,13 +49,13 @@ module.exports = {
       } else {
         const container = new ContainerBuilder();
         container.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent('**No Message Found**')
+          new TextDisplayBuilder().setContent(`**${await tg(guildId, 'giveaway.reroll.noMessageTitle')}**`)
         );
         container.addSeparatorComponents(
           new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
         );
         container.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent('Reply to a giveaway message or provide message ID!')
+          new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.reroll.noMessageBody'))
         );
 
         return interactionOrMessage.reply({
@@ -76,13 +75,13 @@ module.exports = {
     if (!giveaway) {
       const container = new ContainerBuilder();
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('**Not Found**')
+        new TextDisplayBuilder().setContent(`**${await tg(guildId, 'giveaway.reroll.notFoundTitle')}**`)
       );
       container.addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       );
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('No ended giveaway found for this message!')
+        new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.reroll.notFoundBody'))
       );
 
       return interactionOrMessage.reply({
@@ -98,13 +97,13 @@ module.exports = {
     if (!entries || entries.length === 0) {
       const container = new ContainerBuilder();
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('**No Entries**')
+        new TextDisplayBuilder().setContent(`**${await tg(guildId, 'giveaway.reroll.noEntriesTitle')}**`)
       );
       container.addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       );
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('No entries found to reroll!')
+        new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.reroll.noEntriesBody'))
       );
 
       return interactionOrMessage.reply({
@@ -134,16 +133,18 @@ module.exports = {
 
     const container = new ContainerBuilder();
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`${emojis.gift || '🎁'} **New Winners!** ${emojis.gift || '🎁'}`)
+      new TextDisplayBuilder().setContent(`${emojis.gift || '🎁'} **${await tg(guildId, 'giveaway.reroll.newWinnersHeader')}** ${emojis.gift || '🎁'}`)
     );
     container.addSeparatorComponents(
       new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
     );
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `**Prize:** ${giveaway.prize}\n` +
-        `**New Winners:** ${winnerLinks.join(', ')}\n\n` +
-        `${emojis.giveawayyes} Congratulations! 🎊`
+        await tg(guildId, 'giveaway.reroll.newWinnersBody', {
+          prize: giveaway.prize,
+          winners: winnerLinks.join(', '),
+          congrats: emojis.giveawayyes,
+        })
       )
     );
 
@@ -151,7 +152,7 @@ module.exports = {
 
     if (giveawayMessage) {
       const giveawayLinkButton = new ButtonBuilder()
-        .setLabel('Giveaway Link')
+        .setLabel(await tg(guildId, 'giveaway.reroll.giveawayLinkButton'))
         .setStyle(ButtonStyle.Link)
         .setURL(giveawayMessage.url);
 
@@ -167,11 +168,11 @@ module.exports = {
 
     await interactionOrMessage.reply({
       components: [new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('**Reroll Complete**')
+        new TextDisplayBuilder().setContent(`**${await tg(guildId, 'giveaway.reroll.rerollCompleteTitle')}**`)
       ).addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       ).addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('New winners have been selected!')
+        new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.reroll.rerollCompleteBody'))
       )],
       flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
     });
@@ -181,12 +182,19 @@ module.exports = {
         const user = await interactionOrMessage.client.users.fetch(winner.userId);
         const dmContainer = new ContainerBuilder();
         dmContainer.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`${emojis.giveawayyes} You won **${giveaway.prize}** in **${interactionOrMessage.guild.name}** ${emojis.heart || '❤️'}`)
+          new TextDisplayBuilder().setContent(
+            await tg(guildId, 'giveaway.reroll.dmWinner', {
+              icon: emojis.giveawayyes,
+              prize: giveaway.prize,
+              guild: interactionOrMessage.guild.name,
+              heart: emojis.heart || '❤️',
+            })
+          )
         );
 
         if (giveawayMessage) {
           const jumpButton = new ButtonBuilder()
-            .setLabel('View Winning Message')
+            .setLabel(await tg(guildId, 'giveaway.reroll.viewWinningMessageButton'))
             .setStyle(ButtonStyle.Link)
             .setURL(giveawayMessage.url);
 

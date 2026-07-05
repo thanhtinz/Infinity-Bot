@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -10,22 +7,24 @@ const {
 } = require('discord.js');
 const Giveaway = require('../../../../database/models/Giveaway');
 const { endGiveaway } = require('../../../utils/giveawayUtils');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
   async execute(interactionOrMessage, args = []) {
     const isSlash = interactionOrMessage.isCommand?.();
     const member = interactionOrMessage.member;
+    const guildId = interactionOrMessage.guild.id;
 
     if (!member.permissions.has('ManageGuild')) {
       const container = new ContainerBuilder();
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('**Permission Denied**')
+        new TextDisplayBuilder().setContent(`**${await tg(guildId, 'common.permissionDenied')}**`)
       );
       container.addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       );
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('You need `Manage Server` permission to end giveaways!')
+        new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.end.noPermission'))
       );
 
       return interactionOrMessage.reply({
@@ -46,13 +45,13 @@ module.exports = {
       } else {
         const container = new ContainerBuilder();
         container.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent('**No Message Found**')
+          new TextDisplayBuilder().setContent(`**${await tg(guildId, 'giveaway.end.noMessageTitle')}**`)
         );
         container.addSeparatorComponents(
           new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
         );
         container.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent('Reply to a giveaway message or provide message ID!')
+          new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.end.noMessageBody'))
         );
 
         return interactionOrMessage.reply({
@@ -72,13 +71,13 @@ module.exports = {
     if (!giveaway) {
       const container = new ContainerBuilder();
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('**Not Found**')
+        new TextDisplayBuilder().setContent(`**${await tg(guildId, 'giveaway.end.notFoundTitle')}**`)
       );
       container.addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       );
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('No active giveaway found for this message!')
+        new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.end.notFoundBody'))
       );
 
       return interactionOrMessage.reply({
@@ -92,13 +91,13 @@ module.exports = {
 
     const container = new ContainerBuilder();
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent('**Giveaway Ended**')
+      new TextDisplayBuilder().setContent(`**${await tg(guildId, 'giveaway.end.endedTitle')}**`)
     );
     container.addSeparatorComponents(
       new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
     );
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent('The giveaway has been ended successfully!')
+      new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.end.endedBody'))
     );
 
     return interactionOrMessage.reply({

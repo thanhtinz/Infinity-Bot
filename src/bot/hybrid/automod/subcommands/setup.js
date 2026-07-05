@@ -14,6 +14,7 @@ const {
     ButtonStyle
 } = require('discord.js');
 const { AutomodConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'setup',
@@ -26,7 +27,7 @@ module.exports = {
         if (!member.permissions.has('ManageGuild')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Manage Server** permission to setup automod.')
+                    new TextDisplayBuilder().setContent(await tg(guild.id, 'automod.noPermissionSetup'))
                 );
             return interactionOrMessage.reply({
                 components: [container],

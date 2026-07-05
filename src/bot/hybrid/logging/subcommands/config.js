@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -9,6 +6,7 @@ const {
     MessageFlags
 } = require('discord.js');
 const { LoggingConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'config',
@@ -17,11 +15,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (!member.permissions.has('Administrator')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Administrator** permission to use this command.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'logging.noPermission'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -35,15 +34,13 @@ module.exports = {
             if (!config) {
                 const container = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('### Logging Configuration')
+                        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'logging.configTitle')}`)
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(
-                            'No logging configuration found.\nUse logging setup to configure logging channels.'
-                        )
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'logging.configNotFound'))
                     );
                 return interactionOrMessage.reply({
                     components: [container],
@@ -51,29 +48,32 @@ module.exports = {
                 });
             }
 
-            const fmt = (id) => id ? `<#${id}>` : 'Not set';
+            const notSet = await tg(guildId, 'logging.notSet');
+            const fmt = (id) => id ? `<#${id}>` : notSet;
 
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Logging Configuration')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'logging.configTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
                     new TextDisplayBuilder().setContent(
-                        `> **Message Logs:** ${fmt(config.messageLogsChannelId)}\n` +
-                        `> **Member Logs:** ${fmt(config.memberLogsChannelId)}\n` +
-                        `> **Moderation Logs:** ${fmt(config.moderationLogsChannelId)}\n` +
-                        `> **Server Logs:** ${fmt(config.serverLogsChannelId)}\n` +
-                        `> **Voice Logs:** ${fmt(config.voiceLogsChannelId)}`
+                        await tg(guildId, 'logging.configBody', {
+                            messageLogs: fmt(config.messageLogsChannelId),
+                            memberLogs: fmt(config.memberLogsChannelId),
+                            moderationLogs: fmt(config.moderationLogsChannelId),
+                            serverLogs: fmt(config.serverLogsChannelId),
+                            voiceLogs: fmt(config.voiceLogsChannelId),
+                        })
                     )
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('-# Use logging setup to modify • logging reset to clear')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'logging.configHint'))
                 );
 
             return interactionOrMessage.reply({
@@ -85,7 +85,7 @@ module.exports = {
             console.error('Logging config error:', error);
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('An error occurred while fetching logging configuration.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'logging.configError'))
                 );
             return interactionOrMessage.reply({
                 components: [container],

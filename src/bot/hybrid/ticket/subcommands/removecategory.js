@@ -6,6 +6,7 @@ const {
 } = require('discord.js');
 const { TicketConfig, TicketCategory } = require('../../../../database/models');
 const { logTicketEvent, refreshPanel } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -17,18 +18,19 @@ function reply(ctx, text) {
 module.exports = {
     async execute(interactionOrMessage) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
         const member = guild.members.cache.get(userId);
 
         if (!member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return reply(interactionOrMessage, 'You need **Administrator** permission to use this command.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.adminRequired'));
         }
 
         const config = await TicketConfig.findOne({ where: { guildId: guild.id } });
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured. Use `ticket setup` first.');
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfigured'));
 
         const categories = await TicketCategory.findAll({ where: { guildId: guild.id }, order: [['id', 'ASC']] });
-        if (categories.length === 0) return reply(interactionOrMessage, 'No categories to remove.');
+        if (categories.length === 0) return reply(interactionOrMessage, await tg(guildId, 'ticket.removecategory.noCategories'));
 
         const options = categories.map(cat =>
             new StringSelectMenuOptionBuilder()
@@ -38,9 +40,9 @@ module.exports = {
         );
 
         const selectContainer = new ContainerBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Remove Category'))
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'ticket.removecategory.promptTitle')}`))
             .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent('> Select a category to remove.'))
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`> ${await tg(guildId, 'ticket.removecategory.promptBody')}`))
             .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
             .addActionRowComponents(new ActionRowBuilder().addComponents(
                 new StringSelectMenuBuilder().setCustomId('ticket_removecat_select').setPlaceholder('Select category...').setMaxValues(1).addOptions(options)
@@ -61,7 +63,7 @@ module.exports = {
             const category = categories.find(c => String(c.id) === catId);
             if (!category) {
                 return selectInteraction.update({ components: [new ContainerBuilder()
-                    .addTextDisplayComponents(new TextDisplayBuilder().setContent('Category not found.'))] });
+                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guildId, 'ticket.removecategory.categoryNotFound')))] });
             }
 
             const catName = category.categoryName;
@@ -70,15 +72,15 @@ module.exports = {
             refreshPanel(guild, config).catch(() => {});
 
             const doneContainer = new ContainerBuilder()
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Category Removed'))
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'ticket.removecategory.removedTitle')}`))
                 .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent(`> **${catName}** has been removed.`));
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(`> ${await tg(guildId, 'ticket.removecategory.removedBody', { name: catName })}`));
             await selectInteraction.update({ components: [doneContainer] });
         } catch {
             const expiredContainer = new ContainerBuilder()
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Remove Category'))
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'ticket.removecategory.promptTitle')}`))
                 .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent('> Timed out.'));
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(`> ${await tg(guildId, 'ticket.shared.timedOut')}`));
             await sentMsg.edit({ components: [expiredContainer] }).catch(() => {});
         }
     }

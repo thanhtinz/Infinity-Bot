@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -11,6 +8,7 @@ const {
 } = require('discord.js');
 const ms = require('ms');
 const { WarnPunishConfig } = require('../../../../../database/models');
+const { tg } = require('../../../../utils/i18n');
 
 function modReply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -25,17 +23,18 @@ module.exports = {
   description: 'Set the punishment for a warning threshold',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
     const warnCount = interaction.options.getInteger('warn_count');
     const action = interaction.options.getString('action');
     const duration = interaction.options.getString('duration');
 
     if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild))
-      return modReply(interaction, 'Permission Denied', 'You need the **Manage Server** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Manage Server' }), true);
 
     if (action === 'mute') {
       const time = duration ? ms(duration) : null;
       if (!time || time < 1000 || time > 2419200000)
-        return modReply(interaction, 'Invalid Duration', 'Provide a valid duration for mute (e.g., 1h, 30m, 1d). Maximum is 28 days.', true);
+        return modReply(interaction, await tg(guildId, 'common.invalidDuration'), await tg(guildId, 'warnpunish.set.invalidDurationBody'), true);
     }
 
     const [config, created] = await WarnPunishConfig.findOrCreate({
@@ -54,8 +53,10 @@ module.exports = {
       await config.save();
     }
 
-    await modReply(interaction, 'Threshold Saved',
-      `Reaching **${warnCount}** warning(s) will now trigger **${action}**` +
-      (action === 'mute' ? ` for **${duration}**.` : '.'));
+    const body = action === 'mute'
+      ? await tg(guildId, 'warnpunish.set.successMute', { warnCount, action, duration })
+      : await tg(guildId, 'warnpunish.set.success', { warnCount, action });
+
+    await modReply(interaction, await tg(guildId, 'warnpunish.set.successTitle'), body);
   },
 };

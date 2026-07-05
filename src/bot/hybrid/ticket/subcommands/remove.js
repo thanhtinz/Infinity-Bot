@@ -2,6 +2,7 @@
 const { PermissionsBitField, ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, SeparatorSpacingSize, MessageFlags } = require('discord.js');
 const { TicketConfig, Ticket } = require('../../../../database/models');
 const { logTicketEvent, hasSupportRole } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -22,6 +23,7 @@ function replyTitled(ctx, title, body) {
 module.exports = {
     async execute(interactionOrMessage, args) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const channel = interactionOrMessage.channel;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
         const isSlash = interactionOrMessage.isCommand?.();
@@ -31,7 +33,7 @@ module.exports = {
             const u = interactionOrMessage.options.getUser('user');
             targetUserId = u?.id;
         } else {
-            if (!args[0]) return reply(interactionOrMessage, 'Please specify a user to remove.\n**Usage:** `ticket remove <user>`');
+            if (!args[0]) return reply(interactionOrMessage, await tg(guildId, 'ticket.remove.usage'));
             targetUserId = args[0].replace(/[<@!>]/g, '');
         }
 
@@ -40,32 +42,32 @@ module.exports = {
             TicketConfig.findOne({ where: { guildId: guild.id } })
         ]);
 
-        if (!ticket) return reply(interactionOrMessage, 'This channel is not a valid ticket channel.');
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured.');
+        if (!ticket) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.invalidTicketChannel'));
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfiguredPlain'));
 
         const member = guild.members.cache.get(userId);
         const canManage = ticket.userId === userId || ticket.claimedBy === userId || hasSupportRole(member, config);
-        if (!canManage) return reply(interactionOrMessage, 'You don\'t have permission to remove users from this ticket.');
+        if (!canManage) return reply(interactionOrMessage, await tg(guildId, 'ticket.remove.noPermission'));
 
-        if (targetUserId === ticket.userId) return reply(interactionOrMessage, 'You cannot remove the ticket creator.');
+        if (targetUserId === ticket.userId) return reply(interactionOrMessage, await tg(guildId, 'ticket.remove.cannotRemoveCreator'));
 
         try {
             const targetMember = await guild.members.fetch(targetUserId).catch(() => null);
-            if (!targetMember) return reply(interactionOrMessage, 'The specified user could not be found in this server.');
+            if (!targetMember) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.userNotFoundInServer'));
 
             const existingPerms = channel.permissionsFor(targetMember);
             if (!existingPerms?.has(PermissionsBitField.Flags.ViewChannel)) {
-                return reply(interactionOrMessage, `${targetMember.user.tag} does not have access to this ticket.`);
+                return reply(interactionOrMessage, await tg(guildId, 'ticket.remove.noAccess', { user: targetMember.user.tag }));
             }
 
             await channel.permissionOverwrites.delete(targetMember.id);
 
             logTicketEvent(guild, config, 'User Removed from Ticket', `**Ticket:** ${channel}\n**Removed User:** <@${targetMember.id}>\n**Removed by:** <@${userId}>`).catch(() => {});
 
-            return replyTitled(interactionOrMessage, '### User Removed', `<@${targetMember.id}> has been removed from this ticket.`);
+            return replyTitled(interactionOrMessage, `### ${await tg(guildId, 'ticket.remove.removedTitle')}`, await tg(guildId, 'ticket.remove.removedBody', { user: `<@${targetMember.id}>` }));
         } catch (error) {
             console.error('Ticket remove user error:', error);
-            return reply(interactionOrMessage, 'Failed to remove the user. Please check permissions and try again.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.remove.failed'));
         }
     }
 };

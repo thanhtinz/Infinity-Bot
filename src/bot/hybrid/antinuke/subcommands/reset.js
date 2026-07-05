@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -12,6 +9,7 @@ const {
     ButtonStyle
 } = require('discord.js');
 const { AntinukeConfig, AntinukeWhitelist } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'reset',
@@ -20,11 +18,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (guild.ownerId !== member.id) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Only the **Server Owner** can reset antinuke.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.ownerOnlyReset'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -37,7 +36,7 @@ module.exports = {
         if (!config) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Antinuke has not been configured yet.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.notConfiguredYet'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -69,17 +68,13 @@ module.exports = {
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('# Antinuke Reset')
+                new TextDisplayBuilder().setContent(`# ${await tg(guildId, 'antinuke.resetTitle')}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(
-                    'Antinuke has been reset to default settings and **disabled**.\n\n' +
-                    'All whitelisted users have been removed.\n\n' +
-                    'Use `/antinuke setup` to configure again.'
-                )
+                new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.resetBody'))
             );
 
         return interactionOrMessage.reply({

@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -9,6 +6,7 @@ const {
     MessageFlags
 } = require('discord.js');
 const { AutomodConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'disable',
@@ -17,11 +15,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (!member.permissions.has('ManageGuild')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Manage Server** permission to disable automod.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.noPermissionDisable'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -34,13 +33,13 @@ module.exports = {
         if (!config) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Not Configured')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.notConfiguredTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('AutoMod has not been configured on this server.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.notConfiguredBody'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -51,13 +50,13 @@ module.exports = {
         if (!config.enabled) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Already Disabled')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.alreadyDisabledTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('AutoMod is already disabled on this server.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.alreadyDisabledBody'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -69,13 +68,13 @@ module.exports = {
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('### AutoMod Disabled')
+                new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.disabledTitle')}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('AutoMod has been disabled. Messages will no longer be automatically moderated.')
+                new TextDisplayBuilder().setContent(await tg(guildId, 'automod.disabledBody'))
             );
 
         return interactionOrMessage.reply({

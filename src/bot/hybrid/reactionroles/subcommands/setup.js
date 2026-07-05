@@ -1,6 +1,3 @@
-
-
-
 const {
   ActionRowBuilder,
   ChannelSelectMenuBuilder,
@@ -17,15 +14,17 @@ const {
   MessageFlags
 } = require('discord.js');
 const ReactionRoles = require('../../../../database/models/ReactionRoles');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
   name: 'reactionroles',
   description: 'Setup and manage reaction roles',
 
   async execute(interaction) {
+    const guildId = interaction.guild.id;
     if (!interaction.member.permissions.has('ManageGuild')) {
       return interaction.reply({
-        content: 'You need **Manage Guild** permission.',
+        content: await tg(guildId, 'reactionroles.noPermission'),
         flags: MessageFlags.Ephemeral
       });
     }
@@ -40,16 +39,17 @@ module.exports = {
 
   async step1(interaction) {
     const userId = interaction.user?.id ?? interaction.author?.id;
+    const guildId = interaction.guild.id;
 
     const container = new ContainerBuilder()
       .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('### Reaction Roles Setup - Step 1')
+        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'reactionroles.setup.step1Title')}`)
       )
       .addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       )
       .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('Select the channel where the reaction roles message will be posted:')
+        new TextDisplayBuilder().setContent(await tg(guildId, 'reactionroles.setup.step1Prompt'))
       )
       .addActionRowComponents(
         new ActionRowBuilder().addComponents(
@@ -69,6 +69,7 @@ module.exports = {
   },
 
   async step2(interaction, channelId) {
+    const guildId = interaction.guild.id;
 
     if (!interaction.client.reactionRolesSetup) {
       interaction.client.reactionRolesSetup = new Map();
@@ -82,13 +83,13 @@ module.exports = {
 
     const container = new ContainerBuilder()
       .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('### Reaction Roles Setup - Step 2')
+        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'reactionroles.setup.step2Title')}`)
       )
       .addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       )
       .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('**Configure your embed message:**\n\nClick "Add Emoji-Role" to add pairs, or "Continue" to proceed to review.')
+        new TextDisplayBuilder().setContent(await tg(guildId, 'reactionroles.setup.step2Prompt'))
       );
 
     const buttonRow = new ActionRowBuilder().addComponents(
@@ -113,10 +114,11 @@ module.exports = {
   },
 
   async step3(interaction) {
+    const guildId = interaction.guild.id;
 
     if (!interaction.client.reactionRolesSetup?.has(interaction.user.id)) {
       return interaction.reply({
-        content: 'Session expired. Please run `/reactionroles setup` again.',
+        content: await tg(guildId, 'reactionroles.setup.sessionExpired'),
         flags: MessageFlags.Ephemeral
       });
     }
@@ -125,7 +127,7 @@ module.exports = {
 
     if (session.emojiRolePairs.length === 0) {
       return interaction.reply({
-        content: 'You must add at least one emoji-role pair!',
+        content: await tg(guildId, 'reactionroles.setup.needAtLeastOnePair'),
         flags: MessageFlags.Ephemeral
       });
     }
@@ -138,16 +140,14 @@ module.exports = {
 
     const container = new ContainerBuilder()
       .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('### Reaction Roles Setup - Step 3')
+        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'reactionroles.setup.step3Title')}`)
       )
       .addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       )
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `**Channel:** <#${session.channelId}>\n\n` +
-          `**Emoji-Role Pairs:**\n${pairsSummary}\n\n` +
-          `Review your settings and confirm to post the message.`
+          await tg(guildId, 'reactionroles.setup.step3Body', { channel: `<#${session.channelId}>`, pairs: pairsSummary })
         )
       );
 

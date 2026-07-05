@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -10,6 +7,7 @@ const {
   PermissionFlagsBits,
 } = require('discord.js');
 const ms = require('ms');
+const { tg } = require('../../../utils/i18n');
 
 function modReply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -24,30 +22,31 @@ module.exports = {
   description: 'Temporarily add roles to users',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
     const targetUser = interaction.options.getUser('user');
     const targetMember = interaction.options.getMember('user');
     const role = interaction.options.getRole('role');
     const duration = interaction.options.getString('duration');
-    const reason = interaction.options.getString('reason') || 'No reason provided';
+    const reason = interaction.options.getString('reason') || await tg(guildId, 'common.noReasonProvided');
 
     if (!interaction.member.permissions.has(PermissionFlagsBits.ManageRoles))
-      return modReply(interaction, 'Permission Denied', 'You need the **Manage Roles** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Manage Roles' }), true);
 
     if (!interaction.guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles))
-      return modReply(interaction, 'Missing Permissions', 'I need the **Manage Roles** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.missingPermissions'), await tg(guildId, 'common.iNeedPermission', { permission: 'Manage Roles' }), true);
 
     if (!targetMember)
-      return modReply(interaction, 'User Not Found', 'User is not in this server.', true);
+      return modReply(interaction, await tg(guildId, 'common.userNotFound'), await tg(guildId, 'common.userNotInServer'), true);
 
     const time = ms(duration);
     if (!time || time < 1000 || time > 315360000000)
-      return modReply(interaction, 'Invalid Duration', 'Provide a valid duration (e.g., 1h, 30m, 1d, 7d).', true);
+      return modReply(interaction, await tg(guildId, 'common.invalidDuration'), await tg(guildId, 'moderation.temprole.invalidDurationBody'), true);
 
     if (role.position >= interaction.guild.members.me.roles.highest.position)
-      return modReply(interaction, 'Role Too High', 'I cannot manage this role as it is higher than or equal to my highest role.', true);
+      return modReply(interaction, await tg(guildId, 'common.roleTooHigh'), await tg(guildId, 'common.roleTooHighMe'), true);
 
     if (targetMember.roles.cache.has(role.id))
-      return modReply(interaction, 'Role Already Assigned', 'User already has this role.', true);
+      return modReply(interaction, await tg(guildId, 'moderation.temprole.roleAlreadyAssignedTitle'), await tg(guildId, 'moderation.temprole.roleAlreadyAssignedBody'), true);
 
     try {
       await targetMember.roles.add(role, `[TEMPROLE ${ms(time, { long: true })}] ${reason}`);
@@ -61,11 +60,17 @@ module.exports = {
         } catch {}
       }, time);
 
-      await modReply(interaction, 'Temporary Role Added',
-        `**User:** ${targetUser}\n**Role:** ${role}\n**Duration:** ${ms(time, { long: true })}\n**Added by:** ${interaction.user.tag}\n**Reason:** ${reason}`);
+      await modReply(interaction, await tg(guildId, 'moderation.temprole.successTitle'),
+        await tg(guildId, 'moderation.temprole.success', {
+          user: `${targetUser}`,
+          role: `${role}`,
+          duration: ms(time, { long: true }),
+          moderator: interaction.user.tag,
+          reason,
+        }));
     } catch (error) {
-      const msg = error.code === 50013 ? 'I lack the permissions to manage this role.' : 'Failed to add temporary role.';
-      await modReply(interaction, 'Error', msg, true);
+      const msg = error.code === 50013 ? await tg(guildId, 'moderation.temprole.errorPermission') : await tg(guildId, 'moderation.temprole.errorGeneric');
+      await modReply(interaction, await tg(guildId, 'common.error'), msg, true);
     }
   },
 };

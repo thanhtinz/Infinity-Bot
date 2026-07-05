@@ -1,6 +1,3 @@
-
-
-
 const emojis = require('../../../emojis.json');
 const {
     ContainerBuilder,
@@ -14,6 +11,7 @@ const {
     MessageFlags
 } = require('discord.js');
 const { WelcomeConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 function replacePlaceholders(text, member) {
     if (!text) return text;
@@ -43,19 +41,20 @@ module.exports = {
     async execute(interactionOrMessage) {
         const guild = interactionOrMessage.guild;
         const member = interactionOrMessage.member;
+        const guildId = guild.id;
 
         const config = await WelcomeConfig.findOne({ where: { guildId: guild.id } });
 
         if (!config) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`### ${emojis.cross} No Welcome Configuration`)
+                    new TextDisplayBuilder().setContent(`### ${emojis.cross} ${await tg(guildId, 'welcome.noConfigTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('There is no welcome configuration set up for this server.\n\nUse `welcome setup` to configure welcome messages.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.noConfigBody'))
                 );
 
             return interactionOrMessage.reply({
@@ -68,13 +67,13 @@ module.exports = {
             if (!config.message) {
                 const noMsgContainer = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(`### ${emojis.cross} No Message Set`)
+                        new TextDisplayBuilder().setContent(`### ${emojis.cross} ${await tg(guildId, 'welcome.noMessageTitle')}`)
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('The welcome message has not been configured yet.\n\nUse `welcome setup` to set a message.')
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.noMessageBody'))
                     );
 
                 return interactionOrMessage.reply({
@@ -85,13 +84,13 @@ module.exports = {
 
             const infoContainer = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Welcome Message Preview')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'welcome.previewTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('-# This is a preview of the welcome message using your profile:')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.previewHint'))
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
@@ -107,18 +106,19 @@ module.exports = {
         } else {
             const previewContainer = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Welcome Message Preview')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'welcome.previewTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('-# This is a preview of the welcome message using your profile:')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.previewHint'))
                 );
 
             const container = new ContainerBuilder();
 
-            const title = replacePlaceholders(config.title || 'Welcome', member);
+            const defaultTitle = await tg(guildId, 'welcome.defaultTitle');
+            const title = replacePlaceholders(config.title || defaultTitle, member);
             container.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(`### ${title}`)
             );
@@ -127,7 +127,8 @@ module.exports = {
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             );
 
-            const description = replacePlaceholders(config.description || `Welcome to ${guild.name}!`, member);
+            const defaultDescription = await tg(guildId, 'welcome.defaultDescription', { guild: guild.name });
+            const description = replacePlaceholders(config.description || defaultDescription, member);
             const thumbnailUrl = replacePlaceholders(config.thumbnailUrl, member);
 
             if (thumbnailUrl) {

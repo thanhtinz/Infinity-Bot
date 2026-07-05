@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -13,6 +10,7 @@ const {
 } = require('discord.js');
 const Giveaway = require('../../../../database/models/Giveaway');
 const emojis = require('../../../emojis.json');
+const { tg } = require('../../../utils/i18n');
 
 function parseTime(timeStr) {
   const units = { s: 1, m: 60, h: 3600, d: 86400 };
@@ -30,17 +28,18 @@ module.exports = {
     const isSlash = interactionOrMessage.isCommand?.();
     const member = interactionOrMessage.member;
     const user = isSlash ? interactionOrMessage.user : interactionOrMessage.author;
+    const guildId = interactionOrMessage.guild.id;
 
     if (!member.permissions.has('ManageGuild')) {
       const container = new ContainerBuilder();
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('**Permission Denied**')
+        new TextDisplayBuilder().setContent(`**${await tg(guildId, 'common.permissionDenied')}**`)
       );
       container.addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       );
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('You need `Manage Server` permission to start giveaways!')
+        new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.start.noPermission'))
       );
 
       return interactionOrMessage.reply({
@@ -59,13 +58,13 @@ module.exports = {
       if (args.length < 3) {
         const container = new ContainerBuilder();
         container.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent('**Invalid Usage**')
+          new TextDisplayBuilder().setContent(`**${await tg(guildId, 'giveaway.start.invalidUsageTitle')}**`)
         );
         container.addSeparatorComponents(
           new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
         );
         container.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent('Usage: `gstart <time> <winners> <prize>`\nExample: `gstart 1h 2 Discord Nitro`')
+          new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.start.invalidUsageBody'))
         );
 
         return interactionOrMessage.reply({
@@ -83,13 +82,13 @@ module.exports = {
     if (seconds <= 0) {
       const container = new ContainerBuilder();
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('**Invalid Time**')
+        new TextDisplayBuilder().setContent(`**${await tg(guildId, 'giveaway.start.invalidTimeTitle')}**`)
       );
       container.addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       );
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('Please use format: `1s`, `1m`, `1h`, or `1d`')
+        new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.start.invalidTimeBody'))
       );
 
       return interactionOrMessage.reply({
@@ -101,13 +100,13 @@ module.exports = {
     if (!isSlash && (isNaN(winnersCount) || winnersCount < 1)) {
       const container = new ContainerBuilder();
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('**Invalid Winners**')
+        new TextDisplayBuilder().setContent(`**${await tg(guildId, 'giveaway.start.invalidWinnersTitle')}**`)
       );
       container.addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       );
       container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent('Must have at least 1 winner!')
+        new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.start.invalidWinnersBody'))
       );
 
       return interactionOrMessage.reply({
@@ -137,9 +136,12 @@ module.exports = {
     );
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `${emojis.dots || ''} **Winners:** ${winnersCount}\n` +
-        `${emojis.dots || ''} **Ends:** <t:${endTime}:R>\n` +
-        `${emojis.dots || ''} **Hosted by:** <@${user.id}>`
+        await tg(guildId, 'giveaway.start.embedInfo', {
+          dot: emojis.dots || '',
+          winners: winnersCount,
+          endTime: `<t:${endTime}:R>`,
+          host: `<@${user.id}>`,
+        })
       )
     );
 
@@ -148,12 +150,12 @@ module.exports = {
     );
 
     const enterButton = new ButtonBuilder()
-      .setLabel('Enter Giveaway')
+      .setLabel(await tg(guildId, 'giveaway.start.enterButton'))
       .setStyle(ButtonStyle.Primary)
       .setCustomId(`giveaway_enter_${giveaway.id}`);
 
     const viewParticipantsButton = new ButtonBuilder()
-      .setLabel('View Participants')
+      .setLabel(await tg(guildId, 'giveaway.start.viewParticipantsButton'))
       .setStyle(ButtonStyle.Secondary)
       .setCustomId(`giveaway_participants_${giveaway.id}`);
 
@@ -169,13 +171,13 @@ module.exports = {
 
     const confirmContainer = new ContainerBuilder();
     confirmContainer.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent('**Giveaway Started**')
+      new TextDisplayBuilder().setContent(`**${await tg(guildId, 'giveaway.start.startedTitle')}**`)
     );
     confirmContainer.addSeparatorComponents(
       new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
     );
     confirmContainer.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent('Your giveaway has been started successfully!')
+      new TextDisplayBuilder().setContent(await tg(guildId, 'giveaway.start.startedBody'))
     );
 
     const confirmMsg = await interactionOrMessage.reply({

@@ -4,6 +4,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const { tg } = require('../../../utils/i18n');
 
 const subcommands = new Map();
 const subcommandsPath = path.join(__dirname, 'subcommands');
@@ -75,7 +76,7 @@ module.exports = {
 
     if (!subcommand) {
       return interaction.reply({
-        content: `Subcommand '${subcommandName}' not found.`,
+        content: await tg(interaction.guildId, 'warnpunish.dispatcher.subcommandNotFound', { name: subcommandName }),
         ephemeral: true
       });
     }
@@ -85,7 +86,7 @@ module.exports = {
     } catch (error) {
       console.error(`Error executing subcommand ${subcommandName}:`, error);
       const errorMessage = {
-        content: 'There was an error executing this warnpunish command!',
+        content: await tg(interaction.guildId, 'warnpunish.dispatcher.executionError'),
         ephemeral: true
       };
 

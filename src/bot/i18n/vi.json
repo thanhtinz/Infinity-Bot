@@ -1,0 +1,712 @@
+{
+  "common": {
+    "permissionDenied": "Không Đủ Quyền Hạn",
+    "missingPermissions": "Thiếu Quyền Hạn",
+    "youNeedPermission": "Bạn cần quyền **{permission}** để thực hiện lệnh này.",
+    "iNeedPermission": "Tôi cần quyền **{permission}** để làm việc này.",
+    "userNotFound": "Không Tìm Thấy Người Dùng",
+    "userNotInServer": "Người dùng này không có trong server.",
+    "error": "Lỗi",
+    "genericError": "Đã có lỗi xảy ra. Vui lòng thử lại.",
+    "invalidDuration": "Thời Gian Không Hợp Lệ",
+    "roleTooHigh": "Vai Trò Quá Cao",
+    "roleTooHighMe": "Tôi không thể quản lý vai trò này vì nó cao hơn hoặc bằng vai trò cao nhất của tôi.",
+    "roleTooHighYou": "Bạn không thể quản lý vai trò cao hơn hoặc bằng vai trò cao nhất của bạn.",
+    "notFound": "Không Tìm Thấy",
+    "success": "Thành Công",
+    "cancelled": "Đã Hủy",
+    "enabled": "Đã Bật",
+    "disabled": "Đã Tắt",
+    "noPermissionManageGuild": "Bạn cần quyền **Quản Lý Server** để làm việc này.",
+    "unknownError": "Đã xảy ra lỗi không xác định. Vui lòng thử lại hoặc liên hệ hỗ trợ nếu vẫn còn lỗi.",
+    "noReasonProvided": "Chưa có lý do"
+  },
+  "ticket": {
+    "shared": {
+      "adminRequired": "Bạn cần quyền **Quản Trị Viên** để dùng lệnh này.",
+      "notConfigured": "Hệ thống ticket chưa được thiết lập. Dùng `ticket setup` trước.",
+      "notConfiguredPlain": "Hệ thống ticket chưa được thiết lập.",
+      "invalidTicketChannel": "Kênh này không phải là kênh ticket hợp lệ.",
+      "userNotFoundInServer": "Không tìm thấy người dùng này trong server.",
+      "timedOut": "Đã hết thời gian chờ."
+    },
+    "add": {
+      "usage": "Vui lòng chỉ định người dùng cần thêm.\n**Cách dùng:** `ticket add <user>`",
+      "noPermission": "Bạn không có quyền thêm người dùng vào ticket này.",
+      "alreadyHasAccess": "{user} đã có quyền truy cập ticket này rồi.",
+      "addedTitle": "Đã Thêm Người Dùng",
+      "addedBody": "{user} đã được thêm vào ticket này bởi {adder}.",
+      "failed": "Không thể thêm người dùng. Vui lòng kiểm tra quyền hạn và thử lại."
+    },
+    "addcategory": {
+      "duplicateName": "Đã tồn tại danh mục có tên này rồi.",
+      "addedTitle": "Đã Thêm Danh Mục",
+      "addedBody": "**{name}** đã được thêm vào hệ thống ticket.",
+      "promptTitle": "Thêm Danh Mục",
+      "promptBody": "Nhấn bên dưới để thêm danh mục ticket mới."
+    },
+    "addrole": {
+      "usage": "Vui lòng chỉ định vai trò cần thêm.\n**Cách dùng:** `ticket addrole <@role>`",
+      "roleNotFound": "Không tìm thấy vai trò được chỉ định.",
+      "roleNotAllowed": "Vai trò này không thể dùng làm vai trò hỗ trợ.",
+      "alreadySupport": "{role} đã là vai trò hỗ trợ rồi.",
+      "addedTitle": "Đã Thêm Vai Trò Hỗ Trợ",
+      "addedBody": "{role} đã được thêm làm vai trò hỗ trợ.\n**Tất cả vai trò hỗ trợ:** {roleList}"
+    },
+    "claim": {
+      "invalidTicket": "Kênh này không phải là ticket hợp lệ.",
+      "noPermission": "Bạn không có quyền nhận xử lý ticket.",
+      "ownTicket": "Bạn không thể tự nhận xử lý ticket của chính mình.",
+      "deleted": "Ticket này đã bị xóa và không thể nhận xử lý.",
+      "closed": "Ticket này đã đóng. Vui lòng mở lại trước khi nhận xử lý.",
+      "alreadyClaimed": "Ticket này đã được {user} nhận xử lý rồi.",
+      "claimedTitle": "Đã Nhận Xử Lý Ticket",
+      "claimedBody": "Ticket này đã được {user} nhận xử lý."
+    },
+    "close": {
+      "alreadyClosed": "Ticket này đã đóng rồi.",
+      "noPermission": "Bạn không có quyền đóng ticket này.",
+      "closedTitle": "Đã Đóng Ticket",
+      "failed": "Không thể đóng ticket. Vui lòng thử lại."
+    },
+    "delete": {
+      "channelNotFound": "Không tìm thấy kênh được chỉ định.",
+      "noPermission": "Chỉ nhân viên hỗ trợ mới có thể xóa ticket.",
+      "deletedTitle": "Đã Xóa Ticket",
+      "selfDeleteBody": "Kênh ticket này sẽ bị xóa sau 5 giây...",
+      "otherDeletedBody": "Kênh ticket **{channel}** đã bị xóa.",
+      "failed": "Không thể xóa kênh ticket."
+    },
+    "open": {
+      "alreadyStatus": "Ticket này đã ở trạng thái {status} rồi.",
+      "noPermission": "Chỉ nhân viên hỗ trợ mới có thể mở lại ticket.",
+      "claimedByStatus": "Đã được {user} nhận xử lý",
+      "statusOpen": "Đang mở",
+      "reopenedTitle": "Đã Mở Lại Ticket",
+      "reopenedBody": "Ticket này đã được {reopener} mở lại.\n{creator} Bạn có thể tiếp tục cuộc trò chuyện.\n**Trạng thái:** {status}",
+      "failed": "Không thể mở lại ticket. Vui lòng thử lại."
+    },
+    "panel": {
+      "adminRequired": "Bạn cần quyền **Quản Trị Viên**.",
+      "noCategories": "Không tìm thấy danh mục ticket nào. Vui lòng chạy lại setup.",
+      "channelNotFound": "Không tìm thấy kênh panel. Vui lòng cấu hình lại.",
+      "sentSuccess": "Đã gửi panel ticket thành công.",
+      "failed": "Không thể gửi panel ticket. Vui lòng kiểm tra quyền của kênh."
+    },
+    "remove": {
+      "usage": "Vui lòng chỉ định người dùng cần xóa.\n**Cách dùng:** `ticket remove <user>`",
+      "noPermission": "Bạn không có quyền xóa người dùng khỏi ticket này.",
+      "cannotRemoveCreator": "Bạn không thể xóa người tạo ticket.",
+      "noAccess": "{user} không có quyền truy cập ticket này.",
+      "removedTitle": "Đã Xóa Người Dùng",
+      "removedBody": "{user} đã bị xóa khỏi ticket này.",
+      "failed": "Không thể xóa người dùng. Vui lòng kiểm tra quyền hạn và thử lại."
+    },
+    "removecategory": {
+      "noCategories": "Không có danh mục nào để xóa.",
+      "promptTitle": "Xóa Danh Mục",
+      "promptBody": "Chọn một danh mục để xóa.",
+      "categoryNotFound": "Không tìm thấy danh mục.",
+      "removedTitle": "Đã Xóa Danh Mục",
+      "removedBody": "**{name}** đã được xóa."
+    },
+    "removerole": {
+      "usage": "Vui lòng chỉ định vai trò cần xóa.\n**Cách dùng:** `ticket removerole <@role>`",
+      "cannotRemovePrimary": "Không thể xóa vai trò hỗ trợ chính. Dùng `ticket reset` và cấu hình lại để thay đổi.",
+      "notAdditional": "{role} không phải là vai trò hỗ trợ bổ sung.",
+      "removedTitle": "Đã Xóa Vai Trò Hỗ Trợ",
+      "removedBody": "{role} đã bị xóa khỏi danh sách vai trò hỗ trợ.\n**Vai trò hỗ trợ còn lại:** {roleList}"
+    },
+    "rename": {
+      "usage": "Vui lòng chỉ định tên mới.\n**Cách dùng:** `ticket rename <new-name>`",
+      "noPermission": "Chỉ nhân viên hỗ trợ mới có thể đổi tên ticket.",
+      "invalidName": "Tên không hợp lệ. Chỉ dùng chữ, số và dấu gạch ngang.",
+      "sameName": "Tên mới trùng với tên hiện tại.",
+      "renamedTitle": "Đã Đổi Tên Ticket",
+      "renamedBody": "Ticket này đã được đổi tên thành `{name}`",
+      "failed": "Không thể đổi tên kênh ticket.",
+      "missingPermissions": "Thiếu quyền để đổi tên.",
+      "rateLimited": "Đã đạt giới hạn tốc độ. Vui lòng đợi trước khi đổi tên lại."
+    },
+    "reset": {
+      "notConfigured": "Hệ thống ticket chưa được thiết lập. Không có gì để đặt lại.",
+      "confirmTitle": "Đặt Lại Hệ Thống Ticket",
+      "confirmBody": "> Thao tác này sẽ xóa toàn bộ cấu hình ticket, danh mục và vai trò hỗ trợ đã gán cho server này.\n> **Cảnh báo:** Các kênh ticket hiện có sẽ không bị xóa, nhưng hệ thống sẽ ngừng hoạt động cho đến khi bạn chạy lại setup.",
+      "cancelledTitle": "Đã Hủy Đặt Lại",
+      "cancelledBody": "Việc đặt lại đã được hủy.",
+      "doneTitle": "Đã Đặt Lại Hệ Thống Ticket",
+      "doneBody": "Toàn bộ cấu hình ticket đã được gỡ bỏ. Bạn có thể chạy `ticket setup` để cấu hình lại hệ thống.",
+      "failed": "Không thể đặt lại hệ thống ticket. Vui lòng thử lại.",
+      "timeoutTitle": "Hết Thời Gian Đặt Lại",
+      "timeoutBody": "Đã hủy đặt lại do không có phản hồi."
+    },
+    "transcript": {
+      "noPermission": "Chỉ nhân viên hỗ trợ mới có thể dùng lệnh này.",
+      "sentTitle": "Đã Gửi Bản Ghi",
+      "sentBody": "Bản ghi đã được gửi đến người tạo ticket và kênh nhật ký.",
+      "failed": "Không thể tạo bản ghi."
+    },
+    "transfer": {
+      "usage": "Vui lòng chỉ định nhân viên cần chuyển giao.\n**Cách dùng:** `ticket transfer <user>`",
+      "noPermission": "Chỉ nhân viên hỗ trợ mới có thể chuyển giao ticket.",
+      "notClaimed": "Ticket này chưa được nhận xử lý. Dùng `ticket claim` trước.",
+      "notClaimantOrAdmin": "Chỉ người đang xử lý hoặc quản trị viên mới có thể chuyển giao ticket này.",
+      "sameUser": "Ticket này đã được người đó nhận xử lý rồi.",
+      "targetNotStaff": "Người dùng đích không phải là nhân viên hỗ trợ.",
+      "transferredTitle": "Đã Chuyển Giao Ticket",
+      "transferredBody": "Ticket này đã được chuyển từ {from} sang {to}.",
+      "failed": "Không thể chuyển giao ticket. Vui lòng thử lại."
+    },
+    "setup": {
+      "alreadyConfigured": "Hệ thống ticket đã được thiết lập rồi. Dùng `ticket reset` trước để xóa cấu hình hiện tại trước khi chạy lại setup.",
+      "errorTitle": "Lỗi Thiết Lập",
+      "errorBody": "Đã xảy ra lỗi trong quá trình thiết lập. Vui lòng thử lại.",
+      "requirementsTitle": "Chưa Đủ Điều Kiện Thiết Lập",
+      "requirementsBody": "Thiếu kênh văn bản hoặc vai trò có thể gán. Vui lòng đảm bảo bot có đủ quyền.",
+      "customizedSuccess": "Đã tùy chỉnh panel thành công.",
+      "completeTitle": "Đã Hoàn Tất Thiết Lập",
+      "completeBody": "Dùng `ticket addcategory` để thêm danh mục ticket, sau đó `ticket panel` để gửi panel.",
+      "failed": "Không thể hoàn tất thiết lập. Vui lòng thử lại."
+    }
+  },
+  "language": {
+    "notSupported": "Ngôn ngữ không được hỗ trợ. Hãy chọn `en` hoặc `vi`.",
+    "setTitle": "Đã Cập Nhật Ngôn Ngữ",
+    "setBody": "Ngôn ngữ của server hiện là **{language}**. Mọi phản hồi của bot cho server này sẽ dùng ngôn ngữ này khi có hỗ trợ.",
+    "viewTitle": "Ngôn Ngữ Server",
+    "viewBody": "Ngôn ngữ hiện tại của server là **{language}**.\nDùng `/language set <en|vi>` để thay đổi.",
+    "noPermission": "Bạn cần quyền **Quản Lý Server** để đổi ngôn ngữ của bot.",
+    "usage": "Vui lòng cung cấp ngôn ngữ.\n\n**Cú pháp:** `language set <en|vi>` hoặc `language view`",
+    "names": {
+      "en": "Tiếng Anh",
+      "vi": "Tiếng Việt"
+    }
+  },
+  "warn": {
+    "dispatcher": {
+      "subcommandNotFound": "Không tìm thấy lệnh con '{name}'.",
+      "executionError": "Đã xảy ra lỗi khi thực hiện lệnh warn này!"
+    },
+    "add": {
+      "cannotWarnTitle": "Không Thể Cảnh Cáo Người Này",
+      "cannotWarnBot": "Bạn không thể cảnh cáo bot.",
+      "cannotWarnHigherRole": "Họ có vai trò bằng hoặc cao hơn bạn.",
+      "successTitle": "Đã Cảnh Cáo Người Dùng",
+      "success": "**Case:** #{caseNumber}\n**Người dùng:** {user}\n**Quản trị viên:** {moderator}\n**Lý do:** {reason}\n**Tổng số cảnh cáo:** {warnCount}",
+      "errorGeneric": "Cảnh cáo người dùng thất bại."
+    },
+    "list": {
+      "titleFor": "Cảnh cáo của {user}",
+      "titleForCount": "Cảnh cáo của {user} [{count}]",
+      "noWarnings": "Người dùng này chưa có cảnh cáo nào.",
+      "entry": "`#{caseNumber}` **Quản trị viên:** {moderator}\n**Lý do:** {reason}\n**Ngày:** {date}"
+    },
+    "autoPunish": {
+      "muteSkipped": "Bỏ qua tự động xử phạt (mute): người dùng không có trong server.",
+      "muteFailedModeratable": "Tự động xử phạt (mute) thất bại: tôi không thể xử lý người dùng này.",
+      "muteFailedDuration": "Tự động xử phạt (mute) thất bại: thời gian cấu hình không hợp lệ.",
+      "kickSkipped": "Bỏ qua tự động xử phạt (kick): người dùng không có trong server.",
+      "kickFailedKickable": "Tự động xử phạt (kick) thất bại: tôi không thể kick người dùng này.",
+      "banFailedBannable": "Tự động xử phạt (ban) thất bại: tôi không thể cấm người dùng này.",
+      "actionFailed": "Tự động xử phạt ({action}) thất bại: {error}",
+      "triggered": "Đã kích hoạt tự động xử phạt: **{action}** (đạt {warnCount} lượt cảnh cáo).",
+      "reason": "Tự động xử phạt: đạt {warnCount} lượt cảnh cáo"
+    }
+  },
+  "case": {
+    "dispatcher": {
+      "subcommandNotFound": "Không tìm thấy lệnh con '{name}'.",
+      "executionError": "Đã xảy ra lỗi khi thực hiện lệnh case này!"
+    },
+    "common": {
+      "caseNotFoundTitle": "Không Tìm Thấy Case",
+      "caseNotFoundBody": "Không có case số **#{caseNumber}** trong server này."
+    },
+    "edit": {
+      "successTitle": "Đã Cập Nhật Case",
+      "success": "Lý do của **Case #{caseNumber}** đã được cập nhật thành:\n{reason}"
+    },
+    "delete": {
+      "successTitle": "Đã Xóa Case",
+      "success": "**Case #{caseNumber}** đã bị xóa vĩnh viễn."
+    },
+    "clear": {
+      "successTitle": "Đã Xóa Các Case",
+      "success": "Đã xóa **{count}** case của {user}."
+    },
+    "restore": {
+      "unavailableTitle": "Không Thể Khôi Phục",
+      "unavailableBody": "Server này dùng chế độ xóa case vĩnh viễn, nên case đã xóa không thể khôi phục lại. Hãy dùng `/case delete` cẩn thận — không thể hoàn tác."
+    },
+    "view": {
+      "title": "Case #{caseNumber}",
+      "body": "**Hành động:** {action}\n**Đối tượng:** {target} ({targetId})\n**Quản trị viên:** {moderator} ({moderatorId})\n**Lý do:** {reason}\n**Nguồn:** {source}\n**Ngày:** {date}"
+    }
+  },
+  "help": {
+    "onlyUserCanUse": "Chỉ người dùng lệnh mới có thể dùng menu này.",
+    "mainCommandsPlaceholder": "Lệnh Chính",
+    "extraCommandsPlaceholder": "Lệnh Bổ Sung",
+    "commandsCountDescription": "{count} lệnh",
+    "helloLine": "**Xin chào, tôi là {bot}**",
+    "prefixLine": "**Prefix của server này:** `{prefix}`",
+    "setPrefixLine": "**Đặt prefix bằng:** **/setprefix**",
+    "supportServerLine": "**Tham gia [Server Hỗ Trợ]({url}) Để Được Giúp Đỡ**",
+    "categoryHelpLine": "**Dùng `{prefix}help <category>` để xem lệnh theo danh mục**",
+    "categories": {
+      "general": "Chung",
+      "information": "Thông Tin",
+      "moderation": "Kiểm Duyệt",
+      "antinuke": "Antinuke",
+      "automod": "AutoMod",
+      "tickets": "Tickets",
+      "welcome": "Chào Mừng",
+      "logging": "Logging",
+      "fun": "Giải Trí",
+      "funextra": "Giải Trí Bổ Sung",
+      "otakureactions": "Phản Ứng",
+      "roleplay": "Nhập Vai",
+      "social": "Xã Hội",
+      "utility": "Tiện Ích",
+      "animals": "Động Vật",
+      "giveaway": "Giveaway",
+      "vanityroles": "Vai Trò Vanity",
+      "feedback": "Phản Hồi",
+      "join2create": "Join2Create",
+      "automation": "Tự Động Hóa",
+      "profiles": "Hồ Sơ",
+      "media": "Media",
+      "misc": "Khác",
+      "tracking": "Theo Dõi",
+      "voice": "Voice",
+      "ai": "Trí Tuệ Nhân Tạo",
+      "reactionroles": "Reaction Roles",
+      "community": "Cộng Đồng"
+    }
+  },
+  "reactionroles": {
+    "noPermission": "Bạn cần quyền **Manage Guild**.",
+    "usagePrefix": "Vui lòng cung cấp ID tin nhắn. Cú pháp: `.rr remove <message_id>`",
+    "notFound": "Không tìm thấy tin nhắn reaction roles!",
+    "removed": "Đã xóa tin nhắn reaction roles!",
+    "setup": {
+      "step1Title": "Thiết Lập Reaction Roles - Bước 1",
+      "step1Prompt": "Chọn kênh sẽ đăng tin nhắn reaction roles:",
+      "step2Title": "Thiết Lập Reaction Roles - Bước 2",
+      "step2Prompt": "**Cấu hình tin nhắn embed:**\n\nBấm \"Add Emoji-Role\" để thêm cặp emoji-vai trò, hoặc \"Continue\" để xem lại.",
+      "sessionExpired": "Phiên đã hết hạn. Vui lòng chạy lại `/reactionroles setup`.",
+      "needAtLeastOnePair": "Bạn phải thêm ít nhất một cặp emoji-vai trò!",
+      "step3Title": "Thiết Lập Reaction Roles - Bước 3",
+      "step3Body": "**Kênh:** {channel}\n\n**Cặp Emoji-Vai trò:**\n{pairs}\n\nXem lại cài đặt và xác nhận để đăng tin nhắn."
+    }
+  },
+  "verification": {
+    "dispatcher": {
+      "subcommandNotFound": "Không tìm thấy lệnh con '{name}'.",
+      "executionError": "Đã xảy ra lỗi khi thực hiện lệnh verification này!"
+    },
+    "setup": {
+      "invalidRoleTitle": "Vai Trò Không Hợp Lệ",
+      "verifiedManaged": "Vai trò xác minh bạn cung cấp do một tích hợp (integration) quản lý.",
+      "verifiedTooHighMe": "Vai trò xác minh bạn cung cấp cao hơn hoặc bằng vai trò cao nhất của tôi.",
+      "verifiedTooHighYou": "Vai trò xác minh bạn cung cấp cao hơn hoặc bằng vai trò cao nhất của bạn.",
+      "unverifiedManaged": "Vai trò chưa xác minh bạn cung cấp do một tích hợp (integration) quản lý.",
+      "unverifiedTooHighMe": "Vai trò chưa xác minh bạn cung cấp cao hơn hoặc bằng vai trò cao nhất của tôi.",
+      "missingRolePermission": "Tôi cần quyền **Manage Roles** để gán vai trò.",
+      "missingChannelPermission": "Tôi cần quyền xem và gửi tin nhắn trong {channel}.",
+      "enabledTitle": "Đã Bật Xác Minh",
+      "enabledBody": "**Kênh:** {channel}\n**Vai trò xác minh:** {verifiedRole}\n**Vai trò chưa xác minh:** {unverifiedRole}\n\nBảng xác minh đã được đăng.",
+      "noneRole": "Không có",
+      "errorGeneric": "Thiết lập xác minh thất bại. Hãy kiểm tra quyền của tôi và thử lại."
+    },
+    "disable": {
+      "alreadyDisabledTitle": "Đã Tắt Sẵn",
+      "alreadyDisabledBody": "Xác minh đã bị tắt cho server này rồi.",
+      "disabledTitle": "Đã Tắt Xác Minh",
+      "disabledBody": "Cổng xác minh đã bị tắt cho server này.",
+      "errorGeneric": "Tắt xác minh thất bại. Vui lòng thử lại."
+    },
+    "panel": {
+      "notConfiguredTitle": "Chưa Được Cấu Hình",
+      "notConfiguredBody": "Xác minh chưa được thiết lập. Hãy dùng `/verification setup` trước.",
+      "channelGoneBody": "Kênh xác minh đã cấu hình không còn tồn tại nữa.",
+      "postedTitle": "Đã Đăng Bảng Xác Minh",
+      "postedBody": "Bảng xác minh đã được đăng trong {channel}.",
+      "errorGeneric": "Đăng bảng xác minh thất bại. Hãy kiểm tra quyền của tôi và thử lại."
+    },
+    "verifyButton": {
+      "notEnabled": "Xác minh chưa được bật cho server này.",
+      "alreadyVerified": "Bạn đã xác minh rồi.",
+      "missingPermission": "Tôi hiện không có quyền gán vai trò. Vui lòng liên hệ quản trị viên server.",
+      "roleAddFailed": "Gán vai trò xác minh thất bại. Vui lòng liên hệ quản trị viên server.",
+      "success": "Bạn đã được xác minh! Chào mừng đến với **{guild}**.",
+      "genericError": "Đã xảy ra lỗi khi xác minh bạn. Vui lòng thử lại."
+    }
+  },
+  "logging": {
+    "noPermission": "Bạn cần quyền **Administrator** để dùng lệnh này.",
+    "alreadyConfiguredTitle": "Đã Được Cấu Hình Sẵn",
+    "alreadyConfiguredBody": "Logging đã được thiết lập cho server này rồi.\nDùng **logging config** để xem hoặc **logging reset** để làm lại từ đầu.",
+    "setupPrompt": "**Thiết Lập Logging**\nChọn một loại log bên dưới để gán kênh.",
+    "categorySelectPlaceholder": "Chọn loại log cần cấu hình",
+    "resetTitle": "Đã Đặt Lại Logging",
+    "resetNotFound": "Không tìm thấy cấu hình logging cho server này.",
+    "resetSuccess": "Tất cả cài đặt logging đã được đặt lại thành công.",
+    "resetError": "Đã xảy ra lỗi khi đặt lại cài đặt logging.",
+    "configTitle": "Cấu Hình Logging",
+    "configNotFound": "Không tìm thấy cấu hình logging.\nDùng logging setup để cấu hình các kênh log.",
+    "notSet": "Chưa đặt",
+    "configBody": "> **Log Tin Nhắn:** {messageLogs}\n> **Log Thành Viên:** {memberLogs}\n> **Log Kiểm Duyệt:** {moderationLogs}\n> **Log Server:** {serverLogs}\n> **Log Voice:** {voiceLogs}",
+    "configHint": "-# Dùng logging setup để chỉnh sửa • logging reset để xóa",
+    "configError": "Đã xảy ra lỗi khi lấy cấu hình logging.",
+    "categories": {
+      "messageLogs": { "label": "Log Tin Nhắn", "description": "Xóa, chỉnh sửa & xóa hàng loạt" },
+      "memberLogs": { "label": "Log Thành Viên", "description": "Tham gia, rời đi & cập nhật hồ sơ" },
+      "moderationLogs": { "label": "Log Kiểm Duyệt", "description": "Ban, unban, kick & timeout" },
+      "serverLogs": { "label": "Log Server", "description": "Kênh, vai trò & cài đặt server" },
+      "voiceLogs": { "label": "Log Voice", "description": "Tham gia, rời đi, chuyển kênh & mute" }
+    }
+  },
+  "farewell": {
+    "noPermission": "Bạn cần quyền **Administrator** để dùng lệnh này.",
+    "alreadyConfiguredTitle": "Đã Được Cấu Hình Sẵn",
+    "alreadyConfiguredBody": "> Dùng `farewell config` để chỉnh sửa hoặc `farewell reset` để làm lại từ đầu.",
+    "setupTitle": "Thiết Lập Tạm Biệt",
+    "setupPrompt": "Chọn loại tin nhắn tạm biệt bạn muốn tạo:\n\n**Đơn giản**\nGửi tin nhắn tạm biệt dạng văn bản thuần. Bạn có thể dùng placeholder để cá nhân hóa.\n\n**Container**\nGửi tin nhắn tạm biệt dạng container. Bạn có thể tùy chỉnh tiêu đề, mô tả, hình ảnh, v.v.",
+    "resetTitle": "Đã Đặt Lại Tạm Biệt",
+    "resetNotFound": "Không tìm thấy cấu hình tạm biệt cho server này.",
+    "resetSuccess": "Tất cả cài đặt tạm biệt đã được đặt lại thành công.",
+    "resetError": "Đã xảy ra lỗi khi đặt lại cài đặt tạm biệt.",
+    "noConfigTitle": "Chưa Có Cấu Hình Tạm Biệt",
+    "noConfigBody": "Server này chưa có cấu hình tạm biệt.\n\nDùng `farewell setup` để cấu hình tin nhắn tạm biệt.",
+    "noMessageTitle": "Chưa Đặt Tin Nhắn",
+    "noMessageBody": "Tin nhắn tạm biệt chưa được cấu hình.\n\nDùng `farewell setup` để đặt tin nhắn.",
+    "previewTitle": "Xem Trước Tin Nhắn Tạm Biệt",
+    "previewHint": "-# Đây là bản xem trước tin nhắn tạm biệt dùng hồ sơ của bạn:",
+    "defaultTitle": "Tạm Biệt",
+    "defaultDescription": "Tạm biệt từ {guild}!",
+    "configTitle": "Cấu Hình Tạm Biệt",
+    "configNotFound": "Không tìm thấy cấu hình tạm biệt.\nDùng `farewell setup` để cấu hình tin nhắn tạm biệt.",
+    "configNotSet": "Chưa đặt",
+    "typeSimple": "Đơn giản",
+    "typeContainer": "Container",
+    "configSimpleBody": "**Loại:** {type}\n**Kênh:** {channel}\n**Tin nhắn:**\n{message}",
+    "configHint": "-# Dùng `farewell setup` để chỉnh sửa • `farewell reset` để xóa",
+    "configContainerBody": "**Loại:** {type}\n**Kênh:** {channel}\n\n**Bản xem trước ở trên**",
+    "noDescriptionSet": "Chưa có mô tả.",
+    "configError": "Đã xảy ra lỗi khi lấy cấu hình tạm biệt."
+  },
+  "welcome": {
+    "noPermission": "Bạn cần quyền **Administrator** để dùng lệnh này.",
+    "alreadyConfiguredTitle": "Đã Được Cấu Hình Sẵn",
+    "alreadyConfiguredBody": "> Dùng `welcome config` để chỉnh sửa hoặc `welcome reset` để làm lại từ đầu.",
+    "setupTitle": "Thiết Lập Chào Mừng",
+    "setupPrompt": "Chọn loại tin nhắn chào mừng bạn muốn tạo:\n\n**Đơn giản**\nGửi tin nhắn chào mừng dạng văn bản thuần. Bạn có thể dùng placeholder để cá nhân hóa.\n\n**Container**\nGửi tin nhắn chào mừng dạng container. Bạn có thể tùy chỉnh tiêu đề, mô tả, hình ảnh, v.v.",
+    "resetTitle": "Đã Đặt Lại Chào Mừng",
+    "resetNotFound": "Không tìm thấy cấu hình chào mừng cho server này.",
+    "resetSuccess": "Tất cả cài đặt chào mừng đã được đặt lại thành công.",
+    "resetError": "Đã xảy ra lỗi khi đặt lại cài đặt chào mừng.",
+    "noConfigTitle": "Chưa Có Cấu Hình Chào Mừng",
+    "noConfigBody": "Server này chưa có cấu hình chào mừng.\n\nDùng `welcome setup` để cấu hình tin nhắn chào mừng.",
+    "noMessageTitle": "Chưa Đặt Tin Nhắn",
+    "noMessageBody": "Tin nhắn chào mừng chưa được cấu hình.\n\nDùng `welcome setup` để đặt tin nhắn.",
+    "previewTitle": "Xem Trước Tin Nhắn Chào Mừng",
+    "previewHint": "-# Đây là bản xem trước tin nhắn chào mừng dùng hồ sơ của bạn:",
+    "defaultTitle": "Chào Mừng",
+    "defaultDescription": "Chào mừng bạn đến với {guild}!",
+    "configTitle": "Cấu Hình Chào Mừng",
+    "configNotFound": "Không tìm thấy cấu hình chào mừng.\nDùng `welcome setup` để cấu hình tin nhắn chào mừng.",
+    "configNotSet": "Chưa đặt",
+    "typeSimple": "Đơn giản",
+    "typeContainer": "Container",
+    "configSimpleBody": "**Loại:** {type}\n**Kênh:** {channel}\n**Tin nhắn:**\n{message}",
+    "configHint": "-# Dùng `welcome setup` để chỉnh sửa • `welcome reset` để xóa",
+    "configContainerBody": "**Loại:** {type}\n**Kênh:** {channel}\n\n**Bản xem trước ở trên**",
+    "noDescriptionSet": "Chưa có mô tả.",
+    "configError": "Đã xảy ra lỗi khi lấy cấu hình chào mừng."
+  },
+  "giveaway": {
+    "start": {
+      "noPermission": "Bạn cần quyền `Quản Lý Server` để bắt đầu giveaway!",
+      "invalidUsageTitle": "Sai Cú Pháp",
+      "invalidUsageBody": "Cú pháp: `gstart <thời gian> <số người thắng> <giải thưởng>`\nVí dụ: `gstart 1h 2 Discord Nitro`",
+      "invalidTimeTitle": "Thời Gian Không Hợp Lệ",
+      "invalidTimeBody": "Hãy dùng định dạng: `1s`, `1m`, `1h`, hoặc `1d`",
+      "invalidWinnersTitle": "Số Người Thắng Không Hợp Lệ",
+      "invalidWinnersBody": "Phải có ít nhất 1 người thắng!",
+      "embedInfo": "{dot} **Người thắng:** {winners}\n{dot} **Kết thúc:** {endTime}\n{dot} **Tổ chức bởi:** {host}",
+      "enterButton": "Tham Gia Giveaway",
+      "viewParticipantsButton": "Xem Người Tham Gia",
+      "startedTitle": "Đã Bắt Đầu Giveaway",
+      "startedBody": "Giveaway của bạn đã được bắt đầu thành công!"
+    },
+    "end": {
+      "noPermission": "Bạn cần quyền `Quản Lý Server` để kết thúc giveaway!",
+      "noMessageTitle": "Không Tìm Thấy Tin Nhắn",
+      "noMessageBody": "Hãy reply vào tin nhắn giveaway hoặc cung cấp ID tin nhắn!",
+      "notFoundTitle": "Không Tìm Thấy",
+      "notFoundBody": "Không tìm thấy giveaway đang diễn ra cho tin nhắn này!",
+      "endedTitle": "Đã Kết Thúc Giveaway",
+      "endedBody": "Giveaway đã được kết thúc thành công!"
+    },
+    "reroll": {
+      "noPermission": "Bạn cần quyền `Quản Lý Server` để quay lại giveaway!",
+      "noMessageTitle": "Không Tìm Thấy Tin Nhắn",
+      "noMessageBody": "Hãy reply vào tin nhắn giveaway hoặc cung cấp ID tin nhắn!",
+      "notFoundTitle": "Không Tìm Thấy",
+      "notFoundBody": "Không tìm thấy giveaway đã kết thúc cho tin nhắn này!",
+      "noEntriesTitle": "Không Có Lượt Tham Gia",
+      "noEntriesBody": "Không tìm thấy lượt tham gia nào để quay lại!",
+      "newWinnersHeader": "Người Thắng Mới!",
+      "newWinnersBody": "**Giải thưởng:** {prize}\n**Người thắng mới:** {winners}\n\n{congrats} Chúc mừng! 🎊",
+      "giveawayLinkButton": "Link Giveaway",
+      "rerollCompleteTitle": "Đã Quay Lại Xong",
+      "rerollCompleteBody": "Người thắng mới đã được chọn!",
+      "dmWinner": "{icon} Bạn đã thắng **{prize}** tại **{guild}** {heart}",
+      "viewWinningMessageButton": "Xem Tin Nhắn Thắng Cuộc"
+    }
+  },
+  "antinuke": {
+    "ownerOnlyEnable": "Chỉ **Chủ Server** mới có thể bật antinuke.",
+    "ownerOnlyDisable": "Chỉ **Chủ Server** mới có thể tắt antinuke.",
+    "ownerOnlyReset": "Chỉ **Chủ Server** mới có thể đặt lại antinuke.",
+    "ownerOnlySettings": "Chỉ **Chủ Server** mới có thể xem cài đặt antinuke.",
+    "ownerOnlyWhitelist": "Chỉ **Chủ Server** mới có thể quản lý danh sách miễn trừ.",
+    "ownerOnlySetup": "Chỉ **Chủ Server** mới có thể thiết lập antinuke.",
+    "setupRequiredTitle": "Cần Thiết Lập Trước",
+    "setupRequiredBody": "Hãy chạy `/antinuke setup` trước để cấu hình antinuke.",
+    "alreadyEnabledTitle": "Đã Được Bật Sẵn",
+    "alreadyEnabledBody": "Antinuke đã được bật trên server này rồi.",
+    "enabledTitle": "Đã Bật Antinuke",
+    "enabledBody": "Server của bạn hiện đã được bảo vệ. Antinuke sẽ theo dõi các hành động phá hoại và xử lý người vi phạm.",
+    "notEnabledTitle": "Chưa Được Bật",
+    "notEnabledBody": "Antinuke hiện chưa được bật trên server này.",
+    "disabledTitle": "Đã Tắt Antinuke",
+    "disabledBody": "Antinuke đã bị tắt. Server của bạn không còn được bảo vệ khỏi các cuộc tấn công phá hoại nữa.",
+    "notConfiguredYet": "Antinuke chưa được cấu hình.",
+    "resetTitle": "Đã Đặt Lại Antinuke",
+    "resetBody": "Antinuke đã được đặt lại về mặc định và **tắt**.\n\nTất cả người dùng trong danh sách miễn trừ đã bị xóa.\n\nDùng `/antinuke setup` để cấu hình lại.",
+    "alreadyConfiguredTitle": "Đã Được Cấu Hình Sẵn",
+    "alreadyConfiguredBody": "> Dùng `antinuke settings` để chỉnh sửa hoặc `antinuke disable` để đặt lại.",
+    "notConfiguredSettingsTitle": "Antinuke Chưa Được Cấu Hình",
+    "notConfiguredSettingsBody": "Hãy chạy `/antinuke setup` để cấu hình antinuke cho server này.",
+    "settingsTitle": "Cài Đặt Antinuke",
+    "statusLine": "**Trạng thái:** {status}",
+    "statusEnabled": "Đang bật",
+    "statusDisabled": "Đang tắt",
+    "infoLines": "**Ngưỡng:** {threshold} hành động trong {timeframe}s\n**Xử phạt:** {punishment}\n**Kênh Log:** {logChannel}\n**Người Dùng Miễn Trừ:** {whitelistCount}",
+    "notSet": "Chưa đặt",
+    "enabledModules": "**Module Đang Bật:**\n{list}",
+    "disabledModules": "**Module Đã Tắt:**\n{list}",
+    "none": "Không có",
+    "whitelistAddTitle": "Thêm Vào Danh Sách Miễn Trừ",
+    "whitelistAddPrompt": "Chọn người dùng để thêm vào danh sách miễn trừ:",
+    "whitelistForUser": "Miễn Trừ Cho {user}",
+    "whitelistEventsPrompt": "Chọn các sự kiện muốn miễn trừ cho người dùng này:",
+    "whitelistRemoveTitle": "Xóa Khỏi Danh Sách Miễn Trừ",
+    "whitelistRemovePrompt": "Chọn người dùng để xóa khỏi danh sách miễn trừ:",
+    "userNotWhitelisted": "**{user}** không có trong danh sách miễn trừ.",
+    "removeUserWhitelistTitle": "Xóa Miễn Trừ Của {user}",
+    "removeEventsPrompt": "Chọn các sự kiện muốn xóa, hoặc xóa hoàn toàn:",
+    "userRemovedFromWhitelist": "**{user}** đã được xóa khỏi danh sách miễn trừ.",
+    "noUsersWhitelisted": "Không có người dùng nào trong danh sách miễn trừ.",
+    "whitelistEntry": "`{index}.` {user} {events}",
+    "eventsCount": "({count} sự kiện)",
+    "allEvents": "(Tất cả sự kiện)",
+    "whitelistTitle": "Danh Sách Miễn Trừ Antinuke ({count})",
+    "whitelistDetailedHint": "-# Dùng `antinuke whitelist list` để xem chi tiết.",
+    "whitelistDetailedTitle": "Danh Sách Miễn Trừ Antinuke - Chi Tiết ({count})"
+  },
+  "automod": {
+    "noPermissionEnable": "Bạn cần quyền **Quản Lý Server** để bật automod.",
+    "noPermissionDisable": "Bạn cần quyền **Quản Lý Server** để tắt automod.",
+    "noPermissionReset": "Bạn cần quyền **Quản Lý Server** để đặt lại automod.",
+    "noPermissionSettings": "Bạn cần quyền **Quản Lý Server** để xem cài đặt automod.",
+    "noPermissionWhitelist": "Bạn cần quyền **Quản Lý Server** để quản lý danh sách miễn trừ.",
+    "noPermissionSetup": "Bạn cần quyền **Quản Lý Server** để thiết lập automod.",
+    "setupRequiredTitle": "Cần Thiết Lập Trước",
+    "setupRequiredBody": "Hãy chạy `/automod setup` trước để cấu hình automod.",
+    "alreadyEnabledTitle": "Đã Được Bật Sẵn",
+    "alreadyEnabledBody": "AutoMod đã được bật trên server này rồi.",
+    "enabledTitle": "Đã Bật AutoMod",
+    "enabledBody": "AutoMod hiện đang hoạt động. Tin nhắn sẽ được kiểm duyệt theo cấu hình của bạn.",
+    "notConfiguredTitle": "Chưa Cấu Hình",
+    "notConfiguredBody": "AutoMod chưa được cấu hình trên server này.",
+    "alreadyDisabledTitle": "Đã Bị Tắt Sẵn",
+    "alreadyDisabledBody": "AutoMod đã bị tắt trên server này rồi.",
+    "disabledTitle": "Đã Tắt AutoMod",
+    "disabledBody": "AutoMod đã bị tắt. Tin nhắn sẽ không còn được tự động kiểm duyệt nữa.",
+    "notConfiguredYet": "AutoMod chưa được cấu hình.",
+    "resetTitle": "Đã Đặt Lại AutoMod",
+    "resetBody": "AutoMod đã được đặt lại về mặc định và **tắt**.\n\nTất cả mục miễn trừ đã bị xóa.\n\nDùng `/automod setup` để cấu hình lại.",
+    "notConfiguredSettingsTitle": "AutoMod Chưa Được Cấu Hình",
+    "notConfiguredSettingsBody": "Hãy chạy `/automod setup` để cấu hình automod cho server này.",
+    "settingsTitle": "Cài Đặt AutoMod",
+    "statusLine": "**Trạng thái:** {status}",
+    "statusEnabled": "Đang bật",
+    "statusDisabled": "Đang tắt",
+    "infoLines": "**Kênh Log:** {logChannel}\n**Miễn trừ:** {whitelistCount} mục\n**Từ Cấm:** {badWordCount} từ",
+    "notSet": "Chưa đặt",
+    "thresholdsLines": "**Ngưỡng:**\nSpam: {spamThreshold} tin / {spamInterval}s\nNhắc tên: tối đa {mentionLimit}\nChữ hoa: tối đa {capsPercentage}%",
+    "activeProtections": "**Bảo Vệ Đang Hoạt Động:**\n{list}",
+    "disabledModules": "**Module Đã Tắt:**\n{list}",
+    "none": "Không có",
+    "whitelistEmpty": "Danh sách miễn trừ đang trống.",
+    "whitelistAddTitle": "Thêm Vào Danh Sách Miễn Trừ",
+    "whitelistAddPrompt": "Chọn loại cần miễn trừ:",
+    "whitelistRemoveTitle": "Xóa Khỏi Danh Sách Miễn Trừ",
+    "whitelistRemovePrompt": "Chọn một mục để xóa:",
+    "whitelistTitle": "Danh Sách Miễn Trừ AutoMod ({count})",
+    "whitelistDetailedTitle": "Danh Sách Miễn Trừ AutoMod - Chi Tiết ({count})",
+    "whitelistNoEntries": "Danh sách miễn trừ đang trống.",
+    "whitelistUsersLine": "**Người dùng ({count}):**\n{list}",
+    "whitelistRolesLine": "**Vai trò ({count}):**\n{list}",
+    "whitelistChannelsLine": "**Kênh ({count}):**\n{list}"
+  },
+  "warnpunish": {
+    "dispatcher": {
+      "subcommandNotFound": "Không tìm thấy lệnh con '{name}'.",
+      "executionError": "Đã xảy ra lỗi khi thực hiện lệnh warnpunish này!"
+    },
+    "remove": {
+      "notFound": "Chưa có ngưỡng xử phạt nào được thiết lập cho **{warnCount}** lượt cảnh cáo.",
+      "successTitle": "Đã Xóa Ngưỡng",
+      "success": "Đã xóa ngưỡng xử phạt cho **{warnCount}** lượt cảnh cáo."
+    },
+    "set": {
+      "invalidDurationBody": "Hãy nhập thời gian mute hợp lệ (ví dụ: 1h, 30m, 1d). Tối đa là 28 ngày.",
+      "successTitle": "Đã Lưu Ngưỡng",
+      "successMute": "Khi đạt **{warnCount}** lượt cảnh cáo sẽ tự động **{action}** trong **{duration}**.",
+      "success": "Khi đạt **{warnCount}** lượt cảnh cáo sẽ tự động **{action}**."
+    },
+    "list": {
+      "title": "Ngưỡng Xử Phạt Cảnh Cáo",
+      "empty": "Server này chưa cấu hình ngưỡng xử phạt cảnh cáo nào.",
+      "entry": "**{warnCount}** lượt cảnh cáo → **{action}**{durationNote}",
+      "durationNote": " ({duration})"
+    }
+  },
+  "moderation": {
+    "dispatcher": {
+      "subcommandNotFound": "Không tìm thấy lệnh con '{name}'.",
+      "executionError": "Đã xảy ra lỗi khi thực hiện lệnh moderation này!"
+    },
+    "ban": {
+      "cannotBanTitle": "Không Thể Cấm Người Này",
+      "cannotBanHigherRole": "Họ có vai trò bằng hoặc cao hơn bạn.",
+      "cannotBanUnbannable": "Tôi không thể cấm người này. Họ có thể có vai trò cao hơn tôi.",
+      "successTitle": "Đã Cấm Người Dùng",
+      "success": "**Người dùng:** {user}\n**Quản trị viên:** {moderator}\n**Lý do:** {reason}{deletedNote}",
+      "deletedNote": "\n**Tin nhắn đã xóa:** {days} ngày gần nhất",
+      "errorPermission": "Tôi không có quyền để cấm người này.",
+      "errorGeneric": "Cấm người dùng thất bại."
+    },
+    "give": {
+      "successTitle": "Đã Trao Vai Trò",
+      "success": "**Người dùng:** {user}\n**Vai trò:** {role}\n**Trao bởi:** {moderator}",
+      "roleAlreadyAssignedTitle": "Đã Có Vai Trò Này",
+      "roleAlreadyAssignedBody": "Người dùng đã có vai trò này rồi.",
+      "errorPermission": "Tôi không có quyền để quản lý vai trò này.",
+      "errorGeneric": "Trao vai trò thất bại."
+    },
+    "kick": {
+      "cannotKickTitle": "Không Thể Kick Người Này",
+      "cannotKickHigherRole": "Họ có vai trò bằng hoặc cao hơn bạn.",
+      "cannotKickUnkickable": "Tôi không thể kick người này. Họ có thể có vai trò cao hơn tôi.",
+      "successTitle": "Đã Kick Người Dùng",
+      "success": "**Người dùng:** {user}\n**Quản trị viên:** {moderator}\n**Lý do:** {reason}",
+      "errorPermission": "Tôi không có quyền để kick người này.",
+      "errorGeneric": "Kick người dùng thất bại."
+    },
+    "lock": {
+      "successTitle": "Đã Khóa Kênh",
+      "success": "**Kênh:** {channel}\n**Khóa bởi:** {moderator}\n**Lý do:** {reason}",
+      "errorPermission": "Tôi không có quyền để chỉnh sửa kênh này.",
+      "errorGeneric": "Khóa kênh thất bại."
+    },
+    "mute": {
+      "invalidDurationBody": "Hãy nhập thời gian hợp lệ (ví dụ: 1h, 30m, 1d). Tối đa là 28 ngày.",
+      "cannotMuteTitle": "Không Thể Mute Người Này",
+      "cannotMuteHigherRole": "Họ có vai trò bằng hoặc cao hơn bạn.",
+      "cannotMuteUnmoderatable": "Tôi không thể mute người này. Họ có thể có vai trò cao hơn tôi.",
+      "successTitle": "Đã Mute Người Dùng",
+      "success": "**Người dùng:** {user}\n**Thời gian:** {duration}\n**Quản trị viên:** {moderator}\n**Lý do:** {reason}",
+      "errorPermission": "Tôi không có quyền để mute người này.",
+      "errorGeneric": "Mute người dùng thất bại."
+    },
+    "remove": {
+      "successTitle": "Đã Xóa Vai Trò",
+      "success": "**Người dùng:** {user}\n**Vai trò:** {role}\n**Xóa bởi:** {moderator}",
+      "roleNotFoundTitle": "Không Tìm Thấy Vai Trò",
+      "roleNotFoundBody": "Người dùng không có vai trò này.",
+      "errorPermission": "Tôi không có quyền để quản lý vai trò này.",
+      "errorGeneric": "Xóa vai trò thất bại."
+    },
+    "slowmode": {
+      "updatedTitle": "Đã Cập Nhật Slowmode",
+      "updated": "**Kênh:** {channel}\n**Thời gian:** {seconds} giây\n**Thiết lập bởi:** {moderator}",
+      "disabledTitle": "Đã Tắt Slowmode",
+      "disabled": "**Kênh:** {channel}\n**Thiết lập bởi:** {moderator}",
+      "enabledTitle": "Đã Bật Slowmode",
+      "changed": "**Kênh:** {channel}\n**Thời gian:** {durationText}\n**Thiết lập bởi:** {moderator}",
+      "durationDisabled": "Đã tắt",
+      "durationSeconds": "{seconds} giây",
+      "errorPermission": "Tôi không có quyền để chỉnh sửa kênh này.",
+      "errorGeneric": "Thiết lập slowmode thất bại."
+    },
+    "softban": {
+      "cannotSoftbanTitle": "Không Thể Softban Người Này",
+      "cannotSoftbanHigherRole": "Họ có vai trò bằng hoặc cao hơn bạn.",
+      "cannotSoftbanUnbannable": "Tôi không thể softban người này. Họ có thể có vai trò cao hơn tôi.",
+      "successTitle": "Đã Softban Người Dùng",
+      "success": "**Người dùng:** {user}\n**Quản trị viên:** {moderator}\n**Lý do:** {reason}\n**Tin nhắn đã xóa:** {days} ngày gần nhất",
+      "errorPermission": "Tôi không có quyền để softban người này.",
+      "errorGeneric": "Softban người dùng thất bại."
+    },
+    "tempban": {
+      "invalidDurationBody": "Hãy nhập thời gian hợp lệ (ví dụ: 1h, 30m, 1d, 7d).",
+      "cannotBanTitle": "Không Thể Cấm Người Này",
+      "cannotBanHigherRole": "Họ có vai trò bằng hoặc cao hơn bạn.",
+      "cannotBanUnbannable": "Tôi không thể cấm người này. Họ có thể có vai trò cao hơn tôi.",
+      "successTitle": "Đã Cấm Tạm Thời",
+      "success": "**Người dùng:** {user}\n**Thời gian:** {duration}\n**Quản trị viên:** {moderator}\n**Lý do:** {reason}{deletedNote}",
+      "deletedNote": "\n**Tin nhắn đã xóa:** {days} ngày gần nhất",
+      "errorPermission": "Tôi không có quyền để cấm người này.",
+      "errorGeneric": "Cấm tạm thời thất bại."
+    },
+    "temprole": {
+      "invalidDurationBody": "Hãy nhập thời gian hợp lệ (ví dụ: 1h, 30m, 1d, 7d).",
+      "roleAlreadyAssignedTitle": "Đã Có Vai Trò Này",
+      "roleAlreadyAssignedBody": "Người dùng đã có vai trò này rồi.",
+      "successTitle": "Đã Thêm Vai Trò Tạm Thời",
+      "success": "**Người dùng:** {user}\n**Vai trò:** {role}\n**Thời gian:** {duration}\n**Thêm bởi:** {moderator}\n**Lý do:** {reason}",
+      "errorPermission": "Tôi không có quyền để quản lý vai trò này.",
+      "errorGeneric": "Thêm vai trò tạm thời thất bại."
+    },
+    "unban": {
+      "notBannedTitle": "Người Dùng Chưa Bị Cấm",
+      "notBannedBody": "Người dùng này không bị cấm khỏi server.",
+      "successTitle": "Đã Gỡ Cấm",
+      "success": "**Người dùng:** {user}\n**Quản trị viên:** {moderator}\n**Lý do:** {reason}",
+      "errorPermission": "Tôi không có quyền để gỡ cấm người này.",
+      "errorGeneric": "Gỡ cấm thất bại. Hãy kiểm tra lại ID người dùng."
+    },
+    "unlock": {
+      "successTitle": "Đã Mở Khóa Kênh",
+      "success": "**Kênh:** {channel}\n**Mở khóa bởi:** {moderator}",
+      "errorPermission": "Tôi không có quyền để chỉnh sửa kênh này.",
+      "errorGeneric": "Mở khóa kênh thất bại."
+    },
+    "unmute": {
+      "cannotUnmuteTitle": "Không Thể Unmute Người Này",
+      "cannotUnmuteHigherRole": "Họ có vai trò bằng hoặc cao hơn bạn.",
+      "notMutedTitle": "Người Dùng Không Bị Mute",
+      "notMutedBody": "Người dùng này hiện không bị timeout.",
+      "cannotUnmuteUnmoderatable": "Tôi không thể unmute người này. Họ có thể có vai trò cao hơn tôi.",
+      "successTitle": "Đã Unmute Người Dùng",
+      "success": "**Người dùng:** {user}\n**Unmute bởi:** {moderator}",
+      "errorPermission": "Tôi không có quyền để unmute người này.",
+      "errorGeneric": "Unmute người dùng thất bại."
+    }
+  }
+}

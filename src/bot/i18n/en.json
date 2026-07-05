@@ -1,0 +1,712 @@
+{
+  "common": {
+    "permissionDenied": "Permission Denied",
+    "missingPermissions": "Missing Permissions",
+    "youNeedPermission": "You need the **{permission}** permission.",
+    "iNeedPermission": "I need the **{permission}** permission.",
+    "userNotFound": "User Not Found",
+    "userNotInServer": "User is not in this server.",
+    "error": "Error",
+    "genericError": "Something went wrong. Please try again.",
+    "invalidDuration": "Invalid Duration",
+    "roleTooHigh": "Role Too High",
+    "roleTooHighMe": "I cannot manage this role as it is higher than or equal to my highest role.",
+    "roleTooHighYou": "You cannot manage a role higher than or equal to your highest role.",
+    "notFound": "Not Found",
+    "success": "Success",
+    "cancelled": "Cancelled",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "noPermissionManageGuild": "You need the **Manage Server** permission to do this.",
+    "unknownError": "An unknown error occurred. Please try again or contact support if this persists.",
+    "noReasonProvided": "No reason provided"
+  },
+  "ticket": {
+    "shared": {
+      "adminRequired": "You need **Administrator** permission to use this command.",
+      "notConfigured": "Ticket system is not configured. Use `ticket setup` first.",
+      "notConfiguredPlain": "Ticket system is not configured.",
+      "invalidTicketChannel": "This channel is not a valid ticket channel.",
+      "userNotFoundInServer": "The specified user could not be found in this server.",
+      "timedOut": "Timed out."
+    },
+    "add": {
+      "usage": "Please specify a user to add.\n**Usage:** `ticket add <user>`",
+      "noPermission": "You don't have permission to add users to this ticket.",
+      "alreadyHasAccess": "{user} already has access to this ticket.",
+      "addedTitle": "User Added",
+      "addedBody": "{user} has been added to this ticket by {adder}.",
+      "failed": "Failed to add the user. Please check permissions and try again."
+    },
+    "addcategory": {
+      "duplicateName": "A category with this name already exists.",
+      "addedTitle": "Category Added",
+      "addedBody": "**{name}** has been added to the ticket system.",
+      "promptTitle": "Add Category",
+      "promptBody": "Click below to add a new ticket category."
+    },
+    "addrole": {
+      "usage": "Please specify a role to add.\n**Usage:** `ticket addrole <@role>`",
+      "roleNotFound": "The specified role could not be found.",
+      "roleNotAllowed": "This role cannot be used as a support role.",
+      "alreadySupport": "{role} is already a support role.",
+      "addedTitle": "Support Role Added",
+      "addedBody": "{role} has been added as a support role.\n**All support roles:** {roleList}"
+    },
+    "claim": {
+      "invalidTicket": "This channel is not a valid ticket.",
+      "noPermission": "You don't have permission to claim tickets.",
+      "ownTicket": "You cannot claim your own ticket.",
+      "deleted": "This ticket has been deleted and cannot be claimed.",
+      "closed": "This ticket is closed. Please reopen it before claiming.",
+      "alreadyClaimed": "This ticket has already been claimed by {user}.",
+      "claimedTitle": "Ticket Claimed",
+      "claimedBody": "This ticket has been claimed by {user}."
+    },
+    "close": {
+      "alreadyClosed": "This ticket is already closed.",
+      "noPermission": "You don't have permission to close this ticket.",
+      "closedTitle": "Ticket Closed",
+      "failed": "Failed to close the ticket. Please try again."
+    },
+    "delete": {
+      "channelNotFound": "The specified channel could not be found.",
+      "noPermission": "Only support staff can delete tickets.",
+      "deletedTitle": "Ticket Deleted",
+      "selfDeleteBody": "This ticket channel will be deleted in 5 seconds...",
+      "otherDeletedBody": "Ticket channel **{channel}** has been deleted.",
+      "failed": "Failed to delete the ticket channel."
+    },
+    "open": {
+      "alreadyStatus": "This ticket is already {status}.",
+      "noPermission": "Only support staff can reopen tickets.",
+      "claimedByStatus": "Claimed by {user}",
+      "statusOpen": "Open",
+      "reopenedTitle": "Ticket Reopened",
+      "reopenedBody": "This ticket has been reopened by {reopener}.\n{creator} You can now continue the conversation.\n**Status:** {status}",
+      "failed": "Failed to reopen the ticket. Please try again."
+    },
+    "panel": {
+      "adminRequired": "You need **Administrator** permission.",
+      "noCategories": "No ticket categories found. Please run setup again.",
+      "channelNotFound": "Panel channel not found. Please reconfigure.",
+      "sentSuccess": "Ticket panel sent successfully.",
+      "failed": "Failed to send ticket panel. Please check channel permissions."
+    },
+    "remove": {
+      "usage": "Please specify a user to remove.\n**Usage:** `ticket remove <user>`",
+      "noPermission": "You don't have permission to remove users from this ticket.",
+      "cannotRemoveCreator": "You cannot remove the ticket creator.",
+      "noAccess": "{user} does not have access to this ticket.",
+      "removedTitle": "User Removed",
+      "removedBody": "{user} has been removed from this ticket.",
+      "failed": "Failed to remove the user. Please check permissions and try again."
+    },
+    "removecategory": {
+      "noCategories": "No categories to remove.",
+      "promptTitle": "Remove Category",
+      "promptBody": "Select a category to remove.",
+      "categoryNotFound": "Category not found.",
+      "removedTitle": "Category Removed",
+      "removedBody": "**{name}** has been removed."
+    },
+    "removerole": {
+      "usage": "Please specify a role to remove.\n**Usage:** `ticket removerole <@role>`",
+      "cannotRemovePrimary": "Cannot remove the primary support role. Use `ticket reset` and reconfigure to change it.",
+      "notAdditional": "{role} is not an additional support role.",
+      "removedTitle": "Support Role Removed",
+      "removedBody": "{role} has been removed from support roles.\n**Remaining support roles:** {roleList}"
+    },
+    "rename": {
+      "usage": "Please specify a new name.\n**Usage:** `ticket rename <new-name>`",
+      "noPermission": "Only support staff can rename tickets.",
+      "invalidName": "Invalid name. Use letters, numbers, and hyphens only.",
+      "sameName": "The new name is the same as the current name.",
+      "renamedTitle": "Ticket Renamed",
+      "renamedBody": "This ticket has been renamed to `{name}`",
+      "failed": "Failed to rename the ticket channel.",
+      "missingPermissions": "Missing permissions to rename.",
+      "rateLimited": "Rate limit reached. Please wait before renaming again."
+    },
+    "reset": {
+      "notConfigured": "Ticket system is not configured. Nothing to reset.",
+      "confirmTitle": "Reset Ticket System",
+      "confirmBody": "> This will delete all ticket configuration, categories, and support role assignments for this server.\n> **Warning:** Existing ticket channels will not be deleted, but the system will stop functioning until you run setup again.",
+      "cancelledTitle": "Reset Cancelled",
+      "cancelledBody": "The reset has been cancelled.",
+      "doneTitle": "Ticket System Reset",
+      "doneBody": "All ticket configuration has been removed. You can now run `ticket setup` to configure the system again.",
+      "failed": "Failed to reset the ticket system. Please try again.",
+      "timeoutTitle": "Reset Timeout",
+      "timeoutBody": "Reset cancelled due to inactivity."
+    },
+    "transcript": {
+      "noPermission": "Only support staff can use this command.",
+      "sentTitle": "Transcript Sent",
+      "sentBody": "The transcript has been sent to the ticket creator and log channel.",
+      "failed": "Failed to generate the transcript."
+    },
+    "transfer": {
+      "usage": "Please specify a staff member to transfer to.\n**Usage:** `ticket transfer <user>`",
+      "noPermission": "Only support staff can transfer tickets.",
+      "notClaimed": "This ticket has not been claimed yet. Use `ticket claim` first.",
+      "notClaimantOrAdmin": "Only the current claimant or an administrator can transfer this ticket.",
+      "sameUser": "This ticket is already claimed by that user.",
+      "targetNotStaff": "The target user is not a support staff member.",
+      "transferredTitle": "Ticket Transferred",
+      "transferredBody": "This ticket has been transferred from {from} to {to}.",
+      "failed": "Failed to transfer the ticket. Please try again."
+    },
+    "setup": {
+      "alreadyConfigured": "Ticket system is already configured. Use `ticket reset` first to clear the current configuration before running setup again.",
+      "errorTitle": "Setup Error",
+      "errorBody": "An error occurred during setup. Please try again.",
+      "requirementsTitle": "Setup Requirements Not Met",
+      "requirementsBody": "Missing text channels or assignable roles. Please ensure the bot has proper permissions.",
+      "customizedSuccess": "Panel customized successfully.",
+      "completeTitle": "Setup Complete",
+      "completeBody": "Use `ticket addcategory` to add ticket categories, then `ticket panel` to send the panel.",
+      "failed": "Failed to complete setup. Please try again."
+    }
+  },
+  "language": {
+    "notSupported": "That is not a supported language. Choose `en` or `vi`.",
+    "setTitle": "Language Updated",
+    "setBody": "Server language is now set to **{language}**. All bot replies for this server will now use this language where supported.",
+    "viewTitle": "Server Language",
+    "viewBody": "This server's current language is **{language}**.\nUse `/language set <en|vi>` to change it.",
+    "noPermission": "You need the **Manage Server** permission to change the server language.",
+    "usage": "Please provide a language.\n\n**Usage:** `language set <en|vi>` or `language view`",
+    "names": {
+      "en": "English",
+      "vi": "Tiếng Việt"
+    }
+  },
+  "warn": {
+    "dispatcher": {
+      "subcommandNotFound": "Subcommand '{name}' not found.",
+      "executionError": "There was an error executing this warn command!"
+    },
+    "add": {
+      "cannotWarnTitle": "Cannot Warn User",
+      "cannotWarnBot": "You cannot warn bots.",
+      "cannotWarnHigherRole": "They have an equal or higher role than you.",
+      "successTitle": "User Warned",
+      "success": "**Case:** #{caseNumber}\n**User:** {user}\n**Moderator:** {moderator}\n**Reason:** {reason}\n**Total Warnings:** {warnCount}",
+      "errorGeneric": "Failed to warn user."
+    },
+    "list": {
+      "titleFor": "Warnings for {user}",
+      "titleForCount": "Warnings for {user} [{count}]",
+      "noWarnings": "No warnings found for this user.",
+      "entry": "`#{caseNumber}` **Moderator:** {moderator}\n**Reason:** {reason}\n**Date:** {date}"
+    },
+    "autoPunish": {
+      "muteSkipped": "Auto-punishment (mute) skipped: user is not in this server.",
+      "muteFailedModeratable": "Auto-punishment (mute) failed: I cannot moderate this user.",
+      "muteFailedDuration": "Auto-punishment (mute) failed: invalid configured duration.",
+      "kickSkipped": "Auto-punishment (kick) skipped: user is not in this server.",
+      "kickFailedKickable": "Auto-punishment (kick) failed: I cannot kick this user.",
+      "banFailedBannable": "Auto-punishment (ban) failed: I cannot ban this user.",
+      "actionFailed": "Auto-punishment ({action}) failed: {error}",
+      "triggered": "Auto-punishment triggered: **{action}** (reached {warnCount} warning(s)).",
+      "reason": "Auto-punishment: reached {warnCount} warning(s)"
+    }
+  },
+  "case": {
+    "dispatcher": {
+      "subcommandNotFound": "Subcommand '{name}' not found.",
+      "executionError": "There was an error executing this case command!"
+    },
+    "common": {
+      "caseNotFoundTitle": "Case Not Found",
+      "caseNotFoundBody": "No case with number **#{caseNumber}** exists in this server."
+    },
+    "edit": {
+      "successTitle": "Case Updated",
+      "success": "**Case #{caseNumber}** reason updated to:\n{reason}"
+    },
+    "delete": {
+      "successTitle": "Case Deleted",
+      "success": "**Case #{caseNumber}** has been permanently deleted."
+    },
+    "clear": {
+      "successTitle": "Cases Cleared",
+      "success": "Deleted **{count}** case(s) for {user}."
+    },
+    "restore": {
+      "unavailableTitle": "Restore Unavailable",
+      "unavailableBody": "This server uses permanent case deletion, so a deleted case cannot be brought back. Use `/case delete` carefully — it cannot be undone."
+    },
+    "view": {
+      "title": "Case #{caseNumber}",
+      "body": "**Action:** {action}\n**Target:** {target} ({targetId})\n**Moderator:** {moderator} ({moderatorId})\n**Reason:** {reason}\n**Source:** {source}\n**Date:** {date}"
+    }
+  },
+  "help": {
+    "onlyUserCanUse": "Only the command user can use this menu.",
+    "mainCommandsPlaceholder": "Main Commands",
+    "extraCommandsPlaceholder": "Extra Commands",
+    "commandsCountDescription": "{count} commands",
+    "helloLine": "**Hello, I'm {bot}**",
+    "prefixLine": "**Prefix for this server:** `{prefix}`",
+    "setPrefixLine": "**Set prefix with:** **/setprefix**",
+    "supportServerLine": "**Join [Support Server]({url}) For Help**",
+    "categoryHelpLine": "**Use `{prefix}help <category>` for category help**",
+    "categories": {
+      "general": "General",
+      "information": "Information",
+      "moderation": "Moderation",
+      "antinuke": "Antinuke",
+      "automod": "AutoMod",
+      "tickets": "Tickets",
+      "welcome": "Welcome",
+      "logging": "Logging",
+      "fun": "Fun",
+      "funextra": "Fun Extra",
+      "otakureactions": "Reactions",
+      "roleplay": "Roleplay",
+      "social": "Social",
+      "utility": "Utility",
+      "animals": "Animals",
+      "giveaway": "Giveaway",
+      "vanityroles": "Vanity Roles",
+      "feedback": "Feedback",
+      "join2create": "Join2Create",
+      "automation": "Automation",
+      "profiles": "Profiles",
+      "media": "Media",
+      "misc": "Misc",
+      "tracking": "Tracking",
+      "voice": "Voice",
+      "ai": "Artificial Intelligence",
+      "reactionroles": "Reaction Roles",
+      "community": "Community"
+    }
+  },
+  "reactionroles": {
+    "noPermission": "You need **Manage Guild** permission.",
+    "usagePrefix": "Please provide a message ID. Usage: `.rr remove <message_id>`",
+    "notFound": "Reaction roles message not found!",
+    "removed": "Reaction roles message removed!",
+    "setup": {
+      "step1Title": "Reaction Roles Setup - Step 1",
+      "step1Prompt": "Select the channel where the reaction roles message will be posted:",
+      "step2Title": "Reaction Roles Setup - Step 2",
+      "step2Prompt": "**Configure your embed message:**\n\nClick \"Add Emoji-Role\" to add pairs, or \"Continue\" to proceed to review.",
+      "sessionExpired": "Session expired. Please run `/reactionroles setup` again.",
+      "needAtLeastOnePair": "You must add at least one emoji-role pair!",
+      "step3Title": "Reaction Roles Setup - Step 3",
+      "step3Body": "**Channel:** {channel}\n\n**Emoji-Role Pairs:**\n{pairs}\n\nReview your settings and confirm to post the message."
+    }
+  },
+  "verification": {
+    "dispatcher": {
+      "subcommandNotFound": "Subcommand '{name}' not found.",
+      "executionError": "There was an error executing this verification command!"
+    },
+    "setup": {
+      "invalidRoleTitle": "Invalid Role",
+      "verifiedManaged": "The verified role you provided is managed by an integration.",
+      "verifiedTooHighMe": "The verified role you provided is higher than or equal to my highest role.",
+      "verifiedTooHighYou": "The verified role you provided is higher than or equal to your highest role.",
+      "unverifiedManaged": "The unverified role you provided is managed by an integration.",
+      "unverifiedTooHighMe": "The unverified role you provided is higher than or equal to my highest role.",
+      "missingRolePermission": "I need the **Manage Roles** permission to assign roles.",
+      "missingChannelPermission": "I need permission to view and send messages in {channel}.",
+      "enabledTitle": "Verification Enabled",
+      "enabledBody": "**Channel:** {channel}\n**Verified Role:** {verifiedRole}\n**Unverified Role:** {unverifiedRole}\n\nThe verify panel has been posted.",
+      "noneRole": "None",
+      "errorGeneric": "Failed to set up verification. Please check my permissions and try again."
+    },
+    "disable": {
+      "alreadyDisabledTitle": "Already Disabled",
+      "alreadyDisabledBody": "Verification is already disabled for this server.",
+      "disabledTitle": "Verification Disabled",
+      "disabledBody": "The verification gate has been disabled for this server.",
+      "errorGeneric": "Failed to disable verification. Please try again."
+    },
+    "panel": {
+      "notConfiguredTitle": "Not Configured",
+      "notConfiguredBody": "Verification is not set up. Use `/verification setup` first.",
+      "channelGoneBody": "The configured verification channel no longer exists.",
+      "postedTitle": "Panel Posted",
+      "postedBody": "The verify panel has been posted in {channel}.",
+      "errorGeneric": "Failed to post the verify panel. Please check my permissions and try again."
+    },
+    "verifyButton": {
+      "notEnabled": "Verification is not enabled for this server.",
+      "alreadyVerified": "You are already verified.",
+      "missingPermission": "I do not have permission to assign roles right now. Please contact a server admin.",
+      "roleAddFailed": "Failed to assign the verified role. Please contact a server admin.",
+      "success": "You have been verified! Welcome to **{guild}**.",
+      "genericError": "An error occurred while verifying you. Please try again."
+    }
+  },
+  "logging": {
+    "noPermission": "You need **Administrator** permission to use this command.",
+    "alreadyConfiguredTitle": "Already Configured",
+    "alreadyConfiguredBody": "Logging is already set up for this server.\nUse **logging config** to view or **logging reset** to start over.",
+    "setupPrompt": "**Logging Setup**\nPick a log category below to assign a channel.",
+    "categorySelectPlaceholder": "Select a log type to configure",
+    "resetTitle": "Logging Reset",
+    "resetNotFound": "No logging configuration found for this server.",
+    "resetSuccess": "All logging settings have been reset successfully.",
+    "resetError": "An error occurred while resetting logging settings.",
+    "configTitle": "Logging Configuration",
+    "configNotFound": "No logging configuration found.\nUse logging setup to configure logging channels.",
+    "notSet": "Not set",
+    "configBody": "> **Message Logs:** {messageLogs}\n> **Member Logs:** {memberLogs}\n> **Moderation Logs:** {moderationLogs}\n> **Server Logs:** {serverLogs}\n> **Voice Logs:** {voiceLogs}",
+    "configHint": "-# Use logging setup to modify • logging reset to clear",
+    "configError": "An error occurred while fetching logging configuration.",
+    "categories": {
+      "messageLogs": { "label": "Message Logs", "description": "Delete, edit & bulk delete" },
+      "memberLogs": { "label": "Member Logs", "description": "Join, leave & profile updates" },
+      "moderationLogs": { "label": "Moderation Logs", "description": "Ban, unban, kick & timeout" },
+      "serverLogs": { "label": "Server Logs", "description": "Channels, roles & server settings" },
+      "voiceLogs": { "label": "Voice Logs", "description": "Join, leave, switch & mute" }
+    }
+  },
+  "farewell": {
+    "noPermission": "You need **Administrator** permission to use this command.",
+    "alreadyConfiguredTitle": "Already Configured",
+    "alreadyConfiguredBody": "> Use `farewell config` to modify or `farewell reset` to start over.",
+    "setupTitle": "Farewell Setup",
+    "setupPrompt": "Choose the type of farewell message you want to create:\n\n**Simple**\nSend a plain text farewell message. You can use placeholders to personalize it.\n\n**Container**\nSend a farewell message in a container format. You can customize the embed with a title, description, image, etc.",
+    "resetTitle": "Farewell Reset",
+    "resetNotFound": "No farewell configuration found for this server.",
+    "resetSuccess": "All farewell settings have been reset successfully.",
+    "resetError": "An error occurred while resetting farewell settings.",
+    "noConfigTitle": "No Farewell Configuration",
+    "noConfigBody": "There is no farewell configuration set up for this server.\n\nUse `farewell setup` to configure farewell messages.",
+    "noMessageTitle": "No Message Set",
+    "noMessageBody": "The farewell message has not been configured yet.\n\nUse `farewell setup` to set a message.",
+    "previewTitle": "Farewell Message Preview",
+    "previewHint": "-# This is a preview of the farewell message using your profile:",
+    "defaultTitle": "Farewell",
+    "defaultDescription": "Goodbye from {guild}!",
+    "configTitle": "Farewell Configuration",
+    "configNotFound": "No farewell configuration found.\nUse `farewell setup` to configure farewell messages.",
+    "configNotSet": "Not set",
+    "typeSimple": "Simple",
+    "typeContainer": "Container",
+    "configSimpleBody": "**Type:** {type}\n**Channel:** {channel}\n**Message:**\n{message}",
+    "configHint": "-# Use `farewell setup` to modify • `farewell reset` to clear",
+    "configContainerBody": "**Type:** {type}\n**Channel:** {channel}\n\n**Preview shown above**",
+    "noDescriptionSet": "No description set.",
+    "configError": "An error occurred while fetching farewell configuration."
+  },
+  "welcome": {
+    "noPermission": "You need **Administrator** permission to use this command.",
+    "alreadyConfiguredTitle": "Already Configured",
+    "alreadyConfiguredBody": "> Use `welcome config` to modify or `welcome reset` to start over.",
+    "setupTitle": "Welcome Setup",
+    "setupPrompt": "Choose the type of welcome message you want to create:\n\n**Simple**\nSend a plain text welcome message. You can use placeholders to personalize it.\n\n**Container**\nSend a welcome message in a container format. You can customize the embed with a title, description, image, etc.",
+    "resetTitle": "Welcome Reset",
+    "resetNotFound": "No welcome configuration found for this server.",
+    "resetSuccess": "All welcome settings have been reset successfully.",
+    "resetError": "An error occurred while resetting welcome settings.",
+    "noConfigTitle": "No Welcome Configuration",
+    "noConfigBody": "There is no welcome configuration set up for this server.\n\nUse `welcome setup` to configure welcome messages.",
+    "noMessageTitle": "No Message Set",
+    "noMessageBody": "The welcome message has not been configured yet.\n\nUse `welcome setup` to set a message.",
+    "previewTitle": "Welcome Message Preview",
+    "previewHint": "-# This is a preview of the welcome message using your profile:",
+    "defaultTitle": "Welcome",
+    "defaultDescription": "Welcome to {guild}!",
+    "configTitle": "Welcome Configuration",
+    "configNotFound": "No welcome configuration found.\nUse `welcome setup` to configure welcome messages.",
+    "configNotSet": "Not set",
+    "typeSimple": "Simple",
+    "typeContainer": "Container",
+    "configSimpleBody": "**Type:** {type}\n**Channel:** {channel}\n**Message:**\n{message}",
+    "configHint": "-# Use `welcome setup` to modify • `welcome reset` to clear",
+    "configContainerBody": "**Type:** {type}\n**Channel:** {channel}\n\n**Preview shown above**",
+    "noDescriptionSet": "No description set.",
+    "configError": "An error occurred while fetching welcome configuration."
+  },
+  "giveaway": {
+    "start": {
+      "noPermission": "You need `Manage Server` permission to start giveaways!",
+      "invalidUsageTitle": "Invalid Usage",
+      "invalidUsageBody": "Usage: `gstart <time> <winners> <prize>`\nExample: `gstart 1h 2 Discord Nitro`",
+      "invalidTimeTitle": "Invalid Time",
+      "invalidTimeBody": "Please use format: `1s`, `1m`, `1h`, or `1d`",
+      "invalidWinnersTitle": "Invalid Winners",
+      "invalidWinnersBody": "Must have at least 1 winner!",
+      "embedInfo": "{dot} **Winners:** {winners}\n{dot} **Ends:** {endTime}\n{dot} **Hosted by:** {host}",
+      "enterButton": "Enter Giveaway",
+      "viewParticipantsButton": "View Participants",
+      "startedTitle": "Giveaway Started",
+      "startedBody": "Your giveaway has been started successfully!"
+    },
+    "end": {
+      "noPermission": "You need `Manage Server` permission to end giveaways!",
+      "noMessageTitle": "No Message Found",
+      "noMessageBody": "Reply to a giveaway message or provide message ID!",
+      "notFoundTitle": "Not Found",
+      "notFoundBody": "No active giveaway found for this message!",
+      "endedTitle": "Giveaway Ended",
+      "endedBody": "The giveaway has been ended successfully!"
+    },
+    "reroll": {
+      "noPermission": "You need `Manage Server` permission to reroll giveaways!",
+      "noMessageTitle": "No Message Found",
+      "noMessageBody": "Reply to a giveaway message or provide message ID!",
+      "notFoundTitle": "Not Found",
+      "notFoundBody": "No ended giveaway found for this message!",
+      "noEntriesTitle": "No Entries",
+      "noEntriesBody": "No entries found to reroll!",
+      "newWinnersHeader": "New Winners!",
+      "newWinnersBody": "**Prize:** {prize}\n**New Winners:** {winners}\n\n{congrats} Congratulations! 🎊",
+      "giveawayLinkButton": "Giveaway Link",
+      "rerollCompleteTitle": "Reroll Complete",
+      "rerollCompleteBody": "New winners have been selected!",
+      "dmWinner": "{icon} You won **{prize}** in **{guild}** {heart}",
+      "viewWinningMessageButton": "View Winning Message"
+    }
+  },
+  "antinuke": {
+    "ownerOnlyEnable": "Only the **Server Owner** can enable antinuke.",
+    "ownerOnlyDisable": "Only the **Server Owner** can disable antinuke.",
+    "ownerOnlyReset": "Only the **Server Owner** can reset antinuke.",
+    "ownerOnlySettings": "Only the **Server Owner** can view antinuke settings.",
+    "ownerOnlyWhitelist": "Only the **Server Owner** can manage the whitelist.",
+    "ownerOnlySetup": "Only the **Server Owner** can setup antinuke.",
+    "setupRequiredTitle": "Setup Required",
+    "setupRequiredBody": "Run `/antinuke setup` first to configure antinuke.",
+    "alreadyEnabledTitle": "Already Enabled",
+    "alreadyEnabledBody": "Antinuke is already enabled on this server.",
+    "enabledTitle": "Antinuke Enabled",
+    "enabledBody": "Your server is now protected. Antinuke will monitor for destructive actions and take action against violators.",
+    "notEnabledTitle": "Not Enabled",
+    "notEnabledBody": "Antinuke is not currently enabled on this server.",
+    "disabledTitle": "Antinuke Disabled",
+    "disabledBody": "Antinuke has been disabled. Your server is no longer protected from nuking attacks.",
+    "notConfiguredYet": "Antinuke has not been configured yet.",
+    "resetTitle": "Antinuke Reset",
+    "resetBody": "Antinuke has been reset to default settings and **disabled**.\n\nAll whitelisted users have been removed.\n\nUse `/antinuke setup` to configure again.",
+    "alreadyConfiguredTitle": "Already Configured",
+    "alreadyConfiguredBody": "> Use `antinuke settings` to modify or `antinuke disable` to reset.",
+    "notConfiguredSettingsTitle": "Antinuke Not Configured",
+    "notConfiguredSettingsBody": "Run `/antinuke setup` to configure antinuke for this server.",
+    "settingsTitle": "Antinuke Settings",
+    "statusLine": "**Status:** {status}",
+    "statusEnabled": "Enabled",
+    "statusDisabled": "Disabled",
+    "infoLines": "**Threshold:** {threshold} actions in {timeframe}s\n**Punishment:** {punishment}\n**Log Channel:** {logChannel}\n**Whitelisted Users:** {whitelistCount}",
+    "notSet": "Not set",
+    "enabledModules": "**Enabled Modules:**\n{list}",
+    "disabledModules": "**Disabled Modules:**\n{list}",
+    "none": "None",
+    "whitelistAddTitle": "Add to Whitelist",
+    "whitelistAddPrompt": "Select a user to add to the whitelist:",
+    "whitelistForUser": "Whitelist {user}",
+    "whitelistEventsPrompt": "Select which events to whitelist this user for:",
+    "whitelistRemoveTitle": "Remove from Whitelist",
+    "whitelistRemovePrompt": "Select a user to remove from the whitelist:",
+    "userNotWhitelisted": "**{user}** is not on the whitelist.",
+    "removeUserWhitelistTitle": "Remove {user}'s Whitelist",
+    "removeEventsPrompt": "Select which events to remove, or remove entirely:",
+    "userRemovedFromWhitelist": "**{user}** has been removed from the whitelist.",
+    "noUsersWhitelisted": "No users are whitelisted.",
+    "whitelistEntry": "`{index}.` {user} {events}",
+    "eventsCount": "({count} events)",
+    "allEvents": "(All events)",
+    "whitelistTitle": "Antinuke Whitelist ({count})",
+    "whitelistDetailedHint": "-# Use `antinuke whitelist list` for detailed view.",
+    "whitelistDetailedTitle": "Antinuke Whitelist - Detailed ({count})"
+  },
+  "automod": {
+    "noPermissionEnable": "You need **Manage Server** permission to enable automod.",
+    "noPermissionDisable": "You need **Manage Server** permission to disable automod.",
+    "noPermissionReset": "You need **Manage Server** permission to reset automod.",
+    "noPermissionSettings": "You need **Manage Server** permission to view automod settings.",
+    "noPermissionWhitelist": "You need **Manage Server** permission to manage the whitelist.",
+    "noPermissionSetup": "You need **Manage Server** permission to setup automod.",
+    "setupRequiredTitle": "Setup Required",
+    "setupRequiredBody": "Run `/automod setup` first to configure automod.",
+    "alreadyEnabledTitle": "Already Enabled",
+    "alreadyEnabledBody": "AutoMod is already enabled on this server.",
+    "enabledTitle": "AutoMod Enabled",
+    "enabledBody": "AutoMod is now active. Messages will be moderated based on your configuration.",
+    "notConfiguredTitle": "Not Configured",
+    "notConfiguredBody": "AutoMod has not been configured on this server.",
+    "alreadyDisabledTitle": "Already Disabled",
+    "alreadyDisabledBody": "AutoMod is already disabled on this server.",
+    "disabledTitle": "AutoMod Disabled",
+    "disabledBody": "AutoMod has been disabled. Messages will no longer be automatically moderated.",
+    "notConfiguredYet": "AutoMod has not been configured yet.",
+    "resetTitle": "AutoMod Reset",
+    "resetBody": "AutoMod has been reset to default settings and **disabled**.\n\nAll whitelist entries have been removed.\n\nUse `/automod setup` to configure again.",
+    "notConfiguredSettingsTitle": "AutoMod Not Configured",
+    "notConfiguredSettingsBody": "Run `/automod setup` to configure automod for this server.",
+    "settingsTitle": "AutoMod Settings",
+    "statusLine": "**Status:** {status}",
+    "statusEnabled": "Enabled",
+    "statusDisabled": "Disabled",
+    "infoLines": "**Log Channel:** {logChannel}\n**Whitelisted:** {whitelistCount} entries\n**Bad Words:** {badWordCount} words",
+    "notSet": "Not set",
+    "thresholdsLines": "**Thresholds:**\nSpam: {spamThreshold} msgs / {spamInterval}s\nMentions: {mentionLimit} max\nCaps: {capsPercentage}% max",
+    "activeProtections": "**Active Protections:**\n{list}",
+    "disabledModules": "**Disabled Modules:**\n{list}",
+    "none": "None",
+    "whitelistEmpty": "The whitelist is empty.",
+    "whitelistAddTitle": "Add to Whitelist",
+    "whitelistAddPrompt": "Select what type to whitelist:",
+    "whitelistRemoveTitle": "Remove from Whitelist",
+    "whitelistRemovePrompt": "Select an entry to remove:",
+    "whitelistTitle": "AutoMod Whitelist ({count})",
+    "whitelistDetailedTitle": "AutoMod Whitelist - Detailed ({count})",
+    "whitelistNoEntries": "No entries in the whitelist.",
+    "whitelistUsersLine": "**Users ({count}):**\n{list}",
+    "whitelistRolesLine": "**Roles ({count}):**\n{list}",
+    "whitelistChannelsLine": "**Channels ({count}):**\n{list}"
+  },
+  "warnpunish": {
+    "dispatcher": {
+      "subcommandNotFound": "Subcommand '{name}' not found.",
+      "executionError": "There was an error executing this warnpunish command!"
+    },
+    "remove": {
+      "notFound": "No punishment threshold configured for **{warnCount}** warning(s).",
+      "successTitle": "Threshold Removed",
+      "success": "Removed the punishment threshold for **{warnCount}** warning(s)."
+    },
+    "set": {
+      "invalidDurationBody": "Provide a valid duration for mute (e.g., 1h, 30m, 1d). Maximum is 28 days.",
+      "successTitle": "Threshold Saved",
+      "successMute": "Reaching **{warnCount}** warning(s) will now trigger **{action}** for **{duration}**.",
+      "success": "Reaching **{warnCount}** warning(s) will now trigger **{action}**."
+    },
+    "list": {
+      "title": "Warn Punishments",
+      "empty": "No warning punishment thresholds are configured for this server.",
+      "entry": "**{warnCount}** warning(s) → **{action}**{durationNote}",
+      "durationNote": " ({duration})"
+    }
+  },
+  "moderation": {
+    "dispatcher": {
+      "subcommandNotFound": "Subcommand '{name}' not found.",
+      "executionError": "There was an error executing this moderation command!"
+    },
+    "ban": {
+      "cannotBanTitle": "Cannot Ban User",
+      "cannotBanHigherRole": "They have an equal or higher role than you.",
+      "cannotBanUnbannable": "I cannot ban this user. They may have a higher role than me.",
+      "successTitle": "User Banned",
+      "success": "**User:** {user}\n**Moderator:** {moderator}\n**Reason:** {reason}{deletedNote}",
+      "deletedNote": "\n**Messages Deleted:** Last {days} day(s)",
+      "errorPermission": "I lack the permissions to ban this user.",
+      "errorGeneric": "Failed to ban user."
+    },
+    "give": {
+      "successTitle": "Role Given",
+      "success": "**User:** {user}\n**Role:** {role}\n**Given by:** {moderator}",
+      "roleAlreadyAssignedTitle": "Role Already Assigned",
+      "roleAlreadyAssignedBody": "User already has this role.",
+      "errorPermission": "I lack the permissions to manage this role.",
+      "errorGeneric": "Failed to give role."
+    },
+    "kick": {
+      "cannotKickTitle": "Cannot Kick User",
+      "cannotKickHigherRole": "They have an equal or higher role than you.",
+      "cannotKickUnkickable": "I cannot kick this user. They may have a higher role than me.",
+      "successTitle": "User Kicked",
+      "success": "**User:** {user}\n**Moderator:** {moderator}\n**Reason:** {reason}",
+      "errorPermission": "I lack the permissions to kick this user.",
+      "errorGeneric": "Failed to kick user."
+    },
+    "lock": {
+      "successTitle": "Channel Locked",
+      "success": "**Channel:** {channel}\n**Locked by:** {moderator}\n**Reason:** {reason}",
+      "errorPermission": "I lack the permissions to modify this channel.",
+      "errorGeneric": "Failed to lock channel."
+    },
+    "mute": {
+      "invalidDurationBody": "Provide a valid duration (e.g., 1h, 30m, 1d). Maximum is 28 days.",
+      "cannotMuteTitle": "Cannot Mute User",
+      "cannotMuteHigherRole": "They have an equal or higher role than you.",
+      "cannotMuteUnmoderatable": "I cannot mute this user. They may have a higher role than me.",
+      "successTitle": "User Muted",
+      "success": "**User:** {user}\n**Duration:** {duration}\n**Moderator:** {moderator}\n**Reason:** {reason}",
+      "errorPermission": "I lack the permissions to mute this user.",
+      "errorGeneric": "Failed to mute user."
+    },
+    "remove": {
+      "successTitle": "Role Removed",
+      "success": "**User:** {user}\n**Role:** {role}\n**Removed by:** {moderator}",
+      "roleNotFoundTitle": "Role Not Found",
+      "roleNotFoundBody": "User does not have this role.",
+      "errorPermission": "I lack the permissions to manage this role.",
+      "errorGeneric": "Failed to remove role."
+    },
+    "slowmode": {
+      "updatedTitle": "Slowmode Updated",
+      "updated": "**Channel:** {channel}\n**Duration:** {seconds} second(s)\n**Set by:** {moderator}",
+      "disabledTitle": "Slowmode Disabled",
+      "disabled": "**Channel:** {channel}\n**Set by:** {moderator}",
+      "enabledTitle": "Slowmode Enabled",
+      "changed": "**Channel:** {channel}\n**Duration:** {durationText}\n**Set by:** {moderator}",
+      "durationDisabled": "Disabled",
+      "durationSeconds": "{seconds} second(s)",
+      "errorPermission": "I lack the permissions to modify this channel.",
+      "errorGeneric": "Failed to set slowmode."
+    },
+    "softban": {
+      "cannotSoftbanTitle": "Cannot Softban User",
+      "cannotSoftbanHigherRole": "They have an equal or higher role than you.",
+      "cannotSoftbanUnbannable": "I cannot softban this user. They may have a higher role than me.",
+      "successTitle": "User Softbanned",
+      "success": "**User:** {user}\n**Moderator:** {moderator}\n**Reason:** {reason}\n**Messages Deleted:** Last {days} day(s)",
+      "errorPermission": "I lack the permissions to softban this user.",
+      "errorGeneric": "Failed to softban user."
+    },
+    "tempban": {
+      "invalidDurationBody": "Provide a valid duration (e.g., 1h, 30m, 1d, 7d).",
+      "cannotBanTitle": "Cannot Ban User",
+      "cannotBanHigherRole": "They have an equal or higher role than you.",
+      "cannotBanUnbannable": "I cannot ban this user. They may have a higher role than me.",
+      "successTitle": "User Temporarily Banned",
+      "success": "**User:** {user}\n**Duration:** {duration}\n**Moderator:** {moderator}\n**Reason:** {reason}{deletedNote}",
+      "deletedNote": "\n**Messages Deleted:** Last {days} day(s)",
+      "errorPermission": "I lack the permissions to ban this user.",
+      "errorGeneric": "Failed to temporarily ban user."
+    },
+    "temprole": {
+      "invalidDurationBody": "Provide a valid duration (e.g., 1h, 30m, 1d, 7d).",
+      "roleAlreadyAssignedTitle": "Role Already Assigned",
+      "roleAlreadyAssignedBody": "User already has this role.",
+      "successTitle": "Temporary Role Added",
+      "success": "**User:** {user}\n**Role:** {role}\n**Duration:** {duration}\n**Added by:** {moderator}\n**Reason:** {reason}",
+      "errorPermission": "I lack the permissions to manage this role.",
+      "errorGeneric": "Failed to add temporary role."
+    },
+    "unban": {
+      "notBannedTitle": "User Not Banned",
+      "notBannedBody": "This user is not banned from the server.",
+      "successTitle": "User Unbanned",
+      "success": "**User:** {user}\n**Moderator:** {moderator}\n**Reason:** {reason}",
+      "errorPermission": "I lack the permissions to unban this user.",
+      "errorGeneric": "Failed to unban user. Check the user ID."
+    },
+    "unlock": {
+      "successTitle": "Channel Unlocked",
+      "success": "**Channel:** {channel}\n**Unlocked by:** {moderator}",
+      "errorPermission": "I lack the permissions to modify this channel.",
+      "errorGeneric": "Failed to unlock channel."
+    },
+    "unmute": {
+      "cannotUnmuteTitle": "Cannot Unmute User",
+      "cannotUnmuteHigherRole": "They have an equal or higher role than you.",
+      "notMutedTitle": "User Not Muted",
+      "notMutedBody": "This user is not currently timed out.",
+      "cannotUnmuteUnmoderatable": "I cannot unmute this user. They may have a higher role than me.",
+      "successTitle": "User Unmuted",
+      "success": "**User:** {user}\n**Unmuted by:** {moderator}",
+      "errorPermission": "I lack the permissions to unmute this user.",
+      "errorGeneric": "Failed to unmute user."
+    }
+  }
+}

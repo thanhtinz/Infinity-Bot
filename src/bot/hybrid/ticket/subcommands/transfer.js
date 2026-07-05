@@ -2,6 +2,7 @@
 const { ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, SeparatorSpacingSize, MessageFlags } = require('discord.js');
 const { TicketConfig, Ticket } = require('../../../../database/models');
 const { logTicketEvent, hasSupportRole } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -22,6 +23,7 @@ function replyTitled(ctx, title, body) {
 module.exports = {
     async execute(interactionOrMessage, args) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const channel = interactionOrMessage.channel;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
         const isSlash = interactionOrMessage.isCommand?.();
@@ -31,7 +33,7 @@ module.exports = {
             const u = interactionOrMessage.options.getUser('user');
             targetUserId = u?.id;
         } else {
-            if (!args[0]) return reply(interactionOrMessage, 'Please specify a staff member to transfer to.\n**Usage:** `ticket transfer <user>`');
+            if (!args[0]) return reply(interactionOrMessage, await tg(guildId, 'ticket.transfer.usage'));
             targetUserId = args[0].replace(/[<@!>]/g, '');
         }
 
@@ -40,27 +42,27 @@ module.exports = {
             TicketConfig.findOne({ where: { guildId: guild.id } })
         ]);
 
-        if (!ticket) return reply(interactionOrMessage, 'This channel is not a valid ticket channel.');
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured.');
+        if (!ticket) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.invalidTicketChannel'));
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfiguredPlain'));
 
         const member = guild.members.cache.get(userId);
         if (!hasSupportRole(member, config)) {
-            return reply(interactionOrMessage, 'Only support staff can transfer tickets.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.transfer.noPermission'));
         }
 
-        if (!ticket.claimedBy) return reply(interactionOrMessage, 'This ticket has not been claimed yet. Use `ticket claim` first.');
+        if (!ticket.claimedBy) return reply(interactionOrMessage, await tg(guildId, 'ticket.transfer.notClaimed'));
         if (ticket.claimedBy !== userId && !member.permissions.has('Administrator')) {
-            return reply(interactionOrMessage, 'Only the current claimant or an administrator can transfer this ticket.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.transfer.notClaimantOrAdmin'));
         }
 
-        if (targetUserId === ticket.claimedBy) return reply(interactionOrMessage, 'This ticket is already claimed by that user.');
+        if (targetUserId === ticket.claimedBy) return reply(interactionOrMessage, await tg(guildId, 'ticket.transfer.sameUser'));
 
         try {
             const targetMember = await guild.members.fetch(targetUserId).catch(() => null);
-            if (!targetMember) return reply(interactionOrMessage, 'The specified user could not be found in this server.');
+            if (!targetMember) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.userNotFoundInServer'));
 
             if (!hasSupportRole(targetMember, config)) {
-                return reply(interactionOrMessage, 'The target user is not a support staff member.');
+                return reply(interactionOrMessage, await tg(guildId, 'ticket.transfer.targetNotStaff'));
             }
 
             const previousClaimer = ticket.claimedBy;
@@ -69,10 +71,10 @@ module.exports = {
 
             logTicketEvent(guild, config, 'Ticket Transferred', `**Ticket:** ${channel}\n**From:** <@${previousClaimer}>\n**To:** <@${targetUserId}>\n**Transferred by:** <@${userId}>`).catch(() => {});
 
-            return replyTitled(interactionOrMessage, '### Ticket Transferred', `This ticket has been transferred from <@${previousClaimer}> to <@${targetUserId}>.`);
+            return replyTitled(interactionOrMessage, `### ${await tg(guildId, 'ticket.transfer.transferredTitle')}`, await tg(guildId, 'ticket.transfer.transferredBody', { from: `<@${previousClaimer}>`, to: `<@${targetUserId}>` }));
         } catch (error) {
             console.error('Ticket transfer error:', error);
-            return reply(interactionOrMessage, 'Failed to transfer the ticket. Please try again.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.transfer.failed'));
         }
     }
 };

@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -10,6 +7,7 @@ const {
   PermissionFlagsBits,
 } = require('discord.js');
 const { VerificationConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 function reply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -24,22 +22,24 @@ module.exports = {
   description: 'Disable the verification gate for this server',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
+
     if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild))
-      return reply(interaction, 'Permission Denied', 'You need the **Manage Server** permission.', true);
+      return reply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Manage Server' }), true);
 
     try {
       const config = await VerificationConfig.findOne({ where: { guildId: interaction.guild.id } });
 
       if (!config || !config.enabled)
-        return reply(interaction, 'Already Disabled', 'Verification is already disabled for this server.', true);
+        return reply(interaction, await tg(guildId, 'verification.disable.alreadyDisabledTitle'), await tg(guildId, 'verification.disable.alreadyDisabledBody'), true);
 
       config.enabled = false;
       await config.save();
 
-      await reply(interaction, 'Verification Disabled', 'The verification gate has been disabled for this server.');
+      await reply(interaction, await tg(guildId, 'verification.disable.disabledTitle'), await tg(guildId, 'verification.disable.disabledBody'));
     } catch (error) {
       console.error('Verification disable error:', error);
-      await reply(interaction, 'Error', 'Failed to disable verification. Please try again.', true);
+      await reply(interaction, await tg(guildId, 'common.error'), await tg(guildId, 'verification.disable.errorGeneric'), true);
     }
   },
 };

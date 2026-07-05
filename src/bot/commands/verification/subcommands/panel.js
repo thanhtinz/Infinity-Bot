@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -11,6 +8,7 @@ const {
 } = require('discord.js');
 const { VerificationConfig } = require('../../../../database/models');
 const { postVerificationPanel } = require('../../../utils/verificationPanel');
+const { tg } = require('../../../utils/i18n');
 
 function reply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -25,24 +23,26 @@ module.exports = {
   description: 'Re-post the verify button panel',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
+
     if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild))
-      return reply(interaction, 'Permission Denied', 'You need the **Manage Server** permission.', true);
+      return reply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Manage Server' }), true);
 
     try {
       const config = await VerificationConfig.findOne({ where: { guildId: interaction.guild.id } });
 
       if (!config || !config.enabled || !config.channelId)
-        return reply(interaction, 'Not Configured', 'Verification is not set up. Use `/verification setup` first.', true);
+        return reply(interaction, await tg(guildId, 'verification.panel.notConfiguredTitle'), await tg(guildId, 'verification.panel.notConfiguredBody'), true);
 
       const panelMsg = await postVerificationPanel(config, interaction.guild);
 
       if (!panelMsg)
-        return reply(interaction, 'Error', 'The configured verification channel no longer exists.', true);
+        return reply(interaction, await tg(guildId, 'common.error'), await tg(guildId, 'verification.panel.channelGoneBody'), true);
 
-      await reply(interaction, 'Panel Posted', `The verify panel has been posted in <#${config.channelId}>.`);
+      await reply(interaction, await tg(guildId, 'verification.panel.postedTitle'), await tg(guildId, 'verification.panel.postedBody', { channel: `<#${config.channelId}>` }));
     } catch (error) {
       console.error('Verification panel error:', error);
-      await reply(interaction, 'Error', 'Failed to post the verify panel. Please check my permissions and try again.', true);
+      await reply(interaction, await tg(guildId, 'common.error'), await tg(guildId, 'verification.panel.errorGeneric'), true);
     }
   },
 };

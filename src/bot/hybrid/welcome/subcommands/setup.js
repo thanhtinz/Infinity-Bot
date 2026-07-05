@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -12,6 +9,7 @@ const {
     ButtonStyle
 } = require('discord.js');
 const { WelcomeConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'setup',
@@ -20,21 +18,22 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
 
         const existing = await WelcomeConfig.findOne({ where: { guildId: guild.id } });
         if (existing?.channelId) {
             const container = new ContainerBuilder()
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Already Configured'))
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'welcome.alreadyConfiguredTitle')}`))
                 .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent('> Use `welcome config` to modify or `welcome reset` to start over.'));
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.alreadyConfiguredBody')));
             return interactionOrMessage.reply({ components: [container], flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral });
         }
 
         if (!member.permissions.has('Administrator')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Administrator** permission to use this command.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.noPermission'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -59,13 +58,13 @@ module.exports = {
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('### Welcome Setup')
+                new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'welcome.setupTitle')}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('Choose the type of welcome message you want to create:\n\n**Simple**\nSend a plain text welcome message. You can use placeholders to personalize it.\n\n**Container**\nSend a welcome message in a container format. You can customize the embed with a title, description, image, etc.')
+                new TextDisplayBuilder().setContent(await tg(guildId, 'welcome.setupPrompt'))
             )
             .addActionRowComponents(buttonRow);
 

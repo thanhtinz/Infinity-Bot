@@ -4,6 +4,7 @@ const {
 } = require('discord.js');
 const { TicketConfig } = require('../../../../database/models');
 const { logTicketEvent, getSupportRoleIds } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -24,35 +25,36 @@ function replyTitled(ctx, title, body) {
 module.exports = {
     async execute(interactionOrMessage, args) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
         const member = guild.members.cache.get(userId);
         const isSlash = interactionOrMessage.isCommand?.();
 
         if (!member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return reply(interactionOrMessage, 'You need **Administrator** permission to use this command.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.adminRequired'));
         }
 
         const config = await TicketConfig.findOne({ where: { guildId: guild.id } });
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured. Use `ticket setup` first.');
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfigured'));
 
         let roleId;
         if (isSlash) {
             const role = interactionOrMessage.options.getRole('role');
             roleId = role?.id;
         } else {
-            if (!args[0]) return reply(interactionOrMessage, 'Please specify a role to remove.\n**Usage:** `ticket removerole <@role>`');
+            if (!args[0]) return reply(interactionOrMessage, await tg(guildId, 'ticket.removerole.usage'));
             roleId = args[0].replace(/[<@&>]/g, '');
         }
 
         if (roleId === config.supportRoleId) {
-            return reply(interactionOrMessage, 'Cannot remove the primary support role. Use `ticket reset` and reconfigure to change it.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.removerole.cannotRemovePrimary'));
         }
 
         let additional = [];
         try { additional = JSON.parse(config.additionalRoleIds || '[]'); } catch {}
 
         if (!additional.includes(roleId)) {
-            return reply(interactionOrMessage, `<@&${roleId}> is not an additional support role.`);
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.removerole.notAdditional', { role: `<@&${roleId}>` }));
         }
 
         additional = additional.filter(id => id !== roleId);
@@ -65,6 +67,6 @@ module.exports = {
         const user = interactionOrMessage.user || interactionOrMessage.author;
         await logTicketEvent(guild, config, 'Support Role Removed', `**Role:** <@&${roleId}>\n**Removed by:** <@${userId}>`);
 
-        return replyTitled(interactionOrMessage, '### Support Role Removed', `<@&${roleId}> has been removed from support roles.\n**Remaining support roles:** ${roleList}`);
+        return replyTitled(interactionOrMessage, `### ${await tg(guildId, 'ticket.removerole.removedTitle')}`, await tg(guildId, 'ticket.removerole.removedBody', { role: `<@&${roleId}>`, roleList }));
     }
 };

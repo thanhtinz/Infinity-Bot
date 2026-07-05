@@ -5,6 +5,7 @@ const {
 } = require('discord.js');
 const { TicketConfig, TicketCategory } = require('../../../../database/models');
 const { logTicketEvent } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -16,20 +17,21 @@ function reply(ctx, text) {
 module.exports = {
     async execute(interactionOrMessage) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
         const member = guild.members.cache.get(userId);
 
         if (!member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return reply(interactionOrMessage, 'You need **Administrator** permission to use this command.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.adminRequired'));
         }
 
         const config = await TicketConfig.findOne({ where: { guildId: guild.id } });
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured. Nothing to reset.');
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.reset.notConfigured'));
 
         const confirmContainer = new ContainerBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Reset Ticket System'))
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'ticket.reset.confirmTitle')}`))
             .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent('> This will delete all ticket configuration, categories, and support role assignments for this server.\n> **Warning:** Existing ticket channels will not be deleted, but the system will stop functioning until you run setup again.'))
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guildId, 'ticket.reset.confirmBody')))
             .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
             .addActionRowComponents(new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId('ticket_reset_confirm').setLabel('Reset').setStyle(ButtonStyle.Danger),
@@ -52,9 +54,9 @@ module.exports = {
         collector.on('collect', async interaction => {
             if (interaction.customId === 'ticket_reset_cancel') {
                 const cancelContainer = new ContainerBuilder()
-                    .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Reset Cancelled'))
+                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'ticket.reset.cancelledTitle')}`))
                     .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-                    .addTextDisplayComponents(new TextDisplayBuilder().setContent('The reset has been cancelled.'));
+                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guildId, 'ticket.reset.cancelledBody')));
                 await interaction.update({ components: [cancelContainer] });
                 collector.stop();
                 return;
@@ -69,26 +71,26 @@ module.exports = {
                     await TicketConfig.destroy({ where: { guildId: guild.id } });
 
                     const doneContainer = new ContainerBuilder()
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Ticket System Reset'))
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'ticket.reset.doneTitle')}`))
                         .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent('All ticket configuration has been removed. You can now run `ticket setup` to configure the system again.'));
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guildId, 'ticket.reset.doneBody')));
                     await interaction.update({ components: [doneContainer] });
                 } catch (error) {
                     console.error('Ticket reset error:', error);
                     const errContainer = new ContainerBuilder()
-                        .addTextDisplayComponents(new TextDisplayBuilder().setContent('Failed to reset the ticket system. Please try again.'));
+                        .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guildId, 'ticket.reset.failed')));
                     await interaction.update({ components: [errContainer] });
                 }
                 collector.stop();
             }
         });
 
-        collector.on('end', collected => {
+        collector.on('end', async collected => {
             if (collected.size === 0) {
                 const timeoutContainer = new ContainerBuilder()
-                    .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Reset Timeout'))
+                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'ticket.reset.timeoutTitle')}`))
                     .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-                    .addTextDisplayComponents(new TextDisplayBuilder().setContent('Reset cancelled due to inactivity.'));
+                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guildId, 'ticket.reset.timeoutBody')));
                 msg.edit({ components: [timeoutContainer] }).catch(() => {});
             }
         });

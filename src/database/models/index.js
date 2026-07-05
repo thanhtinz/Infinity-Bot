@@ -8,6 +8,7 @@ const J2CConfig = require('./J2CConfig');
 const TempChannel = require('./TempChannel');
 const Todo = require('./Todo');
 const GuildPrefix = require('./GuildPrefix');
+const GuildLanguage = require('./GuildLanguage');
 const Blacklist = require('./Blacklist');
 const LoggingConfig = require('./LoggingConfig');
 const WelcomeConfig = require('./WelcomeConfig');
@@ -44,6 +45,7 @@ const modelList = [
     TempChannel,
     Todo,
     GuildPrefix,
+    GuildLanguage,
     Blacklist,
     LoggingConfig,
     WelcomeConfig,
@@ -87,6 +89,7 @@ const models = {
     TempChannel,
     Todo,
     GuildPrefix,
+    GuildLanguage,
     Blacklist,
     LoggingConfig,
     WelcomeConfig,

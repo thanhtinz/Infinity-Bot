@@ -8,6 +8,7 @@ const {
     PermissionFlagsBits
 } = require('discord.js');
 const { VerificationConfig } = require('../../../database/models');
+const { tg } = require('../../utils/i18n');
 
 function ephemeralReply(interaction, text) {
     const container = new ContainerBuilder()
@@ -17,25 +18,26 @@ function ephemeralReply(interaction, text) {
 
 async function handle(interaction) {
     if (!interaction.isButton() || interaction.customId !== 'verification_verify') return false;
+    const guildId = interaction.guild.id;
 
     try {
         const config = await VerificationConfig.findOne({ where: { guildId: interaction.guild.id } });
 
         if (!config || !config.enabled || !config.verifiedRoleId) {
-            await ephemeralReply(interaction, 'Verification is not enabled for this server.');
+            await ephemeralReply(interaction, await tg(guildId, 'verification.verifyButton.notEnabled'));
             return true;
         }
 
         const member = interaction.member;
 
         if (member.roles.cache.has(config.verifiedRoleId)) {
-            await ephemeralReply(interaction, 'You are already verified.');
+            await ephemeralReply(interaction, await tg(guildId, 'verification.verifyButton.alreadyVerified'));
             return true;
         }
 
         const me = interaction.guild.members.me;
         if (!me.permissions.has(PermissionFlagsBits.ManageRoles)) {
-            await ephemeralReply(interaction, 'I do not have permission to assign roles right now. Please contact a server admin.');
+            await ephemeralReply(interaction, await tg(guildId, 'verification.verifyButton.missingPermission'));
             return true;
         }
 
@@ -43,7 +45,7 @@ async function handle(interaction) {
             await member.roles.add(config.verifiedRoleId, 'Member verified');
         } catch (error) {
             console.error('Verification role add error:', error);
-            await ephemeralReply(interaction, 'Failed to assign the verified role. Please contact a server admin.');
+            await ephemeralReply(interaction, await tg(guildId, 'verification.verifyButton.roleAddFailed'));
             return true;
         }
 
@@ -51,12 +53,12 @@ async function handle(interaction) {
             await member.roles.remove(config.unverifiedRoleId, 'Member verified').catch(() => { });
         }
 
-        await ephemeralReply(interaction, `You have been verified! Welcome to **${interaction.guild.name}**.`);
+        await ephemeralReply(interaction, await tg(guildId, 'verification.verifyButton.success', { guild: interaction.guild.name }));
         return true;
     } catch (error) {
         console.error('Verification handler error:', error);
         try {
-            await ephemeralReply(interaction, 'An error occurred while verifying you. Please try again.');
+            await ephemeralReply(interaction, await tg(guildId, 'verification.verifyButton.genericError'));
         } catch { }
         return true;
     }

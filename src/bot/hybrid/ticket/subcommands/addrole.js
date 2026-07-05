@@ -4,6 +4,7 @@ const {
 } = require('discord.js');
 const { TicketConfig } = require('../../../../database/models');
 const { logTicketEvent, getSupportRoleIds } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -24,33 +25,34 @@ function replyTitled(ctx, title, body) {
 module.exports = {
     async execute(interactionOrMessage, args) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
         const member = guild.members.cache.get(userId);
         const isSlash = interactionOrMessage.isCommand?.();
 
         if (!member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return reply(interactionOrMessage, 'You need **Administrator** permission to use this command.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.adminRequired'));
         }
 
         const config = await TicketConfig.findOne({ where: { guildId: guild.id } });
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured. Use `ticket setup` first.');
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfigured'));
 
         let roleId;
         if (isSlash) {
             const role = interactionOrMessage.options.getRole('role');
             roleId = role?.id;
         } else {
-            if (!args[0]) return reply(interactionOrMessage, 'Please specify a role to add.\n**Usage:** `ticket addrole <@role>`');
+            if (!args[0]) return reply(interactionOrMessage, await tg(guildId, 'ticket.addrole.usage'));
             roleId = args[0].replace(/[<@&>]/g, '');
         }
 
         const role = guild.roles.cache.get(roleId);
-        if (!role) return reply(interactionOrMessage, 'The specified role could not be found.');
-        if (role.managed || role.id === guild.id) return reply(interactionOrMessage, 'This role cannot be used as a support role.');
+        if (!role) return reply(interactionOrMessage, await tg(guildId, 'ticket.addrole.roleNotFound'));
+        if (role.managed || role.id === guild.id) return reply(interactionOrMessage, await tg(guildId, 'ticket.addrole.roleNotAllowed'));
 
         const currentRoles = getSupportRoleIds(config);
         if (currentRoles.includes(roleId)) {
-            return reply(interactionOrMessage, `<@&${roleId}> is already a support role.`);
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.addrole.alreadySupport', { role: `<@&${roleId}>` }));
         }
 
         let additional = [];
@@ -65,6 +67,6 @@ module.exports = {
         const user = interactionOrMessage.user || interactionOrMessage.author;
         await logTicketEvent(guild, config, 'Support Role Added', `**Role:** <@&${roleId}>\n**Added by:** <@${userId}>`);
 
-        return replyTitled(interactionOrMessage, '### Support Role Added', `<@&${roleId}> has been added as a support role.\n**All support roles:** ${roleList}`);
+        return replyTitled(interactionOrMessage, `### ${await tg(guildId, 'ticket.addrole.addedTitle')}`, await tg(guildId, 'ticket.addrole.addedBody', { role: `<@&${roleId}>`, roleList }));
     }
 };

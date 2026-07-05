@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -11,6 +8,7 @@ const {
 } = require('discord.js');
 const { VerificationConfig } = require('../../../../database/models');
 const { postVerificationPanel } = require('../../../utils/verificationPanel');
+const { tg } = require('../../../utils/i18n');
 
 function reply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -25,8 +23,10 @@ module.exports = {
   description: 'Set up the verification gate for this server',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
+
     if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild))
-      return reply(interaction, 'Permission Denied', 'You need the **Manage Server** permission.', true);
+      return reply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Manage Server' }), true);
 
     const channel = interaction.options.getChannel('channel');
     const verifiedRole = interaction.options.getRole('verified_role');
@@ -36,27 +36,27 @@ module.exports = {
     const me = interaction.guild.members.me;
 
     if (verifiedRole.managed)
-      return reply(interaction, 'Invalid Role', 'The verified role you provided is managed by an integration.', true);
+      return reply(interaction, await tg(guildId, 'verification.setup.invalidRoleTitle'), await tg(guildId, 'verification.setup.verifiedManaged'), true);
 
     if (verifiedRole.position >= me.roles.highest.position)
-      return reply(interaction, 'Invalid Role', 'The verified role you provided is higher than or equal to my highest role.', true);
+      return reply(interaction, await tg(guildId, 'verification.setup.invalidRoleTitle'), await tg(guildId, 'verification.setup.verifiedTooHighMe'), true);
 
     if (verifiedRole.position >= interaction.member.roles.highest.position && interaction.guild.ownerId !== interaction.user.id)
-      return reply(interaction, 'Invalid Role', 'The verified role you provided is higher than or equal to your highest role.', true);
+      return reply(interaction, await tg(guildId, 'verification.setup.invalidRoleTitle'), await tg(guildId, 'verification.setup.verifiedTooHighYou'), true);
 
     if (unverifiedRole) {
       if (unverifiedRole.managed)
-        return reply(interaction, 'Invalid Role', 'The unverified role you provided is managed by an integration.', true);
+        return reply(interaction, await tg(guildId, 'verification.setup.invalidRoleTitle'), await tg(guildId, 'verification.setup.unverifiedManaged'), true);
 
       if (unverifiedRole.position >= me.roles.highest.position)
-        return reply(interaction, 'Invalid Role', 'The unverified role you provided is higher than or equal to my highest role.', true);
+        return reply(interaction, await tg(guildId, 'verification.setup.invalidRoleTitle'), await tg(guildId, 'verification.setup.unverifiedTooHighMe'), true);
     }
 
     if (!me.permissions.has(PermissionFlagsBits.ManageRoles))
-      return reply(interaction, 'Missing Permissions', 'I need the **Manage Roles** permission to assign roles.', true);
+      return reply(interaction, await tg(guildId, 'common.missingPermissions'), await tg(guildId, 'verification.setup.missingRolePermission'), true);
 
     if (!channel.permissionsFor(me)?.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages]))
-      return reply(interaction, 'Missing Permissions', `I need permission to view and send messages in ${channel}.`, true);
+      return reply(interaction, await tg(guildId, 'common.missingPermissions'), await tg(guildId, 'verification.setup.missingChannelPermission', { channel: `${channel}` }), true);
 
     try {
       const [config] = await VerificationConfig.findOrCreate({
@@ -73,11 +73,16 @@ module.exports = {
 
       await postVerificationPanel(config, interaction.guild);
 
-      await reply(interaction, 'Verification Enabled',
-        `**Channel:** ${channel}\n**Verified Role:** ${verifiedRole}\n**Unverified Role:** ${unverifiedRole ? unverifiedRole : 'None'}\n\nThe verify panel has been posted.`);
+      const noneRole = await tg(guildId, 'verification.setup.noneRole');
+      await reply(interaction, await tg(guildId, 'verification.setup.enabledTitle'),
+        await tg(guildId, 'verification.setup.enabledBody', {
+          channel: `${channel}`,
+          verifiedRole: `${verifiedRole}`,
+          unverifiedRole: unverifiedRole ? `${unverifiedRole}` : noneRole,
+        }));
     } catch (error) {
       console.error('Verification setup error:', error);
-      await reply(interaction, 'Error', 'Failed to set up verification. Please check my permissions and try again.', true);
+      await reply(interaction, await tg(guildId, 'common.error'), await tg(guildId, 'verification.setup.errorGeneric'), true);
     }
   },
 };

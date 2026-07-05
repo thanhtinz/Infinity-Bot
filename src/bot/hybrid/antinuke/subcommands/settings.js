@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -13,6 +10,7 @@ const {
 } = require('discord.js');
 const { AntinukeConfig, AntinukeWhitelist } = require('../../../../database/models');
 const emojis = require('../../../emojis.json');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'settings',
@@ -21,11 +19,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (guild.ownerId !== member.id) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Only the **Server Owner** can view antinuke settings.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.ownerOnlySettings'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -38,13 +37,13 @@ module.exports = {
         if (!config) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Antinuke Not Configured')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.notConfiguredSettingsTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Run `/antinuke setup` to configure antinuke for this server.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.notConfiguredSettingsBody'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -86,19 +85,28 @@ module.exports = {
             ban: 'Ban User'
         };
 
+        const none = await tg(guildId, 'antinuke.none');
+        const notSet = await tg(guildId, 'antinuke.notSet');
+        const status = config.enabled
+            ? `${emojis.online} ${await tg(guildId, 'antinuke.statusEnabled')}`
+            : `${emojis.offline} ${await tg(guildId, 'antinuke.statusDisabled')}`;
+
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`### Antinuke Settings\n**Status:** ${config.enabled ? `${emojis.online} Enabled` : `${emojis.offline} Disabled`}`)
+                new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.settingsTitle')}\n${await tg(guildId, 'antinuke.statusLine', { status })}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `**Threshold:** ${config.threshold} actions in ${config.timeframe}s\n` +
-                    `**Punishment:** ${punishmentLabels[config.punishment] || config.punishment}\n` +
-                    `**Log Channel:** ${config.logChannelId ? `<#${config.logChannelId}>` : 'Not set'}\n` +
-                    `**Whitelisted Users:** ${whitelistCount}`
+                    await tg(guildId, 'antinuke.infoLines', {
+                        threshold: config.threshold,
+                        timeframe: config.timeframe,
+                        punishment: punishmentLabels[config.punishment] || config.punishment,
+                        logChannel: config.logChannelId ? `<#${config.logChannelId}>` : notSet,
+                        whitelistCount,
+                    })
                 )
             )
             .addSeparatorComponents(
@@ -106,7 +114,7 @@ module.exports = {
             )
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `**Enabled Modules:**\n${enabledModules.length > 0 ? enabledModules.map(m => `${emojis.enabled} ${m}`).join('\n') : 'None'}`
+                    await tg(guildId, 'antinuke.enabledModules', { list: enabledModules.length > 0 ? enabledModules.map(m => `${emojis.enabled} ${m}`).join('\n') : none })
                 )
             )
             .addSeparatorComponents(
@@ -114,7 +122,7 @@ module.exports = {
             )
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `**Disabled Modules:**\n${disabledModules.length > 0 ? disabledModules.map(m => `${emojis.disabled} ${m}`).join('\n') : 'None'}`
+                    await tg(guildId, 'antinuke.disabledModules', { list: disabledModules.length > 0 ? disabledModules.map(m => `${emojis.disabled} ${m}`).join('\n') : none })
                 )
             )
             .addActionRowComponents(

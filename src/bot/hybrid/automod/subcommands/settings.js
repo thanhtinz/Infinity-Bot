@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -13,6 +10,7 @@ const {
 } = require('discord.js');
 const { AutomodConfig, AutomodWhitelist } = require('../../../../database/models');
 const emojis = require('../../../emojis.json');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'settings',
@@ -21,11 +19,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (!member.permissions.has('ManageGuild')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Manage Server** permission to view automod settings.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.noPermissionSettings'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -38,13 +37,13 @@ module.exports = {
         if (!config) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### AutoMod Not Configured')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.notConfiguredSettingsTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Run `/automod setup` to configure automod for this server.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.notConfiguredSettingsBody'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -90,18 +89,26 @@ module.exports = {
             }
         }
 
+        const none = await tg(guildId, 'automod.none');
+        const notSet = await tg(guildId, 'automod.notSet');
+        const status = config.enabled
+            ? `${emojis.online} ${await tg(guildId, 'automod.statusEnabled')}`
+            : `${emojis.offline} ${await tg(guildId, 'automod.statusDisabled')}`;
+
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`### AutoMod Settings\n**Status:** ${config.enabled ? `${emojis.online} Enabled` : `${emojis.offline} Disabled`}`)
+                new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'automod.settingsTitle')}\n${await tg(guildId, 'automod.statusLine', { status })}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `**Log Channel:** ${config.logChannelId ? `<#${config.logChannelId}>` : 'Not set'}\n` +
-                    `**Whitelisted:** ${whitelistCount} entries\n` +
-                    `**Bad Words:** ${badWords.length} words`
+                    await tg(guildId, 'automod.infoLines', {
+                        logChannel: config.logChannelId ? `<#${config.logChannelId}>` : notSet,
+                        whitelistCount,
+                        badWordCount: badWords.length,
+                    })
                 )
             )
             .addSeparatorComponents(
@@ -109,10 +116,12 @@ module.exports = {
             )
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `**Thresholds:**\n` +
-                    `Spam: ${config.spamThreshold} msgs / ${config.spamInterval}s\n` +
-                    `Mentions: ${config.mentionLimit} max\n` +
-                    `Caps: ${config.capsPercentage}% max`
+                    await tg(guildId, 'automod.thresholdsLines', {
+                        spamThreshold: config.spamThreshold,
+                        spamInterval: config.spamInterval,
+                        mentionLimit: config.mentionLimit,
+                        capsPercentage: config.capsPercentage,
+                    })
                 )
             )
             .addSeparatorComponents(
@@ -120,7 +129,7 @@ module.exports = {
             )
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `**Active Protections:**\n${enabledModulesList || 'None'}`
+                    await tg(guildId, 'automod.activeProtections', { list: enabledModulesList || none })
                 )
             )
             .addSeparatorComponents(
@@ -128,7 +137,9 @@ module.exports = {
             )
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `**Disabled Modules:**\n${disabledModules.length > 0 ? disabledModules.map(m => `${emojis.disabled} ${m}`).join('\n') : 'None'}`
+                    await tg(guildId, 'automod.disabledModules', {
+                        list: disabledModules.length > 0 ? disabledModules.map(m => `${emojis.disabled} ${m}`).join('\n') : none,
+                    })
                 )
             )
             .addActionRowComponents(

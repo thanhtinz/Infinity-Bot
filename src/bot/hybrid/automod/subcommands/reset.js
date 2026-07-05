@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -12,6 +9,7 @@ const {
     ButtonStyle
 } = require('discord.js');
 const { AutomodConfig, AutomodWhitelist } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'reset',
@@ -20,11 +18,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (!member.permissions.has('ManageGuild')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Manage Server** permission to reset automod.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.noPermissionReset'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -37,7 +36,7 @@ module.exports = {
         if (!config) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('AutoMod has not been configured yet.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'automod.notConfiguredYet'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -68,17 +67,13 @@ module.exports = {
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('# AutoMod Reset')
+                new TextDisplayBuilder().setContent(`# ${await tg(guildId, 'automod.resetTitle')}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(
-                    'AutoMod has been reset to default settings and **disabled**.\n\n' +
-                    'All whitelist entries have been removed.\n\n' +
-                    'Use `/automod setup` to configure again.'
-                )
+                new TextDisplayBuilder().setContent(await tg(guildId, 'automod.resetBody'))
             );
 
         return interactionOrMessage.reply({

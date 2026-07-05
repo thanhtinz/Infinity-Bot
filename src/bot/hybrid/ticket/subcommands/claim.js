@@ -2,6 +2,7 @@
 const { ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, SeparatorSpacingSize, MessageFlags } = require('discord.js');
 const { TicketConfig, Ticket } = require('../../../../database/models');
 const { logTicketEvent, hasSupportRole } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -22,6 +23,7 @@ function replyTitled(ctx, title, body) {
 module.exports = {
     async execute(interactionOrMessage) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const channel = interactionOrMessage.channel;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
 
@@ -29,23 +31,23 @@ module.exports = {
             Ticket.findOne({ where: { channelId: channel.id } }),
             TicketConfig.findOne({ where: { guildId: guild.id } })
         ]);
-        if (!ticket) return reply(interactionOrMessage, 'This channel is not a valid ticket.');
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured.');
+        if (!ticket) return reply(interactionOrMessage, await tg(guildId, 'ticket.claim.invalidTicket'));
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfiguredPlain'));
 
         const member = guild.members.cache.get(userId);
         if (!hasSupportRole(member, config)) {
-            return reply(interactionOrMessage, 'You don\'t have permission to claim tickets.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.claim.noPermission'));
         }
 
         if (ticket.userId === userId) {
-            return reply(interactionOrMessage, 'You cannot claim your own ticket.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.claim.ownTicket'));
         }
 
-        if (ticket.status === 'deleted') return reply(interactionOrMessage, 'This ticket has been deleted and cannot be claimed.');
-        if (ticket.status === 'closed') return reply(interactionOrMessage, 'This ticket is closed. Please reopen it before claiming.');
+        if (ticket.status === 'deleted') return reply(interactionOrMessage, await tg(guildId, 'ticket.claim.deleted'));
+        if (ticket.status === 'closed') return reply(interactionOrMessage, await tg(guildId, 'ticket.claim.closed'));
 
         if (ticket.claimedBy) {
-            return reply(interactionOrMessage, `This ticket has already been claimed by <@${ticket.claimedBy}>.`);
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.claim.alreadyClaimed', { user: `<@${ticket.claimedBy}>` }));
         }
 
         ticket.claimedBy = userId;
@@ -54,6 +56,6 @@ module.exports = {
 
         logTicketEvent(guild, config, 'Ticket Claimed', `**Ticket:** ${channel}\n**Claimed by:** <@${userId}>`).catch(() => {});
 
-        return replyTitled(interactionOrMessage, '### Ticket Claimed', `This ticket has been claimed by <@${userId}>.`);
+        return replyTitled(interactionOrMessage, `### ${await tg(guildId, 'ticket.claim.claimedTitle')}`, await tg(guildId, 'ticket.claim.claimedBody', { user: `<@${userId}>` }));
     }
 };

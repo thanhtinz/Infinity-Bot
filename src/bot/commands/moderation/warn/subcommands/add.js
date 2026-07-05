@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -11,6 +8,7 @@ const {
 } = require('discord.js');
 const { ModLog } = require('../../../../../database/models');
 const { applyAutoPunishment } = require('../punishExecutor');
+const { tg } = require('../../../../utils/i18n');
 
 function modReply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -25,18 +23,19 @@ module.exports = {
   description: 'Warn a user',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
     const targetUser = interaction.options.getUser('user');
     const targetMember = interaction.options.getMember('user');
     const reason = interaction.options.getString('reason');
 
     if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers))
-      return modReply(interaction, 'Permission Denied', 'You need the **Moderate Members** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Moderate Members' }), true);
 
     if (targetUser.bot)
-      return modReply(interaction, 'Cannot Warn User', 'You cannot warn bots.', true);
+      return modReply(interaction, await tg(guildId, 'warn.add.cannotWarnTitle'), await tg(guildId, 'warn.add.cannotWarnBot'), true);
 
     if (targetMember && targetMember.roles.highest.position >= interaction.member.roles.highest.position)
-      return modReply(interaction, 'Cannot Warn User', 'They have an equal or higher role than you.', true);
+      return modReply(interaction, await tg(guildId, 'warn.add.cannotWarnTitle'), await tg(guildId, 'warn.add.cannotWarnHigherRole'), true);
 
     try {
       const maxCase = await ModLog.max('caseNumber', { where: { guildId: interaction.guild.id } });
@@ -61,13 +60,19 @@ module.exports = {
 
       const punishmentResult = await applyAutoPunishment(interaction, targetUser, targetMember, warnCount);
 
-      let body = `**Case:** #${caseNumber}\n**User:** ${targetUser.tag}\n**Moderator:** ${interaction.user.tag}\n**Reason:** ${reason}\n**Total Warnings:** ${warnCount}`;
+      let body = await tg(guildId, 'warn.add.success', {
+        caseNumber,
+        user: targetUser.tag,
+        moderator: interaction.user.tag,
+        reason,
+        warnCount,
+      });
       if (punishmentResult) body += `\n\n${punishmentResult}`;
 
-      await modReply(interaction, 'User Warned', body);
+      await modReply(interaction, await tg(guildId, 'warn.add.successTitle'), body);
     } catch (error) {
       console.error('Warn add error:', error);
-      await modReply(interaction, 'Error', 'Failed to warn user.', true);
+      await modReply(interaction, await tg(guildId, 'common.error'), await tg(guildId, 'warn.add.errorGeneric'), true);
     }
   },
 };

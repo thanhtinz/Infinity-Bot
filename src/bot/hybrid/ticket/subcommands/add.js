@@ -2,6 +2,7 @@
 const { PermissionsBitField, ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, SeparatorSpacingSize, MessageFlags } = require('discord.js');
 const { TicketConfig, Ticket } = require('../../../../database/models');
 const { logTicketEvent, hasSupportRole } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -22,6 +23,7 @@ function replyTitled(ctx, title, body) {
 module.exports = {
     async execute(interactionOrMessage, args) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const channel = interactionOrMessage.channel;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
         const isSlash = interactionOrMessage.isCommand?.();
@@ -31,7 +33,7 @@ module.exports = {
             const u = interactionOrMessage.options.getUser('user');
             targetUserId = u?.id;
         } else {
-            if (!args[0]) return reply(interactionOrMessage, 'Please specify a user to add.\n**Usage:** `ticket add <user>`');
+            if (!args[0]) return reply(interactionOrMessage, await tg(guildId, 'ticket.add.usage'));
             targetUserId = args[0].replace(/[<@!>]/g, '');
         }
 
@@ -39,20 +41,20 @@ module.exports = {
             Ticket.findOne({ where: { channelId: channel.id } }),
             TicketConfig.findOne({ where: { guildId: guild.id } })
         ]);
-        if (!ticket) return reply(interactionOrMessage, 'This channel is not a valid ticket channel.');
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured.');
+        if (!ticket) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.invalidTicketChannel'));
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfiguredPlain'));
 
         const member = guild.members.cache.get(userId);
         const canManage = ticket.userId === userId || ticket.claimedBy === userId || hasSupportRole(member, config);
-        if (!canManage) return reply(interactionOrMessage, 'You don\'t have permission to add users to this ticket.');
+        if (!canManage) return reply(interactionOrMessage, await tg(guildId, 'ticket.add.noPermission'));
 
         try {
             const targetMember = await guild.members.fetch(targetUserId).catch(() => null);
-            if (!targetMember) return reply(interactionOrMessage, 'The specified user could not be found in this server.');
+            if (!targetMember) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.userNotFoundInServer'));
 
             const existingPerms = channel.permissionsFor(targetMember);
             if (existingPerms?.has(PermissionsBitField.Flags.ViewChannel)) {
-                return reply(interactionOrMessage, `${targetMember.user.tag} already has access to this ticket.`);
+                return reply(interactionOrMessage, await tg(guildId, 'ticket.add.alreadyHasAccess', { user: targetMember.user.tag }));
             }
 
             await channel.permissionOverwrites.edit(targetMember.id, {
@@ -61,10 +63,10 @@ module.exports = {
 
             logTicketEvent(guild, config, 'User Added to Ticket', `**Ticket:** ${channel}\n**Added User:** <@${targetMember.id}>\n**Added by:** <@${userId}>`).catch(() => {});
 
-            return replyTitled(interactionOrMessage, '### User Added', `${targetMember.user} has been added to this ticket by <@${userId}>.`);
+            return replyTitled(interactionOrMessage, `### ${await tg(guildId, 'ticket.add.addedTitle')}`, await tg(guildId, 'ticket.add.addedBody', { user: `${targetMember.user}`, adder: `<@${userId}>` }));
         } catch (error) {
             console.error('Ticket add user error:', error);
-            return reply(interactionOrMessage, 'Failed to add the user. Please check permissions and try again.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.add.failed'));
         }
     }
 };

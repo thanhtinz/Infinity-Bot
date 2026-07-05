@@ -1,7 +1,5 @@
-
-
-
 const { SlashCommandBuilder } = require('discord.js');
+const { tg } = require('../../utils/i18n');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -26,6 +24,7 @@ module.exports = {
 
   async execute(interaction) {
     const subcommand = interaction.options.getSubcommand();
+    const guildId = interaction.guildId;
 
     if (subcommand === 'setup') {
       const setupModule = require('./subcommands/setup');
@@ -40,7 +39,7 @@ module.exports = {
 
       if (!config) {
         return interaction.reply({
-          content: 'Reaction roles message not found!',
+          content: await tg(guildId, 'reactionroles.notFound'),
           flags: 64
         });
       }
@@ -61,7 +60,7 @@ module.exports = {
       });
 
       return interaction.reply({
-        content: '✅ Reaction roles message removed!',
+        content: `✅ ${await tg(guildId, 'reactionroles.removed')}`,
         flags: 64
       });
     }

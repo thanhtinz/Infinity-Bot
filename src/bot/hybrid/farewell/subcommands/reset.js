@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -9,6 +6,7 @@ const {
     MessageFlags
 } = require('discord.js');
 const { FarewellConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 module.exports = {
     name: 'reset',
@@ -17,11 +15,12 @@ module.exports = {
     async execute(interactionOrMessage) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
 
         if (!member.permissions.has('Administrator')) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('You need **Administrator** permission to use this command.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'farewell.noPermission'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -35,13 +34,13 @@ module.exports = {
             if (!config) {
                 const container = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('### Farewell Reset')
+                        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'farewell.resetTitle')}`)
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('No farewell configuration found for this server.')
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'farewell.resetNotFound'))
                     );
                 return interactionOrMessage.reply({
                     components: [container],
@@ -53,13 +52,13 @@ module.exports = {
 
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('### Farewell Reset')
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'farewell.resetTitle')}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('All farewell settings have been reset successfully.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'farewell.resetSuccess'))
                 );
 
             return interactionOrMessage.reply({
@@ -71,7 +70,7 @@ module.exports = {
             console.error('Farewell reset error:', error);
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('An error occurred while resetting farewell settings.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'farewell.resetError'))
                 );
             return interactionOrMessage.reply({
                 components: [container],

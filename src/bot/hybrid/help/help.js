@@ -14,6 +14,7 @@ const {
 const emojis = require('../../emojis.json');
 const config = require('../../config');
 const { isHttpUrl } = require('../../utils/url');
+const { tg } = require('../../utils/i18n');
 
 const categories = {
     general: {
@@ -179,10 +180,12 @@ const categoryEntries = Object.entries(categories);
 const mainCategoryEntries = mainCategoryKeys.map((key) => [key, categories[key]]);
 const extraCategoryEntries = extraCategoryKeys.map((key) => [key, categories[key]]);
 
-function categoryListText() {
-    return categoryEntries
-        .map(([, category]) => `${category.emoji || emojis.dots} » **${category.name}**`)
-        .join('\n');
+async function categoryListText(guildId) {
+    const lines = await Promise.all(categoryEntries.map(async ([key, category]) => {
+        const name = await tg(guildId, `help.categories.${key}`) || category.name;
+        return `${category.emoji || emojis.dots} » **${name}**`;
+    }));
+    return lines.join('\n');
 }
 
 async function getGuildPrefix(guildId) {
@@ -195,16 +198,16 @@ async function getGuildPrefix(guildId) {
 async function createHomeContainer({ client, user, guildId }) {
     const guildPrefix = await getGuildPrefix(guildId);
     const supportLine = isHttpUrl(config.SUPPORT_SERVER)
-        ? `${emojis.arrow} **Join [Support Server](${config.SUPPORT_SERVER}) For Help**`
-        : `${emojis.arrow} **Use \`${guildPrefix}help <category>\` for category help**`;
+        ? `${emojis.arrow} ${await tg(guildId, 'help.supportServerLine', { url: config.SUPPORT_SERVER })}`
+        : `${emojis.arrow} ${await tg(guildId, 'help.categoryHelpLine', { prefix: guildPrefix })}`;
 
     const intro = [
-        `**Hello, I'm ${client.user.username || 'Infinity Bot'}**`,
-        `${emojis.arrow} **Prefix for this server:** \`${guildPrefix}\``,
-        `${emojis.arrow} **Set prefix with:** **/setprefix**`,
+        await tg(guildId, 'help.helloLine', { bot: client.user.username || 'Infinity Bot' }),
+        `${emojis.arrow} ${await tg(guildId, 'help.prefixLine', { prefix: guildPrefix })}`,
+        `${emojis.arrow} ${await tg(guildId, 'help.setPrefixLine')}`,
         supportLine,
         '',
-        categoryListText()
+        await categoryListText(guildId)
     ].join('\n');
 
     const section = new SectionBuilder()
@@ -218,12 +221,13 @@ async function createHomeContainer({ client, user, guildId }) {
         .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
 }
 
-function createCategoryContainer(categoryKey, client) {
+async function createCategoryContainer(categoryKey, client, guildId) {
     const category = categories[categoryKey];
+    const name = await tg(guildId, `help.categories.${categoryKey}`) || category.name;
     const commandText = category.commands.map((cmd) => `\`${cmd}\``).join(', ');
     const section = new SectionBuilder()
         .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-            `${category.emoji || emojis.dots} **${category.name}**\n\n${commandText}`
+            `${category.emoji || emojis.dots} **${name}**\n\n${commandText}`
         ));
 
     const avatar = client.user.displayAvatarURL({ size: 256 });
@@ -234,16 +238,20 @@ function createCategoryContainer(categoryKey, client) {
         .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
 }
 
-function createSelectMenu(kind, currentCategory = null) {
+async function createSelectMenu(kind, currentCategory, guildId) {
     const entries = kind === 'main' ? mainCategoryEntries : extraCategoryEntries;
+    const placeholder = kind === 'main'
+        ? await tg(guildId, 'help.mainCommandsPlaceholder')
+        : await tg(guildId, 'help.extraCommandsPlaceholder');
     const selectMenu = new StringSelectMenuBuilder()
         .setCustomId(`help_${kind}_category_select`)
-        .setPlaceholder(kind === 'main' ? 'Main Commands' : 'Extra Commands');
+        .setPlaceholder(placeholder);
 
     for (const [key, category] of entries) {
+        const name = await tg(guildId, `help.categories.${key}`) || category.name;
         selectMenu.addOptions({
-            label: category.name,
-            description: `${category.commands.length} commands`,
+            label: name,
+            description: await tg(guildId, 'help.commandsCountDescription', { count: category.commands.length }),
             value: key,
             default: currentCategory === key
         });
@@ -254,10 +262,10 @@ function createSelectMenu(kind, currentCategory = null) {
 
 async function buildHelpPayload({ categoryKey = null, client, user, guildId }) {
     const container = categoryKey
-        ? createCategoryContainer(categoryKey, client)
+        ? await createCategoryContainer(categoryKey, client, guildId)
         : await createHomeContainer({ client, user, guildId });
-    container.addActionRowComponents(createSelectMenu('main', categoryKey));
-    container.addActionRowComponents(createSelectMenu('extra', categoryKey));
+    container.addActionRowComponents(await createSelectMenu('main', categoryKey, guildId));
+    container.addActionRowComponents(await createSelectMenu('extra', categoryKey, guildId));
     return {
         components: [container],
         flags: MessageFlags.IsPersistent | MessageFlags.IsComponentsV2
@@ -304,7 +312,7 @@ module.exports = {
         collector.on('collect', async (selectInteraction) => {
             if (selectInteraction.user.id !== user.id) {
                 const errorContainer = new ContainerBuilder()
-                    .addTextDisplayComponents(new TextDisplayBuilder().setContent('Only the command user can use this menu.'));
+                    .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guildId, 'help.onlyUserCanUse')));
                 return selectInteraction.reply({
                     components: [errorContainer],
                     flags: MessageFlags.IsPersistent | MessageFlags.IsComponentsV2,

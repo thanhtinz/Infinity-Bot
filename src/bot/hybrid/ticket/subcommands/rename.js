@@ -2,6 +2,7 @@
 const { ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, SeparatorSpacingSize, MessageFlags } = require('discord.js');
 const { TicketConfig, Ticket } = require('../../../../database/models');
 const { logTicketEvent, hasSupportRole } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -22,6 +23,7 @@ function replyTitled(ctx, title, body) {
 module.exports = {
     async execute(interactionOrMessage, args) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const channel = interactionOrMessage.channel;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
         const isSlash = interactionOrMessage.isCommand?.();
@@ -30,7 +32,7 @@ module.exports = {
         if (isSlash) {
             newNameInput = interactionOrMessage.options.getString('name');
         } else {
-            if (!args[0]) return reply(interactionOrMessage, 'Please specify a new name.\n**Usage:** `ticket rename <new-name>`');
+            if (!args[0]) return reply(interactionOrMessage, await tg(guildId, 'ticket.rename.usage'));
             newNameInput = args.join(' ');
         }
 
@@ -38,12 +40,12 @@ module.exports = {
             Ticket.findOne({ where: { channelId: channel.id } }),
             TicketConfig.findOne({ where: { guildId: guild.id } })
         ]);
-        if (!ticket) return reply(interactionOrMessage, 'This channel is not a valid ticket channel.');
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured.');
+        if (!ticket) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.invalidTicketChannel'));
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfiguredPlain'));
 
         const member = guild.members.cache.get(userId);
         if (!hasSupportRole(member, config)) {
-            return reply(interactionOrMessage, 'Only support staff can rename tickets.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.rename.noPermission'));
         }
 
         try {
@@ -52,8 +54,8 @@ module.exports = {
                 .replace(/--+/g, '-').replace(/^-|-$/g, '')
                 .substring(0, 100);
 
-            if (!newName) return reply(interactionOrMessage, 'Invalid name. Use letters, numbers, and hyphens only.');
-            if (channel.name === newName) return reply(interactionOrMessage, 'The new name is the same as the current name.');
+            if (!newName) return reply(interactionOrMessage, await tg(guildId, 'ticket.rename.invalidName'));
+            if (channel.name === newName) return reply(interactionOrMessage, await tg(guildId, 'ticket.rename.sameName'));
 
             const oldName = channel.name;
             const user = interactionOrMessage.user || interactionOrMessage.author;
@@ -61,12 +63,12 @@ module.exports = {
 
             logTicketEvent(guild, config, 'Ticket Renamed', `**Ticket:** <#${channel.id}>\n**Old Name:** ${oldName}\n**New Name:** ${newName}\n**Renamed by:** <@${userId}>`).catch(() => {});
 
-            return replyTitled(interactionOrMessage, '### Ticket Renamed', `This ticket has been renamed to \`${newName}\``);
+            return replyTitled(interactionOrMessage, `### ${await tg(guildId, 'ticket.rename.renamedTitle')}`, await tg(guildId, 'ticket.rename.renamedBody', { name: newName }));
         } catch (error) {
             console.error('Ticket rename error:', error);
-            let msg = 'Failed to rename the ticket channel.';
-            if (error.code === 50013) msg = 'Missing permissions to rename.';
-            else if (error.code === 50029) msg = 'Rate limit reached. Please wait before renaming again.';
+            let msg = await tg(guildId, 'ticket.rename.failed');
+            if (error.code === 50013) msg = await tg(guildId, 'ticket.rename.missingPermissions');
+            else if (error.code === 50029) msg = await tg(guildId, 'ticket.rename.rateLimited');
             return reply(interactionOrMessage, msg);
         }
     }

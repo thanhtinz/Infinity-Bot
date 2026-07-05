@@ -1,41 +1,40 @@
-
-
-
 const ms = require('ms');
 const { ModLog, WarnPunishConfig } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 async function applyAutoPunishment(interaction, targetUser, targetMember, warnCount) {
+  const guildId = interaction.guild.id;
   const config = await WarnPunishConfig.findOne({
     where: { guildId: interaction.guild.id, warnCount }
   });
 
   if (!config) return null;
 
-  const reason = `Auto-punishment: reached ${warnCount} warning(s)`;
+  const reason = await tg(guildId, 'warn.autoPunish.reason', { warnCount });
 
   try {
     if (config.action === 'mute') {
-      if (!targetMember) return 'Auto-punishment (mute) skipped: user is not in this server.';
-      if (!targetMember.moderatable) return 'Auto-punishment (mute) failed: I cannot moderate this user.';
+      if (!targetMember) return tg(guildId, 'warn.autoPunish.muteSkipped');
+      if (!targetMember.moderatable) return tg(guildId, 'warn.autoPunish.muteFailedModeratable');
 
       const time = config.duration ? ms(config.duration) : null;
-      if (!time || time < 1000 || time > 2419200000) return 'Auto-punishment (mute) failed: invalid configured duration.';
+      if (!time || time < 1000 || time > 2419200000) return tg(guildId, 'warn.autoPunish.muteFailedDuration');
 
       await targetMember.timeout(time, reason);
     } else if (config.action === 'kick') {
-      if (!targetMember) return 'Auto-punishment (kick) skipped: user is not in this server.';
-      if (!targetMember.kickable) return 'Auto-punishment (kick) failed: I cannot kick this user.';
+      if (!targetMember) return tg(guildId, 'warn.autoPunish.kickSkipped');
+      if (!targetMember.kickable) return tg(guildId, 'warn.autoPunish.kickFailedKickable');
 
       await targetMember.kick(reason);
     } else if (config.action === 'ban') {
-      if (targetMember && !targetMember.bannable) return 'Auto-punishment (ban) failed: I cannot ban this user.';
+      if (targetMember && !targetMember.bannable) return tg(guildId, 'warn.autoPunish.banFailedBannable');
 
       await interaction.guild.members.ban(targetUser, { reason });
     } else {
       return null;
     }
   } catch (error) {
-    return `Auto-punishment (${config.action}) failed: ${error.message}`;
+    return tg(guildId, 'warn.autoPunish.actionFailed', { action: config.action, error: error.message });
   }
 
   try {
@@ -56,7 +55,7 @@ async function applyAutoPunishment(interaction, targetUser, targetMember, warnCo
     console.error('ModLog save error:', dbError.message);
   }
 
-  return `Auto-punishment triggered: **${config.action}** (reached ${warnCount} warning(s)).`;
+  return tg(guildId, 'warn.autoPunish.triggered', { action: config.action, warnCount });
 }
 
 module.exports = { applyAutoPunishment };

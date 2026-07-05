@@ -2,6 +2,7 @@
 const { PermissionsBitField, ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, SeparatorSpacingSize, MessageFlags } = require('discord.js');
 const { TicketConfig, Ticket } = require('../../../../database/models');
 const { logTicketEvent, hasSupportRole } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -22,6 +23,7 @@ function replyTitled(ctx, title, body) {
 module.exports = {
     async execute(interactionOrMessage, args) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
         const isSlash = interactionOrMessage.isCommand?.();
 
@@ -34,21 +36,21 @@ module.exports = {
             const channelId = args[0].replace(/[<>#]/g, '');
             const found = guild.channels.cache.get(channelId);
             if (found) targetChannel = found;
-            else return reply(interactionOrMessage, 'The specified channel could not be found.');
+            else return reply(interactionOrMessage, await tg(guildId, 'ticket.delete.channelNotFound'));
         }
 
         const [ticket, config] = await Promise.all([
             Ticket.findOne({ where: { channelId: targetChannel.id } }),
             TicketConfig.findOne({ where: { guildId: guild.id } })
         ]);
-        if (!ticket) return reply(interactionOrMessage, 'This channel is not a valid ticket channel.');
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured.');
+        if (!ticket) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.invalidTicketChannel'));
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfiguredPlain'));
 
         const member = guild.members.cache.get(userId);
         const hasPermission = member.permissions.has(PermissionsBitField.Flags.Administrator) ||
             hasSupportRole(member, config);
 
-        if (!hasPermission) return reply(interactionOrMessage, 'Only support staff can delete tickets.');
+        if (!hasPermission) return reply(interactionOrMessage, await tg(guildId, 'ticket.delete.noPermission'));
 
         try {
             ticket.status = 'deleted';
@@ -56,18 +58,19 @@ module.exports = {
 
             logTicketEvent(guild, config, 'Ticket Deleted', `**Ticket:** ${targetChannel.name}\n**Deleted by:** <@${userId}>`).catch(() => {});
 
+            const deletedTitle = await tg(guildId, 'ticket.delete.deletedTitle');
             if (targetChannel.id === interactionOrMessage.channel.id) {
-                await replyTitled(interactionOrMessage, '### Ticket Deleted', 'This ticket channel will be deleted in 5 seconds...');
+                await replyTitled(interactionOrMessage, `### ${deletedTitle}`, await tg(guildId, 'ticket.delete.selfDeleteBody'));
                 setTimeout(async () => {
                     try { await targetChannel.delete(); } catch (e) { console.error('Failed to delete ticket channel:', e); }
                 }, 5000);
             } else {
                 await targetChannel.delete();
-                return replyTitled(interactionOrMessage, '### Ticket Deleted', `Ticket channel **${targetChannel.name}** has been deleted.`);
+                return replyTitled(interactionOrMessage, `### ${deletedTitle}`, await tg(guildId, 'ticket.delete.otherDeletedBody', { channel: targetChannel.name }));
             }
         } catch (error) {
             console.error('Ticket deletion error:', error);
-            return reply(interactionOrMessage, 'Failed to delete the ticket channel.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.delete.failed'));
         }
     }
 };

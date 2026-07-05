@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -9,6 +6,7 @@ const {
   MessageFlags,
   PermissionFlagsBits,
 } = require('discord.js');
+const { tg } = require('../../../utils/i18n');
 
 function modReply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -23,34 +21,35 @@ module.exports = {
   description: 'Unmute muted users',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
     const targetUser = interaction.options.getUser('user');
     const targetMember = interaction.options.getMember('user');
 
     if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers))
-      return modReply(interaction, 'Permission Denied', 'You need the **Moderate Members** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Moderate Members' }), true);
 
     if (!interaction.guild.members.me.permissions.has(PermissionFlagsBits.ModerateMembers))
-      return modReply(interaction, 'Missing Permissions', 'I need the **Moderate Members** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.missingPermissions'), await tg(guildId, 'common.iNeedPermission', { permission: 'Moderate Members' }), true);
 
     if (!targetMember)
-      return modReply(interaction, 'User Not Found', 'User is not in this server.', true);
+      return modReply(interaction, await tg(guildId, 'common.userNotFound'), await tg(guildId, 'common.userNotInServer'), true);
 
     if (targetMember.roles.highest.position >= interaction.member.roles.highest.position)
-      return modReply(interaction, 'Cannot Unmute User', 'They have an equal or higher role than you.', true);
+      return modReply(interaction, await tg(guildId, 'moderation.unmute.cannotUnmuteTitle'), await tg(guildId, 'moderation.unmute.cannotUnmuteHigherRole'), true);
 
     if (!targetMember.isCommunicationDisabled())
-      return modReply(interaction, 'User Not Muted', 'This user is not currently timed out.', true);
+      return modReply(interaction, await tg(guildId, 'moderation.unmute.notMutedTitle'), await tg(guildId, 'moderation.unmute.notMutedBody'), true);
 
     if (!targetMember.moderatable)
-      return modReply(interaction, 'Cannot Unmute User', 'I cannot unmute this user. They may have a higher role than me.', true);
+      return modReply(interaction, await tg(guildId, 'moderation.unmute.cannotUnmuteTitle'), await tg(guildId, 'moderation.unmute.cannotUnmuteUnmoderatable'), true);
 
     try {
       await targetMember.timeout(null);
-      await modReply(interaction, 'User Unmuted',
-        `**User:** ${targetUser}\n**Unmuted by:** ${interaction.user.tag}`);
+      await modReply(interaction, await tg(guildId, 'moderation.unmute.successTitle'),
+        await tg(guildId, 'moderation.unmute.success', { user: `${targetUser}`, moderator: interaction.user.tag }));
     } catch (error) {
-      const msg = error.code === 50013 ? 'I lack the permissions to unmute this user.' : 'Failed to unmute user.';
-      await modReply(interaction, 'Error', msg, true);
+      const msg = error.code === 50013 ? await tg(guildId, 'moderation.unmute.errorPermission') : await tg(guildId, 'moderation.unmute.errorGeneric');
+      await modReply(interaction, await tg(guildId, 'common.error'), msg, true);
     }
   },
 };

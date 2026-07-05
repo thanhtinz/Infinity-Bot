@@ -6,6 +6,7 @@ const {
 } = require('discord.js');
 const { TicketConfig, TicketCategory } = require('../../../../database/models');
 const { logTicketEvent, getSupportRoleIds, refreshPanel } = require('../../../utils/ticketUtils');
+const { tg } = require('../../../utils/i18n');
 
 function reply(ctx, text) {
     const container = new ContainerBuilder()
@@ -26,6 +27,7 @@ function buildModal() {
 
 async function handleModalSubmit(m, guild, config, userId, editMsg) {
     await m.deferUpdate().catch(() => {});
+    const guildId = guild.id;
 
     const name = m.fields.getTextInputValue('category_name');
     const emoji = m.fields.getTextInputValue('category_emoji') || null;
@@ -34,7 +36,7 @@ async function handleModalSubmit(m, guild, config, userId, editMsg) {
     const existing = await TicketCategory.findOne({ where: { guildId: guild.id, categoryName: name } });
     if (existing) {
         const container = new ContainerBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent('A category with this name already exists.'));
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(await tg(guildId, 'ticket.addcategory.duplicateName')));
         if (editMsg) return editMsg.edit({ components: [container] }).catch(() => {});
         return m.followUp({ components: [container], flags: MessageFlags.IsComponentsV2, ephemeral: true });
     }
@@ -60,9 +62,9 @@ async function handleModalSubmit(m, guild, config, userId, editMsg) {
     refreshPanel(guild, config).catch(() => {});
 
     const doneContainer = new ContainerBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Category Added'))
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'ticket.addcategory.addedTitle')}`))
         .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`> **${name}** has been added to the ticket system.`));
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`> ${await tg(guildId, 'ticket.addcategory.addedBody', { name })}`));
     if (editMsg) return editMsg.edit({ components: [doneContainer] }).catch(() => {});
     return m.followUp({ components: [doneContainer], flags: MessageFlags.IsComponentsV2, ephemeral: true });
 }
@@ -70,16 +72,17 @@ async function handleModalSubmit(m, guild, config, userId, editMsg) {
 module.exports = {
     async execute(interactionOrMessage, args) {
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const userId = interactionOrMessage.user?.id || interactionOrMessage.author?.id;
         const member = guild.members.cache.get(userId);
         const isSlash = interactionOrMessage.isCommand?.();
 
         if (!member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return reply(interactionOrMessage, 'You need **Administrator** permission to use this command.');
+            return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.adminRequired'));
         }
 
         const config = await TicketConfig.findOne({ where: { guildId: guild.id } });
-        if (!config) return reply(interactionOrMessage, 'Ticket system is not configured. Use `ticket setup` first.');
+        if (!config) return reply(interactionOrMessage, await tg(guildId, 'ticket.shared.notConfigured'));
 
         if (isSlash) {
             await interactionOrMessage.showModal(buildModal());
@@ -91,9 +94,9 @@ module.exports = {
         }
 
         const btnContainer = new ContainerBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Add Category'))
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'ticket.addcategory.promptTitle')}`))
             .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent('> Click below to add a new ticket category.'))
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(`> ${await tg(guildId, 'ticket.addcategory.promptBody')}`))
             .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
             .addActionRowComponents(new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId('ticket_addcat_btn').setLabel('Add Category').setStyle(ButtonStyle.Primary)
@@ -114,9 +117,9 @@ module.exports = {
             await handleModalSubmit(m, guild, config, userId, sentMsg);
         } catch {
             const expiredContainer = new ContainerBuilder()
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent('### Add Category'))
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'ticket.addcategory.promptTitle')}`))
                 .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent('> Timed out.'));
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(`> ${await tg(guildId, 'ticket.shared.timedOut')}`));
             await sentMsg.edit({ components: [expiredContainer] }).catch(() => {});
         }
     }

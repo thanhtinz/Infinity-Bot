@@ -1,6 +1,3 @@
-
-
-
 const {
     ContainerBuilder,
     TextDisplayBuilder,
@@ -14,6 +11,7 @@ const {
     StringSelectMenuBuilder
 } = require('discord.js');
 const { AntinukeWhitelist } = require('../../../../database/models');
+const { tg } = require('../../../utils/i18n');
 
 const EVENTS = AntinukeWhitelist.EVENTS;
 
@@ -24,12 +22,13 @@ module.exports = {
     async execute(interactionOrMessage, args = []) {
         const member = interactionOrMessage.member;
         const guild = interactionOrMessage.guild;
+        const guildId = guild.id;
         const isSlash = interactionOrMessage.isCommand?.();
 
         if (guild.ownerId !== member.id) {
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Only the **Server Owner** can manage the whitelist.')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.ownerOnlyWhitelist'))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -58,13 +57,13 @@ module.exports = {
             if (!user) {
                 const container = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('### Add to Whitelist')
+                        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.whitelistAddTitle')}`)
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('Select a user to add to the whitelist:')
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.whitelistAddPrompt'))
                     )
                     .addActionRowComponents(
                         new ActionRowBuilder().addComponents(
@@ -90,13 +89,13 @@ module.exports = {
 
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`### Whitelist ${user.username}`)
+                    new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.whitelistForUser', { user: user.username })}`)
                 )
                 .addSeparatorComponents(
                     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                 )
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent('Select which events to whitelist this user for:')
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.whitelistEventsPrompt'))
                 )
                 .addActionRowComponents(
                     new ActionRowBuilder().addComponents(
@@ -127,13 +126,13 @@ module.exports = {
             if (!user) {
                 const container = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('### Remove from Whitelist')
+                        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.whitelistRemoveTitle')}`)
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('Select a user to remove from the whitelist:')
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.whitelistRemovePrompt'))
                     )
                     .addActionRowComponents(
                         new ActionRowBuilder().addComponents(
@@ -158,7 +157,7 @@ module.exports = {
             if (!existing) {
                 const container = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(`**${user.username}** is not on the whitelist.`)
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.userNotWhitelisted', { user: user.username }))
                     );
                 return interactionOrMessage.reply({
                     components: [container],
@@ -177,13 +176,13 @@ module.exports = {
 
                 const container = new ContainerBuilder()
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(`### Remove ${user.username}'s Whitelist`)
+                        new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.removeUserWhitelistTitle', { user: user.username })}`)
                     )
                     .addSeparatorComponents(
                         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
                     )
                     .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent('Select which events to remove, or remove entirely:')
+                        new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.removeEventsPrompt'))
                     )
                     .addActionRowComponents(
                         new ActionRowBuilder().addComponents(
@@ -216,7 +215,7 @@ module.exports = {
 
             const container = new ContainerBuilder()
                 .addTextDisplayComponents(
-                    new TextDisplayBuilder().setContent(`**${user.username}** has been removed from the whitelist.`)
+                    new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.userRemovedFromWhitelist', { user: user.username }))
                 );
             return interactionOrMessage.reply({
                 components: [container],
@@ -232,18 +231,20 @@ module.exports = {
 
         let listContent = '';
         if (whitelist.length === 0) {
-            listContent = 'No users are whitelisted.';
+            listContent = await tg(guildId, 'antinuke.noUsersWhitelisted');
         } else {
-            listContent = whitelist.map((w, i) => {
+            const allEvents = await tg(guildId, 'antinuke.allEvents');
+            const entries = await Promise.all(whitelist.map(async (w, i) => {
                 const events = w.events;
-                const eventDisplay = events ? `(${events.length} events)` : '(All events)';
-                return `\`${i + 1}.\` <@${w.userId}> ${eventDisplay}`;
-            }).join('\n');
+                const eventDisplay = events ? await tg(guildId, 'antinuke.eventsCount', { count: events.length }) : allEvents;
+                return tg(guildId, 'antinuke.whitelistEntry', { index: i + 1, user: `<@${w.userId}>`, events: eventDisplay });
+            }));
+            listContent = entries.join('\n');
         }
 
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(`### Antinuke Whitelist (${whitelist.length})`)
+                new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.whitelistTitle', { count: whitelist.length })}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
@@ -255,7 +256,7 @@ module.exports = {
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('-# Use `antinuke whitelist list` for detailed view.')
+                new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.whitelistDetailedHint'))
             )
             .addActionRowComponents(
                 new ActionRowBuilder().addComponents(
@@ -282,18 +283,19 @@ module.exports = {
 };
 
 async function showWhitelistDetailed(interactionOrMessage, guild) {
+    const guildId = guild.id;
     const whitelist = await AntinukeWhitelist.findAll({ where: { guildId: guild.id } });
 
     if (whitelist.length === 0) {
         const container = new ContainerBuilder()
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('### Antinuke Whitelist')
+                new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.whitelistTitle', { count: 0 })}`)
             )
             .addSeparatorComponents(
                 new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
             )
             .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent('No users are whitelisted.')
+                new TextDisplayBuilder().setContent(await tg(guildId, 'antinuke.noUsersWhitelisted'))
             );
         return interactionOrMessage.reply({
             components: [container],
@@ -315,7 +317,7 @@ async function showWhitelistDetailed(interactionOrMessage, guild) {
 
     const container = new ContainerBuilder()
         .addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(`### Antinuke Whitelist - Detailed (${whitelist.length})`)
+            new TextDisplayBuilder().setContent(`### ${await tg(guildId, 'antinuke.whitelistDetailedTitle', { count: whitelist.length })}`)
         )
         .addSeparatorComponents(
             new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)

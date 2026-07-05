@@ -1,6 +1,3 @@
-
-
-
 const {
   ContainerBuilder,
   TextDisplayBuilder,
@@ -11,6 +8,7 @@ const {
 } = require('discord.js');
 const { ModLog } = require('../../../../../database/models');
 const { createPaginationSession } = require('../../../../utils/pagination');
+const { tg } = require('../../../../utils/i18n');
 
 function modReply(interaction, title, body, ephemeral = false) {
   const container = new ContainerBuilder()
@@ -25,10 +23,11 @@ module.exports = {
   description: 'List warnings for a user',
 
   async execute(interaction) {
+    const guildId = interaction.guildId;
     const targetUser = interaction.options.getUser('user');
 
     if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers))
-      return modReply(interaction, 'Permission Denied', 'You need the **Moderate Members** permission.', true);
+      return modReply(interaction, await tg(guildId, 'common.permissionDenied'), await tg(guildId, 'common.youNeedPermission', { permission: 'Moderate Members' }), true);
 
     await interaction.deferReply();
 
@@ -38,10 +37,12 @@ module.exports = {
     });
 
     if (warns.length === 0) {
+      const title = await tg(guildId, 'warn.list.titleFor', { user: targetUser.tag });
+      const body = await tg(guildId, 'warn.list.noWarnings');
       const container = new ContainerBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**Warnings for ${targetUser.tag}**`))
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${title}**`))
         .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent('No warnings found for this user.'));
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(body));
       return interaction.editReply({ components: [container], flags: MessageFlags.IsComponentsV2 });
     }
 
@@ -52,17 +53,25 @@ module.exports = {
       pages.push(warns.slice(i * itemsPerPage, (i + 1) * itemsPerPage));
     }
 
+    const noReason = await tg(guildId, 'common.noReasonProvided');
+    const titleCount = await tg(guildId, 'warn.list.titleForCount', { user: targetUser.tag, count: warns.length });
+    const entryTemplates = await Promise.all(warns.map(warn => tg(guildId, 'warn.list.entry', {
+      caseNumber: warn.caseNumber,
+      moderator: warn.moderatorTag,
+      reason: warn.reason || noReason,
+      date: `<t:${Math.floor(new Date(warn.createdAt).getTime() / 1000)}:f>`,
+    })));
+
     const paginationSession = createPaginationSession({
       interactionOrMessage: interaction,
       pages,
       renderPage: (pageIndex, pageData) => {
         const container = new ContainerBuilder()
-          .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**Warnings for ${targetUser.tag} [${warns.length}]**`))
+          .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**${titleCount}**`))
           .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
 
-        const list = pageData.map(warn =>
-          `\`#${warn.caseNumber}\` **Moderator:** ${warn.moderatorTag}\n**Reason:** ${warn.reason || 'No reason provided'}\n**Date:** <t:${Math.floor(new Date(warn.createdAt).getTime() / 1000)}:f>`
-        ).join('\n\n');
+        const startIndex = pageIndex * itemsPerPage;
+        const list = pageData.map((warn, i) => entryTemplates[startIndex + i]).join('\n\n');
 
         container.addTextDisplayComponents(new TextDisplayBuilder().setContent(list));
         return container;
