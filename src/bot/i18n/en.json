@@ -1,4 +1,120 @@
 {
+  "economy": {
+    "common": {
+      "guildOnly": "This command can only be used in a server.",
+      "notUnlockedTitle": "Economy Not Unlocked",
+      "notUnlockedBody": "This server hasn't unlocked the Infinity Economy game system yet. Ask an admin to purchase it from `/shop`.",
+      "gameDisabledTitle": "Game Disabled",
+      "gameDisabledBody": "The **{game}** game has been turned off by an admin on this server.",
+      "invalidBet": "Enter a valid bet amount greater than 0.",
+      "betTooLow": "The minimum bet for this game is {min}.",
+      "betTooHigh": "The maximum bet for this game is {max}.",
+      "insufficientFunds": "You don't have enough coins in your wallet for that.",
+      "invalidAmount": "Enter a valid amount greater than 0, or `all`."
+    },
+    "setup": {
+      "title": "Economy Setup",
+      "success": "This server's currency is now called **{name}** {symbol}."
+    },
+    "games": {
+      "title": "Economy Games",
+      "enabled": "The **{game}** game is now enabled.",
+      "disabled": "The **{game}** game is now disabled.",
+      "unknownGame": "That's not a recognized game."
+    },
+    "balance": {
+      "titleSelf": "Your Balance",
+      "titleOther": "{user}'s Balance",
+      "body": "**Wallet:** {wallet}\n**Bank:** {bank}\n**Total:** {total}"
+    },
+    "daily": {
+      "title": "Daily Reward",
+      "cooldownTitle": "Already Claimed",
+      "cooldownBody": "You've already claimed your daily reward. Come back in **{time}**.",
+      "success": "You claimed your daily reward of {amount} (streak: **{streak}** day(s), bonus: {bonus})!"
+    },
+    "deposit": {
+      "title": "Deposit",
+      "success": "Deposited {amount} into your bank.\n**Wallet:** {wallet}\n**Bank:** {bank}"
+    },
+    "withdraw": {
+      "title": "Withdraw",
+      "insufficientBank": "You don't have that much in your bank.",
+      "success": "Withdrew {amount} from your bank.\n**Wallet:** {wallet}\n**Bank:** {bank}"
+    },
+    "rob": {
+      "title": "Rob",
+      "noTarget": "Couldn't find that user.",
+      "cannotRobSelf": "You can't rob yourself.",
+      "cannotRobBot": "You can't rob a bot.",
+      "cooldownTitle": "Still Cooling Down",
+      "cooldownBody": "You need to wait **{time}** before attempting another robbery.",
+      "targetTooPoor": "{user} doesn't have enough coins in their wallet to be worth robbing.",
+      "failed": "You tried to rob {user}... and got caught! You walk away empty-handed.",
+      "success": "You successfully robbed {user} and got away with {amount}!"
+    },
+    "blackjack": {
+      "title": "Blackjack",
+      "inProgress": "**Your hand:** {player}\n**Dealer shows:** {dealer}\n\nHit or stand?",
+      "naturalBlackjack": "**Blackjack!** Your hand: {player}\nDealer: {dealer}\n\nYou bet {bet} and won {payout}!",
+      "push": "**Push.** Your hand: {player}\nDealer: {dealer}\n\nYour bet of {bet} was refunded ({payout}).",
+      "bust": "**Bust!** Your hand: {player}\nDealer: {dealer}\n\nYou lost your bet of {bet}.",
+      "win": "**You win!** Your hand: {player}\nDealer: {dealer}\n\nYou bet {bet} and won {payout}!",
+      "lose": "**You lose.** Your hand: {player}\nDealer: {dealer}\n\nYou lost your bet of {bet}.",
+      "timeout": "You took too long to respond. Your hand: {player}\nDealer: {dealer}\n\nYour bet of {bet} was refunded ({payout})."
+    },
+    "slot": {
+      "title": "Slot Machine",
+      "jackpot": "{reels}\n\n**JACKPOT!** You bet {bet} and won {payout}!",
+      "partialMatch": "{reels}\n\nTwo of a kind! You bet {bet} and won {payout}.",
+      "noMatch": "{reels}\n\nNo match. You lost your bet of {bet}."
+    },
+    "coinbet": {
+      "title": "Coin Flip",
+      "invalidSide": "Pick either `heads` or `tails`.",
+      "win": "The coin landed on **{outcome}**! You bet {bet} and won {payout}!",
+      "lose": "The coin landed on **{outcome}**. You lost your bet of {bet}."
+    },
+    "marry": {
+      "title": "Marriage Proposal",
+      "noTarget": "Couldn't find that user.",
+      "cannotMarrySelf": "You can't propose to yourself.",
+      "cannotMarryBot": "You can't marry a bot.",
+      "alreadyMarriedSelf": "You're already married. Use `/divorce` first if you'd like to remarry.",
+      "alreadyMarriedTarget": "{user} is already married to someone else.",
+      "proposalBody": "{proposer} has proposed marriage to {target}!\n\n{target}, do you accept?",
+      "notForYou": "This proposal isn't for you.",
+      "declined": "{target} declined the proposal. 💔",
+      "oneOfYouAlreadyMarried": "This proposal can no longer be accepted - one of you is already married to someone else.",
+      "accepted": "{target} said yes! 💍 {proposer} and {target} are now married."
+    },
+    "divorce": {
+      "title": "Divorce",
+      "notMarried": "You're not currently married.",
+      "success": "You are now divorced from {partner}."
+    },
+    "store": {
+      "browseTitle": "Store",
+      "browseEmpty": "This server doesn't have any store items yet.",
+      "browseFooter": "Use `/store buy <item>` to purchase an item.",
+      "itemNotFound": "That item could not be found.",
+      "outOfStock": "Sorry, that item is out of stock.",
+      "buyTitle": "Purchased",
+      "buySuccess": "You bought **{item}** for {price}!",
+      "inventoryTitle": "Your Inventory",
+      "inventoryEmpty": "You don't own any store items yet. Use `/store browse` to see what's available.",
+      "item": {
+        "addedTitle": "Item Added",
+        "added": "Store item **{name}** created.",
+        "updatedTitle": "Item Updated",
+        "updated": "Store item **{name}** updated.",
+        "removedTitle": "Item Removed",
+        "removed": "Store item **{name}** removed.",
+        "listTitle": "Store Items",
+        "listEmpty": "No store items yet. Add one with `/store item add`."
+      }
+    }
+  },
   "common": {
     "permissionDenied": "Permission Denied",
     "missingPermissions": "Missing Permissions",
@@ -281,7 +397,8 @@
       "voice": "Voice",
       "ai": "Artificial Intelligence",
       "reactionroles": "Reaction Roles",
-      "community": "Community"
+      "community": "Community",
+      "economy": "Economy"
     }
   },
   "reactionroles": {

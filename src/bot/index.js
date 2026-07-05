@@ -202,6 +202,9 @@ client.once('clientReady', async () => {
     const { checkGiveaways } = require('./utils/giveawayUtils');
     setInterval(() => { checkGiveaways(client); }, 10000);
 
+    const { checkEconomyRoleExpiry } = require('./utils/economyExpiry');
+    setInterval(() => { checkEconomyRoleExpiry(client); }, 30000);
+
     const { startBackgroundRefresh: startAnimalRefresh } = require('./utils/animalApi');
     startAnimalRefresh();
 

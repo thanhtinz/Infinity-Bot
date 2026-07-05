@@ -25,6 +25,7 @@ class ShopProduct extends BaseModel {
                 stock: { type: DataTypes.INTEGER, allowNull: true, comment: 'null = unlimited stock' },
                 imageUrl: { type: DataTypes.STRING, allowNull: true },
                 active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+                unlocksEconomy: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false, comment: 'If true, fulfilling an order for this product enables the Infinity Economy in-game currency system for the guild (see shopUtils.fulfillOrderRewards)' },
             },
             {
                 sequelize,

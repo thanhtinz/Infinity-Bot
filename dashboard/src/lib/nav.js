@@ -5,6 +5,7 @@ export const NAV_ITEMS = [
   { key: 'protection', label: 'Protection', icon: 'fa-shield-halved', title: 'Protection (Anti-Nuke)' },
   { key: 'tickets', label: 'Tickets', icon: 'fa-ticket', title: 'Tickets' },
   { key: 'shop', label: 'Shop', icon: 'fa-bag-shopping', title: 'Shop / Premium' },
+  { key: 'economy', label: 'Economy', icon: 'fa-coins', title: 'Infinity Economy' },
   { key: 'giveaways', label: 'Giveaways', icon: 'fa-gift', title: 'Giveaways' },
   { key: 'reaction-roles', label: 'Reaction Roles', icon: 'fa-at', title: 'Reaction Roles' },
   { key: 'welcome', label: 'Welcome', icon: 'fa-door-open', title: 'Welcome & Farewell' },

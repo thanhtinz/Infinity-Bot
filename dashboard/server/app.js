@@ -27,6 +27,7 @@ const starboardRoutes = require('./routes/starboard');
 const verificationRoutes = require('./routes/verification');
 const stickyNicknamesRoutes = require('./routes/stickyNicknames');
 const shopRoutes = require('./routes/shop');
+const economyRoutes = require('./routes/economy');
 const webhooksRoutes = require('./routes/webhooks');
 
 function createApp() {
@@ -69,6 +70,7 @@ function createApp() {
     guildRouter.use('/verification', verificationRoutes);
     guildRouter.use('/sticky-nicknames', stickyNicknamesRoutes);
     guildRouter.use('/shop', shopRoutes);
+    guildRouter.use('/economy', economyRoutes);
     app.use('/api/guilds/:guildId', ensureAuthenticated, ensureGuildAccess, guildRouter);
 
     app.use('/api', (req, res) => res.status(404).json({ error: 'not found' }));

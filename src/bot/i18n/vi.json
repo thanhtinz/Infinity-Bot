@@ -1,4 +1,120 @@
 {
+  "economy": {
+    "common": {
+      "guildOnly": "Lệnh này chỉ dùng được trong server.",
+      "notUnlockedTitle": "Chưa Mở Khóa Kinh Tế",
+      "notUnlockedBody": "Server này chưa mở khóa hệ thống Kinh Tế Infinity. Hãy nhờ admin mua tính năng này qua `/shop`.",
+      "gameDisabledTitle": "Trò Chơi Đã Tắt",
+      "gameDisabledBody": "Trò chơi **{game}** đã bị admin tắt trên server này.",
+      "invalidBet": "Hãy nhập số tiền cược hợp lệ, lớn hơn 0.",
+      "betTooLow": "Mức cược tối thiểu cho trò này là {min}.",
+      "betTooHigh": "Mức cược tối đa cho trò này là {max}.",
+      "insufficientFunds": "Bạn không đủ tiền trong ví cho việc này.",
+      "invalidAmount": "Hãy nhập số tiền hợp lệ lớn hơn 0, hoặc `all` (tất cả)."
+    },
+    "setup": {
+      "title": "Thiết Lập Kinh Tế",
+      "success": "Đơn vị tiền tệ của server giờ là **{name}** {symbol}."
+    },
+    "games": {
+      "title": "Trò Chơi Kinh Tế",
+      "enabled": "Trò chơi **{game}** đã được bật.",
+      "disabled": "Trò chơi **{game}** đã bị tắt.",
+      "unknownGame": "Không nhận diện được trò chơi này."
+    },
+    "balance": {
+      "titleSelf": "Số Dư Của Bạn",
+      "titleOther": "Số Dư Của {user}",
+      "body": "**Ví:** {wallet}\n**Ngân hàng:** {bank}\n**Tổng:** {total}"
+    },
+    "daily": {
+      "title": "Thưởng Hằng Ngày",
+      "cooldownTitle": "Đã Nhận Rồi",
+      "cooldownBody": "Bạn đã nhận thưởng hôm nay rồi. Quay lại sau **{time}** nhé.",
+      "success": "Bạn nhận được thưởng hằng ngày {amount} (chuỗi ngày: **{streak}**, tiền thưởng thêm: {bonus})!"
+    },
+    "deposit": {
+      "title": "Gửi Tiền",
+      "success": "Đã gửi {amount} vào ngân hàng.\n**Ví:** {wallet}\n**Ngân hàng:** {bank}"
+    },
+    "withdraw": {
+      "title": "Rút Tiền",
+      "insufficientBank": "Số dư ngân hàng của bạn không đủ.",
+      "success": "Đã rút {amount} từ ngân hàng.\n**Ví:** {wallet}\n**Ngân hàng:** {bank}"
+    },
+    "rob": {
+      "title": "Cướp",
+      "noTarget": "Không tìm thấy người dùng đó.",
+      "cannotRobSelf": "Bạn không thể tự cướp chính mình.",
+      "cannotRobBot": "Bạn không thể cướp một bot.",
+      "cooldownTitle": "Vẫn Đang Hồi",
+      "cooldownBody": "Bạn cần chờ thêm **{time}** trước khi cướp tiếp.",
+      "targetTooPoor": "{user} không có đủ tiền trong ví để đáng cướp.",
+      "failed": "Bạn định cướp {user}... nhưng bị bắt tại trận! Bạn về tay trắng.",
+      "success": "Bạn đã cướp thành công {user} và lấy được {amount}!"
+    },
+    "blackjack": {
+      "title": "Xì Dách",
+      "inProgress": "**Bài của bạn:** {player}\n**Bài lộ của nhà cái:** {dealer}\n\nRút thêm hay dừng?",
+      "naturalBlackjack": "**Xì bàn!** Bài của bạn: {player}\nNhà cái: {dealer}\n\nBạn cược {bet} và thắng {payout}!",
+      "push": "**Hòa.** Bài của bạn: {player}\nNhà cái: {dealer}\n\nTiền cược {bet} được hoàn lại ({payout}).",
+      "bust": "**Quắc bài!** Bài của bạn: {player}\nNhà cái: {dealer}\n\nBạn mất tiền cược {bet}.",
+      "win": "**Bạn thắng!** Bài của bạn: {player}\nNhà cái: {dealer}\n\nBạn cược {bet} và thắng {payout}!",
+      "lose": "**Bạn thua.** Bài của bạn: {player}\nNhà cái: {dealer}\n\nBạn mất tiền cược {bet}.",
+      "timeout": "Bạn phản hồi quá chậm. Bài của bạn: {player}\nNhà cái: {dealer}\n\nTiền cược {bet} được hoàn lại ({payout})."
+    },
+    "slot": {
+      "title": "Máy Xèng",
+      "jackpot": "{reels}\n\n**TRÚNG LỚN!** Bạn cược {bet} và thắng {payout}!",
+      "partialMatch": "{reels}\n\nTrùng hai ô! Bạn cược {bet} và thắng {payout}.",
+      "noMatch": "{reels}\n\nKhông trùng. Bạn mất tiền cược {bet}."
+    },
+    "coinbet": {
+      "title": "Tung Đồng Xu",
+      "invalidSide": "Hãy chọn `heads` (ngửa) hoặc `tails` (sấp).",
+      "win": "Đồng xu rơi vào mặt **{outcome}**! Bạn cược {bet} và thắng {payout}!",
+      "lose": "Đồng xu rơi vào mặt **{outcome}**. Bạn mất tiền cược {bet}."
+    },
+    "marry": {
+      "title": "Lời Cầu Hôn",
+      "noTarget": "Không tìm thấy người dùng đó.",
+      "cannotMarrySelf": "Bạn không thể cầu hôn chính mình.",
+      "cannotMarryBot": "Bạn không thể kết hôn với một bot.",
+      "alreadyMarriedSelf": "Bạn đã kết hôn rồi. Hãy `/divorce` (ly hôn) trước nếu muốn kết hôn lại.",
+      "alreadyMarriedTarget": "{user} đã kết hôn với người khác rồi.",
+      "proposalBody": "{proposer} vừa cầu hôn {target}!\n\n{target}, bạn có đồng ý không?",
+      "notForYou": "Lời cầu hôn này không dành cho bạn.",
+      "declined": "{target} đã từ chối lời cầu hôn. 💔",
+      "oneOfYouAlreadyMarried": "Lời cầu hôn này không còn hiệu lực - một trong hai người đã kết hôn với người khác.",
+      "accepted": "{target} đã đồng ý! 💍 {proposer} và {target} chính thức kết hôn."
+    },
+    "divorce": {
+      "title": "Ly Hôn",
+      "notMarried": "Bạn hiện chưa kết hôn.",
+      "success": "Bạn đã ly hôn với {partner}."
+    },
+    "store": {
+      "browseTitle": "Cửa Hàng",
+      "browseEmpty": "Server này chưa có vật phẩm nào trong cửa hàng.",
+      "browseFooter": "Dùng `/store buy <item>` để mua vật phẩm.",
+      "itemNotFound": "Không tìm thấy vật phẩm đó.",
+      "outOfStock": "Rất tiếc, vật phẩm này đã hết hàng.",
+      "buyTitle": "Đã Mua",
+      "buySuccess": "Bạn đã mua **{item}** với giá {price}!",
+      "inventoryTitle": "Kho Đồ Của Bạn",
+      "inventoryEmpty": "Bạn chưa sở hữu vật phẩm nào. Dùng `/store browse` để xem cửa hàng.",
+      "item": {
+        "addedTitle": "Đã Thêm Vật Phẩm",
+        "added": "Đã tạo vật phẩm **{name}**.",
+        "updatedTitle": "Đã Cập Nhật Vật Phẩm",
+        "updated": "Đã cập nhật vật phẩm **{name}**.",
+        "removedTitle": "Đã Xóa Vật Phẩm",
+        "removed": "Đã xóa vật phẩm **{name}**.",
+        "listTitle": "Danh Sách Vật Phẩm",
+        "listEmpty": "Chưa có vật phẩm nào. Thêm bằng `/store item add`."
+      }
+    }
+  },
   "common": {
     "permissionDenied": "Không Đủ Quyền Hạn",
     "missingPermissions": "Thiếu Quyền Hạn",
@@ -281,7 +397,8 @@
       "voice": "Voice",
       "ai": "Trí Tuệ Nhân Tạo",
       "reactionroles": "Reaction Roles",
-      "community": "Cộng Đồng"
+      "community": "Cộng Đồng",
+      "economy": "Kinh Tế"
     }
   },
   "reactionroles": {

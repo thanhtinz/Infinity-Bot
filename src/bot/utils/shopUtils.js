@@ -67,6 +67,41 @@ function computeCouponDiscount(coupon, subtotal) {
     return Number((subtotal * (Number(coupon.discountValue) / 100)).toFixed(2));
 }
 
+/**
+ * Idempotently seeds one `EconomyGameSettings` row per known game for a guild, defaulting each to
+ * enabled. Called right after a guild's economy is unlocked (see `unlockEconomy` below) so admins
+ * see every game already toggled on, and also safe to call redundantly elsewhere - `findOrCreate`
+ * is a no-op for games that already have a row.
+ */
+async function ensureDefaultGameSettings(guildId) {
+    const { EconomyGameSettings } = require('../../database/models');
+    const games = ['blackjack', 'slot', 'coinflip', 'daily', 'rob', 'marry'];
+    await Promise.all(games.map((game) =>
+        EconomyGameSettings.findOrCreate({ where: { guildId, game }, defaults: { guildId, game, enabled: true } })
+    ));
+}
+
+/**
+ * Unlocks (or re-confirms) the Infinity Economy in-game currency system for a guild - creates the
+ * guild's `EconomyConfig` row if missing and makes sure `enabled` is true, then seeds default
+ * per-game settings. Purely additive: this never touches the real-money Shop's own tables/role
+ * grants, it's only called alongside them from `fulfillOrderRewards` when a product has
+ * `unlocksEconomy: true`.
+ */
+async function unlockEconomy(guildId) {
+    const { EconomyConfig } = require('../../database/models');
+    const [config] = await EconomyConfig.findOrCreate({
+        where: { guildId },
+        defaults: { guildId, enabled: true }
+    });
+    if (!config.enabled) {
+        config.enabled = true;
+        await config.save();
+    }
+    await ensureDefaultGameSettings(guildId);
+    return config;
+}
+
 /** Grants the product's configured role to the buyer and records/refreshes a PremiumSubscription row. */
 async function fulfillOrderRewards(guild, order, product) {
     const { PremiumSubscription } = require('../../database/models');
@@ -90,6 +125,18 @@ async function fulfillOrderRewards(guild, order, product) {
             expiresAt: null
         });
     }
+
+    // Additive: a product can ALSO (or only) unlock the separate in-game Infinity Economy system.
+    // This never changes the role-grant behavior above - it's an independent effect of the same
+    // fulfillment event.
+    if (product?.unlocksEconomy && order?.guildId) {
+        try {
+            await unlockEconomy(order.guildId);
+        } catch (error) {
+            // best-effort, same reasoning as the role grant above - don't fail the whole order.
+            console.error('Failed to unlock Infinity Economy for guild', order.guildId, error);
+        }
+    }
 }
 
 module.exports = {
@@ -98,5 +145,7 @@ module.exports = {
     getEffectivePrice,
     validateCoupon,
     computeCouponDiscount,
-    fulfillOrderRewards
+    fulfillOrderRewards,
+    unlockEconomy,
+    ensureDefaultGameSettings
 };

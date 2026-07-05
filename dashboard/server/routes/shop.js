@@ -50,14 +50,15 @@ router.delete('/categories/:id', async (req, res) => {
 
 router.post('/products', async (req, res) => {
     const { guildId } = req.params;
-    const { name, description, categoryId, priceVnd, priceUsd, roleId, stock, imageUrl, active } = req.body || {};
+    const { name, description, categoryId, priceVnd, priceUsd, roleId, stock, imageUrl, active, unlocksEconomy } = req.body || {};
     if (!name) return res.status(400).json({ error: 'name is required' });
     const product = await ShopProduct.create({
         guildId, name, description: description || null,
         categoryId: categoryId || null,
         priceVnd: priceVnd ?? null, priceUsd: priceUsd ?? null,
         roleId: roleId || null, stock: stock ?? null, imageUrl: imageUrl || null,
-        active: active !== false
+        active: active !== false,
+        unlocksEconomy: unlocksEconomy === true
     });
     res.status(201).json(product);
 });
@@ -66,7 +67,7 @@ router.put('/products/:id', async (req, res) => {
     const { guildId, id } = req.params;
     const product = await ShopProduct.findOne({ where: { id, guildId } });
     if (!product) return res.status(404).json({ error: 'product not found' });
-    for (const field of ['name', 'description', 'categoryId', 'priceVnd', 'priceUsd', 'roleId', 'stock', 'imageUrl', 'active']) {
+    for (const field of ['name', 'description', 'categoryId', 'priceVnd', 'priceUsd', 'roleId', 'stock', 'imageUrl', 'active', 'unlocksEconomy']) {
         if (req.body?.[field] !== undefined) product[field] = req.body[field];
     }
     await product.save();

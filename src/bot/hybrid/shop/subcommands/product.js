@@ -49,7 +49,8 @@ module.exports = {
                 roleId: opts.getRole('role')?.id || null,
                 stock: opts.getInteger('stock'),
                 imageUrl: opts.getString('image_url') || null,
-                active: true
+                active: true,
+                unlocksEconomy: opts.getBoolean('unlocks_economy') === true
             });
             return reply(interactionOrMessage, await tg(guildId, 'shop.product.added', { name: product.name }));
         }
@@ -65,10 +66,12 @@ module.exports = {
             const priceUsd = opts.getNumber('price_usd');
             const stock = opts.getInteger('stock');
             const active = opts.getBoolean('active');
+            const unlocksEconomy = opts.getBoolean('unlocks_economy');
             if (priceVnd !== null) product.priceVnd = priceVnd;
             if (priceUsd !== null) product.priceUsd = priceUsd;
             if (stock !== null) product.stock = stock;
             if (active !== null) product.active = active;
+            if (unlocksEconomy !== null) product.unlocksEconomy = unlocksEconomy;
             await product.save();
             return reply(interactionOrMessage, await tg(guildId, 'shop.product.updated', { name: product.name }));
         }

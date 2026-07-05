@@ -90,6 +90,22 @@ Three payment methods:
 
 PayOS/PayPal credentials and crypto wallet addresses are configured from the **Payments** page in the Owner Admin Panel (no `.env` edit + restart needed) - see `owner-admin/server/routes/payments.js`.
 
+## 🎮 Infinity Economy
+
+Hệ thống kinh tế trong game theo từng server (kiểu MEE6/Dank Memer) - **tách biệt hoàn toàn** với tiền thật của `/shop`. Đây là tính năng **premium, khoá theo server**: chỉ mở khi server mua sản phẩm "mở khoá kinh tế" qua `/shop` (đánh dấu `unlocksEconomy` trên sản phẩm) bằng tiền thật (PayOS/PayPal/crypto) - việc mua hàng tự động bật `EconomyConfig.enabled` cho server đó, không cần thao tác gì thêm. Nếu server chưa mua, mọi lệnh kinh tế (`/balance`, `/daily`, `/rob`, `/blackjack`, `/slot`, `/coinbet`, `/marry`, `/store`, `/economy`...) đều trả lời lịch sự rằng tính năng chưa được mở khoá, kèm hướng dẫn `/shop`.
+
+Khi đã mở khoá: `/economy setup` đổi tên/icon đơn vị tiền tệ, `/economy games enable|disable` bật/tắt từng trò chơi; người chơi dùng `/balance`, `/daily` (có thưởng chuỗi ngày), `/deposit`/`/withdraw` (ngân hàng không thể bị cướp), `/rob` (chỉ cướp được ví, không cướp được ngân hàng), các trò `/blackjack`, `/slot`, `/coinbet`, và `/marry`/`/divorce`. `/store` là cửa hàng riêng dùng tiền trong game (khác `/shop` dùng tiền thật) - admin quản lý vật phẩm qua `/store item add|edit|remove|list` hoặc trang **Economy** trên dashboard, vật phẩm có thể gán role tạm thời (tự động thu hồi sau khi hết hạn).
+
+Lớp kịch bản AI hỗ trợ tạo custom command/event (chạy an toàn trong sandbox `isolated-vm`) là tính năng **Phase 2, chưa được xây dựng** - không nằm trong phạm vi hệ thống kinh tế hiện tại.
+
+---
+
+A per-server in-game economy system (MEE6/Dank Memer style) - **entirely separate** from the real-money `/shop`. This is a **premium, per-server-gated** feature: it only unlocks once a server purchases an "economy unlock" product through `/shop` (a product flagged `unlocksEconomy`) with real money (PayOS/PayPal/crypto) - fulfilling that purchase automatically flips `EconomyConfig.enabled` for that guild, no extra setup required. Until then, every economy command (`/balance`, `/daily`, `/rob`, `/blackjack`, `/slot`, `/coinbet`, `/marry`, `/store`, `/economy`, etc.) replies with a friendly "not unlocked yet" message pointing to `/shop`.
+
+Once unlocked: `/economy setup` renames the currency/symbol, `/economy games enable|disable` toggles individual games; players use `/balance`, `/daily` (with a streak bonus), `/deposit`/`/withdraw` (bank balances are robbery-proof), `/rob` (steals only from the victim's wallet, never their bank), the `/blackjack`, `/slot`, and `/coinbet` games, and `/marry`/`/divorce`. `/store` is a separate in-game-currency shop (distinct from the real-money `/shop`) - admins manage items via `/store item add|edit|remove|list` or the dashboard's **Economy** page, and items can grant a temporary role that's automatically revoked once it expires.
+
+The AI-assisted custom command/event scripting layer (sandboxed via `isolated-vm`) is a separate **Phase 2, not-yet-built** feature - it is out of scope for the current economy system.
+
 ## 📄 License
 
 Dự án cá nhân, không phát hành công khai.

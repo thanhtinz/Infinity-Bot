@@ -45,6 +45,12 @@ const ShopOrder = require('./ShopOrder');
 const ShopFlashSale = require('./ShopFlashSale');
 const PremiumSubscription = require('./PremiumSubscription');
 const PaymentGatewayConfig = require('./PaymentGatewayConfig');
+const EconomyConfig = require('./EconomyConfig');
+const EconomyBalance = require('./EconomyBalance');
+const EconomyItem = require('./EconomyItem');
+const EconomyInventory = require('./EconomyInventory');
+const EconomyMarriage = require('./EconomyMarriage');
+const EconomyGameSettings = require('./EconomyGameSettings');
 
 const modelList = [
     NoPrefix,
@@ -89,7 +95,13 @@ const modelList = [
     ShopOrder,
     ShopFlashSale,
     PremiumSubscription,
-    PaymentGatewayConfig
+    PaymentGatewayConfig,
+    EconomyConfig,
+    EconomyBalance,
+    EconomyItem,
+    EconomyInventory,
+    EconomyMarriage,
+    EconomyGameSettings
 ];
 
 for (const model of modelList) {
@@ -142,6 +154,12 @@ const models = {
     ShopFlashSale,
     PremiumSubscription,
     PaymentGatewayConfig,
+    EconomyConfig,
+    EconomyBalance,
+    EconomyItem,
+    EconomyInventory,
+    EconomyMarriage,
+    EconomyGameSettings,
     sequelize
 };
 

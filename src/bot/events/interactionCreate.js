@@ -16,6 +16,7 @@ const automodHandler = require('./interactions/automodHandler');
 const antinukeHandler = require('./interactions/antinukeHandler');
 const ticketHandler = require('./interactions/ticketHandler');
 const verificationHandler = require('./interactions/verificationHandler');
+const economyMarryHandler = require('./interactions/economyMarryHandler');
 const ignoreDb = require('../../database/ignoreDb');
 const { isAdminLockEnabled } = require('../utils/adminLock');
 const commandLockDb = require('../../database/commandLock');
@@ -32,7 +33,8 @@ const handlers = [
   automodHandler,
   antinukeHandler,
   ticketHandler,
-  verificationHandler
+  verificationHandler,
+  economyMarryHandler
 ];
 
 const iCache = new Map();

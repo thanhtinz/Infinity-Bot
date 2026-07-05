@@ -156,6 +156,11 @@ const categories = {
         name: 'Community',
         emoji: emojis.dots,
         commands: ['statschannel add', 'statschannel remove', 'statschannel list', 'birthday set', 'birthday remove', 'birthday view', 'birthday config', 'starboard setup', 'starboard disable']
+    },
+    economy: {
+        name: 'Economy',
+        emoji: emojis.dots,
+        commands: ['balance', 'daily', 'deposit', 'withdraw', 'rob', 'blackjack', 'slot', 'coinbet', 'marry', 'divorce', 'store browse', 'store buy', 'store inventory', 'economy setup', 'economy games enable', 'economy games disable', '(premium - unlock via /shop)']
     }
 };
 

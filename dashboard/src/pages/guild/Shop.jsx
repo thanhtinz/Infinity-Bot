@@ -13,7 +13,7 @@ function emptyCategory() {
 }
 
 function emptyProduct() {
-  return { name: '', description: '', categoryId: '', priceVnd: '', priceUsd: '', roleId: '', stock: '', imageUrl: '' };
+  return { name: '', description: '', categoryId: '', priceVnd: '', priceUsd: '', roleId: '', stock: '', imageUrl: '', unlocksEconomy: false };
 }
 
 function emptyCoupon() {
@@ -109,7 +109,8 @@ export default function Shop({ guildId, meta, onAccessLost }) {
         priceVnd: newProduct.priceVnd === '' ? null : Number(newProduct.priceVnd),
         priceUsd: newProduct.priceUsd === '' ? null : Number(newProduct.priceUsd),
         roleId: newProduct.roleId || null,
-        stock: newProduct.stock === '' ? null : Number(newProduct.stock)
+        stock: newProduct.stock === '' ? null : Number(newProduct.stock),
+        unlocksEconomy: newProduct.unlocksEconomy === true
       };
       const created = await apiPost(`/api/guilds/${guildId}/shop/products`, payload);
       setProducts((prev) => [...prev, created]);
@@ -285,6 +286,7 @@ export default function Shop({ guildId, meta, onAccessLost }) {
                   <th>Role</th>
                   <th>Stock</th>
                   <th>Active</th>
+                  <th>Unlocks Economy</th>
                   <th></th>
                 </tr>
               </thead>
@@ -298,6 +300,7 @@ export default function Shop({ guildId, meta, onAccessLost }) {
                     <td data-label="Role">{p.roleId ? `@${meta.roles?.find((r) => r.id === p.roleId)?.name || p.roleId}` : '—'}</td>
                     <td data-label="Stock">{p.stock == null ? '∞' : p.stock}</td>
                     <td data-label="Active"><Toggle checked={p.active} onChange={() => toggleProductActive(p)} /></td>
+                    <td data-label="Unlocks Economy">{p.unlocksEconomy ? <span className="status-badge status-on">Yes</span> : '—'}</td>
                     <td data-label=""><ConfirmButton label="Remove" icon="fa-trash" onConfirm={() => removeProduct(p.id)} /></td>
                   </tr>
                 ))}
@@ -341,6 +344,10 @@ export default function Shop({ guildId, meta, onAccessLost }) {
           <label className="config-item full-span">
             <span className="label-sm">Image URL</span>
             <input type="text" value={newProduct.imageUrl} onChange={(e) => setNewProduct({ ...newProduct, imageUrl: e.target.value })} />
+          </label>
+          <label className="config-item">
+            <span className="label-sm">Unlocks Infinity Economy</span>
+            <Toggle checked={newProduct.unlocksEconomy} onChange={() => setNewProduct({ ...newProduct, unlocksEconomy: !newProduct.unlocksEconomy })} />
           </label>
           <button type="button" className="btn-secondary" onClick={addProduct} disabled={busy}>
             <i className="fa-solid fa-plus" /> Add product
