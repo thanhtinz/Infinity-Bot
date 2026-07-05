@@ -130,7 +130,8 @@ if (fs.existsSync(eventsPath)) {
     { file: 'stickyNicknameEvent.js', label: 'stickynick' },
     { file: 'statsChannelEvent.js', label: 'statschannel' },
     { file: 'birthdayEvent.js', label: 'birthday' },
-    { file: 'starboardEvent.js', label: 'starboard' }
+    { file: 'starboardEvent.js', label: 'starboard' },
+    { file: 'giveawayReactionEvent.js', label: 'giveaway' }
   ];
   const standaloneLoaded = [];
   for (const { file, label } of standaloneInits) {

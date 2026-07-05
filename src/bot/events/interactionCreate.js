@@ -7,7 +7,6 @@ const { checkCooldown, storePendingReply, clearPendingReply } = require('../util
 const emojis = require('../emojis.json');
 
 const feedbackHandler = require('./interactions/feedbackHandler');
-const giveawayHandler = require('./interactions/giveawayHandler');
 const j2cHandler = require('./interactions/j2cHandler');
 const loggingHandler = require('./interactions/loggingHandler');
 const welcomeHandler = require('./interactions/welcomeHandler');
@@ -25,7 +24,6 @@ const { buildRoleplayResponse, roleplayActions } = require('../utils/roleplayHel
 
 const handlers = [
   feedbackHandler,
-  giveawayHandler,
   j2cHandler,
   loggingHandler,
   welcomeHandler,

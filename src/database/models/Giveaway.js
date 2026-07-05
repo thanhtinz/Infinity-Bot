@@ -14,7 +14,9 @@ class Giveaway extends BaseModel {
                 prize: { type: DataTypes.STRING, allowNull: false },
                 winners: { type: DataTypes.INTEGER, allowNull: false },
                 endTime: { type: DataTypes.BIGINT, allowNull: false },
-                ended: { type: DataTypes.BOOLEAN, defaultValue: false }
+                ended: { type: DataTypes.BOOLEAN, defaultValue: false },
+                emoji: { type: DataTypes.STRING, allowNull: true, defaultValue: '🎉' },
+                bannerUrl: { type: DataTypes.STRING, allowNull: true }
             },
             {
                 sequelize,

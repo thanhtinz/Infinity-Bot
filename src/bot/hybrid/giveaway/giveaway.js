@@ -30,6 +30,16 @@ module.exports = {
             .setDescription('The prize for the giveaway')
             .setRequired(true)
         )
+        .addStringOption(option =>
+          option
+            .setName('emoji')
+            .setDescription('Reaction emoji used to enter (default 🎉)')
+        )
+        .addStringOption(option =>
+          option
+            .setName('banner')
+            .setDescription('Optional banner image URL')
+        )
     )
     .addSubcommand(subcommand =>
       subcommand

@@ -158,6 +158,21 @@ async function applyCompatibilitySchemaUpdates() {
         });
     }
 
+    const giveawaysCols = await qi.describeTable('giveaways').catch(() => null);
+    if (giveawaysCols && !giveawaysCols.emoji) {
+        await qi.addColumn('giveaways', 'emoji', {
+            type: DataTypes.STRING,
+            allowNull: true,
+            defaultValue: '🎉'
+        });
+    }
+    if (giveawaysCols && !giveawaysCols.bannerUrl) {
+        await qi.addColumn('giveaways', 'bannerUrl', {
+            type: DataTypes.STRING,
+            allowNull: true
+        });
+    }
+
     await Promise.all([
         safeAddIndex(qi, 'giveaways', ['ended', 'endTime'], { name: 'giveaways_ended_endtime' }),
         safeAddIndex(qi, 'giveaways', ['guildId'], { name: 'giveaways_guild_id' }),

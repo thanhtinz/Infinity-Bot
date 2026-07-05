@@ -3,14 +3,13 @@ const {
   TextDisplayBuilder,
   SeparatorBuilder,
   SeparatorSpacingSize,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   MessageFlags,
 } = require('discord.js');
 const Giveaway = require('../../../../database/models/Giveaway');
-const emojis = require('../../../emojis.json');
 const { tg } = require('../../../utils/i18n');
+const { buildGiveawayComponents } = require('../../../utils/giveawayUtils');
+
+const DEFAULT_EMOJI = '🎉';
 
 function parseTime(timeStr) {
   const units = { s: 1, m: 60, h: 3600, d: 86400 };
@@ -20,6 +19,16 @@ function parseTime(timeStr) {
     return value * (units[unit] || 0);
   } catch {
     return 0;
+  }
+}
+
+function isValidImageUrl(url) {
+  if (!url || !url.trim()) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
   }
 }
 
@@ -48,12 +57,14 @@ module.exports = {
       });
     }
 
-    let timeStr, winnersCount, prize;
+    let timeStr, winnersCount, prize, emojiOption, bannerOption;
 
     if (isSlash) {
       timeStr = interactionOrMessage.options.getString('duration');
       winnersCount = interactionOrMessage.options.getInteger('winners');
       prize = interactionOrMessage.options.getString('prize');
+      emojiOption = interactionOrMessage.options.getString('emoji');
+      bannerOption = interactionOrMessage.options.getString('banner');
     } else {
       if (args.length < 3) {
         const container = new ContainerBuilder();
@@ -76,6 +87,8 @@ module.exports = {
       timeStr = args[0];
       winnersCount = parseInt(args[1]);
       prize = args.slice(2).join(' ');
+      emojiOption = null;
+      bannerOption = null;
     }
 
     const seconds = parseTime(timeStr);
@@ -116,6 +129,8 @@ module.exports = {
     }
 
     const endTime = Math.floor(Date.now() / 1000) + seconds;
+    const emoji = (emojiOption && emojiOption.trim()) ? emojiOption.trim() : DEFAULT_EMOJI;
+    const bannerUrl = isValidImageUrl(bannerOption) ? bannerOption.trim() : null;
 
     const giveaway = await Giveaway.create({
       guildId: interactionOrMessage.guild.id,
@@ -124,50 +139,34 @@ module.exports = {
       prize: prize,
       winners: winnersCount,
       endTime: endTime,
+      ended: false,
+      emoji,
+      bannerUrl
+    });
+
+    const components = await buildGiveawayComponents({
+      guildId,
+      guild: interactionOrMessage.guild,
+      giveaway,
       ended: false
     });
 
-    const container = new ContainerBuilder();
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`${emojis.gift || '🎁'} **${prize}** ${emojis.gift || '🎁'}`)
-    );
-    container.addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    );
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        await tg(guildId, 'giveaway.start.embedInfo', {
-          dot: emojis.dots || '',
-          winners: winnersCount,
-          endTime: `<t:${endTime}:R>`,
-          host: `<@${user.id}>`,
-        })
-      )
-    );
-
-    container.addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    );
-
-    const enterButton = new ButtonBuilder()
-      .setLabel(await tg(guildId, 'giveaway.start.enterButton'))
-      .setStyle(ButtonStyle.Primary)
-      .setCustomId(`giveaway_enter_${giveaway.id}`);
-
-    const viewParticipantsButton = new ButtonBuilder()
-      .setLabel(await tg(guildId, 'giveaway.start.viewParticipantsButton'))
-      .setStyle(ButtonStyle.Secondary)
-      .setCustomId(`giveaway_participants_${giveaway.id}`);
-
-    const buttonRow = new ActionRowBuilder().addComponents(enterButton, viewParticipantsButton);
-    container.addActionRowComponents(buttonRow);
-
     const giveawayMsg = await interactionOrMessage.channel.send({
-      components: [container],
+      components,
       flags: MessageFlags.IsComponentsV2
     });
 
     await giveaway.update({ messageId: giveawayMsg.id });
+
+    try {
+      await giveawayMsg.react(emoji);
+    } catch (e) {
+      // Custom/invalid emoji the bot can't use - fall back to the default.
+      if (emoji !== DEFAULT_EMOJI) {
+        await giveaway.update({ emoji: DEFAULT_EMOJI });
+        await giveawayMsg.react(DEFAULT_EMOJI).catch(() => {});
+      }
+    }
 
     const confirmContainer = new ContainerBuilder();
     confirmContainer.addTextDisplayComponents(

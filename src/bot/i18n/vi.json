@@ -434,11 +434,8 @@
       "invalidTimeBody": "Hãy dùng định dạng: `1s`, `1m`, `1h`, hoặc `1d`",
       "invalidWinnersTitle": "Số Người Thắng Không Hợp Lệ",
       "invalidWinnersBody": "Phải có ít nhất 1 người thắng!",
-      "embedInfo": "{dot} **Người thắng:** {winners}\n{dot} **Kết thúc:** {endTime}\n{dot} **Tổ chức bởi:** {host}",
-      "enterButton": "Tham Gia Giveaway",
-      "viewParticipantsButton": "Xem Người Tham Gia",
       "startedTitle": "Đã Bắt Đầu Giveaway",
-      "startedBody": "Giveaway của bạn đã được bắt đầu thành công!"
+      "startedBody": "Giveaway của bạn đã được bắt đầu thành công! Hãy react vào tin nhắn giveaway để tham gia."
     },
     "end": {
       "noPermission": "Bạn cần quyền `Quản Lý Server` để kết thúc giveaway!",
@@ -464,6 +461,24 @@
       "rerollCompleteBody": "Người thắng mới đã được chọn!",
       "dmWinner": "{icon} Bạn đã thắng **{prize}** tại **{guild}** {heart}",
       "viewWinningMessageButton": "Xem Tin Nhắn Thắng Cuộc"
+    },
+    "embed": {
+      "startedTitle": "Giveaway đã bắt đầu",
+      "endedTitle": "Giveaway đã kết thúc",
+      "timeLabel": "Thời gian",
+      "endedLabel": "Đã kết thúc",
+      "hostedByLabel": "Tổ chức bởi",
+      "winnersLabel": "Người chiến thắng",
+      "noValidEntries": "Không có lượt tham gia hợp lệ",
+      "winnerCount": "{count} người thắng",
+      "startedAtLabel": "Bắt đầu lúc",
+      "endedAtLabel": "Kết thúc lúc"
+    },
+    "followup": {
+      "congrats": "Chúc mừng, {winners} đã thắng giveaway **{prize}** tổ chức bởi {host}"
+    },
+    "dm": {
+      "won": "{icon} Bạn đã thắng **{prize}** tại **{guild}** {heart}"
     }
   },
   "antinuke": {

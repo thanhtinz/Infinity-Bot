@@ -434,11 +434,8 @@
       "invalidTimeBody": "Please use format: `1s`, `1m`, `1h`, or `1d`",
       "invalidWinnersTitle": "Invalid Winners",
       "invalidWinnersBody": "Must have at least 1 winner!",
-      "embedInfo": "{dot} **Winners:** {winners}\n{dot} **Ends:** {endTime}\n{dot} **Hosted by:** {host}",
-      "enterButton": "Enter Giveaway",
-      "viewParticipantsButton": "View Participants",
       "startedTitle": "Giveaway Started",
-      "startedBody": "Your giveaway has been started successfully!"
+      "startedBody": "Your giveaway has been started successfully! React to the giveaway message to enter."
     },
     "end": {
       "noPermission": "You need `Manage Server` permission to end giveaways!",
@@ -464,6 +461,24 @@
       "rerollCompleteBody": "New winners have been selected!",
       "dmWinner": "{icon} You won **{prize}** in **{guild}** {heart}",
       "viewWinningMessageButton": "View Winning Message"
+    },
+    "embed": {
+      "startedTitle": "Giveaway Started",
+      "endedTitle": "Giveaway Ended",
+      "timeLabel": "Time",
+      "endedLabel": "Ended",
+      "hostedByLabel": "Hosted by",
+      "winnersLabel": "Winner(s)",
+      "noValidEntries": "No valid entries",
+      "winnerCount": "{count} winner(s)",
+      "startedAtLabel": "Started at",
+      "endedAtLabel": "Ended at"
+    },
+    "followup": {
+      "congrats": "Congratulations, {winners} won the **{prize}** giveaway hosted by {host}"
+    },
+    "dm": {
+      "won": "{icon} You won **{prize}** in **{guild}** {heart}"
     }
   },
   "antinuke": {
