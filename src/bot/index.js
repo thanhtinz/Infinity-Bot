@@ -8,6 +8,7 @@ const path = require('path');
 const crypto = require('crypto');
 const config = require('./config');
 const { loadSlashCommands, loadPrefixCommands, loadHybridCommands, reloadAllCommands } = require('./utils/commandLoader');
+const { bridgeSlashCommandsToPrefix } = require('./utils/prefixBridge');
 const { colors, printHeader, printLoading, printSuccess, printError, printInfo, printSystemReady } = require('./utils/consoleLogger');
 const botLogger = require('./utils/botLogger');
 
@@ -80,6 +81,17 @@ const hybridPath = path.join(__dirname, 'hybrid');
 loadSlashCommands(client, commandsPath);
 loadPrefixCommands(client, pCommandsPath);
 loadHybridCommands(client, hybridPath);
+
+const bridgeStats = bridgeSlashCommandsToPrefix(client);
+printSuccess(`Prefix bridge ready (${bridgeStats.bridged} slash commands bridged, +${bridgeStats.aliasesRegistered} aliases)`);
+printInfo(
+  `Bridge skipped ${bridgeStats.skippedExisting} with existing prefix/hybrid equivalents, ` +
+  `${bridgeStats.skippedExcluded} excluded, ${bridgeStats.skippedUnsupported} with unsupported option types`
+);
+if (bridgeStats.errors.length > 0) {
+  printError(`Prefix bridge failed for ${bridgeStats.errors.length} commands`);
+  bridgeStats.errors.forEach(err => printError(err));
+}
 
 printLoading('Event handlers');
 const eventsPath = path.join(__dirname, 'events');

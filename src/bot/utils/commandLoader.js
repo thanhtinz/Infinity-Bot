@@ -204,12 +204,20 @@ function reloadAllCommands(client, basePath) {
     const prefixResult = loadPrefixCommands(client, pCommandsPath);
     const hybridResult = loadHybridCommands(client, hybridPath);
 
+    // Re-run the auto prefix bridge so hot-reloaded slash commands keep
+    // their generated text equivalents (client.prefixCommands was just
+    // cleared above). Required lazily to avoid a require-cycle at module
+    // load time.
+    const { bridgeSlashCommandsToPrefix } = require('./prefixBridge');
+    const bridgeResult = bridgeSlashCommandsToPrefix(client);
+
     return {
         success: true,
-        message: `Reloaded ${slashResult.loaded} slash commands, ${prefixResult.loaded} prefix commands, and ${hybridResult.loaded} hybrid commands`,
+        message: `Reloaded ${slashResult.loaded} slash commands, ${prefixResult.loaded} prefix commands, and ${hybridResult.loaded} hybrid commands (bridged ${bridgeResult.bridged})`,
         slash: slashResult,
         prefix: prefixResult,
-        hybrid: hybridResult
+        hybrid: hybridResult,
+        bridge: bridgeResult
     };
 }
 
