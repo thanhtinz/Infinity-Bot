@@ -5,12 +5,14 @@ const UserAIConfig = require('./UserAIConfig');
 const Reminder = require('./Reminder');
 const Task = require('./Task');
 const Expense = require('./Expense');
+const ChatChannel = require('./ChatChannel');
 
 const modelList = [
     UserAIConfig,
     Reminder,
     Task,
     Expense,
+    ChatChannel,
 ];
 
 for (const model of modelList) {
@@ -24,6 +26,7 @@ const models = {
     Reminder,
     Task,
     Expense,
+    ChatChannel,
     sequelize
 };
 
