@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions      Session[]
+  aiConfigs     UserAIConfig[]
+  conversations ChatConversation[]
+  codeProjects  CodeProject[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+/// One row per (user, provider) - API key is encrypted at rest, same scheme as the Discord bot's UserAIConfig.
+model UserAIConfig {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider       String
+  encryptedKey   String
+  preferredModel String?
+  isActive       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userId, provider])
+  @@map("user_ai_configs")
+}
+
+model ChatConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String   @default("New chat")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages ChatMessage[]
+
+  @@index([userId])
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String           @db.Text
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId])
+  @@map("chat_messages")
+}
+
+model CodeProject {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  language  String
+  code      String   @db.Text
+  stdin     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  executions CodeExecution[]
+
+  @@index([userId])
+  @@map("code_projects")
+}
+
+model CodeExecution {
+  id         String      @id @default(cuid())
+  projectId  String
+  project    CodeProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  language   String
+  version    String?
+  stdout     String?     @db.Text
+  stderr     String?     @db.Text
+  exitCode   Int?
+  durationMs Int?
+  createdAt  DateTime    @default(now())
+
+  @@index([projectId])
+  @@map("code_executions")
+}

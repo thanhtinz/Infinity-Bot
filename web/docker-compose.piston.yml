@@ -1,0 +1,19 @@
+# Self-hosted Piston code execution engine (https://github.com/engineer-man/piston).
+# Run: docker compose -f docker-compose.piston.yml up -d
+# Then install language runtimes, e.g.:
+#   docker exec -it piston_api cli ppman install python 3.12.0
+#   docker exec -it piston_api cli ppman install node 20.11.1
+# PISTON_API_URL in .env should point at this service (default http://localhost:2000).
+services:
+  piston:
+    image: ghcr.io/engineer-man/piston
+    container_name: piston_api
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "2000:2000"
+    volumes:
+      - piston_packages:/piston/packages
+
+volumes:
+  piston_packages:
