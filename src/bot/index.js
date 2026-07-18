@@ -2,6 +2,7 @@ const { Client, GatewayIntentBits, Partials, Collection, REST, Routes } = requir
 const path = require('path');
 const config = require('./config');
 const { loadSlashCommands, loadEvents } = require('./utils/commandLoader');
+const reminderScheduler = require('./utils/reminderScheduler');
 
 const missingEnv = config.getMissingRequiredEnv();
 if (missingEnv.length > 0) {
@@ -42,6 +43,7 @@ client.once('clientReady', async () => {
     } catch (error) {
         console.error('[commands] failed to register:', error.message);
     }
+    reminderScheduler.init(client);
 });
 
 client.on('interactionCreate', async (interaction) => {

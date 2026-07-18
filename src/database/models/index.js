@@ -2,9 +2,15 @@ const sequelize = require('../sequelize');
 const config = require('../../bot/config');
 
 const UserAIConfig = require('./UserAIConfig');
+const Reminder = require('./Reminder');
+const Task = require('./Task');
+const Expense = require('./Expense');
 
 const modelList = [
     UserAIConfig,
+    Reminder,
+    Task,
+    Expense,
 ];
 
 for (const model of modelList) {
@@ -15,6 +21,9 @@ for (const model of modelList) {
 
 const models = {
     UserAIConfig,
+    Reminder,
+    Task,
+    Expense,
     sequelize
 };
 
